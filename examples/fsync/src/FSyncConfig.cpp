@@ -42,20 +42,30 @@ USE_NAMESPACE
 
 FSyncConfig *FSyncConfig::instance = NULL;
 
-// Generate a unique device id
+/**
+ * Generate a unique device id
+ *
+ * @return  the deviceId
+ */
 static StringBuffer generateDeviceID() {
     StringBuffer devid;
     devid.sprintf("%s-%ld", FSYNC_DEVICE_ID, time(NULL));
     return devid;
 }
 
-// Default constructor
+/**
+ * Default constructor
+ */
 FSyncConfig::FSyncConfig(): DMTClientConfig(FSYNC_APPLICATION_URI), syncPath(FSYNC_DEFAULT_PATH){
     
 }
 
 
-// Singleton implementation: get the unique instance of the config.
+/**
+ * Singleton implementation: get the unique instance of the config.
+ *
+ * @return  the singleton object
+ */
 FSyncConfig *FSyncConfig::getInstance() {
     if(!instance) {
         instance = new FSyncConfig();
@@ -63,7 +73,9 @@ FSyncConfig *FSyncConfig::getInstance() {
     return instance;
 }
 
-// Singleton implementation: release the unique instance of the config.
+/**
+ * Singleton implementation: release the unique instance of the config.
+ */
 void FSyncConfig::dispose() {
     delete instance;
 }
@@ -92,8 +104,12 @@ void FSyncConfig::init() {
     }
 }
 
-// Overload the read() method, adding the code to retrieve client-specific
-// values.
+/**
+ * Overload the read() method, adding the code to retrieve client-specific
+ * values.
+ *
+ * @return  true for success
+ */
 bool FSyncConfig::read() {
     
     if (!DMTClientConfig::read()) {
@@ -131,7 +147,11 @@ bool FSyncConfig::read() {
     return false;
 }
 
-// Overload the save() method, adding the code to store client-specific values.
+/**
+ * Overload the save() method, adding the code to store client-specific values.
+ *
+ * @return  true for success
+ */
 bool FSyncConfig::save() {
 
     if ( !DMTClientConfig::save() ) {
@@ -166,9 +186,9 @@ bool FSyncConfig::save() {
     return false;
 }
 
-//
-// Method to create a default config.
-//
+/**
+ * Method to create a default config.
+*/
 void FSyncConfig::createConfig() {
 
     AccessConfig* ac = DefaultConfigFactory::getAccessConfig();
@@ -198,3 +218,21 @@ void FSyncConfig::createConfig() {
     // save the configuration
     save();
 }
+
+/**
+ * Set the the folder to sync. If the new path is different from the current one,
+ * set the SyncSource last sync to 0, in order to force a slow sync.
+ *
+ * @param newPath   the new syncPath
+ */
+void FSyncConfig::setSyncPath(const char *newPath) { 
+    if(syncPath != newPath) {
+        syncPath = newPath;
+        //Get the SyncSource config
+        SyncSourceConfig* sc = this->getSyncSourceConfig(FSYNC_SOURCE_NAME);
+        if(sc != NULL) {
+            //Update the last sync anchor
+            sc->setLast(0);
+        }
+    } 
+};

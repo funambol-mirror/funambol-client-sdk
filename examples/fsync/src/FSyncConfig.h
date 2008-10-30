@@ -99,7 +99,7 @@ public:
     const StringBuffer& getSyncPath() const { return syncPath; };
 
     /** Set a new sync path */
-    void setSyncPath(const char *newPath) { syncPath = newPath; };
+    void setSyncPath(const char *newPath);
 
 private:
 
