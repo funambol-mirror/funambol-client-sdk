@@ -199,6 +199,9 @@ bool DMTClientConfig::save() {
     for(i=0; i<sourceConfigsCount; ++i) {
         saveSourceConfig(i, *(sourcesNode) );
     }
+    
+    resetError(); // FIXME 
+
     ret = (getLastErrorCode() == 0);
 
     close();
