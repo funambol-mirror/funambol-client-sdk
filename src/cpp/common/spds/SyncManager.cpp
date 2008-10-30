@@ -1096,7 +1096,8 @@ int SyncManager::sync() {
                     ArrayList tmpMapItems;            
                     while(en.hasMoreElement()) {
                         KeyValuePair* kvp = (KeyValuePair*)en.getNextElement();                
-                        MapItem* mapItem = syncMLBuilder.prepareMapItem(&SyncMap(kvp->getValue(), kvp->getKey())); 
+                        SyncMap sMap(kvp->getValue(), kvp->getKey());
+                        MapItem* mapItem = syncMLBuilder.prepareMapItem(&sMap);
                         tmpMapItems.add(*mapItem);                
                         delete mapItem;
                     }
@@ -1735,7 +1736,8 @@ void SyncManager::addMapCommand(int sourceIndex) {
             map = syncMLBuilder.prepareMapCommand(*sources[sourceIndex]);
         } 
         KeyValuePair* kvp = (KeyValuePair*)en.getNextElement();                
-        MapItem* mapItem = syncMLBuilder.prepareMapItem(&SyncMap(kvp->getValue(), kvp->getKey()));                
+        SyncMap sMap(kvp->getValue(), kvp->getKey());
+        MapItem* mapItem = syncMLBuilder.prepareMapItem(&sMap);
         syncMLBuilder.addMapItem(map, mapItem);
         delete mapItem;
     }
