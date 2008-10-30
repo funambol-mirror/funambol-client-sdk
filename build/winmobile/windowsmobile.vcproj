@@ -61,7 +61,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);NDEBUG;ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -234,7 +234,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);NDEBUG;ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -322,7 +322,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);NDEBUG;ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -411,7 +411,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);NDEBUG;ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -497,7 +497,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;DEBUG;_WIN32_WCE=$(CEVER);$(CePlatform);ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				RuntimeLibrary="1"
 				EnableFunctionLevelLinking="true"
@@ -583,7 +583,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\include\windows;..\..\src\include\common;..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows;..\..\src\include\common;..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;DEBUG;_WIN32_WCE=$(CEVER);$(CePlatform);ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				RuntimeLibrary="1"
 				EnableFunctionLevelLinking="true"
@@ -669,7 +669,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="DEBUG;USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				RuntimeLibrary="1"
 				BufferSecurityCheck="false"
@@ -757,7 +757,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;DEBUG;_WIN32_WCE=$(CEVER);$(CePlatform);ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				RuntimeLibrary="1"
 				EnableFunctionLevelLinking="true"
@@ -845,7 +845,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;DEBUG;_WIN32_WCE=$(CEVER);$(CePlatform);ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				RuntimeLibrary="1"
 				EnableFunctionLevelLinking="true"
@@ -934,7 +934,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);NDEBUG;ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -1021,7 +1021,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
 				PreprocessorDefinitions="DEBUG;USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
 				RuntimeLibrary="1"
 				BufferSecurityCheck="false"
@@ -17046,7 +17046,7 @@
 				Name="zlib"
 				>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\adler32.c"
+					RelativePath="..\..\tools\zlib\adler32.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17114,7 +17114,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\compress.c"
+					RelativePath="..\..\tools\zlib\compress.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17182,7 +17182,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\crc32.c"
+					RelativePath="..\..\tools\zlib\crc32.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17250,7 +17250,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\deflate.c"
+					RelativePath="..\..\tools\zlib\deflate.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17318,7 +17318,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\gzio.c"
+					RelativePath="..\..\tools\zlib\gzio.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17386,7 +17386,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infblock.c"
+					RelativePath="..\..\tools\zlib\infblock.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17454,7 +17454,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infcodes.c"
+					RelativePath="..\..\tools\zlib\infcodes.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17522,7 +17522,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inffast.c"
+					RelativePath="..\..\tools\zlib\inffast.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17590,7 +17590,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inflate.c"
+					RelativePath="..\..\tools\zlib\inflate.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17658,7 +17658,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inftrees.c"
+					RelativePath="..\..\tools\zlib\inftrees.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17726,7 +17726,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infutil.c"
+					RelativePath="..\..\tools\zlib\infutil.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17794,7 +17794,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\trees.c"
+					RelativePath="..\..\tools\zlib\trees.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17862,7 +17862,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\uncompr.c"
+					RelativePath="..\..\tools\zlib\uncompr.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -17930,7 +17930,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\zutil.c"
+					RelativePath="..\..\tools\zlib\zutil.c"
 					>
 					<FileConfiguration
 						Name="Release|Smartphone 2003 (ARMV4)"
@@ -18319,47 +18319,47 @@
 				Name="zlib"
 				>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\deflate.h"
+					RelativePath="..\..\tools\zlib\deflate.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infblock.h"
+					RelativePath="..\..\tools\zlib\infblock.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infcodes.h"
+					RelativePath="..\..\tools\zlib\infcodes.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inffast.h"
+					RelativePath="..\..\tools\zlib\inffast.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inffixed.h"
+					RelativePath="..\..\tools\zlib\inffixed.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inftrees.h"
+					RelativePath="..\..\tools\zlib\inftrees.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infutil.h"
+					RelativePath="..\..\tools\zlib\infutil.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\trees.h"
+					RelativePath="..\..\tools\zlib\trees.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\zconf.h"
+					RelativePath="..\..\tools\zlib\zconf.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\zlib.h"
+					RelativePath="..\..\tools\zlib\zlib.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\zutil.h"
+					RelativePath="..\..\tools\zlib\zutil.h"
 					>
 				</File>
 			</Filter>
