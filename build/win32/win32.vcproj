@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\include\common;..\..\src\include\windows;..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\common;..\..\src\include\windows;..\..\tools\zlib"
 				PreprocessorDefinitions="WIN32;_DEBUG;_MBCS;UNICODE;_LIB;NO_CRIT_MSGBOX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;ENABLE_UNIT_TESTS;ENABLE_NAMESPACE;USE_ZLIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -119,7 +119,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\src\include\common;..\..\src\include\windows;..\..\..\..\tools\zlib"
+				AdditionalIncludeDirectories="..\..\src\include\common;..\..\src\include\windows;..\..\tools\zlib"
 				PreprocessorDefinitions="WIN32;NDEBUG;UNICODE;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;USE_ZLIB;ENABLE_NAMESPACE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -3267,59 +3267,59 @@
 				Name="zlib"
 				>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\adler32.c"
+					RelativePath="..\..\tools\zlib\adler32.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\compress.c"
+					RelativePath="..\..\tools\zlib\compress.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\crc32.c"
+					RelativePath="..\..\tools\zlib\crc32.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\deflate.c"
+					RelativePath="..\..\tools\zlib\deflate.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\gzio.c"
+					RelativePath="..\..\tools\zlib\gzio.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infblock.c"
+					RelativePath="..\..\tools\zlib\infblock.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infcodes.c"
+					RelativePath="..\..\tools\zlib\infcodes.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inffast.c"
+					RelativePath="..\..\tools\zlib\inffast.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inflate.c"
+					RelativePath="..\..\tools\zlib\inflate.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\inftrees.c"
+					RelativePath="..\..\tools\zlib\inftrees.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\infutil.c"
+					RelativePath="..\..\tools\zlib\infutil.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\trees.c"
+					RelativePath="..\..\tools\zlib\trees.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\uncompr.c"
+					RelativePath="..\..\tools\zlib\uncompr.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\tools\zlib\zutil.c"
+					RelativePath="..\..\tools\zlib\zutil.c"
 					>
 				</File>
 			</Filter>
