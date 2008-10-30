@@ -176,6 +176,9 @@ SyncItem* CacheSyncSource::fillSyncItem(StringBuffer* key) {
  */
 SyncItem* CacheSyncSource::getFirstItem() {
     
+    // A slow sync is started -> clear the cache
+    clearCache();
+
     allKeys = getAllItemList();      
     return getNextItem();
 
