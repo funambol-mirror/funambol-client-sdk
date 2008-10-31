@@ -170,9 +170,9 @@ void MappingsTest::testAdd3Contacts() {
 void MappingsTest::testMappings() {
 
         testPutClientServerInSync();
-        Sleep(1000);
+        Sleep(INTERVAL);
         testAdd3Contacts();
-        Sleep(1000);
+        Sleep(INTERVAL);
 
         DMTClientConfig* config2 = getConfiguration("funambol_mappings_second");
         SyncSourceConfig *ccontact2 = config2->getSyncSourceConfig("contact");          
@@ -208,7 +208,7 @@ void MappingsTest::testMappings() {
 
         // unregister the listener to avoid the exception they throw
         unsetSyncItemListener();
-        Sleep(1000);
+        Sleep(INTERVAL);
         ret = client.sync(*config2, sources);
         CPPUNIT_ASSERT(!ret);
         CPPUNIT_ASSERT(!existsFile(FULLNAME_CON));        
@@ -264,13 +264,13 @@ void MappingsTest::testPutClientServerInSync() {
         ret = client.sync(*config1, sources);
         CPPUNIT_ASSERT(!ret);
         config1->save();
-        Sleep(1000);
+        Sleep(INTERVAL);
         sources[0] = &scontact2;
 
         ret = client.sync(*config2, sources);
         CPPUNIT_ASSERT(!ret);
         config2->save();
-        Sleep(1000);
+        Sleep(INTERVAL);
         delete config1; delete config2;
 
     }
