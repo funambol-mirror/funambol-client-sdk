@@ -68,6 +68,8 @@ class DMTClientConfig : public SyncManagerConfig {
         DMTree* dmt;
         ManagementNode* syncMLNode;
         ManagementNode* sourcesNode;
+        //
+        ManagementNode* serverNode;
 
         void initialize();
         DMTClientConfig();
@@ -75,8 +77,8 @@ class DMTClientConfig : public SyncManagerConfig {
         /* top level functions */
         virtual bool readAccessConfig(ManagementNode& n);
         virtual void saveAccessConfig(ManagementNode& n);
-        virtual bool readDeviceConfig(ManagementNode& n);
-        virtual void saveDeviceConfig(ManagementNode& n);
+        virtual bool readDeviceConfig(ManagementNode& n, bool server = false);
+        virtual void saveDeviceConfig(ManagementNode& n, bool server = false);
         virtual bool readSourceConfig(int i, ManagementNode& n);
         virtual void saveSourceConfig(int i, ManagementNode& n);
 
@@ -148,7 +150,7 @@ class DMTClientConfig : public SyncManagerConfig {
          * @param devInfoNode    the "spds/syncml/devinfo" node
          */
         virtual bool readDevInfoConfig(ManagementNode& syncMLNode,
-                                       ManagementNode& devInfoNode);
+                                       ManagementNode& devInfoNode, bool server = false);
         /**
          * Same as readAccessConfig() for saving device information.
          *
@@ -156,7 +158,7 @@ class DMTClientConfig : public SyncManagerConfig {
          * @param devInfoNode    the "spds/syncml/devinfo" node
          */
         virtual void saveDevInfoConfig(ManagementNode& syncMLNode,
-                                       ManagementNode& devInfoNode);
+                                       ManagementNode& devInfoNode, bool server = false);
 
         /**
          * Same as readAccessConfig() for reading additional device
@@ -166,7 +168,7 @@ class DMTClientConfig : public SyncManagerConfig {
          * @param devDetailNode  the "spds/syncml/devdetail" node
          */
         virtual bool readDevDetailConfig(ManagementNode& syncMLNode,
-                                         ManagementNode& devDetailNode);
+                                         ManagementNode& devDetailNode, bool server = false);
         /**
          * Same as readAccessConfig() for saving additional device
          * information.
@@ -175,7 +177,7 @@ class DMTClientConfig : public SyncManagerConfig {
          * @param devDetailNode  the "spds/syncml/devdetail" node
          */
         virtual void saveDevDetailConfig(ManagementNode& syncMLNode,
-                                         ManagementNode& devDetailNode);
+                                         ManagementNode& devDetailNode, bool server = false);
 
         /**
          * Same as readAccessConfig() for reading some more additional
@@ -185,7 +187,7 @@ class DMTClientConfig : public SyncManagerConfig {
          * @param extNode        the "spds/syncml/ext" node
          */
         virtual bool readExtDevConfig(ManagementNode& syncMLNode,
-                                      ManagementNode& extNode);
+                                      ManagementNode& extNode, bool server = false);
         /**
          * Same as readAccessConfig() for saving some more additional
          * device information.
@@ -194,7 +196,7 @@ class DMTClientConfig : public SyncManagerConfig {
          * @param extNode        the "spds/syncml/ext" node
          */
         virtual void saveExtDevConfig(ManagementNode& syncMLNode,
-                                      ManagementNode& extNode);
+                                      ManagementNode& extNode, bool server = false);
 
         /**
          * Same as readAccessConfig() for reading variables that the

@@ -71,6 +71,11 @@ class DeviceConfig {
         LogLevel      logLevel     ;
         unsigned int  maxObjSize   ;
         char*         devInfHash   ;
+        // 0 success true
+		// 1 false
+		// 2 cannot determinate
+		int          smartSlowSync;
+		char*		 verDTD;
 
 
         /**
@@ -145,6 +150,12 @@ class DeviceConfig {
 
         const char*  getDevInfHash() const     ;
         void setDevInfHash(const char *v)     ;
+
+        int getSmartSlowSync() const;
+        void setSmartSlowSync(int v);
+
+		const char*  getVerDTD() const        ;
+        void setVerDTD(const char*  v)        ;
 
         /**
          * Sets the values of this object with with the values from the given

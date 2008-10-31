@@ -1,6 +1,13 @@
 Funambol SDK C++ 7.1.0
 -----------------------
 
+2008-10-31
+   - teo: added serverConfig feature. It is possible to store in a DeviceConfig object
+          the server capabilities. Currently it's up to the clients to fill this 
+	  object with the right data
+          as soon as the server capabilities will be implemented will be in charge
+          to the api
+
 2008-10-29
    - magi: added feature to cache mapping amongst different sync. 
    - magi: added integration test for mappings handling feature

@@ -61,6 +61,8 @@ DeviceConfig::DeviceConfig() {
     maxObjSize      = 0;
     devInfHash      = NULL;
 
+    smartSlowSync   = 2;
+	verDTD			= NULL;
 }
 
 DeviceConfig::DeviceConfig(DeviceConfig& s) {
@@ -79,6 +81,7 @@ DeviceConfig::~DeviceConfig() {
     safeDelete(&devType   );
     safeDelete(&dsV       );
     safeDelete(&devInfHash);
+	safeDelete(&verDTD    );
 
 }
 
@@ -212,6 +215,20 @@ void DeviceConfig::setDevInfHash(const char *v) {
     set(&devInfHash, v);
 }
 
+int DeviceConfig::getSmartSlowSync() const {
+    return smartSlowSync;
+}
+void DeviceConfig::setSmartSlowSync(int v) {
+    smartSlowSync = v;
+}
+
+const char* DeviceConfig::getVerDTD() const {
+    return verDTD;
+}
+void DeviceConfig::setVerDTD(const char *v) {
+    set(&verDTD, v);
+}
+
 
 /*
  * Sets the values of this object with with the values from the given
@@ -236,5 +253,8 @@ void DeviceConfig::assign(const DeviceConfig& s) {
     setLogLevel     (s.getLogLevel()      );
     setMaxObjSize   (s.getMaxObjSize()    );
     setDevInfHash   (s.getDevInfHash()    );
+
+    setSmartSlowSync(s.getSmartSlowSync() );
+	setVerDTD       (s.getVerDTD	   () );
 }
 

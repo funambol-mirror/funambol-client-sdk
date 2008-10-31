@@ -54,7 +54,10 @@ class SyncManagerConfig : public AbstractSyncConfig {
     protected:
 
         AccessConfig accessConfig;
-        DeviceConfig deviceConfig;
+		//clientConfig stores the client cap
+        DeviceConfig clientConfig;
+		//serverConfig stores the server cap
+		DeviceConfig serverConfig;
         SyncSourceConfig* sourceConfigs;
 
         unsigned int sourceConfigsCount;
@@ -90,9 +93,32 @@ class SyncManagerConfig : public AbstractSyncConfig {
         virtual AccessConfig& getAccessConfig() { return accessConfig; }
         virtual void setAccessConfig(AccessConfig& ac) { accessConfig.assign(ac); }
 
-        virtual const DeviceConfig& getDeviceConfig() const { return deviceConfig; }
-        virtual DeviceConfig& getDeviceConfig() { return deviceConfig; }
-        virtual void setDeviceConfig(DeviceConfig& dc) { deviceConfig.assign(dc); }
+
+		//deprecated to remove use getClientConfig
+        virtual const DeviceConfig& getDeviceConfig() const { return clientConfig; }
+        virtual DeviceConfig& getDeviceConfig() { return clientConfig; }
+        virtual void setDeviceConfig(DeviceConfig& dc) { clientConfig.assign(dc); }
+
+		/**
+		 * get the clientConfig that stores the client configurations
+		 *
+		 * @return DeviceConfig& ref to the clientConfig object
+		 */
+		virtual const DeviceConfig& getClientConfig() const { return clientConfig; }
+        virtual DeviceConfig& getClientConfig() { return clientConfig; }
+        virtual void setClientConfig(DeviceConfig& dc) { clientConfig.assign(dc); }
+
+		/*
+		 * get the serverConfig that stores the server configurations
+		 * currently it's up to the clients to fill this object with the right data
+		 * as soon as the server capabilities will be implemented will be in charge
+		 * to the api
+		 *
+		 * @return DeviceConfig& ref to the clientConfig object
+		 */
+		virtual const DeviceConfig& getServerConfig() const {return serverConfig;}
+        virtual DeviceConfig& getServerConfig() { return serverConfig; }
+        virtual void setServerConfig(DeviceConfig& dc) { serverConfig.assign(dc); }
 
         /* Is this call obsolete? The DeviceConfig does not have a getDirty() calls. */
         unsigned int isDirty() const { return accessConfig.getDirty() /* || deviceConfig.getDirty() */; }
@@ -134,21 +160,21 @@ class SyncManagerConfig : public AbstractSyncConfig {
         virtual bool  getCompression() const { return getAccessConfig().getCompression(); }
         virtual unsigned int getResponseTimeout() const { return getAccessConfig().getResponseTimeout(); }
 
-        virtual const char*  getMan() const { return getDeviceConfig().getMan(); }
-        virtual const char*  getMod() const { return getDeviceConfig().getMod(); }
-        virtual const char*  getOem() const { return getDeviceConfig().getOem(); }
-        virtual const char*  getFwv() const { return getDeviceConfig().getFwv(); }
-        virtual const char*  getSwv() const { return getDeviceConfig().getSwv(); }
-        virtual const char*  getHwv() const { return getDeviceConfig().getHwv(); }
-        virtual const char*  getDevID() const { return getDeviceConfig().getDevID(); }
-        virtual const char*  getDevType() const { return getDeviceConfig().getDevType(); }
-        virtual const char*  getDsV() const { return getDeviceConfig().getDsV(); }
-        virtual bool getUtc() const { return getDeviceConfig().getUtc(); }
-        virtual bool getLoSupport() const { return getDeviceConfig().getLoSupport(); }
-        virtual bool getNocSupport() const { return getDeviceConfig().getNocSupport(); }
-        virtual unsigned int getMaxObjSize() const { return getDeviceConfig().getMaxObjSize(); }
-        virtual const char*  getDevInfHash() const { return getDeviceConfig().getDevInfHash(); }
-        virtual void setDevInfHash(const char *hash) { getDeviceConfig().setDevInfHash(hash); }
+        virtual const char*  getMan() const { return getClientConfig().getMan(); }
+        virtual const char*  getMod() const { return getClientConfig().getMod(); }
+        virtual const char*  getOem() const { return getClientConfig().getOem(); }
+        virtual const char*  getFwv() const { return getClientConfig().getFwv(); }
+        virtual const char*  getSwv() const { return getClientConfig().getSwv(); }
+        virtual const char*  getHwv() const { return getClientConfig().getHwv(); }
+        virtual const char*  getDevID() const { return getClientConfig().getDevID(); }
+        virtual const char*  getDevType() const { return getClientConfig().getDevType(); }
+        virtual const char*  getDsV() const { return getClientConfig().getDsV(); }
+        virtual bool getUtc() const { return getClientConfig().getUtc(); }
+        virtual bool getLoSupport() const { return getClientConfig().getLoSupport(); }
+        virtual bool getNocSupport() const { return getClientConfig().getNocSupport(); }
+        virtual unsigned int getMaxObjSize() const { return getClientConfig().getMaxObjSize(); }
+        virtual const char*  getDevInfHash() const { return getClientConfig().getDevInfHash(); }
+        virtual void setDevInfHash(const char *hash) { getClientConfig().setDevInfHash(hash); }
 };
 
 

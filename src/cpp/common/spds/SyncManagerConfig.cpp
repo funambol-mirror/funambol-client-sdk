@@ -148,8 +148,12 @@ void SyncManagerConfig::setClientDefaults() {
     delete ac;
 
     DeviceConfig* dc = DefaultConfigFactory::getDeviceConfig();
-    setDeviceConfig(*dc);
+    setClientConfig(*dc);
     delete dc;
+	
+	DeviceConfig* sc = new DeviceConfig();
+	setServerConfig(*sc);
+	delete sc;
 }
 
 void SyncManagerConfig::setSourceDefaults(const char* name) {

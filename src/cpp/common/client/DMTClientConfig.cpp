@@ -51,6 +51,7 @@ USE_NAMESPACE
 void DMTClientConfig::initialize() {
     dmt = NULL;
     syncMLNode = NULL;
+	serverNode = NULL;
     sourcesNode = NULL;
 }
 
@@ -142,6 +143,9 @@ bool DMTClientConfig::read() {
     
     // Reading DeviceConfig
     readDeviceConfig(*syncMLNode);
+	
+	// reading Server Device Config (the true is to switch to the serverConfig object)
+    readDeviceConfig(*serverNode, true);
 
     n = sourcesNode->getChildrenMaxCount();
 
@@ -192,6 +196,11 @@ bool DMTClientConfig::save() {
 
     saveDeviceConfig(*syncMLNode);
 
+
+    saveDeviceConfig(*serverNode, true);
+
+
+
     //
     // Sources management node
     //
@@ -218,6 +227,13 @@ bool DMTClientConfig::open() {
     sprintf(nodeName, "%s%s", rootContext, CONTEXT_SPDS_SYNCML);
     syncMLNode = dmt->readManagementNode(nodeName);
     if (!syncMLNode ) {
+        goto failed;
+    }
+
+    delete serverNode;
+    sprintf(nodeName, "%s%s", rootContext, CONTEXT_SERVER);
+    serverNode = dmt->readManagementNode(nodeName);
+    if (!serverNode ) {
         goto failed;
     }
 
@@ -267,7 +283,10 @@ void DMTClientConfig::close() {
     
     delete sourcesNode;
     sourcesNode = NULL;
-    
+
+    delete serverNode;
+    serverNode = NULL;
+
     delete dmt;
     dmt = NULL;
 }
@@ -405,7 +424,7 @@ void DMTClientConfig::saveAccessConfig(ManagementNode& n) {
  * @param n: the 'syncml' node (parent node)
  * @return : true if config is correctly read
  */
-bool DMTClientConfig::readDeviceConfig(ManagementNode& n) {
+bool DMTClientConfig::readDeviceConfig(ManagementNode& n, bool server) {
 
     bool ret = true;
     char nodeName[DIM_MANAGEMENT_PATH];
@@ -422,7 +441,7 @@ bool DMTClientConfig::readDeviceConfig(ManagementNode& n) {
     sprintf(nodeName, "%s%s", syncMLContext, CONTEXT_DEV_INFO);
     node = dmt->readManagementNode(nodeName);
     if (node) {
-        if (!readDevInfoConfig(n, *node)) {
+        if (!readDevInfoConfig(n, *node, server)) {
             ret = false;
         }
         delete node;
@@ -438,7 +457,7 @@ bool DMTClientConfig::readDeviceConfig(ManagementNode& n) {
     sprintf(nodeName, "%s%s", syncMLContext, CONTEXT_DEV_DETAIL);
     node = dmt->readManagementNode(nodeName);
     if (node) {
-        if (!readDevDetailConfig(n, *node)) {
+        if (!readDevDetailConfig(n, *node, server)) {
             ret = false;
         }
         delete node;
@@ -454,7 +473,7 @@ bool DMTClientConfig::readDeviceConfig(ManagementNode& n) {
     sprintf(nodeName, "%s%s", syncMLContext, CONTEXT_EXT);
     node = dmt->readManagementNode(nodeName);
     if (node) {
-        if (!readExtDevConfig(n, *node)) {
+        if (!readExtDevConfig(n, *node, server)) {
             ret = false;
         }
         delete node;
@@ -475,7 +494,7 @@ bool DMTClientConfig::readDeviceConfig(ManagementNode& n) {
  *
  * @param n: the 'syncml' node (parent node)
  */
-void DMTClientConfig::saveDeviceConfig(ManagementNode& n) {
+void DMTClientConfig::saveDeviceConfig(ManagementNode& n, bool server) {
 
     ManagementNode* node;
     char nodeName[DIM_MANAGEMENT_PATH];
@@ -491,7 +510,7 @@ void DMTClientConfig::saveDeviceConfig(ManagementNode& n) {
     sprintf(nodeName, "%s%s", syncMLContext, CONTEXT_DEV_INFO);
     node = dmt->readManagementNode(nodeName);
     if (node) {
-        saveDevInfoConfig(n, *node);
+        saveDevInfoConfig(n, *node, server);
         delete node;
         node = NULL;
     }
@@ -502,7 +521,7 @@ void DMTClientConfig::saveDeviceConfig(ManagementNode& n) {
     sprintf(nodeName, "%s%s", syncMLContext, CONTEXT_DEV_DETAIL);
     node = dmt->readManagementNode(nodeName);
     if (node) {
-        saveDevDetailConfig(n, *node);
+        saveDevDetailConfig(n, *node, server);
         delete node;
         node = NULL;
     }
@@ -513,7 +532,7 @@ void DMTClientConfig::saveDeviceConfig(ManagementNode& n) {
     sprintf(nodeName, "%s%s", syncMLContext, CONTEXT_EXT);
     node = dmt->readManagementNode(nodeName);
     if (node) {
-        saveExtDevConfig(n, *node);
+        saveExtDevConfig(n, *node, server);
         delete node;
         node = NULL;
     }
@@ -757,121 +776,225 @@ void DMTClientConfig::saveExtAccessConfig(ManagementNode& /* syncMLNode */,
 }
 
 bool DMTClientConfig::readDevInfoConfig(ManagementNode& /* syncMLNode */,
-                                        ManagementNode& devInfoNode) {
+                                        ManagementNode& devInfoNode, bool server) {
     char* tmp;
 
     tmp = devInfoNode.readPropertyValue(PROPERTY_DEVICE_ID);
-    deviceConfig.setDevID(tmp);
+    if(server){
+        serverConfig.setDevID(tmp);
+    }else{
+        clientConfig.setDevID(tmp);
+    }
     delete [] tmp;
 
     tmp = devInfoNode.readPropertyValue(PROPERTY_MANUFACTURER);
-    deviceConfig.setMan(tmp);
+    if(server){
+        serverConfig.setMan(tmp);
+    }else{
+        clientConfig.setMan(tmp);
+    }
     delete [] tmp;
 
     tmp = devInfoNode.readPropertyValue(PROPERTY_MODEL);
-    deviceConfig.setMod(tmp);
+    if(server){
+        serverConfig.setMod(tmp);
+    }else{
+        clientConfig.setMod(tmp);
+    }
     delete [] tmp;
 
     tmp = devInfoNode.readPropertyValue(PROPERTY_DS_VERSION);
-    deviceConfig.setDsV(tmp);
+    clientConfig.setDsV(tmp);
     delete [] tmp;
 
     return true;
 }
 
 void DMTClientConfig::saveDevInfoConfig(ManagementNode& /* syncMLNode */,
-                                        ManagementNode& devInfoNode) {
-    devInfoNode.setPropertyValue(PROPERTY_DEVICE_ID, deviceConfig.getDevID());
-    devInfoNode.setPropertyValue(PROPERTY_MANUFACTURER, deviceConfig.getMan());
-    devInfoNode.setPropertyValue(PROPERTY_MODEL, deviceConfig.getMod());
-    devInfoNode.setPropertyValue(PROPERTY_DS_VERSION, deviceConfig.getDsV());
+                                        ManagementNode& devInfoNode, bool server) {
+	if(!server){
+	    devInfoNode.setPropertyValue(PROPERTY_DEVICE_ID, clientConfig.getDevID());
+        devInfoNode.setPropertyValue(PROPERTY_MANUFACTURER, clientConfig.getMan());
+        devInfoNode.setPropertyValue(PROPERTY_MODEL, clientConfig.getMod());
+        devInfoNode.setPropertyValue(PROPERTY_DS_VERSION, clientConfig.getDsV());
+    }else{
+        devInfoNode.setPropertyValue(PROPERTY_DEVICE_ID, serverConfig.getDevID());
+        devInfoNode.setPropertyValue(PROPERTY_MANUFACTURER, serverConfig.getMan());
+        devInfoNode.setPropertyValue(PROPERTY_MODEL, serverConfig.getMod());
+        devInfoNode.setPropertyValue(PROPERTY_DS_VERSION, serverConfig.getDsV());
+    }
 }
 
 bool DMTClientConfig::readDevDetailConfig(ManagementNode& /* syncMLNode */,
-                                          ManagementNode& devDetailNode) {
+                                          ManagementNode& devDetailNode, bool server) {
     char* tmp;
 
     tmp = devDetailNode.readPropertyValue(PROPERTY_DEVICE_TYPE);
-    deviceConfig.setDevType(tmp);
+	if(server){
+	    serverConfig.setDevType(tmp);
+	}else{
+		clientConfig.setDevType(tmp);
+	}
     delete [] tmp;
 
     tmp = devDetailNode.readPropertyValue(PROPERTY_OEM);
-    deviceConfig.setOem(tmp);
+	if(server){
+	    serverConfig.setOem(tmp);
+	}else{
+		clientConfig.setOem(tmp);
+	}
     delete [] tmp;
 
     tmp = devDetailNode.readPropertyValue(PROPERTY_FIRMWARE_VERSION);
-    deviceConfig.setFwv(tmp);
+    if(server){
+	    serverConfig.setFwv(tmp);
+	}else{
+		clientConfig.setFwv(tmp);
+	}
     delete [] tmp;
 
     tmp = devDetailNode.readPropertyValue(PROPERTY_SOFTWARE_VERSION);
-    deviceConfig.setSwv(tmp);
-    delete [] tmp;
+    if(server){
+	    serverConfig.setSwv(tmp);
+	}else{
+		clientConfig.setSwv(tmp);
+	}
+	delete [] tmp;
 
     tmp = devDetailNode.readPropertyValue(PROPERTY_HARDWARE_VERSION);
-    deviceConfig.setHwv(tmp);
+    if(server){
+	    serverConfig.setHwv(tmp);
+	}else{
+		clientConfig.setHwv(tmp);
+	}    
     delete [] tmp;
 
     tmp = devDetailNode.readPropertyValue(PROPERTY_LARGE_OBJECT_SUPPORT);
-    deviceConfig.setLoSupport((*tmp == '1') ? true : false);
+	if(server){
+		serverConfig.setLoSupport((*tmp == '1') ? true : false);
+	}else{
+		clientConfig.setLoSupport((*tmp == '1') ? true : false);
+	}
     delete [] tmp;
 
     return true;
 }
 
 void DMTClientConfig::saveDevDetailConfig(ManagementNode& /* syncMLNode */,
-                                          ManagementNode& devDetailNode) {
-    devDetailNode.setPropertyValue(PROPERTY_DEVICE_TYPE, deviceConfig.getDevType());
-    devDetailNode.setPropertyValue(PROPERTY_OEM, deviceConfig.getOem());
-    devDetailNode.setPropertyValue(PROPERTY_FIRMWARE_VERSION, deviceConfig.getFwv());
-    devDetailNode.setPropertyValue(PROPERTY_SOFTWARE_VERSION, deviceConfig.getSwv());
-    devDetailNode.setPropertyValue(PROPERTY_HARDWARE_VERSION, deviceConfig.getHwv());
-    devDetailNode.setPropertyValue(PROPERTY_LARGE_OBJECT_SUPPORT,
-                                   (deviceConfig.getLoSupport() ? "1": "0") );
+                                          ManagementNode& devDetailNode, bool server) {
+                                              
+    if(server){
+
+        devDetailNode.setPropertyValue(PROPERTY_DEVICE_TYPE, serverConfig.getDevType());
+        devDetailNode.setPropertyValue(PROPERTY_OEM, serverConfig.getOem());
+        devDetailNode.setPropertyValue(PROPERTY_FIRMWARE_VERSION, serverConfig.getFwv());
+        devDetailNode.setPropertyValue(PROPERTY_SOFTWARE_VERSION, serverConfig.getSwv());
+        devDetailNode.setPropertyValue(PROPERTY_HARDWARE_VERSION, serverConfig.getHwv());
+        devDetailNode.setPropertyValue(PROPERTY_LARGE_OBJECT_SUPPORT,
+                                   (serverConfig.getLoSupport() ? "1": "0") );
+
+    }else{
+    
+        devDetailNode.setPropertyValue(PROPERTY_DEVICE_TYPE, clientConfig.getDevType());
+        devDetailNode.setPropertyValue(PROPERTY_OEM, clientConfig.getOem());
+        devDetailNode.setPropertyValue(PROPERTY_FIRMWARE_VERSION, clientConfig.getFwv());
+        devDetailNode.setPropertyValue(PROPERTY_SOFTWARE_VERSION, clientConfig.getSwv());
+        devDetailNode.setPropertyValue(PROPERTY_HARDWARE_VERSION, clientConfig.getHwv());
+        devDetailNode.setPropertyValue(PROPERTY_LARGE_OBJECT_SUPPORT,
+                                   (clientConfig.getLoSupport() ? "1": "0") );
+    }
 }
 
 bool DMTClientConfig::readExtDevConfig(ManagementNode& /* syncMLNode */,
-                                       ManagementNode& extNode) {
+                                       ManagementNode& extNode, bool server) {
     char* tmp;
 
-    tmp = extNode.readPropertyValue(PROPERTY_UTC);
-    deviceConfig.setUtc((*tmp == '1') ? true : false);
-    delete [] tmp;
+    if(server){
 
-    tmp = extNode.readPropertyValue(PROPERTY_NUMBER_OF_CHANGES_SUPPORT);
-    deviceConfig.setNocSupport((*tmp == '1') ? true : false);
-    delete [] tmp;
+        tmp = extNode.readPropertyValue("smartSlowSync");
+		if(strcmp(tmp,"")==0){
+			serverConfig.setSmartSlowSync(2);
+		}else if(strcmp(tmp,"0")==0){
+			serverConfig.setSmartSlowSync(0);
+		}else if(strcmp(tmp,"1")==0){
+			serverConfig.setSmartSlowSync(1);
+		}else if(strcmp(tmp,"2")==0){
+			serverConfig.setSmartSlowSync(2);
+		}
+        delete [] tmp;
+		tmp = extNode.readPropertyValue(PROPERTY_UTC);
+        serverConfig.setUtc((*tmp == '1') ? true : false);
+        delete [] tmp;
+	    tmp = extNode.readPropertyValue(PROPERTY_NUMBER_OF_CHANGES_SUPPORT);
+        serverConfig.setNocSupport((*tmp == '1') ? true : false);
+        delete [] tmp;
+		tmp = extNode.readPropertyValue(PROPERTY_VER_DTD);
+        serverConfig.setVerDTD(tmp);
+        delete [] tmp;
 
-    tmp = extNode.readPropertyValue(PROPERTY_LOG_LEVEL);
-    LogLevel l = (LogLevel)strtol(tmp, NULL, 10);
-    deviceConfig.setLogLevel(l);
-    delete [] tmp;
+     
+    }else{
+        tmp = extNode.readPropertyValue(PROPERTY_UTC);
+        clientConfig.setUtc((*tmp == '1') ? true : false);
+        delete [] tmp;
 
-    tmp = extNode.readPropertyValue(PROPERTY_MAX_OBJ_SIZE);
-    deviceConfig.setMaxObjSize(strtol(tmp, NULL, 10));
-    delete [] tmp;
+        tmp = extNode.readPropertyValue(PROPERTY_NUMBER_OF_CHANGES_SUPPORT);
+        clientConfig.setNocSupport((*tmp == '1') ? true : false);
+        delete [] tmp;
 
-    tmp = extNode.readPropertyValue(PROPERTY_DEVINF_HASH);
-    deviceConfig.setDevInfHash(tmp);
-    delete [] tmp;
+        tmp = extNode.readPropertyValue(PROPERTY_LOG_LEVEL);
+        LogLevel l = (LogLevel)strtol(tmp, NULL, 10);
+        clientConfig.setLogLevel(l);
+        delete [] tmp;
+
+        tmp = extNode.readPropertyValue(PROPERTY_MAX_OBJ_SIZE);
+        clientConfig.setMaxObjSize(strtol(tmp, NULL, 10));
+        delete [] tmp;
+
+        tmp = extNode.readPropertyValue(PROPERTY_DEVINF_HASH);
+        clientConfig.setDevInfHash(tmp);
+        delete [] tmp;
+    }
 
     return true;
 }
 
 void DMTClientConfig::saveExtDevConfig(ManagementNode& /* syncMLNode */,
-                                       ManagementNode& extNode) {
+                                       ManagementNode& extNode, bool server) {
     char buf[512];
+    if(server){
+		switch (serverConfig.getSmartSlowSync()){
+			case 0:
+			extNode.setPropertyValue("smartSlowSync", "0");
+			break;
+			case 1:
+			extNode.setPropertyValue("smartSlowSync", "1");
+			break;
+			case 2:
+			extNode.setPropertyValue("smartSlowSync", "2");
+			break;
+		}
+		//extNode.setPropertyValue("smartSlowSync", itow(  ));
+		extNode.setPropertyValue(PROPERTY_UTC,
+                             (serverConfig.getUtc() ? "1": "0") );
+        extNode.setPropertyValue(PROPERTY_NUMBER_OF_CHANGES_SUPPORT,
+                             (serverConfig.getNocSupport() ? "1": "0") );
+		extNode.setPropertyValue(PROPERTY_VER_DTD, serverConfig.getVerDTD());
+		
+    }else{
+    
+        extNode.setPropertyValue(PROPERTY_DEVINF_HASH, clientConfig.getDevInfHash());
+        extNode.setPropertyValue(PROPERTY_UTC,
+                             (clientConfig.getUtc() ? "1": "0") );
+        extNode.setPropertyValue(PROPERTY_NUMBER_OF_CHANGES_SUPPORT,
+                             (clientConfig.getNocSupport() ? "1": "0") );
 
-    extNode.setPropertyValue(PROPERTY_DEVINF_HASH, deviceConfig.getDevInfHash());
-    extNode.setPropertyValue(PROPERTY_UTC,
-                             (deviceConfig.getUtc() ? "1": "0") );
-    extNode.setPropertyValue(PROPERTY_NUMBER_OF_CHANGES_SUPPORT,
-                             (deviceConfig.getNocSupport() ? "1": "0") );
+        sprintf(buf, "%d", clientConfig.getLogLevel());
+        extNode.setPropertyValue(PROPERTY_LOG_LEVEL, buf);
 
-    sprintf(buf, "%d", deviceConfig.getLogLevel());
-    extNode.setPropertyValue(PROPERTY_LOG_LEVEL, buf);
-
-    sprintf(buf, "%u", deviceConfig.getMaxObjSize());
-    extNode.setPropertyValue(PROPERTY_MAX_OBJ_SIZE, buf);
+        sprintf(buf, "%u", clientConfig.getMaxObjSize());
+        extNode.setPropertyValue(PROPERTY_MAX_OBJ_SIZE, buf);
+    }
 }
 
 bool DMTClientConfig::readSourceVars(int i,

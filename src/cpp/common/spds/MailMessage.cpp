@@ -625,13 +625,16 @@ StringBuffer encodeHeader(StringBuffer line){
  */
 char * MailMessage::format() {
 
+    StringBuffer ret;
     // If the message is empty, return null
     if ( empty() ) {
+        if(messageId){
+            ret += MESSAGEID; ret += messageId; ret += NL;
+            return stringdup(ret.c_str());
+        }
         LOG.debug("MailMessage::format: empty message.");
         return 0;
     }
-
-    StringBuffer ret;
 
     LOG.debug("MailMessage::format START");
 

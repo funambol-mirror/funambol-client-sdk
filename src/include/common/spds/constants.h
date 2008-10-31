@@ -73,6 +73,7 @@ typedef enum SyncMode{
 } SyncMode;
 
 #define CONTEXT_SPDS_SYNCML  "/spds/syncml"
+#define CONTEXT_SERVER       "/server"
 #define CONTEXT_SPDS_SOURCES "/spds/sources"
 #define CONTEXT_CONN         "/Conn"
 #define CONTEXT_AUTH         "/Auth"
