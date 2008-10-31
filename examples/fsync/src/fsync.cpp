@@ -33,16 +33,14 @@
  * the words "Powered by Funambol".
  */
 
+#include "base/fscapi.h"
+
 #include "FSyncConfig.h"
 #include "FSyncOpt.h"
-#include "FSyncListener.h"
-#include "FSyncSourceListener.h"
-#include "FSyncItemListener.h"
-#include "FSyncTransportListener.h"
-#include "base/fscapi.h"
+#include "FSyncUpdater.h"
+
 #include "client/SyncClient.h"
 #include "client/FileSyncSource.h"
-#include "event/ManageListener.h"
 #include "base/util/StringBuffer.h"
 #include "base/util/utils.h"
 #include "base/Log.h"
@@ -87,6 +85,7 @@ bool doSync(FSyncOpt& options)
     return true;
 }
 
+//------------------------------------------------------------------------ Main
 int main(int argc, char** argv) 
 {
     // Get the config instance
@@ -111,21 +110,9 @@ int main(int argc, char** argv)
         exit(EXIT_SUCCESS);
     }
 
-    // Get verbosity option
-    VerboseLevel verbose = opts.getVerbosity();
-
-    // Manage sync listeners
-    ManageListener& manage = ManageListener::getInstance();
-
-    if (verbose >= NORMAL) {
-        manage.setSyncListener( new FSyncListener());
-        if (verbose >= VERBOSE) {
-            manage.setSyncItemListener  ( new FSyncItemListener());
-            manage.setSyncSourceListener( new FSyncSourceListener());
-            manage.setTransportListener ( new FSyncTransportListener());
-        }
-    } 
-
+    // Initialize the view class to handle the feedbacks to the user.
+    FSyncUpdater updater;
+    updater.setListeners(opts.getVerbosity());
 
     // Check the presence of the sync folder
     if (createFolder(config->getSyncPath()) < 0) {
@@ -138,13 +125,6 @@ int main(int argc, char** argv)
         // Sync failed
         exit(EXIT_FAILURE);
     }
-
-    // Unset listeners
-    LOG.debug("Unset listeners");
-    manage.unsetSyncListener();
-    manage.unsetSyncItemListener();
-    manage.unsetSyncSourceListener();
-    manage.unsetTransportListener();
 
     exit(EXIT_SUCCESS);
 }

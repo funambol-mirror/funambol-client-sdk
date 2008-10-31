@@ -186,23 +186,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\FSyncItemListener.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\FSyncListener.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\FSyncOpt.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\FSyncSourceListener.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\FSyncTransportListener.cpp"
+				RelativePath="..\..\src\FSyncUpdater.cpp"
 				>
 			</File>
 		</Filter>
@@ -216,23 +204,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\FSyncItemListener.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\FSyncListener.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\FSyncOpt.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\FSyncSourceListener.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\FSyncTransportListener.h"
+				RelativePath="..\..\src\FSyncUpdater.h"
 				>
 			</File>
 		</Filter>
