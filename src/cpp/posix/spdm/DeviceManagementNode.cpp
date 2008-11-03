@@ -372,6 +372,10 @@ char **DeviceManagementNode::getChildrenNames() {
  */
 void DeviceManagementNode::setPropertyValue(const char* property, const char* newvalue) {
     int i = 0;
+    
+    if ((property == NULL) || (newvalue == NULL)) {
+        return;
+    }
 
     while (true) {
         line *curr = (line *)lines->get(i);
