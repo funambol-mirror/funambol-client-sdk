@@ -812,12 +812,12 @@ bool DMTClientConfig::readDevInfoConfig(ManagementNode& /* syncMLNode */,
 
 void DMTClientConfig::saveDevInfoConfig(ManagementNode& /* syncMLNode */,
                                         ManagementNode& devInfoNode, bool server) {
-	if(!server){
-	    devInfoNode.setPropertyValue(PROPERTY_DEVICE_ID, clientConfig.getDevID());
+    if (!server){
+	devInfoNode.setPropertyValue(PROPERTY_DEVICE_ID, clientConfig.getDevID());
         devInfoNode.setPropertyValue(PROPERTY_MANUFACTURER, clientConfig.getMan());
         devInfoNode.setPropertyValue(PROPERTY_MODEL, clientConfig.getMod());
         devInfoNode.setPropertyValue(PROPERTY_DS_VERSION, clientConfig.getDsV());
-    }else{
+    } else{
         devInfoNode.setPropertyValue(PROPERTY_DEVICE_ID, serverConfig.getDevID());
         devInfoNode.setPropertyValue(PROPERTY_MANUFACTURER, serverConfig.getMan());
         devInfoNode.setPropertyValue(PROPERTY_MODEL, serverConfig.getMod());
