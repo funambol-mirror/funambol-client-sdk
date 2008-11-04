@@ -568,25 +568,27 @@ StringBuffer getHomeFolder() {
     return home;
 }
 
+StringBuffer getConfigFolder() {
+    
+    StringBuffer ret(".");
+    wchar_t appdir[MAX_PATH];
+    SHGetSpecialFolderPath(NULL, appdir, CSIDL_APPDATA, 0); 
+    ret.convert(appdir);
+    return ret;
+}
+
+// TODO: move this to the CacheSyncSource class.
 StringBuffer getCacheDirectory() {
     
-    StringBuffer ret = ".";
-    wchar_t p[260];
-    SHGetSpecialFolderPath(NULL, p, CSIDL_PERSONAL, 0);        
-    wcscat(p, TEXT("/"));
-    wcscat(p, TEXT(CACHE_REP));    
-    DWORD attr = CreateDirectory(p, NULL);
-    if (attr == ERROR_ALREADY_EXISTS) {
-        LOG.info("The %S directory exists", p);        
-    } else if (attr == ERROR_PATH_NOT_FOUND) {
-        LOG.info("The %S has an error in the path", p);
-        return ret;
-    } else if (attr == 0) {
-        //               
-    }    
-    char* t = toMultibyte(p);
-    ret = t;
-    delete [] t;
+    StringBuffer ret = getConfigFolder();
+    ret += "/";
+    ret += CACHE_REP;
+
+    if (createFolder(ret)){
+        // TODO: return null string and test it in the caller?
+        //ret = NULL;
+    }
+
     return ret;
 }
 
