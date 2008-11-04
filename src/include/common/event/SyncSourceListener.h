@@ -52,25 +52,25 @@ class SyncSourceListener : public Listener{
 
 public:
     //Conctructor
-    SyncSourceListener();
+    SyncSourceListener() {};
 
     // Virtual destructor
-    virtual ~SyncSourceListener();
+    virtual ~SyncSourceListener()  {}
 
     // listen for the Sync Begin Event
-    virtual void syncSourceBegin(SyncSourceEvent& event);
+    virtual void syncSourceBegin(SyncSourceEvent& event) {};
 
     // listen for the Sync End Event
-    virtual void syncSourceEnd(SyncSourceEvent& event);
+    virtual void syncSourceEnd(SyncSourceEvent& event) {};
 
     // listen for the SyncMode requested by the server
-    virtual void syncSourceSyncModeRequested  (SyncSourceEvent& event);
+    virtual void syncSourceSyncModeRequested  (SyncSourceEvent& event) {};
 
     // listen for total client items (number of changes) sent by Client.
-    virtual void syncSourceTotalClientItems  (SyncSourceEvent& event);
+    virtual void syncSourceTotalClientItems  (SyncSourceEvent& event) {};
 
     // listen for total server items (number of changes) sent by Server.
-    virtual void syncSourceTotalServerItems  (SyncSourceEvent& event);
+    virtual void syncSourceTotalServerItems  (SyncSourceEvent& event) {};
 };
 
 
