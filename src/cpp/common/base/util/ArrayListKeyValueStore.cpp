@@ -89,3 +89,4 @@ int ArrayListKeyValueStore::removeAllProperties() {
     data.clear();
     return 0;
 }
+
