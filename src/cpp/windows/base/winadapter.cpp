@@ -37,10 +37,10 @@
 #include "base/Log.h"
 #include "base/util/utils.h"
 #include "base/globalsdef.h"
+#include <ShlObj.h>
 
 #if defined(WIN32) && !defined(_WIN32_WCE)
 #include <sys/stat.h>
-#include "shlobj.h"
 #endif
 
 BEGIN_NAMESPACE
