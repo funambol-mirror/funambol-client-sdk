@@ -1,0 +1,28 @@
+Compiling
+=========
+
+To compile the Sync4j C++ Client API on POSIX systems like Linux the
+GNU autotools (libtool/autoconf/automake) are used.  All files
+necessary to invoke the normal
+  configure && make && make install
+are provided.
+
+You must have the "curl-config" in your shell search path. You
+can get it either by compiling libcurl from source
+(http://curl.haxx.se/) or by installing a libcurl development
+package for your operating system.
+
+
+Maintainer Notes
+================
+
+To modify the build scripts, install the development packages of:
+- autoconf
+- automake
+- libtool
+
+After editing some of the input files (configure.ac, Makefile.am)
+the next "make" run will rebuild the build files automatically.
+
+If that somehow doesn't work, the sequence of commands
+used to setup the autotools is contained in autogen.sh.

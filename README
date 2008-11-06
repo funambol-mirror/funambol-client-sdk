@@ -1,0 +1,123 @@
+Funambol C++ API
+________________
+
+Overview
+========
+This SDK allows to integrate a syncml stack in a C++ application on a
+variety of platforms. Currently, Windows, WinMobile and Linux are
+actively supported, but you can easily build it on other Unixes or other
+mobile/embedded platforms.
+
+Please report your experiences with these platforms to the Funambol
+community, preferably using the mailing list:
+
+    funambol-developers@lists.sourceforge.net
+
+
+Downloading
+===========
+
+You can obtain the sources both from a released package from the Funambol
+website, or checking out the latest version from CVS. In the second way you'll
+get a state-of-the-art version, but you may find bugs or even run into problems
+building it (even though we try to avoid it). Please report this using the
+mailing list or the bug tracker.
+
+To build the latest version for WinMobile, which supports the compression of the 
+SyncML stream, you need also to get the zlib sources for WinMobile. You can find
+it mirrored in the Funambol CVS under 'tools/zlib'. Just check it out under the 
+client-api tree and the build project will find and compile it. To make it more
+clear, the expected tree is:
+
+    client-api/
+        tools/
+            zlib
+        native/
+            src
+            build
+              
+
+You can find more info on zlib for Windows CE at:
+http://www.tenik.co.jp/~adachi/wince/zlibce/index.html
+
+If you don't need the ZLIB support, undefine the USE_ZLIB macro in your
+build environment.
+
+
+Building
+========
+
+Build environments are available for the supported platforms. To build
+for a certain platform, go to the subdirectory in "build" which matches
+your platform and follow the instructions there.
+
+For Windows and WinMobile, you'll need VisualStudio 2005. Success have
+been reported also using Visual C++ 2005 Express Edition.
+
+For Unix/Linux, under "build/autotools" you can find the normal GNU
+configure/make. Please report any issue you may have using this on other
+Unix variants.
+
+
+Patches
+=======
+
+The .patches directory contains contributors patches which have not been
+imported into CVS yet, usually because the current branch is frozen in
+preparation for a release.
+
+They can be applied automatically with Holger Schurig's patcher utility:
+
+  http://www.holgerschurig.de/patcher.html
+
+This simple Perl script can be downloaded from that page, but is also
+packaged as part of e.g. Debian 3.1 (Sarge).
+
+To just apply the patches:
+- enter the "client-api/native" directory
+- enter "patcher -A"
+
+This utility can also be used to create new patches or to update
+existing ones: this might be necessary when the regular files in CVS
+have been modified since the time when the patch was created or when
+some patches have been applied in the meantime.
+
+
+Resources
+=========
+
+If you encounter any issue building or using this SDK, please read first the
+mailing lists archives, the FAQ or the Wiki page:
+
+FAQ:
+http://www.funambol.org/support/faq.html
+
+WIKI:
+https://wiki.objectweb.org/sync4j/
+
+Mailinglist archives:
+http://groups.yahoo.com/group/Sync4j (login required)
+http://sourceforge.net/mailarchive/forum.php?forum_id=215 (sync4j-users)
+http://sourceforge.net/mailarchive/forum.php?forum_id=48877
+(funambol-dev)
+
+Bugs
+====
+
+If you believe you have found a bug in the APIs, please check in the tracker if
+the same issue has not been reported yet. If you don't find it, please file a
+bug report for it. The bug tracker is at:
+
+http://forge.objectweb.org/tracker/?group_id=96
+
+
+-----------
+
+Funambol offers commercial support for this software.
+See http://www.funambol.com/support.
+
+You can also get support from the open source community.
+See http://www.funambol.com/opensource/support.
+
+Copyright (c) 2003-2007 Funambol. All rights reserved. 
+
