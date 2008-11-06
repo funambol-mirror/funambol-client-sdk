@@ -1,0 +1,129 @@
+Moving:
+JiBX/
+b_android/
+b_funambol30/
+b_funambol31/
+b_funambol60/
+b_iphone11x/
+b_r_bbplugin_6_6/
+b_r_jm_6_5_3/
+b_r_jm_6_6/
+b_sym1n1_phase2/
+b_v6/
+b_v65/
+b_v65sp1/
+b_v66/
+b_v6alpha/
+b_v6ga/
+b_v7/
+b_wm2003/
+e_foundation_suspendresume/
+e_suspendresume/
+javacc-maven-plugin-1_1/
+jcraft/
+jvp_j2me_api_V6_6_0_12/
+jvp_jmclient_V6_6_0_17/
+maven-jibx-plugin/
+multimessage/
+performance/
+release_3_1_patches/
+syncadmin_netbeans36/
+test_2_2/
+xmlpull/
+
+from: https://core.forge.funambol.org/svn/core/top-level/branches
+to: https://core.forge.funambol.org/svn/core/branches/
+with message: Funambol branches moved to root branches folder
+Continue: svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/JiBX/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27541.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_android/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27542.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_funambol30/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27543.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_funambol31/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27544.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_funambol60/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27545.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_iphone11x/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27546.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_r_bbplugin_6_6/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27547.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_r_jm_6_5_3/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27548.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_r_jm_6_6/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27549.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_sym1n1_phase2/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27550.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_v6/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27551.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_v65/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27552.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_v65sp1/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27553.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_v66/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27554.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_v6alpha/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27555.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_v6ga/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27556.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_v7/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27557.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/b_wm2003/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27558.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/e_foundation_suspendresume/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27559.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/e_suspendresume/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27560.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/javacc-maven-plugin-1_1/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27561.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/jcraft/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27562.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/jvp_j2me_api_V6_6_0_12/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27563.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/jvp_jmclient_V6_6_0_17/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27564.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/maven-jibx-plugin/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27565.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/multimessage/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27566.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/performance/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27567.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/release_3_1_patches/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27568.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/syncadmin_netbeans36/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27569.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/test_2_2/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27570.
+svn mv -m Funambol branches moved to root branches folder https://core.forge.funambol.org/svn/core/top-level/branches/xmlpull/ https://core.forge.funambol.org/svn/core/branches/
+
+Committed revision 27571.
