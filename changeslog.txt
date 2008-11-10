@@ -1,3 +1,7 @@
+2008-11-10
+   - toccy: fixed parser/formatter of contacts for Windows Clients (WinContact.cpp), to support all vCard properties.
+            Now using X-ANNIVERSARY, X-MANAGER, X-SPOUSE.
+
 Funambol SDK C++ 7.1.0
 -----------------------
 

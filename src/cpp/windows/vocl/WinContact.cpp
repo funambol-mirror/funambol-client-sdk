@@ -412,7 +412,7 @@ wstring& WinContact::toString() {
     // Support for other fields that don't have a
     // specific correspondence in vCard.
     if (getProperty(L"Anniversary", element)) {
-        vp = new VProperty(L"X-FUNAMBOL-ANNIVERSARY");
+        vp = new VProperty(L"X-ANNIVERSARY");
         vp->addValue(element.c_str());
         vo->addProperty(vp);
         delete vp; vp = NULL;
@@ -500,7 +500,7 @@ wstring& WinContact::toString() {
         delete vp; vp = NULL;
     }
     if (getProperty(L"ManagerName", element)) {
-        vp = new VProperty(L"X-FUNAMBOL-MANAGER", element.c_str());
+        vp = new VProperty(L"X-MANAGER", element.c_str());
         vo->addProperty(vp);
         delete vp; vp = NULL;
     }
@@ -521,7 +521,7 @@ wstring& WinContact::toString() {
         delete vp; vp = NULL;
     }
     if (getProperty(L"Spouse", element)) {
-        vp = new VProperty(L"X-FUNAMBOL-SPOUSE", element.c_str());
+        vp = new VProperty(L"X-SPOUSE", element.c_str());
         vo->addProperty(vp);
         delete vp; vp = NULL;
     }
@@ -823,7 +823,7 @@ int WinContact::parse(const wstring dataString) {
         //
         // ---- Funambol defined properties ----
         //
-        else if(!wcscmp(name, L"X-FUNAMBOL-ANNIVERSARY")) {
+        else if(!wcscmp(name, L"X-ANNIVERSARY")) {
 			setProperty(L"Anniversary", element);
         }
         else if(!wcscmp(name, L"X-FUNAMBOL-BILLINGINFO")) {
@@ -856,7 +856,7 @@ int WinContact::parse(const wstring dataString) {
         else if(!wcscmp(name, L"X-FUNAMBOL-LANGUAGES")) {
             setProperty(L"Language", element);
         }
-        else if(!wcscmp(name, L"X-FUNAMBOL-MANAGER")) {
+        else if(!wcscmp(name, L"X-MANAGER")) {
             setProperty(L"ManagerName", element);
         }
         else if(!wcscmp(name, L"X-FUNAMBOL-MILEAGE")) {
@@ -865,7 +865,7 @@ int WinContact::parse(const wstring dataString) {
         else if(!wcscmp(name, L"X-FUNAMBOL-ORGANIZATIONALID")) {
             setProperty(L"OrganizationalIDNumber", element);
         }
-        else if(!wcscmp(name, L"X-FUNAMBOL-SPOUSE")) {
+        else if(!wcscmp(name, L"X-SPOUSE")) {
             setProperty(L"Spouse", element);
         }
         else if(!wcscmp(name, L"X-FUNAMBOL-SUBJECT")) {
