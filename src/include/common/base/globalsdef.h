@@ -37,15 +37,21 @@
 
 /** @cond DEV */
 
-#if defined(ENABLE_NAMESPACE)
-#define BEGIN_NAMESPACE namespace Funambol {
-#define END_NAMESPACE   }
-#define USE_NAMESPACE using namespace Funambol;
+#if defined(ENABLE_NAMESPACE) || defined(ENABLE_FUNAMBOL_NAMESPACE)
+#define BEGIN_FUNAMBOL_NAMESPACE namespace Funambol {
+#define END_FUNAMBOL_NAMESPACE   }
+#define USE_FUNAMBOL_NAMESPACE using namespace Funambol;
 #else
-#define BEGIN_NAMESPACE
-#define END_NAMESPACE
-#define USE_NAMESPACE
+#define BEGIN_FUNAMBOL_NAMESPACE
+#define END_FUNAMBOL_NAMESPACE
+#define USE_FUNAMBOL_NAMESPACE
 #endif
+
+// Deprecated: use XXX_FUNAMBOL_NAMESPACE instead.
+//
+#define BEGIN_NAMESPACE BEGIN_FUNAMBOL_NAMESPACE
+#define END_NAMESPACE   END_FUNAMBOL_NAMESPACE
+#define USE_NAMESPACE   USE_FUNAMBOL_NAMESPACE
 
 /** @endcond */
 
