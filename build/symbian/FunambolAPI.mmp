@@ -94,7 +94,7 @@ SOURCE       FThread.cpp FSocket.cpp
 SOURCEPATH   ..\..\src\cpp\common\event
 SOURCE       BaseEvent.cpp FireEvent.cpp ManageListener.cpp
 SOURCE       SetListener.cpp SyncEvent.cpp SyncItemEvent.cpp
-SOURCE       SyncSourceEvent.cpp SyncSourceListener.cpp SyncStatusEvent.cpp
+SOURCE       SyncSourceEvent.cpp SyncStatusEvent.cpp
 SOURCE       TransportEvent.cpp
 
 SOURCEPATH   ..\..\src\cpp\common\filter
@@ -136,3 +136,5 @@ SOURCEPATH   ..\..\src\cpp\symbian\spds
 SOURCE       DESEncoder.cpp DESDecoder.cpp
 
 
+SOURCEPATH ..\..\src\cpp\common\base
+SOURCE md5.cpp
