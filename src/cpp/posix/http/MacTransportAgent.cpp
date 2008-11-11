@@ -38,8 +38,8 @@
 
 #if FUN_TRANSPORT_AGENT == FUN_MAC_TRANSPORT_AGENT
 
+#include <Foundation/Foundation.h>
 #include <CoreFoundation/CoreFoundation.h>
-
 #if defined(FUN_IPHONE)
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <SystemConfiguration/SCNetworkReachability.h>
@@ -75,9 +75,7 @@ MacTransportAgent::~MacTransportAgent() {}
  */
 MacTransportAgent::MacTransportAgent(URL& newURL, Proxy& newProxy, unsigned int maxResponseTimeout)
 : TransportAgent(newURL, newProxy, maxResponseTimeout)
-{
-    
-}
+{}
     
 
 /*
@@ -88,7 +86,7 @@ MacTransportAgent::MacTransportAgent(URL& newURL, Proxy& newProxy, unsigned int 
  * Use getResponse() to get the server response.
  */
 char* MacTransportAgent::sendMessage(const char* msg){
-
+    LOG.info("MacTransportAgent::sendMessage begin");
     if(!msg) {
         LOG.error("MacTransportAgent::sendMessage error: NULL message.");
         setError(ERR_NETWORK_INIT, "MacTransportAgent::sendMessage error: NULL message.");
@@ -139,6 +137,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
             return NULL;
         }
         
+        
         CFDataRef bodyData = CFDataCreate(kCFAllocatorDefault, (const UInt8*)msg, strlen(msg));	
         if (!bodyData){
             LOG.error("MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
@@ -149,6 +148,25 @@ char* MacTransportAgent::sendMessage(const char* msg){
         CFHTTPMessageSetHeaderFieldValue(httpRequest, headerFieldName, headerFieldValue);
         
         CFReadStreamRef responseStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, httpRequest);
+        
+        bool setProperty;
+        //if we are trying to sync on a https server we have to have a trusted certificate.
+        //no self signed certificates are accepted
+        if(strcmp(url.protocol, "https")==0){
+            NSDictionary *sslProperties;
+            sslProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                               (NSString *)kCFStreamSocketSecurityLevelNegotiatedSSL, kCFStreamSSLLevel,
+                                               kCFBooleanFalse, kCFStreamSSLAllowsAnyRoot,
+                                               kCFBooleanTrue, kCFStreamSSLValidatesCertificateChain,
+                                               kCFNull, kCFStreamSSLPeerName,
+                                               nil];
+
+            setProperty = CFReadStreamSetProperty( responseStream, 
+                                                  kCFStreamPropertySSLSettings, 
+                                                  sslProperties );
+            [sslProperties dealloc];
+        }
+        
         if (!CFReadStreamOpen(responseStream)) {//Sends request
             LOG.error("Failed to send HTTP request...");
         }
@@ -244,12 +262,12 @@ char* MacTransportAgent::sendMessage(const char* msg){
         CFRelease(responseStream);
         CFRelease(requestMethod);
 
-        
+        LOG.info("MacTransportAgent::sendMessage end");    
         return ret;
     }else{
         setErrorF(ERR_CONNECT, "Network error: the attempt to connect to the server failed -> exit");
         LOG.debug("%s", getLastErrorMsg());
-        
+        LOG.info("MacTransportAgent::sendMessage end");
         return NULL;
     }
 }
