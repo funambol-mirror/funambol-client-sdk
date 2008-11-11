@@ -172,9 +172,7 @@ class SyncManager {
          * SyncMLProcessor::getSortedSourcesFromServer.
          */
         char** sortedSourcesFromServer;
-
-        ArrayList** allItemsList;
-
+        
         StringBuffer syncURL;
         StringBuffer deviceId;
         int responseTimeout;  // the response timeout for a rensponse from server (default = 5min) [in seconds]

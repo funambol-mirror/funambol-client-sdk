@@ -206,7 +206,6 @@ void SyncManager::initialize() {
     count          = 0;
     devInf         = NULL;
     incomingItem   = NULL;
-    allItemsList   = NULL;
 
     syncURL = config.getSyncURL();
     deviceId = config.getDevID();
@@ -272,16 +271,6 @@ SyncManager::~SyncManager() {
             i++;
         }
         delete [] sortedSourcesFromServer;
-    }
-    if (allItemsList){
-#if 0
-        while (allItemsList[i]) {
-            delete [] allItemsList[i];
-            i++;
-        }
-#endif
-        delete [] allItemsList;
-        allItemsList = 0;
     }
 
     if (mmanager) {
@@ -1021,9 +1010,6 @@ int SyncManager::sync() {
     bool isFinalfromServer = false;
     bool isAtLeastOneSourceCorrect = false;
 
-    //for refresh from server sync (TO BE REMOVED?)
-    allItemsList = new ArrayList*[sourcesNumber];
-
     //
     // If this is the first message, currentState is STATE_PKG1_SENT,
     // otherwise it is already in STATE_PKG3_SENDING.
@@ -1040,7 +1026,7 @@ int SyncManager::sync() {
     }
 
     for (count = 0; count < sourcesNumber; count ++) {
-        allItemsList[count] = NULL;
+        
         if (!sources[count]->getReport()->checkState())
             continue;
 
@@ -1769,7 +1755,6 @@ int SyncManager::endSync() {
             continue;
         }
         
-        
         if (  (sources[count]->getSyncMode() == SYNC_ONE_WAY_FROM_CLIENT &&
                 commands.isEmpty() && (mmanager[count]->getMappings().hasMoreElement() == false)) ||
                 (sources[count]->getSyncMode() == SYNC_REFRESH_FROM_CLIENT &&
@@ -1862,29 +1847,6 @@ int SyncManager::endSync() {
         if (!sources[count]->getReport()->checkState()) {
             continue;
         }
-
-        // -----------------------
-        // TODO: remove this section when the removeAllItems() is used for refrseh-from-server sync        
-        if (  (sources[count]->getSyncMode() == SYNC_ONE_WAY_FROM_CLIENT &&
-                commands.isEmpty() && (mmanager[count]->getMappings().hasMoreElement() == false)) ||
-                (sources[count]->getSyncMode() == SYNC_REFRESH_FROM_CLIENT &&
-                commands.isEmpty() && (mmanager[count]->getMappings().hasMoreElement() == false))
-                ) {
-        }        
-        else {
-            if(allItemsList[count]) {
-                int size = allItemsList[count]->size();
-                for(int i = 0; i < size; i++) {
-                    SyncItem* syncItem = (SyncItem*)((SyncItem*)allItemsList[count]->get(i));
-                    if(syncItem) {
-                        int code = sources[count]->deleteItem(*syncItem);
-                        sources[count]->getReport()->addItem(CLIENT, COMMAND_DELETE, syncItem->getKey(), code, NULL);
-                        delete syncItem;
-                    }
-                }
-            }
-        }
-        // -----------------------
 
         int sret = sources[count]->endSync();
         if (sret) {

@@ -2035,7 +2035,7 @@ StringBuffer* Formatter::getDataStore(DataStore* dataStore) {
     }
 
     ret = getValue(DATA_STORE, s);
-    deleteAllStringBuffer(10, &s, &sourceRef  ,&displayName, &maxGUIDSize, &rxPref, &rx, &txPref, &tx, &ctCaps, &dsMem, &syncCap);
+    deleteAllStringBuffer(11, &s, &sourceRef  ,&displayName, &maxGUIDSize, &rxPref, &rx, &txPref, &tx, &ctCaps, &dsMem, &syncCap);
 
     return ret;
 }
@@ -2368,9 +2368,12 @@ StringBuffer* Formatter::getCTCap(CTCap* ctCap) {
     StringBuffer* ret = new StringBuffer();
 
     Property *iterator = (Property*)props.front();
-    while (iterator) {
-        properties->append(getProperty(iterator));
+    StringBuffer* t1 = NULL;
+    while (iterator) {        
+        t1 = getProperty(iterator);        
+        properties->append(t1);
         iterator = (Property*)props.next();
+        delete t1;
     }
 
     ret->append(ctType);
@@ -2383,6 +2386,8 @@ StringBuffer* Formatter::getCTCap(CTCap* ctCap) {
     if (verCT) {
         delete verCT; verCT = NULL;
     }
+    
+    delete properties;
 
     return getValue(CT_CAP, ret);
 }
