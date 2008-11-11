@@ -61,9 +61,9 @@
   </dependencies>
 
   <scm>
-    <connection>scm:svn:https://guest@core.forge.funambol.org/svn/core/trunk/funambol/client-api/jse-sdk</connection>
-    <developerConnection>scm:svn:https://developername@core.forge.funambol.org/svn/core/trunk/funambol/client-api/jse-sdk</developerConnection>
-    <url>https://core.forge.funambol.org/svn/core/trunk/funambol/client-api/jse-sdk</url>
+    <connection>scm:svn:https://client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</connection>
+    <developerConnection>scm:svn:https://developername@client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</developerConnection>
+    <url>https://client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</url>
   </scm>
 
 </project>
