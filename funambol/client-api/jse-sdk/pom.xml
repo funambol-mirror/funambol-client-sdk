@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>funambol</groupId>
+  <artifactId>jse-sdk</artifactId>
+  <version>7.0.0</version>
+  
+  <packaging>jar</packaging>
+  
+  <name>Funambol JSE SDK</name>
+  <url>http://www.funambol.com</url>
+
+  <parent>
+    <groupId>funambol</groupId>
+    <artifactId>funambol</artifactId>
+    <version>7.0.0</version>
+  </parent>
+
+  <dependencies>
+
+    <!--
+        Internal dependencies
+    -->
+    <dependency>
+      <groupId>funambol</groupId>
+      <artifactId>pim-framework</artifactId>
+      <version>7.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>funambol</groupId>
+      <artifactId>sync4j-clientframework</artifactId>
+      <version>2.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>funambol</groupId>
+      <artifactId>core-framework</artifactId>
+      <version>6.5.4</version>
+    </dependency>
+
+    <!-- 
+        Unit testing dependencies
+    -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <artifactId>junit-addons</artifactId>
+      <groupId>junit-addons</groupId>
+      <version>1.4</version>
+      <scope>test</scope>
+      <type>jar</type>
+    </dependency>
+
+  </dependencies>
+
+  <scm>
+    <connection>scm:cvs:pserver:anonymous:@cvs.forge.objectweb.org:/cvsroot/sync4j:funambol/client-api/jse-sdk</connection>
+    <developerConnection>scm:cvs:ext:developername@cvs.forge.objectweb.org:/cvsroot/sync4j:funambol/client-api/jse-sdk</developerConnection>
+    <url>http://cvs.forge.objectweb.org/cgi-bin/viewcvs.cgi/sync4j/funambol/client-api/jse-sdk</url>
+    <tag>jse-sdk-7_0_0</tag>
+  </scm>
+
+</project>
