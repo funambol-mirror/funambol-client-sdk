@@ -52,8 +52,6 @@ class CtCapTest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
 public:
-    CTCap* ctcap;
-    StringBuffer* compareTo;
 
     void setUp(){
 
@@ -97,19 +95,32 @@ public:
 
         ctcap = new CTCap(ctType.c_str(), verCt.c_str(), false, *props);
 
-        compareTo = new StringBuffer("<CTCap><CTType>text/x-vcard</CTType><VerCT>2.1</VerCT><Property><PropName>BEGIN</PropName><ValEnum>VCARD</ValEnum></Property><Property><PropName>END</PropName><ValEnum>VCARD</ValEnum></Property><Property><PropName>VERSION</PropName><ValEnum>2.1</ValEnum></Property><Property><PropName>N</PropName></Property><Property><PropName>TEL</PropName><PropParam><ParamName>TYPE</ParamName><ValEnum>VOICE,HOME</ValEnum><ValEnum>FAX,HOME</ValEnum><ValEnum>VOICE,CELL</ValEnum></PropParam></Property></CTCap>");
+        compareTo = "<CTCap><CTType>text/x-vcard</CTType><VerCT>2.1</VerCT><Property><PropName>BEGIN</PropName><ValEnum>VCARD</ValEnum></Property><Property><PropName>END</PropName><ValEnum>VCARD</ValEnum></Property><Property><PropName>VERSION</PropName><ValEnum>2.1</ValEnum></Property><Property><PropName>N</PropName></Property><Property><PropName>TEL</PropName><PropParam><ParamName>TYPE</ParamName><ValEnum>VOICE,HOME</ValEnum><ValEnum>FAX,HOME</ValEnum><ValEnum>VOICE,CELL</ValEnum></PropParam></Property></CTCap>";
     }
 
     void tearDown(){
+        delete ctcap;
     }
 
+private:
+
+    CTCap* ctcap;
+    StringBuffer compareTo;
+
+    /**
+     * Perform a basic test of the CtCap formatter, comparing the
+     * generated string with an expected value.
+     */
     void basicTest(){
         StringBuffer* res = Formatter::getCTCap(ctcap);
         res->replaceAll("\n","");
-        CPPUNIT_ASSERT( strcmp(compareTo->c_str(), res->c_str()) == 0 );
+        CPPUNIT_ASSERT( compareTo == *res );
+
+        delete res;
     }
 };
 
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( CtCapTest );
+
