@@ -2,7 +2,6 @@
 
 nobase_pkginclude_HEADERS = \
     common/base/globalsdef.h \
-    common/base/ErrorHandler.h \
     common/base/Log.h \
     common/base/constants.h \
     common/base/errors.h \
