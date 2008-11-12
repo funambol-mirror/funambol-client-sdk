@@ -47,7 +47,7 @@ USERINCLUDE     ..\..\src\include\symbian
 MACRO ENABLE_NAMESPACE
 
 SOURCEPATH   ..\..\src\cpp\common\base
-SOURCE       base64.cpp error.cpp md5.cpp quoted-printable.cpp ErrorHandler.cpp LogErrorHandler.cpp
+SOURCE       base64.cpp error.cpp md5.cpp quoted-printable.cpp
 
 SOURCEPATH   ..\..\src\cpp\common\base\util
 SOURCE       ArrayElement.cpp ArrayList.cpp BasicTime.cpp
