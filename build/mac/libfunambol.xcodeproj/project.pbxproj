@@ -23,8 +23,6 @@
 		7C8B0ED60DB758C1005113A8 /* SQLiteKVSTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8B0EBD0DB756A4005113A8 /* SQLiteKVSTest.cpp */; };
 		7C9F52ED0DAF4CB1007E0091 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F520E0DAF4CB1007E0091 /* base64.cpp */; };
 		7C9F52EE0DAF4CB1007E0091 /* error.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F520F0DAF4CB1007E0091 /* error.cpp */; };
-		7C9F52EF0DAF4CB1007E0091 /* ErrorHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52100DAF4CB1007E0091 /* ErrorHandler.cpp */; };
-		7C9F52F00DAF4CB1007E0091 /* LogErrorHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52110DAF4CB1007E0091 /* LogErrorHandler.cpp */; };
 		7C9F52F10DAF4CB1007E0091 /* md5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52120DAF4CB1007E0091 /* md5.cpp */; };
 		7C9F52F20DAF4CB1007E0091 /* quoted-printable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52130DAF4CB1007E0091 /* quoted-printable.cpp */; };
 		7C9F52F30DAF4CB1007E0091 /* ArrayElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52150DAF4CB1007E0091 /* ArrayElement.cpp */; };
@@ -43,19 +41,13 @@
 		7C9F53050DAF4CB1007E0091 /* SyncClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52280DAF4CB1007E0091 /* SyncClient.cpp */; };
 		7C9F53060DAF4CB1007E0091 /* BaseEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F522A0DAF4CB1007E0091 /* BaseEvent.cpp */; };
 		7C9F53070DAF4CB1007E0091 /* FireEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F522B0DAF4CB1007E0091 /* FireEvent.cpp */; };
-		7C9F53080DAF4CB1007E0091 /* Listener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F522C0DAF4CB1007E0091 /* Listener.cpp */; };
 		7C9F53090DAF4CB1007E0091 /* ManageListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F522D0DAF4CB1007E0091 /* ManageListener.cpp */; };
 		7C9F530A0DAF4CB1007E0091 /* SetListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F522E0DAF4CB1007E0091 /* SetListener.cpp */; };
 		7C9F530B0DAF4CB1007E0091 /* SyncEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F522F0DAF4CB1007E0091 /* SyncEvent.cpp */; };
 		7C9F530C0DAF4CB1007E0091 /* SyncItemEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52300DAF4CB1007E0091 /* SyncItemEvent.cpp */; };
-		7C9F530D0DAF4CB1007E0091 /* SyncItemListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52310DAF4CB1007E0091 /* SyncItemListener.cpp */; };
-		7C9F530E0DAF4CB1007E0091 /* SyncListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52320DAF4CB1007E0091 /* SyncListener.cpp */; };
 		7C9F530F0DAF4CB1007E0091 /* SyncSourceEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52330DAF4CB1007E0091 /* SyncSourceEvent.cpp */; };
-		7C9F53100DAF4CB1007E0091 /* SyncSourceListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52340DAF4CB1007E0091 /* SyncSourceListener.cpp */; };
 		7C9F53110DAF4CB1007E0091 /* SyncStatusEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52350DAF4CB1007E0091 /* SyncStatusEvent.cpp */; };
-		7C9F53120DAF4CB1007E0091 /* SyncStatusListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52360DAF4CB1007E0091 /* SyncStatusListener.cpp */; };
 		7C9F53130DAF4CB1007E0091 /* TransportEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52370DAF4CB1007E0091 /* TransportEvent.cpp */; };
-		7C9F53140DAF4CB1007E0091 /* TransportListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52380DAF4CB1007E0091 /* TransportListener.cpp */; };
 		7C9F53230DAF4CB1007E0091 /* AllClause.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F524A0DAF4CB1007E0091 /* AllClause.cpp */; };
 		7C9F53240DAF4CB1007E0091 /* Clause.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F524B0DAF4CB1007E0091 /* Clause.cpp */; };
 		7C9F53250DAF4CB1007E0091 /* ClauseUtil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F524C0DAF4CB1007E0091 /* ClauseUtil.cpp */; };
@@ -197,11 +189,9 @@
 		7C9F54AF0DAF4CC5007E0091 /* base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53B70DAF4CC5007E0091 /* base64.h */; };
 		7C9F54B00DAF4CC5007E0091 /* constants.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53B80DAF4CC5007E0091 /* constants.h */; };
 		7C9F54B10DAF4CC5007E0091 /* debug.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53B90DAF4CC5007E0091 /* debug.h */; };
-		7C9F54B20DAF4CC5007E0091 /* ErrorHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53BA0DAF4CC5007E0091 /* ErrorHandler.h */; };
 		7C9F54B30DAF4CC5007E0091 /* errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53BB0DAF4CC5007E0091 /* errors.h */; };
 		7C9F54B40DAF4CC5007E0091 /* fscapi.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53BC0DAF4CC5007E0091 /* fscapi.h */; };
 		7C9F54B50DAF4CC5007E0091 /* Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53BD0DAF4CC5007E0091 /* Log.h */; };
-		7C9F54B60DAF4CC5007E0091 /* LogErrorHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53BE0DAF4CC5007E0091 /* LogErrorHandler.h */; };
 		7C9F54B70DAF4CC5007E0091 /* md5.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53BF0DAF4CC5007E0091 /* md5.h */; };
 		7C9F54B80DAF4CC5007E0091 /* messages.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C00DAF4CC5007E0091 /* messages.h */; };
 		7C9F54B90DAF4CC5007E0091 /* quoted-printable.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C10DAF4CC5007E0091 /* quoted-printable.h */; };
@@ -470,8 +460,6 @@
 		7C8B0ED30DB758B3005113A8 /* libsqlite3.0.8.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.8.6.dylib; path = usr/lib/libsqlite3.0.8.6.dylib; sourceTree = SDKROOT; };
 		7C9F520E0DAF4CB1007E0091 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
 		7C9F520F0DAF4CB1007E0091 /* error.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = error.cpp; sourceTree = "<group>"; };
-		7C9F52100DAF4CB1007E0091 /* ErrorHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ErrorHandler.cpp; sourceTree = "<group>"; };
-		7C9F52110DAF4CB1007E0091 /* LogErrorHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LogErrorHandler.cpp; sourceTree = "<group>"; };
 		7C9F52120DAF4CB1007E0091 /* md5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = md5.cpp; sourceTree = "<group>"; };
 		7C9F52130DAF4CB1007E0091 /* quoted-printable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "quoted-printable.cpp"; sourceTree = "<group>"; };
 		7C9F52150DAF4CB1007E0091 /* ArrayElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ArrayElement.cpp; sourceTree = "<group>"; };
@@ -490,19 +478,13 @@
 		7C9F52280DAF4CB1007E0091 /* SyncClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncClient.cpp; sourceTree = "<group>"; };
 		7C9F522A0DAF4CB1007E0091 /* BaseEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseEvent.cpp; sourceTree = "<group>"; };
 		7C9F522B0DAF4CB1007E0091 /* FireEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FireEvent.cpp; sourceTree = "<group>"; };
-		7C9F522C0DAF4CB1007E0091 /* Listener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Listener.cpp; sourceTree = "<group>"; };
 		7C9F522D0DAF4CB1007E0091 /* ManageListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ManageListener.cpp; sourceTree = "<group>"; };
 		7C9F522E0DAF4CB1007E0091 /* SetListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SetListener.cpp; sourceTree = "<group>"; };
 		7C9F522F0DAF4CB1007E0091 /* SyncEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncEvent.cpp; sourceTree = "<group>"; };
 		7C9F52300DAF4CB1007E0091 /* SyncItemEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncItemEvent.cpp; sourceTree = "<group>"; };
-		7C9F52310DAF4CB1007E0091 /* SyncItemListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncItemListener.cpp; sourceTree = "<group>"; };
-		7C9F52320DAF4CB1007E0091 /* SyncListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncListener.cpp; sourceTree = "<group>"; };
 		7C9F52330DAF4CB1007E0091 /* SyncSourceEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncSourceEvent.cpp; sourceTree = "<group>"; };
-		7C9F52340DAF4CB1007E0091 /* SyncSourceListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncSourceListener.cpp; sourceTree = "<group>"; };
 		7C9F52350DAF4CB1007E0091 /* SyncStatusEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncStatusEvent.cpp; sourceTree = "<group>"; };
-		7C9F52360DAF4CB1007E0091 /* SyncStatusListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncStatusListener.cpp; sourceTree = "<group>"; };
 		7C9F52370DAF4CB1007E0091 /* TransportEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransportEvent.cpp; sourceTree = "<group>"; };
-		7C9F52380DAF4CB1007E0091 /* TransportListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransportListener.cpp; sourceTree = "<group>"; };
 		7C9F524A0DAF4CB1007E0091 /* AllClause.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllClause.cpp; sourceTree = "<group>"; };
 		7C9F524B0DAF4CB1007E0091 /* Clause.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Clause.cpp; sourceTree = "<group>"; };
 		7C9F524C0DAF4CB1007E0091 /* ClauseUtil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ClauseUtil.cpp; sourceTree = "<group>"; };
@@ -644,11 +626,9 @@
 		7C9F53B70DAF4CC5007E0091 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
 		7C9F53B80DAF4CC5007E0091 /* constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = constants.h; sourceTree = "<group>"; };
 		7C9F53B90DAF4CC5007E0091 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
-		7C9F53BA0DAF4CC5007E0091 /* ErrorHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ErrorHandler.h; sourceTree = "<group>"; };
 		7C9F53BB0DAF4CC5007E0091 /* errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = errors.h; sourceTree = "<group>"; };
 		7C9F53BC0DAF4CC5007E0091 /* fscapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fscapi.h; sourceTree = "<group>"; };
 		7C9F53BD0DAF4CC5007E0091 /* Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
-		7C9F53BE0DAF4CC5007E0091 /* LogErrorHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogErrorHandler.h; sourceTree = "<group>"; };
 		7C9F53BF0DAF4CC5007E0091 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
 		7C9F53C00DAF4CC5007E0091 /* messages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = messages.h; sourceTree = "<group>"; };
 		7C9F53C10DAF4CC5007E0091 /* quoted-printable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "quoted-printable.h"; sourceTree = "<group>"; };
@@ -1013,8 +993,6 @@
 			children = (
 				7C9F520E0DAF4CB1007E0091 /* base64.cpp */,
 				7C9F520F0DAF4CB1007E0091 /* error.cpp */,
-				7C9F52100DAF4CB1007E0091 /* ErrorHandler.cpp */,
-				7C9F52110DAF4CB1007E0091 /* LogErrorHandler.cpp */,
 				7C9F52120DAF4CB1007E0091 /* md5.cpp */,
 				7C9F52130DAF4CB1007E0091 /* quoted-printable.cpp */,
 				7C9F52140DAF4CB1007E0091 /* util */,
@@ -1060,19 +1038,13 @@
 			children = (
 				7C9F522A0DAF4CB1007E0091 /* BaseEvent.cpp */,
 				7C9F522B0DAF4CB1007E0091 /* FireEvent.cpp */,
-				7C9F522C0DAF4CB1007E0091 /* Listener.cpp */,
 				7C9F522D0DAF4CB1007E0091 /* ManageListener.cpp */,
 				7C9F522E0DAF4CB1007E0091 /* SetListener.cpp */,
 				7C9F522F0DAF4CB1007E0091 /* SyncEvent.cpp */,
 				7C9F52300DAF4CB1007E0091 /* SyncItemEvent.cpp */,
-				7C9F52310DAF4CB1007E0091 /* SyncItemListener.cpp */,
-				7C9F52320DAF4CB1007E0091 /* SyncListener.cpp */,
 				7C9F52330DAF4CB1007E0091 /* SyncSourceEvent.cpp */,
-				7C9F52340DAF4CB1007E0091 /* SyncSourceListener.cpp */,
 				7C9F52350DAF4CB1007E0091 /* SyncStatusEvent.cpp */,
-				7C9F52360DAF4CB1007E0091 /* SyncStatusListener.cpp */,
 				7C9F52370DAF4CB1007E0091 /* TransportEvent.cpp */,
-				7C9F52380DAF4CB1007E0091 /* TransportListener.cpp */,
 			);
 			name = event;
 			path = ../../src/cpp/common/event;
@@ -1344,11 +1316,9 @@
 				7C9F53B70DAF4CC5007E0091 /* base64.h */,
 				7C9F53B80DAF4CC5007E0091 /* constants.h */,
 				7C9F53B90DAF4CC5007E0091 /* debug.h */,
-				7C9F53BA0DAF4CC5007E0091 /* ErrorHandler.h */,
 				7C9F53BB0DAF4CC5007E0091 /* errors.h */,
 				7C9F53BC0DAF4CC5007E0091 /* fscapi.h */,
 				7C9F53BD0DAF4CC5007E0091 /* Log.h */,
-				7C9F53BE0DAF4CC5007E0091 /* LogErrorHandler.h */,
 				7C9F53BF0DAF4CC5007E0091 /* md5.h */,
 				7C9F53C00DAF4CC5007E0091 /* messages.h */,
 				7C9F53C10DAF4CC5007E0091 /* quoted-printable.h */,
@@ -1841,11 +1811,9 @@
 				7C9F54AF0DAF4CC5007E0091 /* base64.h in Headers */,
 				7C9F54B00DAF4CC5007E0091 /* constants.h in Headers */,
 				7C9F54B10DAF4CC5007E0091 /* debug.h in Headers */,
-				7C9F54B20DAF4CC5007E0091 /* ErrorHandler.h in Headers */,
 				7C9F54B30DAF4CC5007E0091 /* errors.h in Headers */,
 				7C9F54B40DAF4CC5007E0091 /* fscapi.h in Headers */,
 				7C9F54B50DAF4CC5007E0091 /* Log.h in Headers */,
-				7C9F54B60DAF4CC5007E0091 /* LogErrorHandler.h in Headers */,
 				7C9F54B70DAF4CC5007E0091 /* md5.h in Headers */,
 				7C9F54B80DAF4CC5007E0091 /* messages.h in Headers */,
 				7C9F54B90DAF4CC5007E0091 /* quoted-printable.h in Headers */,
@@ -2164,8 +2132,6 @@
 			files = (
 				7C9F52ED0DAF4CB1007E0091 /* base64.cpp in Sources */,
 				7C9F52EE0DAF4CB1007E0091 /* error.cpp in Sources */,
-				7C9F52EF0DAF4CB1007E0091 /* ErrorHandler.cpp in Sources */,
-				7C9F52F00DAF4CB1007E0091 /* LogErrorHandler.cpp in Sources */,
 				7C9F52F10DAF4CB1007E0091 /* md5.cpp in Sources */,
 				7C9F52F20DAF4CB1007E0091 /* quoted-printable.cpp in Sources */,
 				7C9F52F30DAF4CB1007E0091 /* ArrayElement.cpp in Sources */,
@@ -2184,19 +2150,13 @@
 				7C9F53050DAF4CB1007E0091 /* SyncClient.cpp in Sources */,
 				7C9F53060DAF4CB1007E0091 /* BaseEvent.cpp in Sources */,
 				7C9F53070DAF4CB1007E0091 /* FireEvent.cpp in Sources */,
-				7C9F53080DAF4CB1007E0091 /* Listener.cpp in Sources */,
 				7C9F53090DAF4CB1007E0091 /* ManageListener.cpp in Sources */,
 				7C9F530A0DAF4CB1007E0091 /* SetListener.cpp in Sources */,
 				7C9F530B0DAF4CB1007E0091 /* SyncEvent.cpp in Sources */,
 				7C9F530C0DAF4CB1007E0091 /* SyncItemEvent.cpp in Sources */,
-				7C9F530D0DAF4CB1007E0091 /* SyncItemListener.cpp in Sources */,
-				7C9F530E0DAF4CB1007E0091 /* SyncListener.cpp in Sources */,
 				7C9F530F0DAF4CB1007E0091 /* SyncSourceEvent.cpp in Sources */,
-				7C9F53100DAF4CB1007E0091 /* SyncSourceListener.cpp in Sources */,
 				7C9F53110DAF4CB1007E0091 /* SyncStatusEvent.cpp in Sources */,
-				7C9F53120DAF4CB1007E0091 /* SyncStatusListener.cpp in Sources */,
 				7C9F53130DAF4CB1007E0091 /* TransportEvent.cpp in Sources */,
-				7C9F53140DAF4CB1007E0091 /* TransportListener.cpp in Sources */,
 				7C9F53230DAF4CB1007E0091 /* AllClause.cpp in Sources */,
 				7C9F53240DAF4CB1007E0091 /* Clause.cpp in Sources */,
 				7C9F53250DAF4CB1007E0091 /* ClauseUtil.cpp in Sources */,
