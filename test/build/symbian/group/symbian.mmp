@@ -66,6 +66,8 @@ SOURCE     ParserTest.cpp
 SOURCEPATH ..\..\..\common\push
 SOURCE     FThreadTest.cpp
 
+SOURCEPATH ..\..\..\common\event
+SOURCE     EventTest.cpp
 
 SOURCEPATH  ..\data
 START RESOURCE symbian.rss
