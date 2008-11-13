@@ -464,7 +464,8 @@ WARN_LOGFILE           =
 
 INPUT                  = $(FUNAMBOL_NATIVE_ROOT)/docs \
                          $(FUNAMBOL_NATIVE_ROOT)/src/include \
-                         $(FUNAMBOL_NATIVE_ROOT)/test
+                         $(FUNAMBOL_NATIVE_ROOT)/test \
+                         $(FUNAMBOL_NATIVE_ROOT)/examples
 
 # This tag can be used to specify the character encoding of the source files that 
 # doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default 
@@ -1034,9 +1035,7 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 PREDEFINED             = ENABLE_INTEGRATION_TESTS \
-                         ENABLE_UNIT_TESTS \
-                         EXTRA_SECTION_01= \
-                         EXTRA_SECTION_02=
+                         ENABLE_UNIT_TESTS 
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
