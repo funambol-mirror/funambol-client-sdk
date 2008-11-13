@@ -43,7 +43,7 @@ void TestTransportListener::sendDataBegin(TransportEvent &event) {
     printf("[TransportEvent] Sending Data of size %d began at %ld.\n\n",event.getDataSize(), event.getDate());
 }
 
-void TestTransportListener::syncDataEnd(TransportEvent &event) {
+void TestTransportListener::sendDataEnd(TransportEvent &event) {
     printf("[TransportEvent] Sync Data of size %d finished at %ld.\n\n",event.getDataSize(), event.getDate());
 }
 

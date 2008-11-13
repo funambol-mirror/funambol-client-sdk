@@ -54,7 +54,7 @@ class TransportListener : public Listener{
 public:
 
     // Constructor
-    TransportListener() {};
+    TransportListener(const char *n = ""): Listener(n) {};
 
     // Virtual destructor
     virtual ~TransportListener() {}
@@ -63,7 +63,7 @@ public:
     virtual void sendDataBegin(TransportEvent& event) {};
 
     // listen for the Sync Data End Event
-    virtual void syncDataEnd(TransportEvent& event) {};
+    virtual void sendDataEnd(TransportEvent& event) {};
 
     // listen for the Receive Data Begin Event
     virtual void receiveDataBegin(TransportEvent& event) {};

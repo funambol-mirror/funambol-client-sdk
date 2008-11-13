@@ -37,19 +37,35 @@
 #ifndef INCL_LISTENER
 #define INCL_LISTENER
 #include "base/globalsdef.h"
+#include "base/util/StringBuffer.h"
 
 BEGIN_NAMESPACE
 /** @cond DEV */
 
 
-/* The base class for all Listeners. This has to be derived by all types of
+/**
+ * The base class for all Listeners. This has to be derived by all types of
  * listeners.
  */
-class Listener {
 
-    public:
-        // Constructor
-        Listener() {};
+class Listener {
+    /** The name of the listener */
+    StringBuffer name;
+
+public:
+    /** 
+     * Creates a new Listener. Each listener has a name that identifies it in the list
+     * of registered listeners.
+     * This name must be different for each user (for instance, you can use the scope
+     * of the registering class as name).
+     *
+     */
+    Listener(const char *n = "") {name = n;}
+
+    virtual ~Listener() {}
+
+    const StringBuffer& getName() { return name; }
+
 };
 
 
@@ -57,3 +73,4 @@ END_NAMESPACE
 
 /** @endcond */
 #endif
+

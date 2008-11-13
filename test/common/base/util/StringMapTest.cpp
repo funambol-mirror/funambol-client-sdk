@@ -39,7 +39,7 @@
 #include "base/fscapi.h"
 #include "base/util/StringMap.h"
 
-BEGIN_NAMESPACE
+USE_NAMESPACE
 
 /**
  * This is the test class for StringMap.
@@ -148,7 +148,5 @@ private:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( StringMapTest );
-
-END_NAMESPACE
 
 

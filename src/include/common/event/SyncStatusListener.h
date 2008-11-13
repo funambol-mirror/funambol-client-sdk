@@ -44,15 +44,14 @@
 
 BEGIN_NAMESPACE
 
-/*
-Set Listeners for each event in SyncStatusEvent
-*/
-
+/**
+ * Set Listeners for each event in SyncStatusEvent
+ */
 class SyncStatusListener : public Listener {
 
 public:
     // Constructor
-    SyncStatusListener() {};
+    SyncStatusListener(const char *name = "") : Listener(name) {};
 
     // Virtual destructor
     virtual ~SyncStatusListener() {}

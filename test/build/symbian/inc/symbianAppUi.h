@@ -35,6 +35,7 @@
 
 #ifndef __SYMBIANAPPUI_h__
 #define __SYMBIANAPPUI_h__
+/** @cond DEV */
 
 // INCLUDES
 #include <aknappui.h>
@@ -108,4 +109,6 @@ private:
     };
 
 #endif // __SYMBIANAPPUI_h__
+/** @endcond */
 // End of File
+

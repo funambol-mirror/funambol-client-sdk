@@ -36,173 +36,228 @@
 #include "event/ManageListener.h"
 #include "base/globalsdef.h"
 
-USE_NAMESPACE
+BEGIN_NAMESPACE
+
+//------------------------------------------------------------- Local declarations
 
 class DestroyManageListener{
 public:
     DestroyManageListener() {           };
-    ~DestroyManageListener(){ ManageListener::dispose(); }
+    ~DestroyManageListener(){ ManageListener::releaseAllListeners(); }
 };
 
 DestroyManageListener destroyManageListener;
+
+/** 
+ * ArrayElement container for the Listeners. It does not clone the inner
+ * Listener pointer, nor deletes it. Cloning the element does not clone
+ * the Listener, which is managed by ManageListener.
+ * The only method which deletes the Listener is set(), to replace it
+ * with the new one.
+ */
+class ListenerElement: public ArrayElement {
+
+  public:
+
+    ListenerElement(Listener *_l) : l(_l) {} ;
+    ListenerElement(ListenerElement &other) : l(other.l) {} ;
+
+    ~ListenerElement() {}
+
+    void set(Listener *_l) { delete l; l = _l; };
+    Listener* get() { return l; };
+
+    ArrayElement* clone() {return new ListenerElement(*this);};
+
+  private:
+
+    Listener *l;
+};
+
 
 /* Static Variables */
 
 ManageListener * ManageListener::instance = 0;
 
-// Private Methods
-//Contructor and Destructor
+/* Release all the listeners for the given list */
+void releaseListeners(ArrayList &list) {
+    ListenerElement *l=NULL;
 
-ManageListener::ManageListener() {
-
-	synclistener       = NULL;
-	transportlistener  = NULL;
-	syncitemlistener   = NULL;
-	syncstatuslistener = NULL;
-	syncsourcelistener = NULL;
+    for(l = (ListenerElement*)list.front(); l; l = (ListenerElement*)list.next()) {
+        l->set(NULL);
+    }
+    list.clear();
 }
 
+//-------------------------------- Private Methods ------------------------------
+
+/* Release all the listeners on all the lists */
 ManageListener::~ManageListener() {
+    releaseListeners(synclisteners);
+    releaseListeners(transportlisteners);
+    releaseListeners(syncstatuslisteners);
+    releaseListeners(syncitemlisteners);
+    releaseListeners(syncsourcelisteners);
+}
 
-	if(synclistener) {
-		delete synclistener;
-        synclistener = NULL;
-	}
-	if(transportlistener) {
-		delete transportlistener;
-        transportlistener = NULL;
-	}
-	if(syncitemlistener) {
-		delete syncitemlistener;
-        syncitemlistener = NULL;
-	}
-	if(syncsourcelistener) {
-		delete syncsourcelistener;
-        syncsourcelistener = NULL;
-	}
-	if(syncstatuslistener) {
-		delete syncstatuslistener;
-        syncstatuslistener = NULL;
-	}
+/*
+ * Search for the given listener in list.
+ * 
+ * @return the pointer to the element with the same name, 
+ *         or NULL otherwise.
+ */
+Listener *ManageListener::lookupListener(const char* name, ArrayList &list) {
+    ListenerElement *l=NULL;
+
+    for(l = (ListenerElement*)list.front(); l; l = (ListenerElement*)list.next()) {
+        if (l->get()->getName() == name) {
+            return l->get();
+        }
+    }
+    return NULL;
+}
+
+/* Set a new listener, replacing an existen one or adding it to the list. */
+bool ManageListener::setListener(Listener* listener, ArrayList &list) {
+    ListenerElement *l=NULL;
+
+    for(l = (ListenerElement*)list.front(); l; l = (ListenerElement*)list.next()) {
+        if (l->get()->getName() == listener->getName()) {
+            l->set(listener);
+            return false;       // Element already in the list, just change it
+        }
+    }
+
+    // Not found, add it to the list
+    ListenerElement newElement(listener);
+    list.add(newElement);
+    return true;
 }
 
 
-//--------------------- Public Methods ----------------------
+/* Unset a listener, referenced by name. If the listener with that name is
+ * not found, it does nothing. */
+void ManageListener::unsetListener(const char* name, ArrayList &list) {
+    for(int i=0; i<list.size(); i++) {
+        ListenerElement *l = dynamic_cast<ListenerElement*>(list[i]);
+        if (l->get()->getName() == name) {
+            l->set(NULL);
+            list.removeElementAt(i);
+        }
+    }
+}
+
+
+//--------------------------------- Public Methods ------------------------------
 
 /*
  * Get, or create, ManageListener instance
  */
 ManageListener& ManageListener::getInstance() {
-
-	if(instance == NULL) {
-		instance = new ManageListener();
-	}
-	return *instance;
+    if(instance == NULL) {
+        instance = new ManageListener();
+    }
+    return *instance;
 }
 
-void ManageListener::dispose() {
-
-	if(instance) {
-		delete instance;
-	}
-	instance = NULL;
+/*
+ * Release all the listeners and the singleton instance.
+ */
+void ManageListener::releaseAllListeners() {
+    if (instance) {
+        delete instance;
+        instance = NULL;
+    }
 }
-
 
 //
 // Get listeners (return internal pointer):
 //
-SyncListener* ManageListener::getSyncListener() {
-    return synclistener;
+SyncListener* ManageListener::getSyncListener(const char *name) {
+    return dynamic_cast<SyncListener*>(lookupListener(name, synclisteners));
 }
-TransportListener* ManageListener::getTransportListener() {
-    return transportlistener;
+TransportListener* ManageListener::getTransportListener(const char *name) {
+    return dynamic_cast<TransportListener*>(lookupListener(name, transportlisteners));
 }
-SyncSourceListener* ManageListener::getSyncSourceListener() {
-    return syncsourcelistener;
+SyncSourceListener* ManageListener::getSyncSourceListener(const char *name) {
+    return dynamic_cast<SyncSourceListener*>(lookupListener(name, syncsourcelisteners));
 }
-SyncItemListener* ManageListener::getSyncItemListener() {
-    return syncitemlistener;
+SyncItemListener* ManageListener::getSyncItemListener(const char *name) {
+    return dynamic_cast<SyncItemListener*>(lookupListener(name, syncitemlisteners));
 }
-SyncStatusListener* ManageListener::getSyncStatusListener() {
-    return syncstatuslistener;
+SyncStatusListener* ManageListener::getSyncStatusListener(const char *name) {
+    return dynamic_cast<SyncStatusListener*>(lookupListener(name, syncstatuslisteners));
 }
 
+// Get listeners by position.
+SyncListener* ManageListener::getSyncListener(int pos) {
+    ListenerElement* le = static_cast<ListenerElement*>(synclisteners[pos]);
+    return static_cast<SyncListener*>(le->get());
+}
+TransportListener* ManageListener::getTransportListener(int pos) {
+    ListenerElement* le = static_cast<ListenerElement*>(transportlisteners[pos]);
+    return static_cast<TransportListener*>(le->get());
+}
+SyncSourceListener* ManageListener::getSyncSourceListener(int pos) {
+    ListenerElement* le = static_cast<ListenerElement*>(syncsourcelisteners[pos]);
+    return static_cast<SyncSourceListener*>(le->get());
+}
+SyncItemListener* ManageListener::getSyncItemListener(int pos) {
+    ListenerElement* le = static_cast<ListenerElement*>(syncitemlisteners[pos]);
+    return static_cast<SyncItemListener*>(le->get());
+}
+SyncStatusListener* ManageListener::getSyncStatusListener(int pos) {
+    ListenerElement* le = static_cast<ListenerElement*>(syncstatuslisteners[pos]);
+    return static_cast<SyncStatusListener*>(le->get());
+}
 
 
 //
 // Set listeners:
 //
 void ManageListener::setSyncListener(SyncListener* listener) {
-    if(synclistener) {
-        delete synclistener;
-    }
-    synclistener = listener;
+    setListener(listener, synclisteners);
 }
 
 void ManageListener::setTransportListener(TransportListener* listener) {
-    if(transportlistener) {
-        delete transportlistener;
-    }
-    transportlistener = listener;
+    setListener(listener, transportlisteners);
 }
 
 void ManageListener::setSyncSourceListener(SyncSourceListener* listener) {
-    if(syncsourcelistener) {
-        delete syncsourcelistener;
-    }
-    syncsourcelistener = listener;
+    setListener(listener, syncsourcelisteners);
 }
 
 void ManageListener::setSyncItemListener(SyncItemListener* listener) {
-    if(syncitemlistener) {
-        delete syncitemlistener;
-    }
-    syncitemlistener = listener;
+    setListener(listener, syncitemlisteners);
 }
 
 void ManageListener::setSyncStatusListener(SyncStatusListener* listener) {
-    if(syncstatuslistener) {
-        delete syncstatuslistener;
-    }
-    syncstatuslistener = listener;
+    setListener(listener, syncstatuslisteners);
 }
 
 //
 // Unset listeners:
 //
-void ManageListener::unsetSyncListener() {
-    if(synclistener) {
-        delete synclistener;
-        synclistener = NULL;
-    }
+void ManageListener::unsetSyncListener(const char *name) {
+    unsetListener(name, synclisteners);
 }
 
-void ManageListener::unsetTransportListener() {
-    if(transportlistener) {
-        delete transportlistener;
-        transportlistener = NULL;
-    }
+void ManageListener::unsetTransportListener(const char *name) {
+    unsetListener(name, transportlisteners);
 }
 
-void ManageListener::unsetSyncSourceListener() {
-    if(syncsourcelistener) {
-        delete syncsourcelistener;
-        syncsourcelistener = NULL;
-    }
+void ManageListener::unsetSyncSourceListener(const char *name) {
+    unsetListener(name, syncsourcelisteners);
 }
 
-void ManageListener::unsetSyncItemListener() {
-    if(syncitemlistener) {
-        delete syncitemlistener;
-        syncitemlistener = NULL;
-    }
+void ManageListener::unsetSyncItemListener(const char *name) {
+    unsetListener(name, syncitemlisteners);
 }
 
-void ManageListener::unsetSyncStatusListener() {
-    if(syncstatuslistener) {
-        delete syncstatuslistener;
-        syncstatuslistener = NULL;
-    }
+void ManageListener::unsetSyncStatusListener(const char *name) {
+    unsetListener(name, syncstatuslisteners);
 }
+
+
+END_NAMESPACE
 

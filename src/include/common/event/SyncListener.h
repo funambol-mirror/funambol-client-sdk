@@ -53,28 +53,33 @@ class SyncListener : public Listener {
 
 public:
 
-    //Contructor
-    SyncListener() {};
+    SyncListener(const char *name = "") : Listener(name) {};
 
-    // Virtual destructor
+    /* Virtual destructor */
     virtual ~SyncListener() {}
 
-    // listen for the Sync Begin Event
+    /** Listen for the Sync Begin Event. Must be overloaded by
+     * implementation to add a specific behavior */
     virtual void syncBegin(SyncEvent& event) {};
 
-    // listen for the Sync End Event
+    /** listen for the Sync End Event. Must be overloaded by
+     * implementation to add a specific behavior */
     virtual void syncEnd(SyncEvent& event) {};
 
-    // listen for the Send Initialization Event
+    /** listen for the Send Initialization Event. Must be overloaded by
+     * implementation to add a specific behavior */
     virtual void sendInitialization(SyncEvent& event) {};
 
-    // listen for the Send Modifications Event
+    /* listen for the Send Modifications Event. Must be overloaded by
+     * implementation to add a specific behavior */
     virtual void sendModifications(SyncEvent& event) {};
 
-    // listen for the Sync Finalization Event
+    /* listen for the Sync Finalization Event. Must be overloaded by
+     * implementation to add a specific behavior */
     virtual void sendFinalization(SyncEvent& event) {};
- 
-    // listen for the Sync Error Event
+
+    /* listen for the Sync Error Event. Must be overloaded by
+     * implementation to add a specific behavior */
     virtual void syncError(SyncEvent& event) {};
 };
 

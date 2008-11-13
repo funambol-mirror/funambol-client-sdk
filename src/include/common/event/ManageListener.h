@@ -48,36 +48,70 @@
 BEGIN_NAMESPACE
 
 /* This is the ManageListener class - which keeps track of the various registered
- * listeners. This is implemented as an singleton pattern to make sure only instance is
- * active at any point of time.
+ * listeners. This is implemented as an singleton pattern to make sure only instance
+ * is active at any point of time.
+ * The implementation does not provide a dispose() method, because releasing the
+ * instance means to unset all the listeners previously set. A method with the
+ * same behavior is available, but with a more meaningful name (releaseAllListeners).
  */
 class ManageListener {
 
-private:
-    static ManageListener *instance;
-
-    //Registered Listeners : At present only one Listener per event family
-    SyncListener*       synclistener;
-    TransportListener*  transportlistener;
-    SyncStatusListener* syncstatuslistener;
-    SyncItemListener*   syncitemlistener;
-    SyncSourceListener* syncsourcelistener;
-
-    //private constructor & destructor
-    ManageListener();
-
-
 public:
-    ~ManageListener();
-    //get and release singleton instance
-    static ManageListener & getInstance();
-    static void dispose();
 
-    SyncListener*       getSyncListener();
-    TransportListener*  getTransportListener();
-    SyncSourceListener* getSyncSourceListener();
-    SyncItemListener*   getSyncItemListener();
-    SyncStatusListener* getSyncStatusListener();
+    /** get singleton instance */
+    static ManageListener & getInstance();
+    /** release singleton instance */
+    static void releaseAllListeners();
+
+    /** Get the SyncListener with the given name.
+     *
+     * @param name the name of the listener, empty string by default.
+     * @return the pointer to the internal SyncListener pointer, which is 
+     *         owned by the ManageListener
+     */
+    SyncListener* getSyncListener(const char *name = "");
+    /** Get the SyncListener on the given position */
+    SyncListener* getSyncListener(int pos);
+
+    /** Get the TransportListener with the given name.
+     *
+     * @param name the name of the listener, empty string by default.
+     * @return the pointer to the internal SyncListener pointer, which is 
+     *         owned by the ManageListener
+     */
+    TransportListener* getTransportListener(const char *name = "");
+    /** Get the TransportListener on the given position */
+    TransportListener* getTransportListener(int pos);
+
+    /** Get the SyncSourceListener with the given name.
+     *
+     * @param name the name of the listener, empty string by default.
+     * @return the pointer to the internal SyncListener pointer, which is 
+     *         owned by the ManageListener
+     */
+    SyncSourceListener* getSyncSourceListener(const char *name = "");
+    /** Get the SyncSourceListener on the given position */
+    SyncSourceListener* getSyncSourceListener(int pos);
+
+    /** Get the SyncItemListener with the given name.
+     *
+     * @param name the name of the listener, empty string by default.
+     * @return the pointer to the internal SyncListener pointer, which is 
+     *         owned by the ManageListener
+     */
+    SyncItemListener* getSyncItemListener(const char *name = "");
+    /** Get the SyncItemListener on the given position */
+    SyncItemListener* getSyncItemListener(int pos);
+
+    /** Get the SyncStatusListener with the given name.
+     *
+     * @param name the name of the listener, empty string by default.
+     * @return the pointer to the internal SyncListener pointer, which is 
+     *         owned by the ManageListener
+     */
+    SyncStatusListener* getSyncStatusListener(const char *name = "");
+    /** Get the SyncStatusListener on the given position */
+    SyncStatusListener* getSyncStatusListener(int pos);
 
     void setSyncListener      (SyncListener* listener);
     void setTransportListener (TransportListener* listener);
@@ -85,16 +119,46 @@ public:
     void setSyncItemListener  (SyncItemListener* listener);
     void setSyncStatusListener(SyncStatusListener* listener);
 
-    void unsetSyncListener();
-    void unsetTransportListener();
-    void unsetSyncSourceListener();
-    void unsetSyncItemListener();
-    void unsetSyncStatusListener();
+    void unsetSyncListener(const char *name = "");
+    void unsetTransportListener(const char *name = "");
+    void unsetSyncSourceListener(const char *name = "");
+    void unsetSyncItemListener(const char *name = "");
+    void unsetSyncStatusListener(const char *name = "");
 
+    int countSyncListeners() const { return synclisteners.size(); };
+    int countTransportListeners() const { return transportlisteners.size(); };
+    int countSyncStatusListeners() const { return syncstatuslisteners.size(); };
+    int countSyncItemListeners() const { return syncitemlisteners.size(); };
+    int countSyncSourceListeners() const { return syncsourcelisteners.size(); };
+
+private:
+    static ManageListener *instance;
+
+    //Registered Listeners : At present only one Listener per event family
+    ArrayList synclisteners;
+    ArrayList transportlisteners;
+    ArrayList syncstatuslisteners;
+    ArrayList syncitemlisteners;
+    ArrayList syncsourcelisteners;
+
+    //private constructor & destructor
+    ManageListener() {}
+    ~ManageListener();
+
+    /* Search for the given listener in list. */
+    Listener *lookupListener(const char* name, ArrayList &list);
+
+    /* Set a new listener, replacing an existen one or adding it to the list. */
+    bool setListener(Listener* listener, ArrayList &list);
+
+    /* Unset a listener, referenced by name. If the listener with that name is
+     * not found, it does nothing. */
+    void unsetListener(const char* name, ArrayList &list);
+    
 };
-
 
 END_NAMESPACE
 
 /** @endcond */
 #endif
+

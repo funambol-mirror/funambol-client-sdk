@@ -258,7 +258,7 @@
 				Name="event"
 				>
 				<File
-					RelativePath="..\..\test\common\event\testEvent.cpp"
+					RelativePath="..\..\test\common\event\EventTest.cpp"
 					>
 				</File>
 			</Filter>

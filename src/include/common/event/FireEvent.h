@@ -45,10 +45,11 @@
 #include "event/TransportEvent.h"
 #include "event/constants.h"
 
+BEGIN_NAMESPACE
+
 /*
  * A set of global functions to fire an event from inside the API.
  */
-
 
 /*
  * Fire a SyncEvent.
@@ -109,6 +110,7 @@ bool fireSyncItemEvent(const char* sourceURI, const char* name, const WCHAR* ite
  */
 bool fireSyncStatusEvent(const char* command, int statusCode, const char* name, const char* uri, const WCHAR* itemKey, int type);
 
+END_NAMESPACE
 
 /** @endcond */
 #endif

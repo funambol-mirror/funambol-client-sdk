@@ -35,6 +35,7 @@
 
 #ifndef __SYMBIANDOCUMENT_h__
 #define __SYMBIANDOCUMENT_h__
+/** @cond DEV */
 
 // INCLUDES
 #include <akndoc.h>
@@ -114,4 +115,6 @@ private:
     };
 
 #endif // __SYMBIANDOCUMENT_h__
+/** @endcond */
 // End of File
+

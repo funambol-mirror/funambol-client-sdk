@@ -35,6 +35,7 @@
 
 #ifndef __SYMBIANAPPVIEW_h__
 #define __SYMBIANAPPVIEW_h__
+/** @cond DEV */
 
 // INCLUDES
 #include <coecntrl.h>
@@ -107,4 +108,6 @@ private:
     };
 
 #endif // __SYMBIANAPPVIEW_h__
+/** @endcond */
 // End of File
+

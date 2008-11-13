@@ -35,6 +35,7 @@
 
 #ifndef __SYMBIANAPPLICATION_H__
 #define __SYMBIANAPPLICATION_H__
+/** @cond DEV */
 
 // INCLUDES
 #include <aknapp.h>
@@ -79,4 +80,7 @@ protected:
     };
 
 #endif // __SYMBIANAPPLICATION_H__
+/** @endcond */
+
 // End of File
+

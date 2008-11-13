@@ -36,7 +36,7 @@
 #ifndef INCL_TESTSYNCCLIENT
 #define INCL_TESTSYNCCLIENT
 /** @cond API */
-/** @addtogroup Client */
+/** @addtogroup Test */
 /** @{ */
 
 #include <string>

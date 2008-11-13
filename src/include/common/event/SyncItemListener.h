@@ -53,7 +53,7 @@ class SyncItemListener : public Listener {
 
 public:
     //Constructor
-    SyncItemListener() {};
+    SyncItemListener(const char *name = "") : Listener(name) {};
 
     // Virtual destructor
     virtual ~SyncItemListener() {}
