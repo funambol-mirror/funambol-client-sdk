@@ -43,9 +43,9 @@
 USE_NAMESPACE
 
 #ifdef _WIN32_WCE
-#define FUNAMBOL_HEADER "Funambol Windows Mobile Plug-in Log"
+#define FUNAMBOL_HEADER "Funambol Windows Mobile Client Log"
 #elif WIN32
-#define FUNAMBOL_HEADER "Funambol Win32 Plug-in Log"
+#define FUNAMBOL_HEADER "Funambol Win32 Client Log"
 #endif
 
 
