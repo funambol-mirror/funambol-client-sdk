@@ -39,6 +39,7 @@
 #include "FSyncOpt.h"
 #include "FSyncUpdater.h"
 
+#include "base/adapter/PlatformAdapter.h"
 #include "client/SyncClient.h"
 #include "client/FileSyncSource.h"
 #include "base/util/StringBuffer.h"
@@ -88,6 +89,8 @@ bool doSync(FSyncOpt& options)
 //------------------------------------------------------------------------ Main
 int main(int argc, char** argv) 
 {
+    PlatformAdapter::init(FSYNC_APPLICATION_URI);
+
     // Get the config instance
     FSyncConfig *config = FSyncConfig::getInstance();
     // Initialize it (read from file or create the default one
