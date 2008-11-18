@@ -331,6 +331,15 @@ char *mkTempFileName(const char *name)
     return toMultibyte(tmpFileName);
 }
 
+// check the presence of a file
+bool fileExists(const char *pathname) {
+    FILE *fh = fopen(pathname, "r");
+    if (fh) {
+        fclose(fh);     
+        return true;
+    }
+    return false;
+}
 
 bool readFile(const char* path, char **message, size_t *len, bool binary)
 {
@@ -554,7 +563,7 @@ int createFolder(const char *path) {
 
 /**
  * return the home folder, or an empty string on failure.
- */
+ *
 StringBuffer getHomeFolder() {
     wchar_t p[MAX_PATH];
     StringBuffer home(NULL);
@@ -568,7 +577,7 @@ StringBuffer getHomeFolder() {
     return home;
 }
 
-StringBuffer getConfigFolder() {
+StringBuffer getConfigFolder(const char *appname) {
     
     StringBuffer ret(".");
     wchar_t appdir[MAX_PATH];
@@ -576,21 +585,7 @@ StringBuffer getConfigFolder() {
     ret.convert(appdir);
     return ret;
 }
-
-// TODO: move this to the CacheSyncSource class.
-StringBuffer getCacheDirectory() {
-    
-    StringBuffer ret = getConfigFolder();
-    ret += "/";
-    ret += CACHE_REP;
-
-    if (createFolder(ret)){
-        // TODO: return null string and test it in the caller?
-        //ret = NULL;
-    }
-
-    return ret;
-}
+*/
 
 #else
 // TBD: dummy implementation!

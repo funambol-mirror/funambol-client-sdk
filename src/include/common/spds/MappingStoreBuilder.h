@@ -37,6 +37,7 @@
 #define INCL_MAPPING_STORE_BUILDER
 /** @cond DEV */
 
+#include "base/adapter/PlatformAdapter.h"
 #include "base/util/KeyValueStore.h"
 #include "base/util/PropertyFile.h"
 
@@ -57,7 +58,7 @@ public:
     * It is a property file.
     */
     virtual KeyValueStore* createNewInstance(const char* name) const {
-        StringBuffer fullName = getHomeFolder();
+        StringBuffer fullName = PlatformAdapter::getHomeFolder();
         fullName += "/"; fullName += name;
         return new PropertyFile(fullName);
     }

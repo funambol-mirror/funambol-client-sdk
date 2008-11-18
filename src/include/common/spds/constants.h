@@ -168,10 +168,5 @@ typedef enum SyncMode{
 
 //-------------------------------------------------------
 
-#ifndef NULL
-    #define NULL 0x00
-#endif
-
-
 /** @endcond */
 #endif

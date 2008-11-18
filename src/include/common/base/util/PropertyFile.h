@@ -66,7 +66,7 @@ private:
 
     /**
     * The name of the property file that is used as a journal. 
-    * It contains all the entries that are set with setPropertyValue (thye are appended into the file). 
+    * It contains all the entries that are set with setPropertyValue (they are appended into the file). 
     * They can be more than twice of the same key (two calls to setPropertyValue(prop1,val1); setPropertyValue(prop1,val111);)
     * The idea is that in memory there is the ArrayList of KeyValuePair with all the properties that
     * are with a unique key and this journal contains all the entries that can have more that one time

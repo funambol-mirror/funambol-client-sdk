@@ -19,6 +19,7 @@ SOURCES_BASE = \
     lquoted-printable.cpp \
     lerror.cpp \
     lItemContainer.cpp \
+    lPlatformAdapter.cpp \
     lmd5.cpp
 
 SOURCES_EVENT = \
@@ -206,10 +207,6 @@ libfunambol_la_CXXFLAGS = @CURL_CFLAGS@ @CPPUNIT_CXXFLAGS@
 # client_SOURCES = client.cpp TestSyncSource.cpp TestSyncSource2.cpp
 # client_LDADD = libfunambol.la
 
-
-briefcase_SOURCES = BriefcaseClient.cpp BriefcaseCacheSyncSource.cpp
-briefcase_LDADD = libfunambol.la
-
 #vcardconverter_SOURCES = vcardconverter.cpp
 #vcardconverter_LDADD = libfunambol.la
 
@@ -230,6 +227,7 @@ vpath %.cpp $(srcdir)/../../../src/cpp/common/base             \
             $(srcdir)/../../../src/cpp/common/vocl/iCalendar   \
             $(srcdir)/../../../src/cpp/common/vocl/vCard       \
             $(srcdir)/../../../src/cpp/posix/base              \
+            $(srcdir)/../../../src/cpp/posix/base/adapter      \
             $(srcdir)/../../../src/cpp/posix/http              \
             $(srcdir)/../../../src/cpp/posix/spdm              \
             $(srcdir)/../../../src/cpp/posix/spds

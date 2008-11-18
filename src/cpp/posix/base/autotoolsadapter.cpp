@@ -198,29 +198,6 @@ int createFolder(const char *path) {
     }
     return res;
 }
-
-StringBuffer getHomeFolder() {
-    StringBuffer home(getenv("HOME"));
-    if( home.null() ) {
-        LOG.error("Home directory not defined.");
-    }
-    return home;
-}
-
-StringBuffer getCacheDirectory() {
-    
-    StringBuffer ret(getenv("HOME"));
-    ret.append("/");
-    ret.append(CACHE_REP);
-    
-    DIR* d = opendir(ret);
-    if (!d) {
-        mkdir(ret, 0777);
-    } else {
-        closedir(d);
-    }  
-    return ret;
-}
     
 // TODO: convert to the specified encoding, assuming wc is UTF-8
 char* toMultibyte(const WCHAR *wc, const char *encoding)

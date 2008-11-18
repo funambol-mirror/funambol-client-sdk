@@ -33,20 +33,44 @@
  * the words "Powered by Funambol".
  */
 
-#include "spds/SyncSource.h"
+#include "base/fscapi.h"
 #include "base/Log.h"
-#include "client/SyncClient.h"
+//#include "client/SyncClient.h"
+#include "client/CacheSyncSource.h"
+#include "base/adapter/PlatformAdapter.h"
+
 #include "spds/spdsutils.h"
 #include "spds/SyncSourceConfig.h"
-#include "client/CacheSyncSource.h"
+
 #include "base/util/KeyValuePair.h"
 #include "base/util/PropertyFile.h"
 #include "base/util/ArrayListEnumeration.h"
 
 BEGIN_NAMESPACE
 
-CacheSyncSource::CacheSyncSource(const WCHAR* sourceName, AbstractSyncSourceConfig *sc, KeyValueStore* cache) :
-                    SyncSource(sourceName, sc) {
+// the name of the repository
+#define CACHE_FOLDER    "funambol_cache"
+
+// Compose the cache folder taking the config folder from
+// the platform adapter and tries to create it if not present.
+static bool initCacheDir(StringBuffer& dir) {
+    
+    dir = PlatformAdapter::getConfigFolder();
+    dir += "/";
+    dir += CACHE_FOLDER;
+
+    if (createFolder(dir)){
+        LOG.error("initCacheDir: error creating cache directory");
+        dir = NULL;
+        return false;
+    }
+    return true;
+}
+
+
+CacheSyncSource::CacheSyncSource(const WCHAR* sourceName,
+                                 AbstractSyncSourceConfig *sc,
+                                 KeyValueStore* cache) : SyncSource(sourceName, sc) {
    
     allKeys = NULL;
     newKeys = NULL; 
@@ -57,12 +81,19 @@ CacheSyncSource::CacheSyncSource(const WCHAR* sourceName, AbstractSyncSourceConf
         this->cache = cache;
     } else {
         // get the default directory of the 
-        StringBuffer completeName = getCacheDirectory();
-        completeName += "/";
-        completeName += CACHE_FILE_NAME;  
-        LOG.debug("PropertyFile: path to the PropertyFile %s", completeName.c_str());
+        StringBuffer cacheFileName;
 
-        this->cache = new PropertyFile(completeName);
+        if(!initCacheDir(cacheFileName)) {                
+            cacheFileName += "/";
+            cacheFileName += CACHE_FILE_NAME;  
+
+            LOG.debug("CacheSyncSource: cache pathname is %s", cacheFileName.c_str());
+            this->cache = new PropertyFile(cacheFileName);
+        }
+        else {
+            setErrorF(ERR_FILE_SYSTEM, "CacheSyncSource: cannot create cache file.");
+            this->cache = NULL; //cannot create the cache file
+        }
     }
 }
 
@@ -279,6 +310,16 @@ SyncItem* CacheSyncSource::getNextDeletedItem() {
     }    
          
     return syncItem;
+}
+
+// Check the status of the source before starting the sync.
+int CacheSyncSource::beginSync() {
+    if(cache == NULL) {
+        LOG.error("Cache file not initialized.");
+        return -1;      // block the sync if the cache store is not valid.
+    }
+
+    return 0;
 }
 
 int CacheSyncSource::endSync() {            

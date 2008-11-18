@@ -49,9 +49,6 @@
 #define B64_ENCODING        "b64"
 #define TEXT_PLAIN_ENCODING "text/plain"
 
-// the name of the repository
-#define CACHE_REP       "funambol_cache"
-
 BEGIN_NAMESPACE
 
 /*
@@ -162,6 +159,14 @@ bool saveFile(const char *filename, const char *buffer, size_t len,
  */
 size_t fgetsize(FILE *f);
 
+/**
+ * Test the presence of a file.
+ *
+ * @param the path to the file to test
+ * @return true if the file exists.
+ */
+bool fileExists(const char *pathname);
+
 /*
  * Read the content
  *
@@ -209,14 +214,6 @@ unsigned long getFileModTime(const char* name);
  * @return 0 on success, -1 otherwise.
  */
 int createFolder(const char *path);
-
-/**
-* Return the cache directory where are stored all the file .dat
-* used by the itemhandler cache implementation
-*/
-StringBuffer getCacheDirectory();
-
-StringBuffer getHomeFolder();
 
 long int getLenEncoding(const char*  s, const char* encoding);
 char *toMultibyte(const WCHAR *wc, const char *encoding = 0 );

@@ -382,6 +382,14 @@
 						</FileConfiguration>
 					</File>
 				</Filter>
+				<Filter
+					Name="adapter"
+					>
+					<File
+						RelativePath="..\..\src\cpp\windows\base\adapter\PlatformAdapter.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="http"
@@ -3456,6 +3464,14 @@
 					</File>
 					<File
 						RelativePath="..\..\src\include\common\base\util\XMLProcessor.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="adapter"
+					>
+					<File
+						RelativePath="..\..\src\include\common\base\adapter\PlatformAdapter.h"
 						>
 					</File>
 				</Filter>

@@ -340,11 +340,16 @@ public:
     void clientStatusPackageEnded() {};        
 
     /**
+     * Check that the cache store is available before starting the sync.
+     */
+    virtual int beginSync();
+
+    /**
      * In the first implementatation, in which serverStatusPackageEnded and 
      * clientStatusPackageEnded are not yet impelemented, the end sync
      * will udpate the whole cache status persistently.
      */
-    int endSync();       
+    virtual int endSync();       
     
     /**
     * Get the signature of an item given the key. The signature could be

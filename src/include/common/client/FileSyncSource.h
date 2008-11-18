@@ -44,7 +44,7 @@
 #include "spds/SyncItem.h"
 #include "spds/SyncMap.h"
 #include "spds/SyncStatus.h"
-#include "spdm/ManagementNode.h"
+//#include "spdm/ManagementNode.h"
 #include "base/util/ItemContainer.h"
 #include "spds/FileData.h"
 #include "client/CacheSyncSource.h"
@@ -75,30 +75,6 @@ private:
     // Copy is not allowed
     FileSyncSource(const FileSyncSource& s) : CacheSyncSource(s){};
     FileSyncSource& operator=(const FileSyncSource& s) {};
-
-    /**
-    * Save the file inside the filesystem. 
-    * Return 0 is success otherwise failure
-    */
-    int saveFileData(FileData& file);
-    
-    /**
-    * Save the file inside the filesystem. 
-    * It doesn't use the FileData SyncMLobject but
-    * it uses only the data as inside
-    *
-    * @param item       the item from which get the data
-    * @param isUpdate   it says if the item must to be add (false)
-    *                   or updated (true)
-    *                        
-    */
-    int saveFileData(SyncItem& item, bool isUpdate);
-
-    /**
-    * Parse the file object
-    * Return 0 is success otherwise failure
-    */    
-    int parseFileData(FileData& file, SyncItem& item);
 
 public:
 

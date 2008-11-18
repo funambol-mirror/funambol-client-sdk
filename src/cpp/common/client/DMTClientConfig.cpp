@@ -37,13 +37,15 @@
 #include "base/debug.h"
 #include "base/errors.h"
 #include "base/Log.h"
+#include "base/globalsdef.h"
 #include "base/util/utils.h"
+#include "base/adapter/PlatformAdapter.h"
+
 #include "client/DMTClientConfig.h"
 #include "spdm/constants.h"
 #include "spdm/DMTreeFactory.h"
 #include "spdm/DMTree.h"
 #include "spdm/ManagementNode.h"
-#include "base/globalsdef.h"
 
 USE_NAMESPACE
 
@@ -51,20 +53,22 @@ USE_NAMESPACE
 void DMTClientConfig::initialize() {
     dmt = NULL;
     syncMLNode = NULL;
-	serverNode = NULL;
+    serverNode = NULL;
     sourcesNode = NULL;
+    // TODO: use StringBuffer instead.
+    rootContext = new char[PlatformAdapter::getAppContext().length()+1];
+    strcpy(rootContext, PlatformAdapter::getAppContext().c_str());
 }
 
 DMTClientConfig::DMTClientConfig() : SyncManagerConfig() {
     initialize();
-    rootContext = 0;
 }
 
 
 DMTClientConfig::DMTClientConfig(const char* root): SyncManagerConfig() {
+    LOG.info("DMTClientConfig(root): deprecated method, use PlatformAdapter::init(root) instead.");
+    PlatformAdapter::init(root);
     initialize();
-    rootContext = new char[strlen(root)+1];
-    strcpy(rootContext, root);
 }
 
 

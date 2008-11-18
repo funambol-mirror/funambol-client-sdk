@@ -44,12 +44,9 @@ BEGIN_NAMESPACE
 
 #define OMA_MIME_TYPE "application/vnd.omads-file+xml"
 
-#define ERR_FILE_SYSTEM             1
-#define ERR_NO_FILES_TO_SYNC        2
-#define ERR_BAD_FILE_CONTENT        3
+//------------------------------------------------------------------------------ Static functions
 
-
-static StringBuffer getCompleteName(StringBuffer& dir, const WCHAR *name) {
+static StringBuffer getCompleteName(const char *dir, const WCHAR *name) {
     
     char* t = toMultibyte(name);
     StringBuffer pathName(dir);
@@ -60,6 +57,36 @@ static StringBuffer getCompleteName(StringBuffer& dir, const WCHAR *name) {
     
 }
 
+static int saveFileContent(const char *name, const char *content, size_t size, bool isUpdate) {
+    
+    if (!isUpdate) { // it is an add
+        if(fileExists(name)) {
+            return STC_ALREADY_EXISTS;
+        }
+    }   
+    if (!saveFile(name, content, size, true)) {
+        return STC_COMMAND_FAILED;
+    } 
+    
+    return STC_OK;
+}
+
+static int saveFileData(const char *dir, FileData& file, bool isUpdate) {
+    return saveFileContent(
+            getCompleteName(dir, file.getName()), file.getBody(), file.getSize(), isUpdate);
+
+}
+
+static int saveFileItem(const char *dir, SyncItem& item, bool isUpdate) {
+    return saveFileContent(
+            getCompleteName(dir, item.getKey()), 
+            (const char *)item.getData(),
+            item.getDataSize(),
+            isUpdate);
+}
+
+//---------------------------------------------------------------------------------- Constructors
+
 FileSyncSource::FileSyncSource(
                         const WCHAR* name,
                         AbstractSyncSourceConfig* sc)
@@ -69,53 +96,7 @@ FileSyncSource::FileSyncSource(
 
 FileSyncSource::~FileSyncSource() { }
 
-int FileSyncSource::parseFileData(FileData& file, SyncItem& item) {
-    
-    if (file.parse(item.getData(),item.getDataSize())) {
-        LOG.info("Error parsing item from server. Using its content directly");
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-int FileSyncSource::saveFileData(FileData& file) {
-    
-    int ret = STC_COMMAND_FAILED;
-    if (!saveFile(getCompleteName(dir, file.getName()), file.getBody(), file.getSize(), true)) {
-        LOG.info("Error saving file");        
-        return STC_COMMAND_FAILED;
-    } else {
-        return STC_OK;
-    }
-}
-
-int FileSyncSource::saveFileData(SyncItem& item, bool isUpdate) {
-    
-    StringBuffer completeName(getCompleteName(dir, item.getKey()));
-    if (!isUpdate) { // it is an add
-         FILE *fh = fopen(completeName, "r");
-         if (fh) {
-            fclose(fh);     
-            return STC_ALREADY_EXISTS;
-         }
-    }   
-    if (!saveFile(completeName, (const char *)item.getData(), item.getDataSize(), true)) {
-        setErrorF(ERR_FILE_SYSTEM, "Error saving file %s", completeName.c_str());
-        LOG.error("%s", getLastErrorMsg());
-        report->setLastErrorCode(ERR_FILE_SYSTEM);
-        report->setLastErrorMsg(getLastErrorMsg());
-        report->setState(SOURCE_ERROR);
-        return STC_COMMAND_FAILED;
-    } 
-    
-    if (!isUpdate) {    
-        return STC_ITEM_ADDED;
-    } else {
-        return STC_OK;
-    }
-    
-}
+//-------------------------------------------------------------------------------- Public methods
 
 Enumeration* FileSyncSource::getAllItemList() {
     
@@ -155,21 +136,30 @@ int FileSyncSource::insertItem(SyncItem& item) {
     
     int ret = STC_COMMAND_FAILED;
     FileData file;
-    
-    if (parseFileData(file, item) == 0) {
+
+    // Try the OMA file data first
+    if (file.parse(item.getData(),item.getDataSize()) == 0) {
         if (file.getSize() >= 0) {   
-            ret = saveFileData(file);
-            if (ret == STC_COMMAND_FAILED) {
-                return ret;
-            } else {
+            ret = saveFileData(dir, file, false);
+            if (ret == STC_OK) {            // Set the LUID with the local name 
                 item.setKey(file.getName());
-                ret = STC_ITEM_ADDED;
-                LOG.debug("Added item: %" WCHAR_PRINTF, file.getName());
             }
         }        
     } else {
-        ret = saveFileData(item, false);        
-    }      
+        // treat it as a raw file
+        ret = saveFileItem(dir, item, false);
+    }
+
+    if (ret == STC_OK) {
+        ret = STC_ITEM_ADDED;
+        LOG.debug("Added item: %" WCHAR_PRINTF, item.getKey());
+    }
+    else {
+        report->setLastErrorCode(ERR_ITEM_ERROR);
+        report->setLastErrorMsg(ERRMSG_ITEM_ERROR);
+        report->setState(SOURCE_ERROR);
+        LOG.debug("Error adding item: %" WCHAR_PRINTF, item.getKey());
+    }
     return ret;
 }
 
@@ -178,20 +168,24 @@ int FileSyncSource::modifyItem(SyncItem& item) {
     int ret = STC_COMMAND_FAILED;
     FileData file;
     
-    if (parseFileData(file, item) == 0) {
+    if (file.parse(item.getData(),item.getDataSize()) == 0) {
         if (file.getSize() >= 0) {   
-            ret = saveFileData(file);
-            if (ret = STC_COMMAND_FAILED) {
-                return ret;
-            } else { // don't add the item if it doesn't exist
-                //
-            }
+            ret = saveFileData(dir, file, true);
         }        
     } else {
-         ret = saveFileData(item, true);    
-    }    
+         ret = saveFileItem(dir, item, true);    
+    }
+
+    if (ret == STC_OK) {
+        LOG.debug("Updated item: %" WCHAR_PRINTF, item.getKey());
+    }
+    else {
+        report->setLastErrorCode(ERR_ITEM_ERROR);
+        report->setLastErrorMsg(ERRMSG_ITEM_ERROR);
+        report->setState(SOURCE_ERROR);
+        LOG.debug("Error updating item: %" WCHAR_PRINTF, item.getKey());
+    }
     return ret;
-    
 }
 
 int FileSyncSource::removeItem(SyncItem& item) {

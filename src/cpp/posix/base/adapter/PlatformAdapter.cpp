@@ -1,6 +1,6 @@
 /*
  * Funambol is a mobile platform developed by Funambol, Inc. 
- * Copyright (C) 2003 - 2007 Funambol, Inc.
+ * Copyright (C) 2008 Funambol, Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
@@ -32,64 +32,49 @@
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol".
  */
-#ifndef INCL_COMMON_ERRORS
-#define INCL_COMMON_ERRORS
-/** @cond DEV */
 
-#include "spdm/errors.h"
-#include "spds/errors.h"
-#include "http/errors.h"
+#include "base/fscapi.h"
+#include "base/adapter/PlatformAdapter.h"
+#include "base/util/StringBuffer.h"
+#include "base/Log.h"
 
-#define DIM_ERROR_MESSAGE 512
+BEGIN_NAMESPACE
 
-#define ERR_NONE        0
-#define ERR_UNSPECIFIED 1
+StringBuffer PlatformAdapter::appContext(DEFAULT_APP_CONTEXT);
+StringBuffer PlatformAdapter::homeFolder;
+StringBuffer PlatformAdapter::configFolder;
 
-#define ERR_GENERIC_BASE        1000
-#define ERR_NOT_ENOUGH_MEMORY   ERR_GENERIC_BASE
-#define ERR_PARAMETER_IS_EMPTY  ERR_GENERIC_BASE + 1
-#define ERR_PARAMETER_IS_NULL   ERR_GENERIC_BASE + 2
-#define ERR_WRONG_PARAMETERS    ERR_GENERIC_BASE + 3
+// Initializes the platform-dependent parameters of the library.
+void PlatformAdapter::init(const char *appcontext) {
+    appContext = appcontext;
+    homeFolder = "";
+    configFolder = "";
+}
 
-#define ERR_FILE_SYSTEM         ERR_GENERIC_BASE + 10
-#define ERR_FILE_READ           ERR_GENERIC_BASE + 11
-#define ERR_FILE_WRITE          ERR_GENERIC_BASE + 12
-#define ERR_BAD_FILE_CONTENT    ERR_GENERIC_BASE + 13
+// Returns the application context
+const StringBuffer& PlatformAdapter::getAppContext() {
+    return appContext;
+}
+
+// Returns the home folder, or an empty string on failure.
+const StringBuffer& PlatformAdapter::getHomeFolder() {
+    if (homeFolder.empty()) {
+        homeFolder = getenv("HOME");
+        if( homeFolder.null() ) {
+            LOG.error("Home directory not defined.");
+            homeFolder = "";
+        }
+    }
+    return homeFolder;
+}
+
+// Returns the home folder, or an empty string on failure.
+const StringBuffer& PlatformAdapter::getConfigFolder() {
+    if (configFolder.empty()){
+        //TODO
+    }
+    return configFolder;
+}
 
 
-#define ERRMSG_B64_GARBAGE              "Garbage found, giving up"
-#define ERRMSG_B64_ORPHANED_BITS        "Orphaned bits ignored"
-#define ERRMSG_NOT_ENOUGH_MEMORY        "Not enough memory (%d bytes required)"
-
-#define ERRMSG_FILE_SYSTEM      "Error accessing file system"
-#define ERRMSG_FILE_READ        "Error reading file: %s"
-#define ERRMSG_FILE_WRITE       "Error writing file: %s"
-#define ERRMSG_BAD_FILE_CONTENT "Bad file content: %s"
-
-/**
- * Reset the error message and code.
- */
-void resetError();
-
-/**
- * Set error message and code.
- */
-void setError(int errorCode, const char *errorMessage);
-
-/**
- * Set error message and code.
- */
-void setErrorF(int errorCode, const char *msgFormat, ...);
-
-/**
- * Retrieve the last error code.
- */
-int getLastErrorCode();
-
-/**
- * Retrieve the last error message.
- */
-const char *getLastErrorMsg();
-
-/** @endcond */
-#endif
+END_NAMESPACE

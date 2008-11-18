@@ -59,7 +59,7 @@
 #define ERRMSG_DT_UNKNOWN       "Data transformer '%s' unknown"
 #define ERRMSG_DT_FAILURE       "Data transformer error: %lx"
 
-#define ERRMSG_ANOPTHER_SYNC    "Another sync in progress"
+#define ERRMSG_ANOTHER_SYNC    "Another sync in progress"
 
 /** @endcond */
 #endif
