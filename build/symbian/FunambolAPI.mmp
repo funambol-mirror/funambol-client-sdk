@@ -138,3 +138,5 @@ SOURCE       DESEncoder.cpp DESDecoder.cpp
 
 SOURCEPATH ..\..\src\cpp\common\base
 SOURCE md5.cpp
+SOURCEPATH ..\..\src\cpp\symbian\base\adapter
+SOURCE PlatformAdapter.cpp
