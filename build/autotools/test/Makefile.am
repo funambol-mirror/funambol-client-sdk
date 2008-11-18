@@ -48,7 +48,7 @@ TESTS_SPDM = \
 TESTS_CLIENT = \
     OptionParserTest.cpp
 
-TESTS_EVENT = testEvent.cpp
+TESTS_EVENT = EventTest.cpp
 
 TESTS_SPDS = \
     MappingsTest.cpp \
