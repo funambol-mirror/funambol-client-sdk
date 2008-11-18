@@ -1,0 +1,44 @@
+Funambol J2ME Common API Changes Log
+------------------------------------
+2007-11-08
+    - ChunkedString bug fixed: start index cannot be > end index
+
+2007-08-21
+    - ThreadPool changed to avoid having threads active in the background and
+      waiting for some work to do. Threads are spawned using the proper start
+      method and this also allows a proper GC of such thread objects.
+2007-06-12 (6.0.11)
+    - SyncMLStatus server msg get from data tag
+    - Workaround for cookies management in http server response
+
+2007-06-01 (6.0.10)
+    - Simplified exception scheme.
+    - Fixed bug in NamedObjeStore.getNextObject when the index is not
+      the first of the RecordEnumeration.
+
+2007-30-05  (6.0.10)
+    - J2ME Funambol Common API Documentation Updated
+
+2007-05-18 (6.0.9)
+    - Bug fixing on messages date management
+
+2007-05-11 (6.0.8)
+    - Handling of error 503 from server
+
+2007-04-03 (6.0.6)
+    - Improved memory handling
+    - Compress
+    - Thread priority reduced for lanched tasks
+    - Improved parser
+
+2007-02-27 (r_v6alpha)
+    - Bugfix in ObjectStore and NamedObjectStore
+    - decode(String, String) metho added to Base64
+    - Bigfix in MailDateFormatter
+    - Bugfix in RMSAppender
+
+2006-10-27
+    - First import on CVS. 
+    - Basic serialization and storage framework.
+    - Common utilities
+    

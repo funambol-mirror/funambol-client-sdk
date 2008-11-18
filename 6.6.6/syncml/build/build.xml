@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<!-- 
+================================================================================
+Build file for Funambol J2ME SYNCML API.
+================================================================================
+-->
+
+<project name="Funambol J2ME SyncML" default="build" basedir="..">
+    
+    <!-- Define the tasks. -->
+    <taskdef resource="antenna.properties"/>
+    
+    <!--
+    ========================================================================
+     Setting variable
+    ========================================================================
+    --> 
+    <target name="init">
+        
+        <property file="build/build.properties"/>
+        <property name="j2me.version"     
+          value="${j2me.release.major}.${j2me.release.minor}.${j2me.build.number}"/>
+        <property name="dir.src"          value="${basedir}/src"             />
+        <property name="dir.test"         value="${basedir}/test"            />
+        <property name="dir.res"          value="${basedir}/res"             />     
+        <property name="dir.output"       value="${basedir}/output"          />   
+        <property name="dir.docs"         value="${basedir}/docs"          /> 
+        <property name="dir.output.html"  value="${dir.output}/html"         />
+        <property name="dir.classes"      value="${dir.output}/classes"      />
+        <!-- WTK Definitions -->
+        <property name="wtk.home"                value="c:\wtk25" />
+        <property name="wtk.cldc.version"        value="1.0"      />
+        <property name="wtk.cldc_api"            value="${wtk.home}/lib/cldc10.jar"/>
+        <property name="wtk.midp.version"        value="2.0"      />
+        <property name="wtk.midp_api"            value="${wtk.home}/lib/midpapi20.jar"/>
+        <property name="wtk.optionalpda.enabled" value="false"    />
+        <property name="wtk.debug"               value="false"    />
+        
+        <property name="lib.junit"     value="${basedir}/lib/JMUnit4CLDC10.jar"/>
+        
+        <!-- Funambol dependencies -->
+        <property name="lib.funambol.common"
+                  value="${basedir}/lib/funambol-j2me-common.jar"/>
+        <property name="wma.jar"       value="${wtk.home}/lib/wma11.jar"/>
+    </target>
+    
+    <!-- =============================================== -->
+    <!-- USAGE                                           -->
+    <!-- =============================================== -->
+    <target name="usage" depends="init">
+        
+        <echo message=""/>
+        <echo message="Funambol J2ME SyncML API build file"/>
+        <echo message="------------------------------------------------------"/>
+        <echo message=""/>
+        <echo message=" Available targets are :"/>
+        <echo message=""/>
+        <echo message=" usage                --> help on usage"/>
+        <echo message=" build                --> builds the project"/>
+        <echo message=" rebuild              --> rebuilds the project"/>
+        <echo message=" test                 --> builds the test project"/>
+        <echo message=" docs                 --> builds java-doc"/>
+        <echo message=" run                  --> builds and runs the test project"/>
+        <echo message=" debug                --> builds and runs the test with debug active"/>
+        <echo message=" release              --> builds release packages"/>
+        <echo message=" clean                --> cleans up the build directory"/>
+        <echo message=""/>
+        
+    </target>
+    
+    <!-- =============================================== -->
+    <!-- CLEAN                                           -->
+    <!-- =============================================== -->
+    <target name="clean" depends="init">
+        <echo message="Clean output tree"/>
+        <delete dir="${dir.output}"/>
+    </target>
+    
+    <!-- =============================================== -->
+    <!-- BUILD                                           -->
+    <!-- =============================================== -->
+    <target name="rebuild" depends="clean,build"/>
+    
+    <!-- =============================================== -->
+    <!-- BUILD                                           -->
+    <!-- =============================================== -->
+    <target name="build" depends="compile">
+        
+        <!--======= Jar up everything ========-->
+        <echo message="Packaging library"/>
+        
+        <jar destfile="${dir.output}/${j2me.name}.jar">
+            <fileset dir="${dir.classes}" includes="**/*.class"/>
+        </jar>
+        
+    </target>
+    
+    <!-- =============================================== -->
+    <!-- TEST                                            -->
+    <!-- =============================================== -->
+    <target name="test" depends="clean,compile_test">
+        
+        <!-- Unpack the dependent packages -->
+        <unjar src="${lib.junit}" dest="${dir.classes}"/>
+        <unjar src="${lib.funambol.common}" dest="${dir.classes}"/>
+        
+        <!-- Create a JAD file. -->
+        
+        <wtkjad jadfile="${dir.output}/SyncTest.jad"
+                jarfile="${dir.output}/SyncTest.jar"
+                name="SyncTest"
+                vendor="Funambol Inc."
+                version="${j2me.version}">
+            
+            <midlet name="SyncTest" class="com.funambol.syncml.client.SyncTest"/>
+            <midlet name="OTAConfigParserTest" class="com.funambol.syncml.client.OTAConfigParserTest"/>
+            <midlet name="HttpTransportAgentTest" class="com.funambol.syncml.client.HttpTransportAgentTest"/>
+            <midlet name="SyncMLCommandTest" class="com.funambol.syncml.client.SyncMLCommandTest"/>
+            <midlet name="SyncMLStatusTest" class="com.funambol.syncml.client.SyncMLStatusTest"/>
+            
+        </wtkjad>
+        
+        <!-- Package everything. Most of the necessary information is
+             contained in the JAD file. Also preverify the result this
+             time. To obfuscate everything, set the corresponding
+             parameter to "true" (requires RetroGuard or ProGuard). The
+             version parameter increments the MIDlet-Version by one. -->
+
+        <wtkpackage jarfile="${dir.output}/SyncTest.jar"
+                    jadfile="${dir.output}/SyncTest.jad"
+                    obfuscate="false"
+                    preverify="true" classpath="${wma.jar}">
+            
+            <!-- Package our newly compiled classes. -->
+            <fileset dir="${dir.classes}" includes="**/*.class"/>
+            
+        </wtkpackage>
+        
+        <!-- Optimize the package -->
+        <!--wtksmartlink jarfile="${dir.output}/SyncTest.jar"
+                      jadfile="${dir.output}/SyncTest.jad"/-->
+
+    </target>
+    
+    <!-- =============================================== -->
+    <!-- RUN                                             -->
+    <!-- =============================================== -->
+    <target name="run" depends="test">
+        <!-- Start the MIDlet suite -->
+        <wtkrun jadfile="${dir.output}/SyncTest.jad"
+             device="DefaultColorPhone" wait="true">
+        </wtkrun>
+    </target>
+    
+    <!-- =============================================== -->
+    <!-- DEBUG                                           -->
+    <!-- =============================================== -->
+    <target name="debug" depends="test">
+        <wtkrun jadfile="${dir.output}/SyncTest.jad"
+             device="DefaultColorPhone" wait="true" debug="5000">
+        </wtkrun>
+    </target>
+    
+    <!-- =============================================== -->
+    <!-- DOCS                                            -->
+    <!-- =============================================== -->
+    <target name="docs" depends="init">
+        
+        <!--
+        First of all copy all the files we want to document in a
+        temporary directory, than apply javadoc
+        -->
+    
+        <delete dir="${dir.docs}/javadoc/src"/>
+        <mkdir dir="${dir.docs}/javadoc/src"/>
+        
+        <copy todir="${dir.docs}/javadoc/src">
+            <fileset dir="${dir.src}/">
+                
+                <!--
+                 package com.funambol.syncml
+                -->
+                <include name="com/funambol/syncml/package.html"/>
+                <include name="**/*.java"/>
+            </fileset>
+        </copy>
+        
+        
+        <!--copy todir="${dir.docs}/javadoc" file="${dir.src}/docs/images/logo.gif"/-->
+        
+
+        <javadoc destdir      = "${dir.docs}/javadoc" packagenames="com.*"
+                 version      = "false"
+                 author       = "false"
+                 windowtitle  = "Funambol SyncML J2ME API ${j2me.version}">
+            
+            <classpath>
+                <pathelement location="${wtk.midp_api}"/>
+                <pathelement location="${dir.output}/${j2me.name}.jar"/>
+                <pathelement location="${lib.funambol.common}"/>
+            </classpath>
+            
+            <packageset dir="${dir.docs}/javadoc/src" defaultexcludes="yes">
+                <include name="com/funambol/syncml/**"/>
+            </packageset>
+            
+            <doctitle>
+                <![CDATA[<!--img src="logo.gif"--> <h1>Funambol J2ME SyncML API ${j2me.version}</h1>]]>
+            </doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2006 Funambol.</i>]]></bottom>
+        </javadoc>
+        <delete dir="${dir.docs}/javadoc/src"/>
+    </target>
+    
+    
+    <!-- =================================================================== -->
+    <!-- RELEASE                                                             -->
+    <!-- When a new release is created, the release.properties file is       -->
+    <!-- updated with the current date and incrementing the build number.    -->
+    <!-- ====================================================================-->
+    <target name="release" depends="rebuild">
+        <antcall target="compile"/>
+        <antcall target="docs"/> <!-- public javadaocs for release -->
+        <zip zipfile="${dir.output}/${j2me.name}-${j2me.version}.zip">
+            <zipfileset dir="." includes="**/*" excludes="CVS/, **/nbproject/"/>
+        </zip>
+    </target>
+    
+    <!-- Compile sources -->
+    <target name="compile" depends="init">
+        <mkdir dir="${dir.classes}"/>
+        
+        <wtkbuild srcdir="src" destdir="${dir.classes}"
+                  target="1.1" source="1.2" preverify="false"
+                  debug="${wtk.debug}">
+            <classpath>
+                <pathelement location="${lib.funambol.common}"/>
+            </classpath>
+        </wtkbuild>
+    </target>
+    
+    <!-- Compile test classes -->
+    <target name="compile_test" depends="compile">
+        <wtkbuild srcdir="test" destdir="${dir.classes}"
+                  target="1.1" source="1.2" preverify="false"
+                  debug="${wtk.debug}">
+            <classpath>
+                <pathelement location="${lib.funambol.common}"/>
+                <pathelement location="${lib.junit}"/>
+            </classpath>
+            
+        </wtkbuild>
+    </target>
+    
+    
+</project>
+
