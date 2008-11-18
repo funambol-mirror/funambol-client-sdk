@@ -71,7 +71,13 @@ const StringBuffer& PlatformAdapter::getHomeFolder() {
 // Returns the home folder, or an empty string on failure.
 const StringBuffer& PlatformAdapter::getConfigFolder() {
     if (configFolder.empty()){
-        //TODO
+        configFolder = getenv("XDG_CONFIG_HOME");
+        if (configFolder.empty()){
+            configFolder = getHomeFolder();
+            configFolder += "/.config";
+        }
+        configFolder += "/";
+        configFolder += appContext;
     }
     return configFolder;
 }
