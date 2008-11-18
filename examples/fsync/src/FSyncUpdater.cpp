@@ -46,6 +46,39 @@
 
 USE_NAMESPACE
 
+#define FSYNC_LISTENER_NAME "fsync.listener"
+
+/**
+ * This class implements the SyncListener interface in order to be notified of
+ * the SyncEvents. It simply displays the sync messages on the standard
+ * output.
+ */
+class FSyncListener : public SyncListener {
+    public:
+
+        FSyncListener() : SyncListener(FSYNC_LISTENER_NAME) {};
+
+        void syncBegin (SyncEvent& event) {
+            printf("\nBegin synchronization");
+        }
+        void syncEnd (SyncEvent& event) {
+            printf("\nSynchronization done.\n");
+        }
+        void sendInitialization (SyncEvent& event) {
+            printf("\nConnecting to the server");
+        }
+        void sendModifications (SyncEvent& event) {
+            //printf("\nSending modifications");
+        }
+        void sendFinalization (SyncEvent& event) {
+            printf("\nSending finalization");
+        }
+        void syncError (SyncEvent& event) {
+            printf("\nSynchronization error: %s", event.getMessage());
+        }
+};
+
+
 /**
  * This class implements the SyncItemListener intrface in order to be notified
  * of the SyncItemEvents. It simply displays the sync messages on the standard
@@ -55,7 +88,7 @@ class FSyncItemListener : public SyncItemListener
 {
     public:
 
-        FSyncItemListener() { 
+        FSyncItemListener() : SyncItemListener(FSYNC_LISTENER_NAME) { 
             itemsAddedByServerCount   = 0;
             itemsUpdatedByServerCount = 0;
             itemsDeletedByServerCount = 0;
@@ -100,34 +133,6 @@ class FSyncItemListener : public SyncItemListener
 };
 
 /**
- * This class implements the SyncListener intrface in order to be notified of
- * the SyncEvents. It simply displays the sync messages on the standard
- * output.
- */
-class FSyncListener : public SyncListener {
-    public:
-
-        void syncBegin (SyncEvent& event) {
-            printf("\nBegin synchronization");
-        }
-        void syncEnd (SyncEvent& event) {
-            printf("\nSynchronization done.\n");
-        }
-        void sendInitialization (SyncEvent& event) {
-            printf("\nConnecting to the server");
-        }
-        void sendModifications (SyncEvent& event) {
-            //printf("\nSending modifications");
-        }
-        void sendFinalization (SyncEvent& event) {
-            printf("\nSending finalization");
-        }
-        void syncError (SyncEvent& event) {
-            printf("\nSynchronization error: %s", event.getMessage());
-        }
-};
-
-/**
  * This class implements the SyncSourceListener interface in order to be
  * notified of the SyncSourceEvents. It simply displays the sync messages on
  * the standard output.
@@ -136,6 +141,8 @@ class FSyncSourceListener : public SyncSourceListener
 {
     public:
   
+        FSyncSourceListener() : SyncSourceListener(FSYNC_LISTENER_NAME) {};
+
         void syncSourceBegin (SyncSourceEvent& event) {
             //printf("Begin sync of files\n");
         }
@@ -161,6 +168,8 @@ class FSyncTransportListener : public TransportListener
 {
     public:
   
+        FSyncTransportListener() : TransportListener(FSYNC_LISTENER_NAME) {} ;
+
         void sendDataBegin    (TransportEvent& event) { putchar('.'); };
         void syncDataEnd      (TransportEvent& event) { putchar('.'); };
         void receiveDataBegin (TransportEvent& event) { putchar('.'); };
@@ -197,12 +206,8 @@ void FSyncUpdater::unsetListeners() {
     ManageListener& lman = ManageListener::getInstance();
 
     LOG.debug("Unset listeners.");
-    lman.unsetSyncListener();
-    lman.unsetSyncItemListener();
-    lman.unsetSyncSourceListener();
-    lman.unsetTransportListener();
 
-    ManageListener::dispose();
+    ManageListener::releaseAllListeners();
 }
 
 
