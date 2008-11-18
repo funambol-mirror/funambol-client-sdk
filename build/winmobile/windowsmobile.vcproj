@@ -467,6 +467,94 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+			OutputDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
+			IntermediateDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
+			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="1"
+				TypeLibraryName="$(PlatformName)\$(ConfigurationName)/windowsmobile.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				ExecutionBucket="7"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
+				PreprocessorDefinitions="USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);NDEBUG;ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
+				StringPooling="true"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				TreatWChar_tAsBuiltInType="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
+				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
+				ObjectFile="$(PlatformName)\$(ConfigurationName)/"
+				ProgramDataBaseFileName="$(PlatformName)\$(ConfigurationName)/"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="$(PlatformName)\$(ConfigurationName)\windowsmobile.lib"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.bsc"
+			/>
+			<Tool
+				Name="VCCodeSignTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+			<DeploymentTool
+				ForceDirty="-1"
+				RemoteDirectory=""
+				RegisterOutput="0"
+				AdditionalFiles=""
+			/>
+			<DebuggerTool
+			/>
+		</Configuration>
+		<Configuration
 			Name="Debug|Smartphone 2003 (ARMV4)"
 			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
@@ -902,94 +990,6 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-			OutputDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
-			IntermediateDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
-			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="1"
-				TypeLibraryName="$(PlatformName)\$(ConfigurationName)/windowsmobile.tlb"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				ExecutionBucket="7"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\src\include\windows,..\..\src\include\common,..\..\tools\zlib"
-				PreprocessorDefinitions="USE_ZLIB;_WIN32_WCE=$(CEVER);$(CePlatform);NDEBUG;ARM;_ARM_;ARMV4;UNDER_CE=$(CEVER);UNICODE;_LIB"
-				StringPooling="true"
-				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
-				TreatWChar_tAsBuiltInType="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
-				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
-				ObjectFile="$(PlatformName)\$(ConfigurationName)/"
-				ProgramDataBaseFileName="$(PlatformName)\$(ConfigurationName)/"
-				BrowseInformation="1"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(PlatformName)\$(ConfigurationName)\windowsmobile.lib"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.bsc"
-			/>
-			<Tool
-				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-			<DeploymentTool
-				ForceDirty="-1"
-				RemoteDirectory=""
-				RegisterOutput="0"
-				AdditionalFiles=""
-			/>
-			<DebuggerTool
-			/>
-		</Configuration>
-		<Configuration
 			Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
 			OutputDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
 			IntermediateDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
@@ -1141,6 +1141,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -1183,16 +1193,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1259,6 +1259,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -1301,16 +1311,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1389,6 +1389,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -1431,16 +1441,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1522,6 +1522,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -1564,16 +1574,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -1640,6 +1640,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -1682,16 +1692,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -1762,6 +1762,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -1804,16 +1814,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -1880,6 +1880,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -1922,16 +1932,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -2002,6 +2002,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -2044,16 +2054,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -2132,6 +2132,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -2177,16 +2187,6 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
 							Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
 							>
 							<Tool
@@ -2195,6 +2195,14 @@
 								UsePrecompiledHeader="0"
 							/>
 						</FileConfiguration>
+					</File>
+				</Filter>
+				<Filter
+					Name="adapter"
+					>
+					<File
+						RelativePath="..\..\src\cpp\windows\base\adapter\PlatformAdapter.cpp"
+						>
 					</File>
 				</Filter>
 			</Filter>
@@ -2255,6 +2263,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -2297,16 +2315,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2373,6 +2381,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -2415,16 +2433,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2503,6 +2511,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -2545,16 +2563,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2621,6 +2629,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -2663,16 +2681,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2739,6 +2747,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -2781,16 +2799,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2861,6 +2869,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -2903,16 +2921,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2987,6 +2995,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -3029,16 +3047,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3105,6 +3113,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -3147,16 +3165,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3223,6 +3231,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -3265,16 +3283,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3341,6 +3349,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -3383,16 +3401,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3459,6 +3467,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -3501,16 +3519,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3577,6 +3585,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -3619,16 +3637,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3695,6 +3703,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -3737,16 +3755,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3829,6 +3837,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -3871,16 +3889,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3959,6 +3967,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4001,16 +4019,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -4077,6 +4085,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4119,16 +4137,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -4195,6 +4203,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4237,16 +4255,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -4313,6 +4321,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4355,16 +4373,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -4431,6 +4439,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4473,16 +4491,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -4549,6 +4557,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4591,16 +4609,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -4667,6 +4675,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4709,16 +4727,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -4785,6 +4793,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4827,16 +4845,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -4903,6 +4911,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -4945,16 +4963,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5021,6 +5029,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -5063,16 +5081,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5143,6 +5151,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -5185,16 +5203,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5261,6 +5269,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -5303,16 +5321,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5391,6 +5399,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -5433,16 +5451,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5513,6 +5521,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -5555,16 +5573,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5638,6 +5646,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -5680,16 +5698,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -5756,6 +5764,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -5798,16 +5816,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -5874,6 +5882,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -5916,16 +5934,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -5992,6 +6000,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6034,16 +6052,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -6110,6 +6118,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6152,16 +6170,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -6228,6 +6236,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6270,16 +6288,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -6346,6 +6354,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6388,16 +6406,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -6464,6 +6472,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6506,16 +6524,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -6582,6 +6590,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6624,16 +6642,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -6700,6 +6708,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6742,16 +6760,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -6818,6 +6826,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6860,16 +6878,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -6936,6 +6944,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -6978,16 +6996,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7054,6 +7062,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -7096,16 +7114,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7172,6 +7180,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -7214,16 +7232,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7290,6 +7298,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -7332,16 +7350,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7408,6 +7416,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -7450,16 +7468,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7526,6 +7534,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -7568,16 +7586,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7644,6 +7652,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -7686,16 +7704,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7762,6 +7770,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -7804,16 +7822,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7880,6 +7888,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -7922,16 +7940,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -7998,6 +8006,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8040,16 +8058,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -8116,6 +8124,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8158,16 +8176,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -8234,6 +8242,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8276,16 +8294,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -8352,6 +8360,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8394,16 +8412,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -8470,6 +8478,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8512,16 +8530,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -8588,6 +8596,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8630,16 +8648,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -8706,6 +8714,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8748,16 +8766,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -8824,6 +8832,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8866,16 +8884,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -8942,6 +8950,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -8984,16 +9002,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -9060,6 +9068,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -9102,16 +9120,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -9178,6 +9186,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -9220,16 +9238,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -9296,6 +9304,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -9338,16 +9356,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -9414,6 +9422,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -9456,16 +9474,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -9532,6 +9540,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -9574,16 +9592,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -9650,6 +9658,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -9692,16 +9710,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -9768,6 +9776,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -9810,16 +9828,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -9886,6 +9894,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -9928,16 +9946,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10004,6 +10012,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10046,16 +10064,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10122,6 +10130,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10164,16 +10182,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10240,6 +10248,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10282,16 +10300,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10358,6 +10366,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10400,16 +10418,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10476,6 +10484,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10518,16 +10536,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10594,6 +10602,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10636,16 +10654,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10712,6 +10720,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10754,16 +10772,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10830,6 +10838,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10872,16 +10890,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -10948,6 +10956,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -10990,16 +11008,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -11066,6 +11074,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -11108,16 +11126,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -11184,6 +11192,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -11226,16 +11244,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -11302,6 +11310,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -11344,16 +11362,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -11420,6 +11428,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -11462,16 +11480,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -11538,6 +11546,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -11580,16 +11598,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -11656,6 +11664,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -11698,16 +11716,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -11774,6 +11782,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -11816,16 +11834,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -11892,6 +11900,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -11934,16 +11952,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12010,6 +12018,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12052,16 +12070,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12128,6 +12136,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12170,16 +12188,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12246,6 +12254,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12288,16 +12306,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12364,6 +12372,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12406,16 +12424,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12482,6 +12490,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12524,16 +12542,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12600,6 +12608,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12642,16 +12660,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12718,6 +12726,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12760,16 +12778,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12836,6 +12844,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12878,16 +12896,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -12954,6 +12962,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -12996,16 +13014,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -13072,6 +13080,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -13114,16 +13132,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -13190,6 +13198,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -13232,16 +13250,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -13312,6 +13320,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -13354,16 +13372,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -13434,6 +13442,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -13476,16 +13494,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -13557,6 +13565,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -13599,16 +13617,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -13675,6 +13683,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -13717,16 +13735,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -13793,6 +13801,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -13835,16 +13853,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -13911,6 +13919,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -13953,16 +13971,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -14029,6 +14037,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -14071,16 +14089,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -14147,6 +14155,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -14189,16 +14207,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -14265,6 +14273,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -14307,16 +14325,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -14387,6 +14395,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -14429,16 +14447,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -14505,6 +14513,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -14547,16 +14565,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -14623,6 +14631,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -14665,16 +14683,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -14741,6 +14749,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Smartphone 2003 (ARMV4)"
 						>
 						<Tool
@@ -14783,16 +14801,6 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -14862,6 +14870,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -14904,16 +14922,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -14980,6 +14988,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15022,16 +15040,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -15102,6 +15110,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15144,16 +15162,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -15220,6 +15228,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15262,16 +15280,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -15342,6 +15350,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15384,16 +15402,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -15460,6 +15468,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15502,16 +15520,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -15578,6 +15586,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15620,16 +15638,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -15696,6 +15704,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15738,16 +15756,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -15814,6 +15822,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15856,16 +15874,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -15932,6 +15940,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -15974,16 +15992,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -16050,6 +16058,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -16092,16 +16110,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -16168,6 +16176,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -16210,16 +16228,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -16286,6 +16294,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -16328,16 +16346,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -16404,6 +16412,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -16446,16 +16464,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -16522,6 +16530,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -16564,16 +16582,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -16640,6 +16648,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -16682,16 +16700,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -16762,6 +16770,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -16804,16 +16822,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -16880,6 +16888,16 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
+							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
 							Name="Debug|Smartphone 2003 (ARMV4)"
 							>
 							<Tool
@@ -16922,16 +16940,6 @@
 								Name="VCCLCompilerTool"
 								AdditionalIncludeDirectories=""
 								UsePrecompiledHeader="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -18124,10 +18132,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\include\common\http\errors.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\include\common\spds\errors.h"
 				>
 			</File>
@@ -18137,6 +18141,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\include\common\base\errors.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\include\common\http\errors.h"
 				>
 			</File>
 			<File
