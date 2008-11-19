@@ -269,5 +269,21 @@ char *mkTempFileName(const char *name)
     }
 }
 
+// check the presence of a file
+bool fileExists(const char *pathname) {
+    if (pathname) {
+        struct stat st;
+        
+        memset(&st, 0, sizeof(struct stat));
+        
+        if (stat(pathname, &st) < 0) {
+            return false;
+        }
+     
+        return true;
+    }
+
+    return false;
+}
 END_NAMESPACE
 
