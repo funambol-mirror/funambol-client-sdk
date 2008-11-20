@@ -51,15 +51,16 @@
 # include <cppunit/extensions/HelperMacros.h>
 
 #include "base/fscapi.h"
+#include "base/globalsdef.h"
+#include "base/messages.h"
+#include "base/Log.h"
+#include "base/util/StringBuffer.h"
+#include "base/adapter/PlatformAdapter.h"
 #include "client/DMTClientConfig.h"
 #include "client/SyncClient.h"
 #include "MappingTestSyncSource.h"
-#include "base/messages.h"
-#include "base/Log.h"
-#include "spds/DataTransformerFactory.h"
-#include "spds/DefaultConfigFactory.h"
-#include "base/util/StringBuffer.h"
-#include "base/globalsdef.h"
+//#include "spds/DataTransformerFactory.h"
+//#include "spds/DefaultConfigFactory.h"
 #include "spds/MappingsManager.h"
 #include "spds/MappingStoreBuilder.h"
 #include "MappingsTest.h"
@@ -81,7 +82,7 @@ class CustomMappingStoreBuilder : public MappingStoreBuilder {
     KeyValueStore* createNewInstance(const char* name) const {
         
         if (strcmp(name, "contact") == 0) {
-            StringBuffer fullName = getHomeFolder();
+            StringBuffer fullName = PlatformAdapter::getHomeFolder();
             fullName += "/"; fullName += name;
             fullName += ".custom_contact";
             FULLNAME_CON = fullName;

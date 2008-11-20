@@ -40,19 +40,15 @@
 /** @{ */
 
 #include "base/fscapi.h"
+#include "base/util/ItemContainer.h"
+#include "base/globalsdef.h"
 #include "spds/constants.h"
 #include "spds/SyncItem.h"
 #include "spds/SyncMap.h"
 #include "spds/SyncStatus.h"
 #include "spds/SyncSource.h"
 #include "spdm/ManagementNode.h"
-#include "base/util/ItemContainer.h"
 
-
-#define ERR_FILE_SYSTEM             1
-#define ERR_NO_FILES_TO_SYNC        2
-#define ERR_BAD_FILE_CONTENT        3
-#include "base/globalsdef.h"
 
 BEGIN_NAMESPACE
 
