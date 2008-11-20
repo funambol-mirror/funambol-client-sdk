@@ -97,6 +97,7 @@ int main(int argc, char** argv)
     config->init();
 
     // Init LOG
+    LOG.setLevel(config->getDeviceConfig().getLogLevel());
     LOG.reset(FSYNC_LOG_TITLE);
 
     // Initialize the command line options handler

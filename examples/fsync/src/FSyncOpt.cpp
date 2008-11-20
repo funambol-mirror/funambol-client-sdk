@@ -81,6 +81,7 @@ bool FSyncOpt::parseCmdline(int args_num, char** args_val)
             exit(EXIT_FAILURE);
         }
         config->getDeviceConfig().setLogLevel(logLevel);
+        LOG.setLevel(config->getDeviceConfig().getLogLevel());
     }
 
     // Get server option
