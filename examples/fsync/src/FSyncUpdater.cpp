@@ -74,7 +74,7 @@ class FSyncListener : public SyncListener {
             printf("\nSending finalization");
         }
         void syncError (SyncEvent& event) {
-            printf("\nSynchronization error: %s", event.getMessage());
+            printf("\nSynchronization error: %s\n", event.getMessage());
         }
 };
 
@@ -102,23 +102,23 @@ class FSyncItemListener : public SyncItemListener
         }
 
         void itemDeletedByServer (SyncItemEvent& event) {
-            printf("file \"%ls\" deleted from server\n", event.getItemKey());
+            printf("file \"%" WCHAR_PRINTF "\" deleted from server\n", event.getItemKey());
         }
 
         void itemUpdatedByServer (SyncItemEvent& event) {
-            printf("updated file received \"%ls\"\n", event.getItemKey());
+            printf("updated file received \"%" WCHAR_PRINTF "\"\n", event.getItemKey());
         }
 
         void itemAddedByClient (SyncItemEvent& event) {
-            printf("new file sent: \"%ls\"\n", event.getItemKey());
+            printf("new file sent: \"%" WCHAR_PRINTF "\"\n", event.getItemKey());
         }
 
         void itemDeletedByClient (SyncItemEvent& event) {
-            printf("deleted file sent \"%ls\"\n", event.getItemKey());
+            printf("deleted file sent \"%" WCHAR_PRINTF "\"\n", event.getItemKey());
         }
 
         void itemUpdatedByClient (SyncItemEvent& event) {
-            printf("updated file sent \"%ls\"\n", event.getItemKey());
+            printf("updated file sent \"%" WCHAR_PRINTF "\"\n", event.getItemKey());
         }
 
     private:
