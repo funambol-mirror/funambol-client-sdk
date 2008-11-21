@@ -50,6 +50,7 @@ BEGIN_NAMESPACE
 #define DEFAULT_APP_CONTEXT "Funambol/SDK"
 
 class StringBuffer;
+class StringMap;
 
 class PlatformAdapter {
 
@@ -71,6 +72,36 @@ public:
      * @return none
      */
     static void init(const char *appcontext);
+
+    /**
+     * Initializes the library adapter, using custom values.
+     *
+     * The implementation depends on the platform. The common part, that
+     * must be implemented by all adapters, is to save the application 
+     * context, that is used by the library to store the configuration
+     * parameters and temp files.
+     *
+     * The caller provides also a StringMap containing values for the
+     * other system paths, overriding the system-dependent ones.
+     * 
+     * @param appContext an identifier of the application that is using
+     *                   the library. The suggested format to guarantee
+     *                   the uniqueness of this identifier is
+     *                   "VendorName/AppName", for example:
+     *                   "Funambol/DemoSyncClient".
+     *
+     * @param env a StringMap containing the values of the system path to
+     *            be used by the current application. They must be valid
+     *            paths, and it's caller responsibility to check that.
+     *            If one of the values is not specified, the system-dependent
+     *            default is used.<br/>
+     *            Currently used values are:
+     *            HOME_FOLDER   - set value returned by getHomeFolder()
+     *            CONFIG_FOLDER - set value returned by getConfigFolder()
+     * 
+     * @return none
+     */
+    static void init(const char *appcontext, StringMap& env);
 
     /**
      * Returns the application context set by the init method.
@@ -111,6 +142,7 @@ private:
     static StringBuffer appContext;
     static StringBuffer homeFolder;
     static StringBuffer configFolder;
+    static bool initialized;
 };
 
 END_NAMESPACE

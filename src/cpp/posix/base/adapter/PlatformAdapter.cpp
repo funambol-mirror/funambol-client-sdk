@@ -36,6 +36,7 @@
 #include "base/fscapi.h"
 #include "base/adapter/PlatformAdapter.h"
 #include "base/util/StringBuffer.h"
+#include "base/util/StringMap.h"
 #include "base/Log.h"
 
 BEGIN_NAMESPACE
@@ -43,12 +44,30 @@ BEGIN_NAMESPACE
 StringBuffer PlatformAdapter::appContext(DEFAULT_APP_CONTEXT);
 StringBuffer PlatformAdapter::homeFolder;
 StringBuffer PlatformAdapter::configFolder;
+bool PlatformAdapter::initialized = false;
 
-// Initializes the platform-dependent parameters of the library.
+// Initializes the platform-dependent parameters of the library using defaults.
 void PlatformAdapter::init(const char *appcontext) {
-    appContext = appcontext;
-    homeFolder = "";
-    configFolder = "";
+    if(!initialized) {
+        appContext = appcontext;
+        homeFolder = "";
+        configFolder = "";
+    }
+    else {
+        LOG.error("PlatformAdapter::init(): already initialized.");
+    }
+}
+
+// Initializes the platform-dependent parameters of the library with custom values.
+void PlatformAdapter::init(const char *appcontext, StringMap& env) {
+    if(!initialized) {
+        appContext = appcontext;
+        homeFolder = env["HOME_FOLDER"];
+        configFolder = env["CONFIG_FOLDER"];
+    }
+    else {
+        LOG.error("PlatformAdapter::init(): already initialized.");
+    }
 }
 
 // Returns the application context
