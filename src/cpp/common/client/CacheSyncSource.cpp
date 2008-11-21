@@ -49,7 +49,9 @@
 BEGIN_NAMESPACE
 
 // the name of the repository
-#define CACHE_FOLDER    "funambol_cache"
+#define CACHE_FOLDER    "item_cache"
+#define CACHE_FILE_EXT  ".dat"
+
 
 // Compose the cache folder taking the config folder from
 // the platform adapter and tries to create it if not present.
@@ -82,16 +84,19 @@ CacheSyncSource::CacheSyncSource(const WCHAR* sourceName,
     } else {
         // get the default directory of the 
         StringBuffer cacheFileName;
+        StringBuffer name;
+        name.convert(sourceName);
 
-        if(!initCacheDir(cacheFileName)) {                
+        if(initCacheDir(cacheFileName)) {                
             cacheFileName += "/";
-            cacheFileName += CACHE_FILE_NAME;  
+            cacheFileName += name;
+            cacheFileName += CACHE_FILE_EXT;
 
             LOG.debug("CacheSyncSource: cache pathname is %s", cacheFileName.c_str());
             this->cache = new PropertyFile(cacheFileName);
         }
         else {
-            setErrorF(ERR_FILE_SYSTEM, "CacheSyncSource: cannot create cache file.");
+            setErrorF(ERR_FILE_SYSTEM, "Cannot create cache file, sync not done.");
             this->cache = NULL; //cannot create the cache file
         }
     }

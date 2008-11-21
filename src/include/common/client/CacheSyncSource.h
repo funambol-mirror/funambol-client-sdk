@@ -53,8 +53,6 @@
 
 BEGIN_NAMESPACE
 
-#define CACHE_FILE_NAME     "cache_items.dat"
-
 /**
  * This class class implements the SyncSource interface, adding a method to
  * detect the changes in the local store since the last sync based on cache

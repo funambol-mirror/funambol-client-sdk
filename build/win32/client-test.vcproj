@@ -324,6 +324,10 @@
 				RelativePath="..\..\test\ClientTest.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\include\common\client\TestFileSyncSource.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

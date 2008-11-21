@@ -58,8 +58,9 @@ public:
     * It is a property file.
     */
     virtual KeyValueStore* createNewInstance(const char* name) const {
-        StringBuffer fullName = PlatformAdapter::getHomeFolder();
+        StringBuffer fullName = PlatformAdapter::getConfigFolder();
         fullName += "/"; fullName += name;
+        fullName += ".map";
         return new PropertyFile(fullName);
     }
 };

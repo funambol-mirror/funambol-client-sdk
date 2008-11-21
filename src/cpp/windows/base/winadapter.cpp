@@ -550,15 +550,47 @@ finally:
 }
 
 /**
- * Creates a folder. 
+ * Creates a folder, and all needed folders. 
  * @return 0 on success, -1 otherwise.
  */
 int createFolder(const char *path) {
-    wchar_t* p = toWideChar(path);
-    DWORD attr = CreateDirectory(p, NULL);    
-    delete [] p;
-    // TODO: check error code.
-    return 0;
+    wchar_t *wpath=toWideChar(path);
+    wchar_t *tpath=0;
+    wchar_t tsep=0;
+    int ret = 0;
+    BOOL success = 0;
+
+    // Skip C:/
+    tpath = wcschr(wpath, ':');
+    if(tpath){
+        tpath++;
+    }
+    else {
+        tpath = wpath;
+    }
+    // Create upper folders
+    while( (tpath=wcspbrk(tpath+1, TEXT("\\/"))) ) {
+        tsep=*tpath;
+        *tpath=0;
+        success = CreateDirectory(wpath, NULL);
+        *tpath=tsep;
+
+        if(!success && GetLastError() != ERROR_ALREADY_EXISTS) {
+            LOG.error("createFolder: error creating folder %s", path);
+            ret = -1;
+            break;
+        }
+    }
+    // Create last folder
+    if (ret == 0) {
+        success = CreateDirectory(wpath,NULL);
+        if(!success && GetLastError() != ERROR_ALREADY_EXISTS) {
+            LOG.error("createFolder: error creating folder %s", path);
+            ret = -1;
+        }
+    }
+    delete [] wpath;
+    return ret;
 }
 
 /**
