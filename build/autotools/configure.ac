@@ -1,12 +1,21 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(../../src/cpp/common/base/base64.cpp)
+#AC_INIT(../../src/cpp/common/base/base64.cpp)
+#AC_CANONICAL_SYSTEM
+#AM_INIT_AUTOMAKE(funambol, 7.1)
+#AM_CONFIG_HEADER(config.h)
+
+AC_INIT([funambol], [7.1])
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(funambol, 7.0)
+AC_CONFIG_SRCDIR([../../src/cpp/common/base/base64.cpp])
 AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE
+
 
 dnl Checks for programs.
 AC_PROG_CXX
 AC_PROG_LIBTOOL
+
+
 dnl AM_GNU_GETTEXT - not currently used
 
 dnl Use a specific transport agent
@@ -116,6 +125,10 @@ fi
 AC_SUBST(CPPUNIT_CXXFLAGS)
 AC_SUBST(CPPUNIT_LDFLAGS)
 AC_SUBST(CPPUNIT_TESTS)
+
+# mangle VERSION to set library version info
+SO_VERSION_INFO=$(echo $VERSION | sed -e 's/\./:/g')
+AC_SUBST(SO_VERSION_INFO)
 
 if test $enable_unit_tests == "yes"; then
         AC_DEFINE(ENABLE_UNIT_TESTS, 1, [enable unit tests inside the library's source code])
