@@ -2067,6 +2067,10 @@
 						</FileConfiguration>
 					</File>
 					<File
+						RelativePath="..\..\src\cpp\common\base\util\StringMap.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\cpp\windows\base\stringUtils.cpp"
 						>
 					</File>
