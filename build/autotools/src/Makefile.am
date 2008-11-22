@@ -7,7 +7,7 @@ SOURCES_BASE = \
     lautotoolsadapter.cpp \
     lArrayElement.cpp \
     lArrayList.cpp \
-    lArrayListKeyValueStore.cpp \
+    lMemoryKeyValueStore.cpp \
     lBasicTime.cpp \
     lStringBuffer.cpp \
     lStringMap.cpp \

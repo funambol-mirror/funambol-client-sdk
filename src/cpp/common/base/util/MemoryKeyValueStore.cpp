@@ -35,12 +35,12 @@
 
 
 #include "base/fscapi.h"
-#include "base/util/ArrayListKeyValueStore.h"
+#include "base/util/MemoryKeyValueStore.h"
 #include "base/globalsdef.h"
 
 USE_NAMESPACE
   
-StringBuffer ArrayListKeyValueStore::readPropertyValue(const char *prop) const {
+StringBuffer MemoryKeyValueStore::readPropertyValue(const char *prop) const {
     
     StringBuffer ret(NULL);
     for(int index = 0; index < data.size(); index++) {
@@ -53,7 +53,7 @@ StringBuffer ArrayListKeyValueStore::readPropertyValue(const char *prop) const {
     return ret;
 }
 
-int ArrayListKeyValueStore::setPropertyValue(const char *prop, const char *value) {
+int MemoryKeyValueStore::setPropertyValue(const char *prop, const char *value) {
     
     int ret = 0;
     for(KeyValuePair* kvp = (KeyValuePair *)data.front();
@@ -69,7 +69,7 @@ int ArrayListKeyValueStore::setPropertyValue(const char *prop, const char *value
     return ret;
 }
     
-int ArrayListKeyValueStore::removeProperty(const char *prop) {
+int MemoryKeyValueStore::removeProperty(const char *prop) {
 
     int counter = 0;
     for(KeyValuePair* kvp = (KeyValuePair *)data.front();
@@ -85,7 +85,7 @@ int ArrayListKeyValueStore::removeProperty(const char *prop) {
     return 0;
 }
         
-int ArrayListKeyValueStore::removeAllProperties() {
+int MemoryKeyValueStore::removeAllProperties() {
     data.clear();
     return 0;
 }

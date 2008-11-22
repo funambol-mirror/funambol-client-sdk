@@ -52,7 +52,7 @@ SOURCE       base64.cpp error.cpp md5.cpp quoted-printable.cpp
 SOURCEPATH   ..\..\src\cpp\common\base\util
 SOURCE       ArrayElement.cpp ArrayList.cpp BasicTime.cpp
 SOURCE       StringBuffer.cpp baseutils.cpp XMLProcessor.cpp
-SOURCE       ArrayListKeyValueStore.cpp PropertyFile.cpp
+SOURCE       MemoryKeyValueStore.cpp PropertyFile.cpp
 
 SOURCEPATH   ..\..\src\cpp\common\spdm
 SOURCE       DMTree.cpp ManagementNode.cpp

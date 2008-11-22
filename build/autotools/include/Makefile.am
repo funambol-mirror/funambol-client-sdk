@@ -19,7 +19,7 @@ nobase_pkginclude_HEADERS = \
     common/base/util/StringBuffer.h \
     common/base/util/WString.h \
     common/base/util/ArrayListEnumeration.h \
-    common/base/util/ArrayListKeyValueStore.h \
+    common/base/util/MemoryKeyValueStore.h \
     common/base/util/Enumeration.h \
     common/base/util/KeyValueStore.h \
     common/base/util/PropertyFile.h \

@@ -1705,7 +1705,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\src\cpp\common\base\util\ArrayListKeyValueStore.cpp"
+						RelativePath="..\..\src\cpp\common\base\util\MemoryKeyValueStore.cpp"
 						>
 					</File>
 					<File

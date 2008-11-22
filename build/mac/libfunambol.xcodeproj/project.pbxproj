@@ -27,7 +27,7 @@
 		7C9F52F20DAF4CB1007E0091 /* quoted-printable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52130DAF4CB1007E0091 /* quoted-printable.cpp */; };
 		7C9F52F30DAF4CB1007E0091 /* ArrayElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52150DAF4CB1007E0091 /* ArrayElement.cpp */; };
 		7C9F52F40DAF4CB1007E0091 /* ArrayList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52160DAF4CB1007E0091 /* ArrayList.cpp */; };
-		7C9F52F50DAF4CB1007E0091 /* ArrayListKeyValueStore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52170DAF4CB1007E0091 /* ArrayListKeyValueStore.cpp */; };
+		7C9F52F50DAF4CB1007E0091 /* MemoryKeyValueStore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52170DAF4CB1007E0091 /* MemoryKeyValueStore.cpp */; };
 		7C9F52F60DAF4CB1007E0091 /* baseutils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52180DAF4CB1007E0091 /* baseutils.cpp */; };
 		7C9F52F70DAF4CB1007E0091 /* BasicTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F52190DAF4CB1007E0091 /* BasicTime.cpp */; };
 		7C9F52F80DAF4CB1007E0091 /* ItemContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F521A0DAF4CB1007E0091 /* ItemContainer.cpp */; };
@@ -199,7 +199,7 @@
 		7C9F54BB0DAF4CC5007E0091 /* ArrayElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C40DAF4CC5007E0091 /* ArrayElement.h */; };
 		7C9F54BC0DAF4CC5007E0091 /* ArrayList.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C50DAF4CC5007E0091 /* ArrayList.h */; };
 		7C9F54BD0DAF4CC5007E0091 /* ArrayListEnumeration.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C60DAF4CC5007E0091 /* ArrayListEnumeration.h */; };
-		7C9F54BE0DAF4CC5007E0091 /* ArrayListKeyValueStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C70DAF4CC5007E0091 /* ArrayListKeyValueStore.h */; };
+		7C9F54BE0DAF4CC5007E0091 /* MemoryKeyValueStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C70DAF4CC5007E0091 /* MemoryKeyValueStore.h */; };
 		7C9F54BF0DAF4CC5007E0091 /* BasicTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C80DAF4CC5007E0091 /* BasicTime.h */; };
 		7C9F54C00DAF4CC5007E0091 /* Enumeration.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53C90DAF4CC5007E0091 /* Enumeration.h */; };
 		7C9F54C10DAF4CC5007E0091 /* ItemContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F53CA0DAF4CC5007E0091 /* ItemContainer.h */; };
@@ -465,7 +465,7 @@
 		7C9F52130DAF4CB1007E0091 /* quoted-printable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "quoted-printable.cpp"; sourceTree = "<group>"; };
 		7C9F52150DAF4CB1007E0091 /* ArrayElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ArrayElement.cpp; sourceTree = "<group>"; };
 		7C9F52160DAF4CB1007E0091 /* ArrayList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ArrayList.cpp; sourceTree = "<group>"; };
-		7C9F52170DAF4CB1007E0091 /* ArrayListKeyValueStore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ArrayListKeyValueStore.cpp; sourceTree = "<group>"; };
+		7C9F52170DAF4CB1007E0091 /* MemoryKeyValueStore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryKeyValueStore.cpp; sourceTree = "<group>"; };
 		7C9F52180DAF4CB1007E0091 /* baseutils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = baseutils.cpp; sourceTree = "<group>"; };
 		7C9F52190DAF4CB1007E0091 /* BasicTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasicTime.cpp; sourceTree = "<group>"; };
 		7C9F521A0DAF4CB1007E0091 /* ItemContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ItemContainer.cpp; sourceTree = "<group>"; };
@@ -637,7 +637,7 @@
 		7C9F53C40DAF4CC5007E0091 /* ArrayElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArrayElement.h; sourceTree = "<group>"; };
 		7C9F53C50DAF4CC5007E0091 /* ArrayList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArrayList.h; sourceTree = "<group>"; };
 		7C9F53C60DAF4CC5007E0091 /* ArrayListEnumeration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArrayListEnumeration.h; sourceTree = "<group>"; };
-		7C9F53C70DAF4CC5007E0091 /* ArrayListKeyValueStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArrayListKeyValueStore.h; sourceTree = "<group>"; };
+		7C9F53C70DAF4CC5007E0091 /* MemoryKeyValueStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryKeyValueStore.h; sourceTree = "<group>"; };
 		7C9F53C80DAF4CC5007E0091 /* BasicTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BasicTime.h; sourceTree = "<group>"; };
 		7C9F53C90DAF4CC5007E0091 /* Enumeration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Enumeration.h; sourceTree = "<group>"; };
 		7C9F53CA0DAF4CC5007E0091 /* ItemContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ItemContainer.h; sourceTree = "<group>"; };
@@ -1008,7 +1008,7 @@
 			children = (
 				7C9F52150DAF4CB1007E0091 /* ArrayElement.cpp */,
 				7C9F52160DAF4CB1007E0091 /* ArrayList.cpp */,
-				7C9F52170DAF4CB1007E0091 /* ArrayListKeyValueStore.cpp */,
+				7C9F52170DAF4CB1007E0091 /* MemoryKeyValueStore.cpp */,
 				7C9F52180DAF4CB1007E0091 /* baseutils.cpp */,
 				7C9F52190DAF4CB1007E0091 /* BasicTime.cpp */,
 				7C9F521A0DAF4CB1007E0091 /* ItemContainer.cpp */,
@@ -1339,7 +1339,7 @@
 				7C9F53C40DAF4CC5007E0091 /* ArrayElement.h */,
 				7C9F53C50DAF4CC5007E0091 /* ArrayList.h */,
 				7C9F53C60DAF4CC5007E0091 /* ArrayListEnumeration.h */,
-				7C9F53C70DAF4CC5007E0091 /* ArrayListKeyValueStore.h */,
+				7C9F53C70DAF4CC5007E0091 /* MemoryKeyValueStore.h */,
 				7C9F53C80DAF4CC5007E0091 /* BasicTime.h */,
 				7C9F53C90DAF4CC5007E0091 /* Enumeration.h */,
 				7C9F53CA0DAF4CC5007E0091 /* ItemContainer.h */,
@@ -1824,7 +1824,7 @@
 				7C9F54BB0DAF4CC5007E0091 /* ArrayElement.h in Headers */,
 				7C9F54BC0DAF4CC5007E0091 /* ArrayList.h in Headers */,
 				7C9F54BD0DAF4CC5007E0091 /* ArrayListEnumeration.h in Headers */,
-				7C9F54BE0DAF4CC5007E0091 /* ArrayListKeyValueStore.h in Headers */,
+				7C9F54BE0DAF4CC5007E0091 /* MemoryKeyValueStore.h in Headers */,
 				7C9F54BF0DAF4CC5007E0091 /* BasicTime.h in Headers */,
 				7C9F54C00DAF4CC5007E0091 /* Enumeration.h in Headers */,
 				7C9F54C10DAF4CC5007E0091 /* ItemContainer.h in Headers */,
@@ -2139,7 +2139,7 @@
 				7C9F52F20DAF4CB1007E0091 /* quoted-printable.cpp in Sources */,
 				7C9F52F30DAF4CB1007E0091 /* ArrayElement.cpp in Sources */,
 				7C9F52F40DAF4CB1007E0091 /* ArrayList.cpp in Sources */,
-				7C9F52F50DAF4CB1007E0091 /* ArrayListKeyValueStore.cpp in Sources */,
+				7C9F52F50DAF4CB1007E0091 /* MemoryKeyValueStore.cpp in Sources */,
 				7C9F52F60DAF4CB1007E0091 /* baseutils.cpp in Sources */,
 				7C9F52F70DAF4CB1007E0091 /* BasicTime.cpp in Sources */,
 				7C9F52F80DAF4CB1007E0091 /* ItemContainer.cpp in Sources */,

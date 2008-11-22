@@ -288,7 +288,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\src\cpp\common\base\util\ArrayListKeyValueStore.cpp"
+						RelativePath="..\..\src\cpp\common\base\util\MemoryKeyValueStore.cpp"
 						>
 					</File>
 					<File
@@ -3407,7 +3407,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\include\common\base\util\ArrayListKeyValueStore.h"
+						RelativePath="..\..\src\include\common\base\util\MemoryKeyValueStore.h"
 						>
 					</File>
 					<File

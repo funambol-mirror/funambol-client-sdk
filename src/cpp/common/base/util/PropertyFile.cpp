@@ -115,9 +115,9 @@ int PropertyFile::read() {
             StringBuffer value;
             if (separateKeyValue(s, key, value)) {
                 if (value == REMOVED) {
-                    ArrayListKeyValueStore::removeProperty(key);
+                    MemoryKeyValueStore::removeProperty(key);
                 } else {
-                    ArrayListKeyValueStore::setPropertyValue(key, value);
+                    MemoryKeyValueStore::setPropertyValue(key, value);
                 }
             }                  
         }       
@@ -156,7 +156,7 @@ int PropertyFile::close() {
 
 int PropertyFile::setPropertyValue(const char *prop, const char *value) {
     
-    int ret = ArrayListKeyValueStore::setPropertyValue(prop, value);
+    int ret = MemoryKeyValueStore::setPropertyValue(prop, value);
     if (ret) {
         return ret;
     }
@@ -186,7 +186,7 @@ int PropertyFile::removeProperty(const char *prop) {
         LOG.error("PropertyFile removeProperty: it is not possible to save the journal file: '%s'", node.c_str());        
     }
 
-    ret = ArrayListKeyValueStore::removeProperty(prop);
+    ret = MemoryKeyValueStore::removeProperty(prop);
     if (ret) {
         LOG.debug("PropertyFile: it is not possible to remove from the ArrayList");
     }
@@ -197,7 +197,7 @@ int PropertyFile::removeProperty(const char *prop) {
 
 int PropertyFile::removeAllProperties() {
     
-    int ret = ArrayListKeyValueStore::removeAllProperties();
+    int ret = MemoryKeyValueStore::removeAllProperties();
     if (ret) {
         return ret;
     }

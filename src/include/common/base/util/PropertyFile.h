@@ -45,7 +45,7 @@
 #include "spds/SyncItem.h"
 #include "spds/SyncStatus.h"
 #include "spds/SyncSourceReport.h"
-#include "base/util/ArrayListKeyValueStore.h"
+#include "base/util/MemoryKeyValueStore.h"
 #include "base/globalsdef.h"
 
 BEGIN_NAMESPACE
@@ -55,7 +55,7 @@ BEGIN_NAMESPACE
  * It provides methods to read and write in the filesystem the arraylist
  * of KeyValuePair
  */
-class PropertyFile : public ArrayListKeyValueStore {
+class PropertyFile : public MemoryKeyValueStore {
 
 private:
     

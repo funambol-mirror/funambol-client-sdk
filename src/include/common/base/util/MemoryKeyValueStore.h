@@ -52,7 +52,7 @@ BEGIN_NAMESPACE
  * has to be written in the storage. It provides methods that has to be 
  * specialized by implementation on filesystem, registry, db...
  */
-class ArrayListKeyValueStore : public KeyValueStore {
+class MemoryKeyValueStore : public KeyValueStore {
 
 protected:
 
@@ -64,7 +64,7 @@ protected:
 
 public:
     // Destructor
-    virtual ~ArrayListKeyValueStore() {}      
+    virtual ~MemoryKeyValueStore() {}      
           
     /**
     *  Read a property value from the data ArrayList
