@@ -240,6 +240,7 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -328,6 +329,7 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -416,6 +418,7 @@
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -505,6 +508,7 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -763,6 +767,7 @@
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -850,6 +855,7 @@
 				RuntimeLibrary="1"
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -938,6 +944,7 @@
 				RuntimeLibrary="1"
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -1027,6 +1034,7 @@
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/windowsmobile.pch"
 				AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/"
@@ -1705,10 +1713,6 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\src\cpp\common\base\util\MemoryKeyValueStore.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\cpp\common\base\util\baseutils.cpp"
 						>
 						<FileConfiguration
@@ -1943,6 +1947,10 @@
 								UsePrecompiledHeader="0"
 							/>
 						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\cpp\common\base\util\MemoryKeyValueStore.cpp"
+						>
 					</File>
 					<File
 						RelativePath="..\..\src\cpp\common\base\util\PropertyFile.cpp"
@@ -18136,10 +18144,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\include\common\spds\errors.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\include\common\spdm\errors.h"
 				>
 			</File>
@@ -18149,6 +18153,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\include\common\http\errors.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\include\common\spds\errors.h"
 				>
 			</File>
 			<File
