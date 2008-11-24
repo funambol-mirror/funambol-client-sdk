@@ -23,6 +23,7 @@ nobase_pkginclude_HEADERS = \
     common/base/util/Enumeration.h \
     common/base/util/KeyValueStore.h \
     common/base/util/PropertyFile.h \
+    common/base/adapter/PlatformAdapter.h \
     common/client/DMTClientConfig.h \
     common/client/CacheSyncSource.h \
     common/client/ODBCKeyValueStore.h \
