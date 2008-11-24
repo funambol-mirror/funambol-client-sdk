@@ -552,3 +552,39 @@ void StringBuffer::freemem()
 }
 
 
+StringBuffer& StringBuffer::trim() {
+    
+    if(s) {
+        
+        unsigned int numChars = 0;
+        unsigned int end = length() > 0 ? length() - 1 : 0; 
+        
+        char* p = s;
+        char* q = s + end;
+
+        while(*p == ' ') {
+            p++;
+        }                
+
+        if (p > q) {
+            freemem();
+            assign("");
+            return *this;
+
+        }
+        while(*q == ' ') {	  		
+            q--;
+        }        
+        
+  	    numChars = q - p + 1;
+
+        if (length() == numChars) {
+            return *this;
+        }
+
+        memmove((void*)s, (void*)p, numChars);
+        s[numChars] = 0;
+        size = numChars;
+    }
+   	return *this;
+}

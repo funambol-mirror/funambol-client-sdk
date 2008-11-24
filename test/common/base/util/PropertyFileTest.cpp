@@ -65,14 +65,17 @@ public:
 
 protected:
     void testSetProperty() {
-        // FIXME: the value returned by setPropertyValue is always 0?
-
+        
         // Write a value into the property file
         propFile->setPropertyValue("property", "value");
+        propFile->setPropertyValue(" property space ", " value space ");
         propFile->close();
         // Now read back
         StringBuffer value = propFile->readPropertyValue("property");
         CPPUNIT_ASSERT(value == "value");
+        StringBuffer valueSpace = propFile->readPropertyValue("property space");
+        CPPUNIT_ASSERT(valueSpace == "value space");
+
     }
 
     void testGetProperties() {
@@ -80,9 +83,10 @@ protected:
         propFile->setPropertyValue("property1", "value1");
         propFile->setPropertyValue("property2", "value2");
         propFile->setPropertyValue("property3", "value3");
+        propFile->setPropertyValue(" property5 ", " value5 ");
         // Now iterate on them
         Enumeration& enumeration = propFile->getProperties();
-        bool prop1 = false, prop2 = false, prop3 = false;
+        bool prop1 = false, prop2 = false, prop3 = false, prop4 = false;
         while (enumeration.hasMoreElement()) {
             KeyValuePair* item = (KeyValuePair*)enumeration.getNextElement();
             const char* key = item->getKey();
@@ -94,15 +98,18 @@ protected:
                 prop2 = true;
             } else if (strcmp(key, "property3") == 0) {
                 prop3 = true;
+            } else if (strcmp(key, "property5") == 0) {
+                prop4 = true;
             }
         }
         propFile->close();
-        CPPUNIT_ASSERT(prop1 && prop2 && prop3);
+        CPPUNIT_ASSERT(prop1 && prop2 && prop3 && prop4);
     }
 
     void testRemoveProperty() {
         // Write a value into the property file
         propFile->setPropertyValue("property4", "value4");
+        propFile->setPropertyValue("  space  ", "  val space ");
         propFile->close();
         // Remove it
         int success = propFile->removeProperty("property4");
@@ -110,6 +117,10 @@ protected:
         // Now read back
         StringBuffer value = propFile->readPropertyValue("property4");
         CPPUNIT_ASSERT(value.empty());
+        
+        StringBuffer valueS = propFile->readPropertyValue("space");
+        CPPUNIT_ASSERT(value.empty());
+
     }
 
     void testRemoveAll() {
@@ -138,9 +149,10 @@ protected:
         // overwrite the property1
         propFile->setPropertyValue("property1", "valueNew");  
         propFile->setPropertyValue("1234", "5678"); 
-        propFile->setPropertyValue("123:4", "567:8");        
-        propFile->setPropertyValue("1234:", "567:8");
-        propFile->setPropertyValue("1:234:", "5:67:8");
+        propFile->setPropertyValue("123=4", "567=8");        
+        propFile->setPropertyValue("1234=", "567=8");
+        propFile->setPropertyValue("1=234=", "5=67=8");
+        propFile->setPropertyValue(" 678= ", "  9=10=11  ");
 
         Enumeration& enumeration = propFile->getProperties();
         int i = 0;
@@ -148,7 +160,7 @@ protected:
             i++;
             enumeration.getNextElement();
         }
-        CPPUNIT_ASSERT(i == 6);
+        CPPUNIT_ASSERT(i == 7);
         
     }
     
@@ -167,11 +179,13 @@ protected:
                 prop2 = true;
             } else if (strcmp(key, "1234") == 0 && strcmp(value, "5678") == 0 ) {
                 prop3 = true;
-            } else if (strcmp(key, "123:4") == 0 && strcmp(value, "567:8") == 0 ) {
+            } else if (strcmp(key, "123=4") == 0 && strcmp(value, "567=8") == 0 ) {
                 prop4 = true;
-            }  else if (strcmp(key, "1234:") == 0 && strcmp(value, "567:8") == 0 ) {
+            }  else if (strcmp(key, "1234=") == 0 && strcmp(value, "567=8") == 0 ) {
                 prop5 = true;
-            }  else if (strcmp(key, "1:234:") == 0 && strcmp(value, "5:67:8") == 0 ) {
+            }  else if (strcmp(key, "1=234=") == 0 && strcmp(value, "5=67=8") == 0 ) {
+                prop6 = true;
+            }  else if (strcmp(key, "678=") == 0 && strcmp(value, "9=10=11") == 0 ) {
                 prop6 = true;
             }   
 
@@ -182,23 +196,40 @@ protected:
 
     
     void testEscapeLinesFunciton() {       
-        StringBuffer a("1234:5678\n");
-        StringBuffer b("123\\:4:567\\:8\n");
-        StringBuffer c("1234\\::567\\:8\n");
+        StringBuffer a("1234=5678\n");
+        StringBuffer b("123\\=4=567\\=8\n");
+        StringBuffer c("1234\\==567\\=8\n");
+        StringBuffer d("1234\\==  567\\=8 \n");
+        StringBuffer e(" 1234 = 567\\=8 \n");
+        StringBuffer f(" 12 34 = 56 7\\=8 \n");
+        StringBuffer g(" 12 34 = 56 7\\=8 \\=   \n");
         
         StringBuffer key;
         StringBuffer value;
 
         propFile->separateKeyValue(a, key, value);
-
-        propFile->separateKeyValue(b, key, value);
-        
+        CPPUNIT_ASSERT(key.trim() == "1234");
+        CPPUNIT_ASSERT(value.trim() == "5678");        
+        propFile->separateKeyValue(b, key, value);        
+        CPPUNIT_ASSERT(key.trim() == "123=4");
+        CPPUNIT_ASSERT(value.trim() == "567=8");        
         propFile->separateKeyValue(c, key, value);
-
+        CPPUNIT_ASSERT(key.trim() == "1234=");
+        CPPUNIT_ASSERT(value.trim() == "567=8");        
+        propFile->separateKeyValue(d, key, value);
+        CPPUNIT_ASSERT(key.trim() == "1234=");
+        CPPUNIT_ASSERT(value.trim() == "567=8");
+        propFile->separateKeyValue(e, key, value);
+        CPPUNIT_ASSERT(key.trim() == "1234");
+        CPPUNIT_ASSERT(value.trim() == "567=8");
+        propFile->separateKeyValue(f, key, value);
+        CPPUNIT_ASSERT(key.trim() == "12 34");
+        CPPUNIT_ASSERT(value.trim() == "56 7=8");
+        propFile->separateKeyValue(g, key, value);
+        CPPUNIT_ASSERT(key.trim() == "12 34");
+        CPPUNIT_ASSERT(value.trim() == "56 7=8 =");
        
         propFile->close();
-       
-        
 
     }
 

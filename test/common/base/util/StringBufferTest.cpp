@@ -58,6 +58,7 @@ class StringBufferTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(testEndsWith);
     CPPUNIT_TEST(testAppend);
     CPPUNIT_TEST(testOperatorArray);
+    CPPUNIT_TEST(testTrim);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -268,6 +269,28 @@ private:
         CPPUNIT_ASSERT(!s3.endsWith("t"));
     }
 
+    //////////////////////////////////////////////////////// Test /////
+    // Test the trim function
+    void testTrim() {
+        StringBuffer s1("     Sentence to trim   ");
+        StringBuffer s2("Sentence to trim       ");
+        StringBuffer s3("   Sentence to trim");
+        StringBuffer s4("Sentence to trim");
+        StringBuffer s5("");        
+        StringBuffer s6(NULL);
+        StringBuffer s7("      ");
+
+
+        CPPUNIT_ASSERT(s1.trim() == "Sentence to trim");
+        CPPUNIT_ASSERT(s2.trim() == "Sentence to trim");
+        CPPUNIT_ASSERT(s3.trim() == "Sentence to trim");
+        CPPUNIT_ASSERT(s4.trim() == "Sentence to trim");        
+        CPPUNIT_ASSERT(s5.trim() == "");
+        CPPUNIT_ASSERT(s6.trim() == NULL);
+        CPPUNIT_ASSERT(s7.trim() == "");
+        
+    }
+
 
     //----------------------------------------- Utility functions
     StringBuffer doSprintf(const char* format, ...) {
@@ -283,4 +306,5 @@ private:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( StringBufferTest );
+
 

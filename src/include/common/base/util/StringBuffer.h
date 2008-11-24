@@ -274,6 +274,11 @@ class StringBuffer: public ArrayElement {
          * True if the string terminates with str
          */
         bool endsWith(const char* str) const;
+        
+        /**
+         * Trim the string
+         */
+        StringBuffer& trim();
 
         /**
          * Clone the string

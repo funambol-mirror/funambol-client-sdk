@@ -40,15 +40,18 @@
 
 USE_NAMESPACE
 
+
 StringBuffer escapeString(const char* val) {
     StringBuffer s(val);
-    s.replaceAll(":", "\\:");
+    s.trim();
+    s.replaceAll("=", "\\=");
     return s;
 }
 
 StringBuffer unescapeString(const char* val) {
     StringBuffer s(val);
-    s.replaceAll("\\:", ":");
+    s.trim();
+    s.replaceAll("\\=", "=");
     return s;
 }
 
@@ -136,7 +139,7 @@ int PropertyFile::close() {
         for (curr = (KeyValuePair*)data.front(); curr;
              curr = (KeyValuePair*)data.next() ) {
             
-             fprintf(file, "%s:%s\n", escapeString(curr->getKey()).c_str(), escapeString(curr->getValue()).c_str());            
+             fprintf(file, "%s=%s\n", escapeString(curr->getKey()).c_str(), escapeString(curr->getValue()).c_str());            
         }       
         fclose(file); 
         
@@ -156,14 +159,18 @@ int PropertyFile::close() {
 
 int PropertyFile::setPropertyValue(const char *prop, const char *value) {
     
-    int ret = MemoryKeyValueStore::setPropertyValue(prop, value);
+    StringBuffer p(prop), v(value);
+    p.trim();
+    v.trim();
+
+    int ret = MemoryKeyValueStore::setPropertyValue(p.c_str(), v.c_str());
     if (ret) {
         return ret;
     }
 
     FILE* file = fopen(nodeJour, "a+");    
     if (file) {
-        fprintf(file, "%s:%s\n", escapeString(prop).c_str(), escapeString(value).c_str());
+        fprintf(file, "%s=%s\n", escapeString(prop).c_str(), escapeString(value).c_str());
         fclose(file);
     } else {        
         LOG.error("PropertyFile setProperty: it is not possible to save the journal file: '%s'", node.c_str());
@@ -180,13 +187,14 @@ int PropertyFile::removeProperty(const char *prop) {
 
     FILE* file = fopen(nodeJour, "a+");    
     if (file) {
-        fprintf(file, "%s:%s\n", escapeString(prop).c_str(), escapeString(REMOVED).c_str());
+        fprintf(file, "%s=%s\n", escapeString(prop).c_str(), escapeString(REMOVED).c_str());
         fclose(file);
     } else {        
         LOG.error("PropertyFile removeProperty: it is not possible to save the journal file: '%s'", node.c_str());        
     }
-
-    ret = MemoryKeyValueStore::removeProperty(prop);
+    
+    StringBuffer p(prop); p.trim();
+    ret = MemoryKeyValueStore::removeProperty(p);
     if (ret) {
         LOG.debug("PropertyFile: it is not possible to remove from the ArrayList");
     }
@@ -214,7 +222,7 @@ bool PropertyFile::separateKeyValue(StringBuffer& s, StringBuffer& key, StringBu
     size_t found = 0;      
     
     for (unsigned int i = 0; i < s.length(); i++) {
-        if  (((found = s.find(":", found + 1)) != StringBuffer::npos) && (found > 1 && s.c_str()[found-1] != '\\')) {
+        if  (((found = s.find("=", found + 1)) != StringBuffer::npos) && (found > 1 && s.c_str()[found-1] != '\\')) {
 
             key = unescapeString(s.substr(0, found));
             value = unescapeString(s.substr(found + 1, (s.length() - (found + 2)))); // it remove the \n at the end                   

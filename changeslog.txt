@@ -1,3 +1,7 @@
+2008-11-24
+   - magi: added trim() method to StringBuffer - updated tests
+           changed ":" separator with "=" in PropertyFile - updated tests
+
 2008-11-13
    - gazza: multiple listeners implemented.
 
