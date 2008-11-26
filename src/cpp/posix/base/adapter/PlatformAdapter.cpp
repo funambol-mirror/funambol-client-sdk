@@ -52,6 +52,7 @@ void PlatformAdapter::init(const char *appcontext) {
         appContext = appcontext;
         homeFolder = "";
         configFolder = "";
+        initialized = true;
     }
     else {
         LOG.error("PlatformAdapter::init(): already initialized.");
@@ -64,6 +65,7 @@ void PlatformAdapter::init(const char *appcontext, StringMap& env) {
         appContext = appcontext;
         homeFolder = env["HOME_FOLDER"];
         configFolder = env["CONFIG_FOLDER"];
+        initialized = true;
     }
     else {
         LOG.error("PlatformAdapter::init(): already initialized.");
