@@ -17,12 +17,14 @@ nobase_pkginclude_HEADERS = \
     common/base/util/WKeyValuePair.h \
     common/base/util/XMLProcessor.h \
     common/base/util/StringBuffer.h \
+    common/base/util/StringMap.h \
     common/base/util/WString.h \
     common/base/util/ArrayListEnumeration.h \
     common/base/util/MemoryKeyValueStore.h \
     common/base/util/Enumeration.h \
     common/base/util/KeyValueStore.h \
     common/base/util/PropertyFile.h \
+    common/base/util/ItemContainer.h \
     common/base/adapter/PlatformAdapter.h \
     common/client/DMTClientConfig.h \
     common/client/CacheSyncSource.h \
@@ -30,6 +32,8 @@ nobase_pkginclude_HEADERS = \
     common/client/SQLiteKeyValueStore.h \
     common/client/SQLKeyValueStore.h \
     common/client/SyncClient.h \
+    common/client/FileSyncSource.h \
+    common/client/OptionParser.h \
     common/event/constants.h \
     common/filter/Clause.h \
     common/filter/LogicalClause.h \
@@ -66,6 +70,7 @@ nobase_pkginclude_HEADERS = \
     common/spds/constants.h \
     common/spds/errors.h \
     common/spds/DefaultConfigFactory.h \
+    common/spds/FileData.h \
     common/syncml/core/AbstractCommand.h \
     common/syncml/core/Add.h \
     common/syncml/core/AlertCode.h \
