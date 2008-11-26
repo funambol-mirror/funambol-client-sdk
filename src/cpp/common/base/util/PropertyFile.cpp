@@ -70,7 +70,12 @@ static bool removeFile(const char* fullname) {
 	int len;
     bool ret = false;
     
+    // The path separator could be '/' or '\'
     p = strrchr((char*)fullname, '/');
+    if (!p) {
+        // try with '\'
+        p = strrchr((char*)fullname, '\\');
+    }
 
     if (!p) {
         // the file is in the current directory
