@@ -1,9 +1,4 @@
 dnl Process this file with autoconf to produce a configure script.
-#AC_INIT(../../src/cpp/common/base/base64.cpp)
-#AC_CANONICAL_SYSTEM
-#AM_INIT_AUTOMAKE(funambol, 7.1)
-#AM_CONFIG_HEADER(config.h)
-
 AC_INIT([funambol], [7.1])
 AC_CANONICAL_SYSTEM
 AC_CONFIG_SRCDIR([../../src/cpp/common/base/base64.cpp])
@@ -144,6 +139,7 @@ exec_prefix=@exec_prefix@
 bindir=@bindir@
 libdir=@libdir@
 datadir=@datadir@
+datarootdir=@datadir@
 sysconfdir=@sysconfdir@
 includedir=@includedir@
 package=@PACKAGE@
