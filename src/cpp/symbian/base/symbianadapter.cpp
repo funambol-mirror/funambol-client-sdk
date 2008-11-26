@@ -33,15 +33,18 @@
  * the words "Powered by Funambol".
  */
 
+#include <e32base.h>
 #include <e32cmn.h>
 #include <e32des8.h>
 #include <e32def.h>
 #include <e32std.h>
+#include <f32file.h> 
 
 #include "base/fscapi.h"
 #include "base/Log.h"
 #include "base/util/utils.h"
 #include "base/util/symbianUtils.h"
+#include "base/util/stringUtils.h"
 #include "base/globalsdef.h"
 
 BEGIN_NAMESPACE
@@ -456,6 +459,39 @@ bool removeFileInDir(const char* dir, const char* filename) {
     return true;
 }
 
+int createFolder(const char *aPath) {
+    TInt err = KErrNone;
 
+    // Transform: "/" -> "\"
+    StringBuffer path(aPath);
+    path = contextToPath(path.c_str());
+
+    // Trailing char MUST be "\"
+    const char* chars = path.c_str();
+    if (chars[strlen(chars)-1] != '\\') {
+        path += "\\";
+    }
+
+    //LOG.debug("creating dir: '%s'", path.c_str());
+
+    // Connect to the file server
+    RFs fileSession;
+    err = fileSession.Connect();
+    if (err) {
+        LOG.error("Cannot connect to the file server (code %d)", err);
+        return err;
+    }
+    CleanupClosePushL(fileSession);
+
+    // Make the dirs
+    RBuf pathDes;
+    pathDes.Assign(stringBufferToNewBuf(path));
+    err = fileSession.MkDirAll(pathDes);
+    pathDes.Close();
+
+    CleanupStack::PopAndDestroy(&fileSession);
+
+    return err;
+}
 END_NAMESPACE
 
