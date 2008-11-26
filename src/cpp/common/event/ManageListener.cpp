@@ -139,7 +139,7 @@ bool ManageListener::setListener(Listener* listener, ArrayList &list) {
  * not found, it does nothing. */
 void ManageListener::unsetListener(const char* name, ArrayList &list) {
     for(int i=0; i<list.size(); i++) {
-        ListenerElement *l = dynamic_cast<ListenerElement*>(list[i]);
+        ListenerElement *l = static_cast<ListenerElement*>(list[i]);
         if (l->get()->getName() == name) {
             l->set(NULL);
             list.removeElementAt(i);
@@ -174,19 +174,19 @@ void ManageListener::releaseAllListeners() {
 // Get listeners (return internal pointer):
 //
 SyncListener* ManageListener::getSyncListener(const char *name) {
-    return dynamic_cast<SyncListener*>(lookupListener(name, synclisteners));
+    return static_cast<SyncListener*>(lookupListener(name, synclisteners));
 }
 TransportListener* ManageListener::getTransportListener(const char *name) {
-    return dynamic_cast<TransportListener*>(lookupListener(name, transportlisteners));
+    return static_cast<TransportListener*>(lookupListener(name, transportlisteners));
 }
 SyncSourceListener* ManageListener::getSyncSourceListener(const char *name) {
-    return dynamic_cast<SyncSourceListener*>(lookupListener(name, syncsourcelisteners));
+    return static_cast<SyncSourceListener*>(lookupListener(name, syncsourcelisteners));
 }
 SyncItemListener* ManageListener::getSyncItemListener(const char *name) {
-    return dynamic_cast<SyncItemListener*>(lookupListener(name, syncitemlisteners));
+    return static_cast<SyncItemListener*>(lookupListener(name, syncitemlisteners));
 }
 SyncStatusListener* ManageListener::getSyncStatusListener(const char *name) {
-    return dynamic_cast<SyncStatusListener*>(lookupListener(name, syncstatuslisteners));
+    return static_cast<SyncStatusListener*>(lookupListener(name, syncstatuslisteners));
 }
 
 // Get listeners by position.
