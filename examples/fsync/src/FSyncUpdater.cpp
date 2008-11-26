@@ -59,7 +59,7 @@ class FSyncListener : public SyncListener {
         FSyncListener() : SyncListener(FSYNC_LISTENER_NAME) {};
 
         void syncBegin (SyncEvent& event) {
-            printf("\nBegin synchronization");
+            printf("Begin synchronization");
         }
         void syncEnd (SyncEvent& event) {
             printf("\nSynchronization done.\n");
@@ -67,11 +67,11 @@ class FSyncListener : public SyncListener {
         void sendInitialization (SyncEvent& event) {
             printf("\nConnecting to the server");
         }
-        void sendModifications (SyncEvent& event) {
-            //printf("\nSending modifications");
-        }
+        //void sendModifications (SyncEvent& event) {
+        //    printf("\nSending modifications\n");
+        //}
         void sendFinalization (SyncEvent& event) {
-            printf("\nSending finalization");
+            printf("Sending finalization");
         }
         void syncError (SyncEvent& event) {
             printf("\nSynchronization error: %s\n", event.getMessage());
@@ -170,11 +170,11 @@ class FSyncTransportListener : public TransportListener
   
         FSyncTransportListener() : TransportListener(FSYNC_LISTENER_NAME) {} ;
 
-        void sendDataBegin    (TransportEvent& event) { putchar('.'); };
-        void syncDataEnd      (TransportEvent& event) { putchar('.'); };
-        void receiveDataBegin (TransportEvent& event) { putchar('.'); };
-        void receivingData    (TransportEvent& event) { putchar('.'); };
-        void receiveDataEnd   (TransportEvent& event) { putchar('.'); };
+//        void sendDataBegin    (TransportEvent& event) { putchar('.'); };
+//        void syncDataEnd      (TransportEvent& event) { putchar('.'); };
+//        void receiveDataBegin (TransportEvent& event) { putchar('.'); };
+//        void receivingData    (TransportEvent& event) { putchar('.'); };
+//        void receiveDataEnd   (TransportEvent& event) { putchar('.'); };
 
 };
 
