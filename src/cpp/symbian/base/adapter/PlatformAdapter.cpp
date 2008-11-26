@@ -36,6 +36,7 @@
 #include "base/fscapi.h"
 #include "base/adapter/PlatformAdapter.h"
 #include "base/util/StringBuffer.h"
+#include "base/util/StringMap.h"
 #include "base/Log.h"
 
 BEGIN_NAMESPACE
