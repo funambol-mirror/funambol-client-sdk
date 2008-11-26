@@ -129,9 +129,7 @@ SyncSourceConfig* DMTClientConfig::getSyncSourceConfig(unsigned int i, bool refr
 
 bool DMTClientConfig::read() {
     int n = 0, i = 0; // number of sync sources
-
     bool ret = false;
-    resetError();
 
     LOG.debug("%s", DBG_READING_CONFIG_FROM_DM);
 
@@ -142,14 +140,25 @@ bool DMTClientConfig::read() {
         return false;
     }
 
+    //
+    // Check if the server device config exists by analyzing the last error code
+    // and create it otherwise.
+    //
+    resetError();
+    // reading Server Device Config (the true is to switch to the serverConfig object)
+    readDeviceConfig(*serverNode, true);
+    if(getLastErrorCode() != 0) {
+        LOG.debug("Server DeviceConfig not found, create a default one.");
+        saveDeviceConfig(*serverNode, true);
+        resetError();
+        readDeviceConfig(*serverNode, true);
+    }
+
     // Reading AccessConfig
     readAccessConfig(*syncMLNode);
-    
+
     // Reading DeviceConfig
     readDeviceConfig(*syncMLNode);
-	
-	// reading Server Device Config (the true is to switch to the serverConfig object)
-    readDeviceConfig(*serverNode, true);
 
     n = sourcesNode->getChildrenMaxCount();
 
@@ -194,16 +203,9 @@ bool DMTClientConfig::save() {
         //
         saveAccessConfig(*syncMLNode);
     }
-    //
-    // TBD: handle the dirty flag
-    //
 
     saveDeviceConfig(*syncMLNode);
-
-
     saveDeviceConfig(*serverNode, true);
-
-
 
     //
     // Sources management node
@@ -251,8 +253,6 @@ bool DMTClientConfig::open() {
     return true;
 
 failed:
-    //lastErrorCode = ERR_INVALID_CONTEXT;
-    //sprintf(lastErrorMsg, ERRMSG_INVALID_CONTEXT, nodeName);
     setErrorF(ERR_INVALID_CONTEXT, ERRMSG_INVALID_CONTEXT, nodeName);
     close();
     return false;
