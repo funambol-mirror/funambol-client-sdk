@@ -51,7 +51,7 @@ SOURCE       base64.cpp error.cpp md5.cpp quoted-printable.cpp
 
 SOURCEPATH   ..\..\src\cpp\common\base\util
 SOURCE       ArrayElement.cpp ArrayList.cpp BasicTime.cpp
-SOURCE       StringBuffer.cpp baseutils.cpp XMLProcessor.cpp
+SOURCE       StringBuffer.cpp StringMap.cpp baseutils.cpp XMLProcessor.cpp
 SOURCE       MemoryKeyValueStore.cpp PropertyFile.cpp
 
 SOURCEPATH   ..\..\src\cpp\common\spdm
