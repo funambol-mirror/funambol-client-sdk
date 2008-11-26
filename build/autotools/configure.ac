@@ -153,7 +153,7 @@ Description: "Funambol C++ sdk"
 Version: @PACKAGE_VERSION@
 Requires: 
 Libs: -L\${libdir} @LDFLAGS@ @LIBS@ -lfunambol
-Cflags: -I\${includedir} 
+Cflags: -I\${includedir}
 EOF
 
 AC_OUTPUT(Makefile libfunambol.pc src/Makefile include/Makefile test/Makefile)
