@@ -47,11 +47,12 @@
 #define ERR_HTTP_INFLATE                ERR_TRANSPORT_BASE+70
 #define ERR_HTTP_DEFLATE                ERR_TRANSPORT_BASE+71
 
+BEGIN_NAMESPACE
+
 /*
  * This is the Mozilla implementation of the TransportAgent object
  * It makes use of the Mozilla xpcom components for making http requests
  */
-
 class MozillaTransportAgent : public TransportAgent {
     
 public:
@@ -61,5 +62,7 @@ public:
     
     char* sendMessage(const char* msg);
 };
+
+END_NAMESPACE
 
 #endif
