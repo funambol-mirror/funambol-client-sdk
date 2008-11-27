@@ -132,24 +132,4 @@ if test $enable_integration_tests == "yes"; then
         AC_DEFINE(ENABLE_INTEGRATION_TESTS, 1, [enable unit tests outside of the library's source code])
 fi
 
-# pkg-conf metadata file generation
-cat > libfunambol.pc.in <<EOF
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-bindir=@bindir@
-libdir=@libdir@
-datadir=@datadir@
-datarootdir=@datadir@
-sysconfdir=@sysconfdir@
-includedir=@includedir@
-package=@PACKAGE@
-
-Name: @PACKAGE_NAME@
-Description: "Funambol C++ sdk"
-Version: @PACKAGE_VERSION@
-Requires: 
-Libs: -L\${libdir} @LDFLAGS@ @LIBS@ -lfunambol
-Cflags: -I\${includedir}
-EOF
-
 AC_OUTPUT(Makefile libfunambol.pc src/Makefile include/Makefile test/Makefile)
