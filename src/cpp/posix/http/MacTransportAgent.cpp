@@ -107,11 +107,12 @@ char* MacTransportAgent::sendMessage(const char* msg){
     if ((flags & kSCNetworkReachabilityFlagsIsWWAN)) {
         noConnectionRequired = true;
     }
+    CFRelease(scnReachRef);
 #endif
     
 
     if ( gotflags && isReachable && noConnectionRequired ){
-        
+        char* ret=0;
         // size_t size = strlen(msg);
         LOG.debug("Requesting resource %s at %s:%d", url.resource, url.host, url.port);
         
@@ -134,7 +135,8 @@ char* MacTransportAgent::sendMessage(const char* msg){
         if(!httpRequest){
             LOG.error("MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
             setError(ERR_NETWORK_INIT, "MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
-            return NULL;
+            
+            goto finally;
         }
         
         
@@ -142,7 +144,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
         if (!bodyData){
             LOG.error("MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
             setError(ERR_NETWORK_INIT, "MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
-            return NULL;
+            goto finally;
         }        
         CFHTTPMessageSetBody(httpRequest, bodyData);
         CFHTTPMessageSetHeaderFieldValue(httpRequest, headerFieldName, headerFieldValue);
@@ -198,7 +200,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
         LOG.debug("Status Code: %d", statusCode);
         LOG.debug("Result: %s", result.c_str());
         
-        char* ret=0;
+
         
         switch (statusCode) {
             case 0: {
@@ -253,6 +255,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
             }
         }
         
+    finally:
         CFRelease(headerFieldName);
         CFRelease(headerFieldValue);
         CFRelease(CFurl);
@@ -261,6 +264,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
         CFRelease(bodyData);
         CFRelease(responseStream);
         CFRelease(requestMethod);
+        CFRelease(useragent);
 
         LOG.info("MacTransportAgent::sendMessage end");    
         return ret;
