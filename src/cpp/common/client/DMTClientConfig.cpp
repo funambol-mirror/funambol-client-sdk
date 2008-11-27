@@ -46,6 +46,7 @@
 #include "spdm/DMTreeFactory.h"
 #include "spdm/DMTree.h"
 #include "spdm/ManagementNode.h"
+#include "spds/DefaultConfigFactory.h"
 
 USE_NAMESPACE
 
@@ -149,6 +150,11 @@ bool DMTClientConfig::read() {
     readDeviceConfig(*serverNode, true);
     if(getLastErrorCode() != 0) {
         LOG.debug("Server DeviceConfig not found, create a default one.");
+        
+        DeviceConfig* sdc = DefaultConfigFactory::getServerDeviceConfig();
+        setServerConfig(*sdc);
+        delete sdc; sdc = NULL;
+
         saveDeviceConfig(*serverNode, true);
         resetError();
         readDeviceConfig(*serverNode, true);

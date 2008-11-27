@@ -66,13 +66,22 @@ class DefaultConfigFactory {
         static AccessConfig*     getAccessConfig();
 
         /*
-         * Returns a default generated DeviceConfig.
+         * Returns a default generated DeviceConfig for a client.
          * This method should be overrided to get a default client-specific
          * DeviceConfig.
          * @return: DeviceConfig pointer allocated new, so it must
          *          be freed by the caller.
          */
         static DeviceConfig*     getDeviceConfig();
+
+        /*
+         * Returns a default generated DeviceConfig for the server.
+         * This method should be overrided to get a default server-specific
+         * DeviceConfig.
+         * @return: DeviceConfig pointer allocated new, so it must
+         *          be freed by the caller.
+         */
+        static DeviceConfig*     getServerDeviceConfig();
 
         /*
          * Returns a default generated SyncSourceConfig.

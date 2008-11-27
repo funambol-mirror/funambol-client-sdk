@@ -49,7 +49,6 @@ DefaultConfigFactory::DefaultConfigFactory() {
 DefaultConfigFactory::~DefaultConfigFactory() {
 }
 
-
 AccessConfig* DefaultConfigFactory::getAccessConfig() {
 
     AccessConfig* ac = new AccessConfig();
@@ -82,8 +81,6 @@ AccessConfig* DefaultConfigFactory::getAccessConfig() {
     return ac;
 }
 
-
-
 DeviceConfig* DefaultConfigFactory::getDeviceConfig() {
 
     DeviceConfig* dc = new DeviceConfig();
@@ -107,7 +104,28 @@ DeviceConfig* DefaultConfigFactory::getDeviceConfig() {
     return dc;
 }
 
+DeviceConfig* DefaultConfigFactory::getServerDeviceConfig() {
 
+    DeviceConfig* dc = new DeviceConfig();
+
+    dc->setMan                  ("");
+    dc->setMod                  ("");
+    dc->setOem                  ("");
+    dc->setFwv                  ("");
+    dc->setSwv                  ("");
+    dc->setHwv                  ("");
+    dc->setDevID                ("");
+    dc->setDevType              ("");
+    dc->setDsV                  ("");
+    dc->setUtc                  (true);
+    dc->setLoSupport            (false);
+    dc->setNocSupport           (false);
+    dc->setMaxObjSize           (0);
+    dc->setDevInfHash           ("");
+    dc->setSmartSlowSync        (2);
+
+    return dc;
+}
 
 SyncSourceConfig* DefaultConfigFactory::getSyncSourceConfig(const char* name) {
 
@@ -123,8 +141,10 @@ SyncSourceConfig* DefaultConfigFactory::getSyncSourceConfig(const char* name) {
     sc->setEncryption           ("");
 
     if (!strcmp(name, "contact")){
-        sc->setURI              ("scard");
-        sc->setType             ("text/x-s4j-sifc");
+        sc->setURI              ("card");
+        sc->setType             ("text/x-vcard");
+        sc->setEncoding         ("bin");
+        sc->setVersion          ("2.1");
     }
     else if (!strcmp(name, "calendar")){
         sc->setURI              ("scal");
