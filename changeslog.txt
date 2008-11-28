@@ -1,3 +1,6 @@
+Funambol SDK C++ 7.1.1
+-----------------------
+
 2008-11-24
    - magi: added trim() method to StringBuffer - updated tests
            changed ":" separator with "=" in PropertyFile - updated tests
