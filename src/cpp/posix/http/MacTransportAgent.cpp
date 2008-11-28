@@ -96,6 +96,10 @@ char* MacTransportAgent::sendMessage(const char* msg){
     bool gotflags = true;
     bool isReachable = true;
     bool noConnectionRequired = true; 
+    
+    StringBuffer result;
+    CFIndex bytesRead = 1;
+    int statusCode = -1;
 
 #if defined(FUN_IPHONE)    
     SCNetworkReachabilityFlags        flags;
@@ -173,10 +177,10 @@ char* MacTransportAgent::sendMessage(const char* msg){
             LOG.error("Failed to send HTTP request...");
         }
         
-        StringBuffer result;
+
         
 #define READ_SIZE 1000
-        CFIndex bytesRead = 1;
+        
         UInt8   buffer[READ_SIZE];
         while ( (bytesRead = CFReadStreamRead(responseStream, buffer, READ_SIZE-1)) > 0)
         {
@@ -186,7 +190,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
             result.append((const char*)buffer);
         }
         
-        int statusCode = -1;
+       
         CFHTTPMessageRef reply = (CFHTTPMessageRef) CFReadStreamCopyProperty( responseStream, kCFStreamPropertyHTTPResponseHeader);
         
         
