@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SyncML>
+<SyncHdr><VerDTD>1.1</VerDTD>
+<VerProto>SyncML/1.1</VerProto>
+<SessionID>1194978121</SessionID>
+<MsgID>1</MsgID>
+<Target><LocURI>http://my.funambol.com/sync</LocURI>
+</Target>
+<Source><LocURI>fwm-50F0063006B000000</LocURI>
+</Source>
+<Cred><Meta><Format xmlns="syncml:metinf">b64</Format>
+<Type xmlns="syncml:metinf">syncml:auth-basic</Type>
+</Meta>
+<Data>dGVvOnRlb2RlbW8=</Data>
+</Cred>
+<Meta><MaxMsgSize xmlns="syncml:metinf">65536</MaxMsgSize>
+<MaxObjSize xmlns="syncml:metinf">2010000</MaxObjSize>
+</Meta>
+</SyncHdr>
+<SyncBody><Alert><CmdID>1</CmdID>
+<Data>200</Data>
+<Item><Target><LocURI>scard</LocURI>
+</Target>
+<Source><LocURI>contact</LocURI>
+</Source>
+<Meta><Anchor xmlns="syncml:metinf"><Last>1194977846</Last>
+<Next>1194978121</Next>
+</Anchor>
+<MaxObjSize xmlns="syncml:metinf">2010000</MaxObjSize>
+</Meta>
+</Item>
+</Alert>
+<Final/></SyncBody>
+</SyncML>
