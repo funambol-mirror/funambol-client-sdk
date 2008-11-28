@@ -57,6 +57,7 @@ Forge file for Funambol C++ API
 
         <property name="package.name" value="funambol-cpp-api-${release.major}.${release.minor}.${build.number}"/>
         <property name="dir.forge" value="output/${package.name}"/>
+        <property name="dir.sources" value="${dir.forge}/Funambol/sdk/cpp/"/>                
 
         <property file="${user.home}/api-native-build.properties"/>
         <property file="api-native-build.properties"/>
@@ -78,7 +79,6 @@ Forge file for Funambol C++ API
     -->
     <target name="all" depends="clean, mkdirs, build, checkout, forge"/>
     
-    <!--target name="no-checkout" depends="clean, mkdirs, build, forge"/-->
     <target name="no-checkout" depends="clean, mkdirs, build, forge-no-checkout"/>
 
     <!--
@@ -95,6 +95,7 @@ Forge file for Funambol C++ API
     -->
     <target name="mkdirs" depends="init">
       <mkdir dir="${dir.forge}"/>
+      <mkdir dir="${dir.sources}"/>
     </target>
      
     <!--
@@ -104,7 +105,7 @@ Forge file for Funambol C++ API
     -->
     <target name="build" depends="init">
         <propertyfile file = "release.properties"
-                      comment = "Funambol C++ Client API version file" >
+                      comment = "Funambol C++ Client SDK version file" >
             <entry key="build.date"   type="date" value="now" pattern="yyyyMMdd"/>
             <!--entry key="build.number" type="int"  operation = "+" default="1"   /-->
         </propertyfile>
@@ -120,12 +121,12 @@ Forge file for Funambol C++ API
       CHECKOUT
     ========================================================================
     -->
-    <target name="checkout" depends="init">
-      <echo message="Extracting ${cppapi.modulename}.${cppapi.tag}..."/>
-      <echo message="cvs -z3 -d${cvsroot} export -r ${cppapi.tag} ${cppapi.modulename}"/>
-      <exec dir="output" executable="cvs">
-         <arg line="-z3 -d${cvsroot} export -r ${cppapi.tag} ${cppapi.modulename}"/>
-      </exec>      
+    <target name="checkout" depends="init">             
+      <echo message="Checkout source files from SVN (tag = ${svn.tag})..."/>
+        <echo message="svn export --username guest ${svn.url}/${svn.tag}"/>
+	    <exec dir="${basedir}" executable="svn" failonerror="true" output="log.SVN">		
+		<arg line="export --username guest --force ${svn.url}/${svn.tag} ${dir.sources} "/> 
+		</exec> 
     </target>
 
     <!--
@@ -133,15 +134,7 @@ Forge file for Funambol C++ API
       FORGE
     ========================================================================
     -->
-    <target name="forge" depends="init">
-
-      <!--
-          Copy all stuffs.
-          Note that only public include files are released.
-      -->
-      <copy todir="${dir.forge}/Funambol/sdk/c++">
-        <fileset dir="output/${cppapi.modulename}" includes="**/*" excludes="**/CVS"/>
-      </copy>
+    <target name="forge" depends="init">     
       <!--
           Zip up everything
       -->
@@ -162,7 +155,7 @@ Forge file for Funambol C++ API
           Copy all stuffs.
           Note that only public include files are released.
       -->
-      <copy todir="${dir.forge}/Funambol/sdk/c++/">
+      <copy todir="${dir.sources}">
         <fileset dir="..">
             <exclude name="**/${cppapi.targetwm5}/"/>
             <exclude name="**/${cppapi.targetppc}/"/>
@@ -206,10 +199,10 @@ Forge file for Funambol C++ API
     ========================================================================
     -->
     <target name="create-docs" depends="init">
-      <echo message="Creating documentation with doxygen" />
-	        <exec dir="output/${cppapi.modulename}/docs" executable="doxygen" >
+      <echo message="Creating documentation with doxygen ${dir.sources}" />
+	        <exec dir="${dir.sources}/docs" executable="doxygen" >
         	  <arg line="../docs/Doxyfile" />
-	          <env key="FUNAMBOL_NATIVE_ROOT" path="output/${cppapi.modulename}/" />
+	          <env key="FUNAMBOL_NATIVE_ROOT" path="${dir.sources}/" />
 	          <env key="ENABLED_SECTIONS" value="API" />
 	          <env key="HAVE_DOT" value="YES" />
         	</exec>
