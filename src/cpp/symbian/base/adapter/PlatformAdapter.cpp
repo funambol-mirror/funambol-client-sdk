@@ -37,7 +37,13 @@
 #include "base/adapter/PlatformAdapter.h"
 #include "base/util/StringBuffer.h"
 #include "base/util/StringMap.h"
+#include "base/util/stringUtils.h"
 #include "base/Log.h"
+
+// include CEikonEnv framework for CEikonEnv::Static()
+#include <eikapp.h> 
+#include <eikappui.h> 
+#include <eikenv.h>
 
 BEGIN_NAMESPACE
 
@@ -52,6 +58,7 @@ void PlatformAdapter::init(const char *appcontext) {
         appContext = appcontext;
         homeFolder = "";
         configFolder = "";
+        initialized = true;
     }
     else {
         LOG.error("PlatformAdapter::init(): already initialized.");
@@ -64,6 +71,7 @@ void PlatformAdapter::init(const char *appcontext, StringMap& env) {
         appContext = appcontext;
         homeFolder = env["HOME_FOLDER"];
         configFolder = env["CONFIG_FOLDER"];
+        initialized = true;
     }
     else {
         LOG.error("PlatformAdapter::init(): already initialized.");
@@ -75,20 +83,32 @@ const StringBuffer& PlatformAdapter::getAppContext() {
     return appContext;
 }
 
-// Returns the home folder, or an empty string on failure.
+// Returns the home folder. On Symbian platform home folder is 
+// the application private folder 
 const StringBuffer& PlatformAdapter::getHomeFolder() {
     if (homeFolder.empty()) {
-        LOG.error("PlatformAdapter::getHomeFolder: to be implemented");
+        TFileName appFullName = CEikonEnv::Static()->EikAppUi()->Application()->AppFullName();
+        TParsePtr parse1(appFullName);
+        TPtrC currentDrive = parse1.Drive();
+		
+        // Get ONLY the private path (e.g. "\private\2001BBA4")
+        TBuf<KMaxPath> privatePath;
+        CEikonEnv::Static()->FsSession().PrivatePath(privatePath);
+        TParsePtr parse2(privatePath);
+        TPtrC currentPath = parse2.Path();
+
+        StringBuffer drive = bufToStringBuffer(currentDrive);
+        homeFolder.append(drive);
+        StringBuffer path = bufToStringBuffer(currentPath);
+        homeFolder.append(path);
     }
+
     return homeFolder;
 }
 
-// Returns the home folder, or an empty string on failure.
+// Returns the config folder (on Symbian platform is the same as home folder)
 const StringBuffer& PlatformAdapter::getConfigFolder() {
-    if (configFolder.empty()){
-        LOG.error("PlatformAdapter::getConfigFolder: to be implemented");
-    }
-    return configFolder;
+    return getHomeFolder();
 }
 
 END_NAMESPACE
