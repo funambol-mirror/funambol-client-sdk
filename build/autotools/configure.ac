@@ -26,7 +26,7 @@ dnl use_mozilla_ta="no"
 dnl If the transport agent is not specified, set it to default: "mac" for Mac OS, "curl" for all the other posix systems
 if test "x$transport_agent" = "xno"; then
     case $target in
-        *apple-darwin*)  use_mac_ta="yes" ;;
+        *apple-darwin*)  use_curl_ta="yes" ;;
         *) use_curl_ta="yes" ;;
     esac
 else
