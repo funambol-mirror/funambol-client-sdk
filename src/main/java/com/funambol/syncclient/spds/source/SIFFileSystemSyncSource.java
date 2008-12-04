@@ -53,7 +53,6 @@ import com.funambol.common.pim.model.VCalendar;
 import com.funambol.common.pim.sif.*;
 import com.funambol.common.pim.vcard.VcardParser;
 import com.funambol.common.pim.xvcalendar.XVCalendarParser;
-import com.funambol.common.pim.xvcalendar.XVCalStringBufferWriter;
 
 import com.funambol.syncclient.common.SourceUtils;
 import com.funambol.syncclient.common.logging.Logger;
@@ -444,13 +443,12 @@ implements SyncSource {
             //
             // Converting the Calendar object into a vcalendar string
             //
-            StringBuffer buffer = new StringBuffer();
             VCalendarConverter vcf = new VCalendarConverter(null, charset);
             VCalendar vcal = vcf.calendar2vcalendar(calendar, true);
-            XVCalStringBufferWriter writer = new XVCalStringBufferWriter();
-            writer.write(vcal, buffer);
+            VComponentWriter writer = 
+                    new VComponentWriter(VComponentWriter.NO_FOLDING);
             
-            return buffer.toString().getBytes();
+            return writer.toString(vcal).getBytes();
 
         } catch (Exception e) {
             String msg = "Error converting item "
