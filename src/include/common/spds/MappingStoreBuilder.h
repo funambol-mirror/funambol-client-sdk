@@ -59,7 +59,7 @@ public:
     */
     virtual KeyValueStore* createNewInstance(const char* name) const {
         StringBuffer fullName = PlatformAdapter::getConfigFolder();
-        if (createFolder(fullName)){
+        if (createFolder(fullName.c_str())){
             LOG.error("MappingStoreBuilder::createNewInstance(): error creating config folder");
         }
         fullName += "/"; fullName += name;
