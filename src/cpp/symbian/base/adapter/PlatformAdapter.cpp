@@ -87,17 +87,22 @@ const StringBuffer& PlatformAdapter::getAppContext() {
 // the application private folder 
 const StringBuffer& PlatformAdapter::getHomeFolder() {
     if (homeFolder.empty()) {
-        TFileName appFullName = CEikonEnv::Static()->EikAppUi()->Application()->AppFullName();
-        TParsePtr parse1(appFullName);
-        TPtrC currentDrive = parse1.Drive();
-		
         // Get ONLY the private path (e.g. "\private\2001BBA4")
         TBuf<KMaxPath> privatePath;
         CEikonEnv::Static()->FsSession().PrivatePath(privatePath);
         TParsePtr parse2(privatePath);
         TPtrC currentPath = parse2.Path();
 
+#ifdef __GCCE__
+        TFileName appFullName = CEikonEnv::Static()->EikAppUi()->Application()->AppFullName();
+        TParsePtr parse1(appFullName);
+        TPtrC currentDrive = parse1.Drive();
+
         StringBuffer drive = bufToStringBuffer(currentDrive);
+#else
+        // emulator builds should use C: as drive
+        StringBuffer drive = "C:";
+#endif
         homeFolder.append(drive);
         StringBuffer path = bufToStringBuffer(currentPath);
         homeFolder.append(path);
@@ -106,9 +111,16 @@ const StringBuffer& PlatformAdapter::getHomeFolder() {
     return homeFolder;
 }
 
-// Returns the config folder (on Symbian platform is the same as home folder)
+// Returns the config folder 
 const StringBuffer& PlatformAdapter::getConfigFolder() {
-    return getHomeFolder();
+    if (configFolder.empty()) {
+        StringBuffer privatePath = getHomeFolder();
+        
+        configFolder.append(privatePath);
+        configFolder.append(appContext);
+    }
+
+    return configFolder;
 }
 
 END_NAMESPACE
