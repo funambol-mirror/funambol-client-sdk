@@ -472,7 +472,7 @@ int createFolder(const char *aPath) {
         path += "\\";
     }
 
-    //LOG.debug("creating dir: '%s'", path.c_str());
+    LOG.debug("creating dir: '%s'", path.c_str());
 
     // Connect to the file server
     RFs fileSession;
@@ -487,10 +487,16 @@ int createFolder(const char *aPath) {
     RBuf pathDes;
     pathDes.Assign(stringBufferToNewBuf(path));
     err = fileSession.MkDirAll(pathDes);
+
+    // if folder already existed don't return error
+    if (err == KErrAlreadyExists) {
+        err = KErrNone;
+    }
+ 
     pathDes.Close();
 
     CleanupStack::PopAndDestroy(&fileSession);
-
+        
     return err;
 }
 END_NAMESPACE
