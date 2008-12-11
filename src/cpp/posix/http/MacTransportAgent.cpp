@@ -86,7 +86,7 @@ MacTransportAgent::MacTransportAgent(URL& newURL, Proxy& newProxy, unsigned int 
  * Use getResponse() to get the server response.
  */
 char* MacTransportAgent::sendMessage(const char* msg){
-    LOG.info("MacTransportAgent::sendMessage begin");
+    LOG.debug("MacTransportAgent::sendMessage begin");
     if(!msg) {
         LOG.error("MacTransportAgent::sendMessage error: NULL message.");
         setError(ERR_NETWORK_INIT, "MacTransportAgent::sendMessage error: NULL message.");
@@ -270,12 +270,12 @@ char* MacTransportAgent::sendMessage(const char* msg){
         CFRelease(requestMethod);
         CFRelease(useragent);
 
-        LOG.info("MacTransportAgent::sendMessage end");    
+        LOG.debug("MacTransportAgent::sendMessage end");    
         return ret;
     }else{
         setErrorF(ERR_CONNECT, "Network error: the attempt to connect to the server failed -> exit");
         LOG.debug("%s", getLastErrorMsg());
-        LOG.info("MacTransportAgent::sendMessage end");
+        LOG.debug("MacTransportAgent::sendMessage end");
         return NULL;
     }
 }
