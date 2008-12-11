@@ -190,16 +190,43 @@ bool removeFileInDir(const char* d, const char* fname) {
  * @return 0 on success, -1 otherwise.
  */
 int createFolder(const char *path) {
-    DIR* d = opendir(path);
-    int res = 0;
-    if (!d) {
-        res = mkdir(path, 0777);
-    } else {
-        closedir(d);        
-    }
-    return res;
-}
+
+    char* spath=stringdup(path);
+    char* tpath=0;
+    char  tsep=0;
+    int   ret = 0;
+
+    tpath = spath;
+
+    DIR* d;
     
+    // Create upper folders
+    while( (tpath=strpbrk(tpath+1, "\\/")) ) {
+        tsep=*tpath;
+        *tpath=0;
+        d = opendir(spath);
+        if (!d) {
+            ret = mkdir(spath, 0777);
+        } else {
+            closedir(d);        
+        }
+        *tpath=tsep;
+        if(ret != 0)  break;
+    }
+    
+    // Create last folder
+    if(ret == 0) {
+        d = opendir(path);
+        if (!d) {
+            ret = mkdir(path, 0777);
+        } else {
+            closedir(d);        
+        }
+    }
+    delete [] spath;
+    return ret;
+}
+
 // TODO: convert to the specified encoding, assuming wc is UTF-8
 char* toMultibyte(const WCHAR *wc, const char *encoding)
 {
