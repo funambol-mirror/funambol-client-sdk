@@ -45,14 +45,16 @@ BEGIN_NAMESPACE
     
 SQLiteKeyValueStore::SQLiteKeyValueStore(const StringBuffer & table, const StringBuffer & colKey,
                                          const StringBuffer & colValue,
-                                         const StringBuffer & thePath)
+                                         const StringBuffer & thePath, bool isTransactional)
 : SQLKeyValueStore(table,colKey,colValue), enumeration(*this), path(thePath)
 {
     db = NULL;
     statement = NULL;
     
-    bool toInit =!checkIfTableExists(table);
+    this->isTransactional = isTransactional; 
     
+    //bool toInit =!checkIfTableExists(table);
+    bool toInit = true;
     if(connect() != SQLITE_OK) {
         LOG.error("SQLiteKeyValueStore: cannot connect to database.");
     }
@@ -156,9 +158,11 @@ int SQLiteKeyValueStore::connect()
         return true;
         
     int ret = sqlite3_open(path, &db);
-    if (ret == SQLITE_OK)
-    {
-        return execute("BEGIN TRANSACTION;");
+    if (ret == SQLITE_OK )
+    {   
+        if(isTransactional){
+            return execute("BEGIN TRANSACTION;");
+        }
     }
     return ret;
 }
@@ -168,8 +172,10 @@ int SQLiteKeyValueStore::disconnect()
 {
     if (db == NULL)
         return true;
+    if (isTransactional){
+        execute("ROLLBACK TRANSACTION;");
+    }
     
-    execute("ROLLBACK TRANSACTION;");
     
     int ret = sqlite3_close(db);
     db = NULL;
@@ -184,9 +190,14 @@ int SQLiteKeyValueStore::close()
         sqlite3_finalize(statement);
         statement = NULL;
     }
-    return (
-        ((execute("COMMIT TRANSACTION;") == SQLITE_OK) && (execute("BEGIN TRANSACTION;") == SQLITE_OK))
-        ? 0 : 1);
+    if(isTransactional){
+        return (
+                ((execute("COMMIT TRANSACTION;") == SQLITE_OK) && (execute("BEGIN TRANSACTION;") == SQLITE_OK))
+                ? 0 : 1);
+    }else{
+        return 0;
+    }
+    return 0;
 }
 
 
@@ -217,8 +228,13 @@ int SQLiteKeyValueStore::init(const char* table, const char* colKey,   const cha
     StringBuffer sql;
             
     sql.sprintf("CREATE TABLE  %s (%s TEXT PRIMARY KEY, %s TEXT)", table, colKey, colValue);        
-    return execute(sql);
-       
+    connect();
+    //execute(sql);
+    if (db == NULL){
+        return 1;
+    }
+    sqlite3_exec(db,sql.c_str(), NULL, NULL, NULL);
+    return close();
 }
 
 END_NAMESPACE
