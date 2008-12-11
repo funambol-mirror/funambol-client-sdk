@@ -62,6 +62,8 @@ private:
     int enumeration_nextRow;
     KeyValuePair enumeration_kvp;
     
+    bool isTransactional;
+    
 protected:
 
     
@@ -156,14 +158,15 @@ public:
     /*
      * Constructor
      *
-     * @param uri       - The location of the server
-     * @param colKey    - The name of the column for the key
-     * @param colValue  - The name of the column of the value
-     * @param path      - The name of the full path to the database to use
+     * @param uri             - The location of the server
+     * @param colKey          - The name of the column for the key
+     * @param colValue        - The name of the column of the value
+     * @param path            - The name of the full path to the database to use
+     * @param isTransactional - A bool to enable 
      *
      */
     SQLiteKeyValueStore(const StringBuffer & table, const StringBuffer & colKey, const StringBuffer & colValue,
-                        const StringBuffer & path);
+                        const StringBuffer & path, bool isTransactional = false);
     
     /*
      * Destructor
