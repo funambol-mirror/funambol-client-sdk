@@ -204,7 +204,7 @@ static const char *getLine(const char *msg, char **line) {
 int uudecode(const char *msg, char **binmsg, size_t *binlen)
 {
     // Convert the string
-    char *buf = stringdup(msg);
+    const char *buf = msg;
     if (!buf)
         return -1;
 
@@ -228,7 +228,7 @@ int uudecode(const char *msg, char **binmsg, size_t *binlen)
 
         delete [] line;
     }
-    delete [] buf;
+    //delete [] buf;
     // Terminate the string
     out[len]=0;
     // Set return parameters
