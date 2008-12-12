@@ -68,11 +68,9 @@ class DMTClientConfig : public SyncManagerConfig {
         DMTree* dmt;
         ManagementNode* syncMLNode;
         ManagementNode* sourcesNode;
-        //
         ManagementNode* serverNode;
 
         void initialize();
-        DMTClientConfig();
 
         /* top level functions */
         virtual bool readAccessConfig(ManagementNode& n);
@@ -249,9 +247,22 @@ class DMTClientConfig : public SyncManagerConfig {
                                       ManagementNode& sourceNode);
 
     public:
-
-        DMTClientConfig(const char*  root);
-
+        
+        /**
+         * Initialize a DMTClientConfig with the given application context.
+         * It's deprecated, use PlatformAdapter::init(appContext) and 
+         * DMTClientConfig() instead.
+         *
+         * @param root the application context
+         */
+        DMTClientConfig(const char* root);
+        
+        /**
+         * Initialize a DMTClientConfig. 
+         * You must call PlatformAdapter::init(appContext) before.
+         */
+        DMTClientConfig();
+    
         ~DMTClientConfig();
 
         SyncSourceConfig* getSyncSourceConfig(const char* name, bool refresh = false);
