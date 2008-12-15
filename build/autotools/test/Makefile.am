@@ -22,7 +22,7 @@ vpath %.cpp	$(TESTDIR) \
 		$(TESTDIR)/common/event
 
 # Test runner sources
-SOURCES = client-test-main.cpp client-test.cpp ClientTest.cpp
+SOURCES = client-test-main.cpp ClientTest.cpp TestFileSource.cpp
 
 # Testcase sources
 TESTS_BASE = \
@@ -70,9 +70,11 @@ client-test-files:
 # in source files the API internal definitions need to
 # be removed so that the files can be used externally
 source_files = \
-	test/ClientTest.h \
-	test/ClientTest.cpp \
-	test/client-test-main.cpp
+        test/ClientTest.h       \
+	test/ClientTest.cpp     \
+        test/TestFileSource.h   \
+        test/TestFileSource.cpp \
+        test/client-test-main.cpp
 verbatim_files = \
 	test/Algorithm/Artistic \
 	test/Algorithm/copyright \
