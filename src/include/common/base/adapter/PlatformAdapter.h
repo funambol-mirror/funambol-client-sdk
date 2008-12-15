@@ -63,15 +63,24 @@ public:
      * must be implemented by all adapters, is to save the application 
      * context, that is used by the library to store the configuration
      * parameters and temp files.
+     *
+     * The platform adapter should be initialized once and kept unchanged 
+     * during the whole application runtime. 
+     * The caller can force the adapter initialization by setting the 
+     * force flag to true.
      * 
      * @param appContext an identifier of the application that is using
      *                   the library. The suggested format to guarantee
      *                   the uniqueness of this identifier is
      *                   "VendorName/AppName", for example:
      *                   "Funambol/DemoSyncClient".
+     *
+     * @param force force the platform adaper initialization. This option 
+     *              is not enabled by default.
+     *
      * @return none
      */
-    static void init(const char *appcontext);
+    static void init(const char *appcontext, const bool force = false);
 
     /**
      * Initializes the library adapter, using custom values.
@@ -81,6 +90,11 @@ public:
      * context, that is used by the library to store the configuration
      * parameters and temp files.
      *
+     * The platform adapter should be initialized once and kept unchanged 
+     * during the whole application runtime. 
+     * The caller can force the adapter initialization by setting the 
+     * force flag to true.
+     * 
      * The caller provides also a StringMap containing values for the
      * other system paths, overriding the system-dependent ones.
      * 
@@ -98,10 +112,13 @@ public:
      *            Currently used values are:
      *            HOME_FOLDER   - set value returned by getHomeFolder()
      *            CONFIG_FOLDER - set value returned by getConfigFolder()
+     *
+     * @param force force the platform adaper initialization. This option 
+     *              is not enabled by default.
      * 
      * @return none
      */
-    static void init(const char *appcontext, StringMap& env);
+    static void init(const char *appcontext, StringMap& env, const bool force = false);
 
     /**
      * Returns the application context set by the init method.

@@ -47,8 +47,8 @@ StringBuffer PlatformAdapter::configFolder;
 bool PlatformAdapter::initialized = false;
 
 // Initializes the platform-dependent parameters of the library using defaults.
-void PlatformAdapter::init(const char *appcontext) {
-    if(!initialized) {
+void PlatformAdapter::init(const char *appcontext, const bool force) {
+    if(!initialized || force) {
         appContext = appcontext;
         homeFolder = "";
         configFolder = "";
@@ -57,11 +57,14 @@ void PlatformAdapter::init(const char *appcontext) {
     else {
         LOG.error("PlatformAdapter::init(): already initialized.");
     }
+    if(initialized && force) {
+        LOG.debug("PlatformAdapter::init(): forcing to a new initialization.");
+    }
 }
 
 // Initializes the platform-dependent parameters of the library with custom values.
-void PlatformAdapter::init(const char *appcontext, StringMap& env) {
-    if(!initialized) {
+void PlatformAdapter::init(const char *appcontext, StringMap& env, const bool force) {
+    if(!initialized || force) {
         appContext = appcontext;
         homeFolder = env["HOME_FOLDER"];
         configFolder = env["CONFIG_FOLDER"];
@@ -69,6 +72,9 @@ void PlatformAdapter::init(const char *appcontext, StringMap& env) {
     }
     else {
         LOG.error("PlatformAdapter::init(): already initialized.");
+    }
+    if(initialized && force) {
+        LOG.debug("PlatformAdapter::init(): forcing to a new initialization.");
     }
 }
 
