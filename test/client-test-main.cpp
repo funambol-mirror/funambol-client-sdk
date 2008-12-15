@@ -41,6 +41,7 @@
 # include <config.h>
 #endif
 
+
 #include <string>
 #include <stdexcept>
 
@@ -59,6 +60,8 @@
 #include <base/Log.h>
 
 USE_NAMESPACE
+
+#include "TestFileSource.h"
 
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
@@ -192,8 +195,13 @@ static void printTests(CppUnit::Test *test, int indention)
     }
 }
 
+
 int main(int argc, char* argv[])
 {
+  TestFileSource testFileSource("A");
+  
+  testFileSource.registerTests();
+
   // Get the top level suite from the registry
   CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
 
