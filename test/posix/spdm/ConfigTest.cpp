@@ -42,6 +42,7 @@
 #include "spdm/migrateConfig.h"
 #include "spdm/DeviceManagementNode.h"
 #include "base/util/StringBuffer.h"
+#include "base/adapter/PlatformAdapter.h"
 #include "client/DMTClientConfig.h"
 #include "spds/DefaultConfigFactory.h"
 #include "base/util/utils.h"
@@ -96,6 +97,8 @@ class ConfigTest : public CppUnit::TestFixture {
 
     public:
         void setUp() {
+            // Force the PlatformAdapter initialization
+            PlatformAdapter::init(APPLICATION_URI, true);
             // Save current directory information
             cwdfd = open(".", O_RDONLY);
         }
@@ -120,7 +123,7 @@ class ConfigTest : public CppUnit::TestFixture {
             createdir += oldpath;
             system(createdir);
             DeviceManagementNode::setConfigPath(oldpath.c_str());
-            DMTClientConfig* config = new DMTClientConfig(APPLICATION_URI);
+            DMTClientConfig* config = new DMTClientConfig();
             // Read config from registry.
             if (!config->read() ||
                 strcmp(config->getDeviceConfig().getDevID(), DEVICE_ID)) {
@@ -141,7 +144,7 @@ class ConfigTest : public CppUnit::TestFixture {
             CPPUNIT_ASSERT( chdir(newpath) == 0 );
             
             DeviceManagementNode::setConfigPath(newpath);
-            DMTClientConfig ctest(APPLICATION_URI);
+            DMTClientConfig ctest;
             ctest.read();
             CPPUNIT_ASSERT( strcmp(ctest.getDeviceConfig().getDevID(), DEVICE_ID) == 0 );
             StringBuffer endcommand;
@@ -164,7 +167,7 @@ class ConfigTest : public CppUnit::TestFixture {
                 sync4jpath += "/.sync4j";
                 system ( sync4jpath );
             }
-            DMTClientConfig* config = new DMTClientConfig(APPLICATION_URI);
+            DMTClientConfig* config = new DMTClientConfig();
 
             // Read config from registry.
             if (!config->read() ||
@@ -175,7 +178,7 @@ class ConfigTest : public CppUnit::TestFixture {
             }
             delete config;
             CPPUNIT_ASSERT( (chdir(testdir)) == 0 );
-            DMTClientConfig ctest(APPLICATION_URI);
+            DMTClientConfig ctest;
             ctest.read();
             CPPUNIT_ASSERT( strcmp(ctest.getDeviceConfig().getDevID(), DEVICE_ID) == 0 ); 
             DeviceManagementNode::setCompatibilityMode(false);
@@ -194,7 +197,8 @@ class ConfigTest : public CppUnit::TestFixture {
                 dir += "/.config/";
             }
             dir += "FunambolTest";
-            DMTClientConfig* config = new DMTClientConfig(APPLICATION_URI);
+            
+            DMTClientConfig* config = new DMTClientConfig();
 
             if (!config->read() ||
                 strcmp(config->getDeviceConfig().getDevID(), DEVICE_ID)) {
@@ -204,7 +208,7 @@ class ConfigTest : public CppUnit::TestFixture {
             }
             delete config;
             CPPUNIT_ASSERT( (chdir(dir)) == 0 );
-            DMTClientConfig ctest(APPLICATION_URI);
+            DMTClientConfig ctest;
             ctest.read();
             CPPUNIT_ASSERT( strcmp(ctest.getDeviceConfig().getDevID(), DEVICE_ID) == 0 );
             StringBuffer endcommand = "rm -rf ";
@@ -220,7 +224,7 @@ class ConfigTest : public CppUnit::TestFixture {
                 dir += "/.config/";
             }
             dir += "FunambolTest";
-            DMTClientConfig* config = new DMTClientConfig(APPLICATION_URI);
+            DMTClientConfig* config = new DMTClientConfig();
 
             if (!config->read() ||
                 strcmp(config->getDeviceConfig().getDevID(), DEVICE_ID)) {
@@ -230,7 +234,7 @@ class ConfigTest : public CppUnit::TestFixture {
             }
             delete config;
             CPPUNIT_ASSERT( (chdir(dir)) == 0 );
-            DMTClientConfig ctest(APPLICATION_URI);
+            DMTClientConfig ctest;
             ctest.read();
             SyncSourceConfig* sc = ctest.getSyncSourceConfig(SOURCE_NAME);
             CPPUNIT_ASSERT( strcmp(sc->getSync(), "two-way") == 0 );
