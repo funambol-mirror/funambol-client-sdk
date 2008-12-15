@@ -123,7 +123,6 @@ const StringBuffer& PlatformAdapter::getConfigFolder() {
         StringBuffer privatePath = getHomeFolder();
         
         configFolder.append(privatePath);
-        configFolder.append(appContext);
     }
 
     return configFolder;
