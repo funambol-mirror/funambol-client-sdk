@@ -61,7 +61,9 @@
 
 USE_NAMESPACE
 
+#ifdef ENABLE_INTEGRATION_TESTS
 #include "TestFileSource.h"
+#endif
 
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
@@ -198,9 +200,11 @@ static void printTests(CppUnit::Test *test, int indention)
 
 int main(int argc, char* argv[])
 {
+#ifdef ENABLE_INTEGRATION_TESTS
   TestFileSource testFileSource("A");
   
   testFileSource.registerTests();
+#endif
 
   // Get the top level suite from the registry
   CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();

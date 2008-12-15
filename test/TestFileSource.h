@@ -40,6 +40,11 @@
 #ifndef _TEST_FILE_SOURCE_H_
 #define _TEST_FILE_SOURCE_H_
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#ifdef ENABLE_INTEGRATION_TESTS
 #include "spdm/DeviceManagementNode.h"
 #include "client/TestFileSyncSource.h"
 #include "base/adapter/PlatformAdapter.h"
@@ -199,6 +204,7 @@ private:
     SyncSource *createSource(int source, const char *trackingSuffix);
 };
 
+#endif // ENABLE_INTEGRATION_TESTS
 /** @} */
 /** @endcond */
 #endif // _TEST_FILE_SOURCE_H_

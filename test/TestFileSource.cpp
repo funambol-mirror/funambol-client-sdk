@@ -39,6 +39,8 @@
 
 #include "TestFileSource.h"
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 USE_NAMESPACE
 
 TestFileSource::TestFileSource(const std::string &id) :
@@ -201,5 +203,6 @@ SyncSource *TestFileSource::createSource(int source, const char *trackingSuffix)
         return ss;
 }
 
+#endif // ENABLE_INTEGRATION_TESTS
 /** @} */
 /** @endcond */
