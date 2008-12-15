@@ -115,7 +115,8 @@ MappingsTest::MappingsTest() {}
         
 
 DMTClientConfig* getConfiguration(const char* name) {
-    DMTClientConfig* config = new DMTClientConfig(name);
+    PlatformAdapter::init(name, true);
+    DMTClientConfig* config = new DMTClientConfig();
     config->read();
     DeviceConfig &dc(config->getDeviceConfig());
     if (!strlen(dc.getDevID())) {            
