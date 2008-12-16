@@ -115,4 +115,17 @@
  * be implemented.
  */
 
+INTEGRATION TEST CONFIGURATION
+------------------------------
+
+In order to customize the integration test config you have to set the 
+following environment variables:
+
+ - CLIENT_TEST_SOURCES: the list of sources you want to test, separated by 
+                        commas (e.g. vcard21.ical20
+ - CLIENT_TEST_SERVER: the server identifier (e.g. funambol)
+ - CLIENT_TEST_SERVER_URL: the server url (e.g. http://my.funambol.com)
+ - CLIENT_TEST_USARNAME: the login username
+ - CLIENT_TEST_PASSWORD: the login password
+
 /** @endcond */

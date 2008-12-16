@@ -49,8 +49,11 @@ TestFileSource::TestFileSource(const std::string &id) :
 {
 
         const char *sourcelist = getenv("CLIENT_TEST_SOURCES");
-        const char *server = getenv("CLIENT_TEST_SERVER");
-
+        const char *server =     getenv("CLIENT_TEST_SERVER");
+        const char *serverUrl =  getenv("CLIENT_TEST_SERVER_URL");
+        const char *username =   getenv("CLIENT_TEST_USARNAME");
+        const char *password =   getenv("CLIENT_TEST_PASSWORD");
+    
         /* set up source list */
         if (!sourcelist) {
             sourcelist = "";
@@ -85,6 +88,18 @@ TestFileSource::TestFileSource(const std::string &id) :
             config->setClientDefaults();
             dc.setDevID(id == "A" ? "sc-api-nat" : "sc-pim-ppc");
         }
+    
+        //set custom configuration
+        if(serverUrl) {
+            config->getAccessConfig().setSyncURL(serverUrl);
+        }
+        if(username) {
+            config->getAccessConfig().setUsername(username);
+        }
+        if(password) {
+            config->getAccessConfig().setPassword(password);
+        }
+    
         for (int source = 0; source < (int)sources.size(); source++) {
             ClientTest::Config testconfig;
             getSourceConfig(source, testconfig);
@@ -148,8 +163,8 @@ int TestFileSource::sync(
 
         SyncClient client;
         int res = client.sync(*config, syncSources);
+    
         CPPUNIT_ASSERT(client.getSyncReport());
-
         for (int source = 0; syncSources[source]; source++) {
             delete syncSources[source];
         }

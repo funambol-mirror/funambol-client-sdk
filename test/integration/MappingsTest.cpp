@@ -111,10 +111,18 @@ bool existsFile(const char* name) {
 }
 
 
-MappingsTest::MappingsTest() {}
+MappingsTest::MappingsTest() {
+    LOG.setLogName("mappings_tests.log");
+    LOG.reset();
+}
         
 
 DMTClientConfig* getConfiguration(const char* name) {
+    
+    const char *serverUrl = getenv("CLIENT_TEST_SERVER_URL");
+    const char *username = getenv("CLIENT_TEST_USARNAME");
+    const char *password = getenv("CLIENT_TEST_PASSWORD");
+    
     PlatformAdapter::init(name, true);
     DMTClientConfig* config = new DMTClientConfig();
     config->read();
@@ -129,6 +137,18 @@ DMTClientConfig* getConfiguration(const char* name) {
         s->setURI("card");
         s->setType("text/x-vcard");
     }
+    
+    //set custom configuration
+    if(serverUrl) {
+        config->getAccessConfig().setSyncURL(serverUrl);
+    }
+    if(username) {
+        config->getAccessConfig().setUsername(username);
+    }
+    if(password) {
+        config->getAccessConfig().setPassword(password);
+    }
+    
     return config;
 }
     
@@ -169,7 +189,7 @@ void MappingsTest::testAdd3Contacts() {
     // The second source syncs and fails at the first turn. Then it sends the
     // mappings and finish succesfully
     //
-void MappingsTest::testMappings() {
+    void MappingsTest::testMappings() {
 
         testPutClientServerInSync();
         Sleep(INTERVAL);
