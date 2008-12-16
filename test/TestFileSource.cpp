@@ -87,17 +87,17 @@ TestFileSource::TestFileSource(const std::string &id) :
             // no configuration yet
             config->setClientDefaults();
             dc.setDevID(id == "A" ? "sc-api-nat" : "sc-pim-ppc");
-        }
-    
-        //set custom configuration
-        if(serverUrl) {
-            config->getAccessConfig().setSyncURL(serverUrl);
-        }
-        if(username) {
-            config->getAccessConfig().setUsername(username);
-        }
-        if(password) {
-            config->getAccessConfig().setPassword(password);
+            
+            //set custom configuration
+            if(serverUrl) {
+                config->getAccessConfig().setSyncURL(serverUrl);
+            }
+            if(username) {
+                config->getAccessConfig().setUsername(username);
+            }
+            if(password) {
+                config->getAccessConfig().setPassword(password);
+            }
         }
     
         for (int source = 0; source < (int)sources.size(); source++) {
