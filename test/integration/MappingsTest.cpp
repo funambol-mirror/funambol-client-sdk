@@ -132,22 +132,21 @@ DMTClientConfig* getConfiguration(const char* name) {
         config->setSourceDefaults("contact"); 
         StringBuffer devid("sc-pim-"); devid += name;
         dc.setDevID(devid);
-        
-        //set custom configuration
-        if(serverUrl) {
-            config->getAccessConfig().setSyncURL(serverUrl);
-        }
-        if(username) {
-            config->getAccessConfig().setUsername(username);
-        }
-        if(password) {
-            config->getAccessConfig().setPassword(password);
-        }
-        
         SyncSourceConfig* s = config->getSyncSourceConfig("contact");
         s->setEncoding("bin");
         s->setURI("card");
         s->setType("text/x-vcard");
+    }
+    
+    //set custom configuration
+    if(serverUrl) {
+        config->getAccessConfig().setSyncURL(serverUrl);
+    }
+    if(username) {
+        config->getAccessConfig().setUsername(username);
+    }
+    if(password) {
+        config->getAccessConfig().setPassword(password);
     }
 
     return config;

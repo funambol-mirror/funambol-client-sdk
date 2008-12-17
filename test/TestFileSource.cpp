@@ -78,6 +78,7 @@ TestFileSource::TestFileSource(const std::string &id) :
         // get configuration and set obligatory fields
         LOG.setLevel(LOG_LEVEL_DEBUG);
         std::string root = std::string("client-test/") + server + "_" + clientID;
+    
         PlatformAdapter::init(root.c_str(), true);
         config.reset(new DMTClientConfig());
         //config.reset(new DMTClientConfig(root.c_str()));
@@ -87,17 +88,17 @@ TestFileSource::TestFileSource(const std::string &id) :
             // no configuration yet
             config->setClientDefaults();
             dc.setDevID(id == "A" ? "sc-api-nat" : "sc-pim-ppc");
-            
-            //set custom configuration
-            if(serverUrl) {
-                config->getAccessConfig().setSyncURL(serverUrl);
-            }
-            if(username) {
-                config->getAccessConfig().setUsername(username);
-            }
-            if(password) {
-                config->getAccessConfig().setPassword(password);
-            }
+        }
+        
+        //set custom configuration
+        if(serverUrl) {
+            config->getAccessConfig().setSyncURL(serverUrl);
+        }
+        if(username) {
+            config->getAccessConfig().setUsername(username);
+        }
+        if(password) {
+            config->getAccessConfig().setPassword(password);
         }
     
         for (int source = 0; source < (int)sources.size(); source++) {
