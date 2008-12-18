@@ -74,7 +74,7 @@ private:
 
     // Copy is not allowed
     FileSyncSource(const FileSyncSource& s) : CacheSyncSource(s){};
-    FileSyncSource& operator=(const FileSyncSource& s) {};
+    FileSyncSource& operator=(const FileSyncSource& s) { return *this; };
 
 public:
 
