@@ -511,7 +511,16 @@ int WinEvent::parse(const wstring dataString) {
 
 
     if(element = getVObjectPropertyValue(vo, L"X-MICROSOFT-CDO-BUSYSTATUS")) {
-        setProperty(L"BusyStatus", element);
+        wstring value(TEXT("0")); // FREE  
+        wstring elementw(element);              
+        if (elementw == TEXT("BUSY") || elementw == TEXT("2")) {
+            value = TEXT("2");
+        } else if (elementw == TEXT("TENTATIVE") || elementw == TEXT("1")) {
+            value = TEXT("1");
+        } else if (elementw == TEXT("OOF") || elementw == TEXT("3")) { // Out of office
+            value = TEXT("3");
+        }                     
+        setProperty(TEXT("BusyStatus"), value);
     }
     if(element = getVObjectPropertyValue(vo, L"CATEGORIES")) {
         setProperty(L"Categories", element);
