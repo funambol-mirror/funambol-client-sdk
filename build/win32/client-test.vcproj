@@ -187,9 +187,14 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\test\client-test.cpp"
+				RelativePath="..\..\test\TestFileSource.cpp"
 				>
 			</File>
+                        <File
+				RelativePath="..\..\test\TestFileSource.h"
+				>
+			</File>
+
 			<Filter
 				Name="spds"
 				>
