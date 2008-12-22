@@ -1,3 +1,9 @@
+
+2008-12-22:
+   - davide: minor fixes for Symbian APIT unit test build
+             PlatformAdapter integration for CTPConfig.cpp  
+
+
 Funambol SDK C++ 7.1.3
 -----------------------
 
