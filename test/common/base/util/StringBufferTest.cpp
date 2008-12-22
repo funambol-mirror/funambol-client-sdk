@@ -39,6 +39,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include "base/globalsdef.h"
+#include "base/fscapi.h"
 
 USE_NAMESPACE
 
@@ -159,17 +160,16 @@ private:
 #define TEST_STRING  "Quant'è bella giovinezza.."
 
     void testConvert() {
-
         StringBuffer str(TEST_STRING);
 
-        char* toUtf8   = toMultibyte(TEXT(TEST_STRING));
-        char* toLatin1 = toMultibyte(TEXT(TEST_STRING), "iso_8859-1");
+        char* toUtf8   = toMultibyte(TEXT("Quant' bella giovinezza.."));
+        char* toLatin1 = toMultibyte(TEXT("Quant' bella giovinezza.."), "iso_8859-1");
 
         StringBuffer cnv;
-        cnv.convert(TEXT(TEST_STRING));
+        cnv.convert(TEXT("Quant' bella giovinezza.."));
         CPPUNIT_ASSERT((strcmp(cnv.c_str(), toUtf8) == 0));
 
-        cnv.convert(TEXT(TEST_STRING), "iso_8859-1");
+        cnv.convert(TEXT("Quant' bella giovinezza.."), "iso_8859-1");
         CPPUNIT_ASSERT((strcmp(cnv.c_str(), toLatin1) == 0));
 
         delete [] toUtf8;
@@ -186,10 +186,13 @@ private:
         buf = doSprintf("foo %s %d", "bar", 42);
         CPPUNIT_ASSERT(buf == "foo bar 42");
 
+#ifndef SYMBIAN // symbian doesn't support %*s formatting directives
         for (unsigned long size = 1; size < (1<<10); size *= 2) {
             buf.sprintf("%*s", (int)size, "");
             CPPUNIT_ASSERT_EQUAL(size, buf.length());
         }
+#endif
+
     }
 
     //////////////////////////////////////////////////////// Test /////
@@ -294,12 +297,12 @@ private:
 
     //----------------------------------------- Utility functions
     StringBuffer doSprintf(const char* format, ...) {
-        va_list ap;
+        PLATFORM_VA_LIST ap;
         StringBuffer buf;
 
-        va_start(ap, format);
+        PLATFORM_VA_START(ap, format);
         buf.vsprintf(format, ap);
-        va_end(ap);
+        PLATFORM_VA_END(ap);
 
         return buf;
     }
