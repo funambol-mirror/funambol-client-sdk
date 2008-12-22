@@ -24,24 +24,24 @@
 ;Files to install
 ;You should change the source paths to match that of your environment
 ;<source> <destination>
-"\Symbian\9.1\S60_3RD_MR\Epoc32\release\GCCE\UREL\symbian_0xEEBB239B.exe"		-"!:\sys\bin\symbian_0xEEBB239B.exe"
-"\Symbian\9.1\S60_3RD_MR\Epoc32\data\z\resource\apps\symbian_0xEEBB239B.rsc"		-"!:\resource\apps\symbian_0xEEBB239B.rsc"
-"\Symbian\9.1\S60_3RD_MR\Epoc32\data\z\private\10003a3f\apps\symbian_0xEEBB239B_reg.rsc"	-"!:\private\10003a3f\import\apps\symbian_0xEEBB239B_reg.rsc"
-"\Symbian\9.1\S60_3RD_MR\Epoc32\data\z\resource\apps\symbian_0xEEBB239B.mif" -"!:\resource\apps\symbian_0xEEBB239B.mif"
+"$(EPOCROOT)epoc32\release\GCCE\UREL\symbian_0xEEBB239B.exe"		-"!:\sys\bin\symbian_0xEEBB239B.exe"
+"$(EPOCROOT)epoc32\data\z\resource\apps\symbian_0xEEBB239B.rsc"		-"!:\resource\apps\symbian_0xEEBB239B.rsc"
+"$(EPOCROOT)epoc32\data\z\private\10003a3f\apps\symbian_0xEEBB239B_reg.rsc"	-"!:\private\10003a3f\import\apps\symbian_0xEEBB239B_reg.rsc"
+"$(EPOCROOT)epoc32\data\z\resource\apps\symbian_0xEEBB239B.mif" -"!:\resource\apps\symbian_0xEEBB239B.mif"
 "..\help\symbian_0xEEBB239B.hlp"							 -"!:\resource\help\symbian_0xEEBB239B.hlp"
 
 ;Testcases input files
-"\Symbian\Projects\funambol_cpp_api\test\testcases\ex1.xml" -"!:\private\EEBB239B\ex1.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\ex2.xml" -"!:\private\EEBB239B\ex2.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\syncML1.xml" -"!:\private\EEBB239B\syncML1.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\syncML2.xml" -"!:\private\EEBB239B\syncML2.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\syncML3.xml" -"!:\private\EEBB239B\syncML3.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\syncML4.xml" -"!:\private\EEBB239B\syncML4.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\syncML5.xml" -"!:\private\EEBB239B\syncML5.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\syncML6.xml" -"!:\private\EEBB239B\syncML6.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\syncML7.xml" -"!:\private\EEBB239B\syncML7.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\syncML8.xml" -"!:\private\EEBB239B\syncML8.xml"
-"\Symbian\Projects\funambol_cpp_api\test\testcases\wrongex.xml" -"!:\private\EEBB239B\wrongex.xml"
+"..\..\..\testcases\ex1.xml" -"!:\private\EEBB239B\ex1.xml"
+"..\..\..\testcases\ex2.xml" -"!:\private\EEBB239B\ex2.xml"
+"..\..\..\testcases\syncML1.xml" -"!:\private\EEBB239B\syncML1.xml"
+"..\..\..\testcases\syncML2.xml" -"!:\private\EEBB239B\syncML2.xml"
+"..\..\..\testcases\syncML3.xml" -"!:\private\EEBB239B\syncML3.xml"
+"..\..\..\testcases\syncML4.xml" -"!:\private\EEBB239B\syncML4.xml"
+"..\..\..\testcases\syncML5.xml" -"!:\private\EEBB239B\syncML5.xml"
+"..\..\..\testcases\syncML6.xml" -"!:\private\EEBB239B\syncML6.xml"
+"..\..\..\testcases\syncML7.xml" -"!:\private\EEBB239B\syncML7.xml"
+"..\..\..\testcases\syncML8.xml" -"!:\private\EEBB239B\syncML8.xml"
+"..\..\..\testcases\wrongex.xml" -"!:\private\EEBB239B\wrongex.xml"
 
 ; Add any installation notes if applicable
 ;"symbian.txt"		-"!:\private\EEBB239B\symbian.txt"
