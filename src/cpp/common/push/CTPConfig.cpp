@@ -56,7 +56,7 @@ USE_NAMESPACE
 
 
 CTPConfig::CTPConfig(const char* application_uri)
-                    : DMTClientConfig(application_uri) {
+                    : DMTClientConfig() {
 }
         
 CTPConfig::~CTPConfig() {}
