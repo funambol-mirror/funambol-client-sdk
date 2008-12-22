@@ -91,6 +91,7 @@ USERINCLUDE     ..\..\..\..\src\include\symbian
 SYSTEMINCLUDE    \epoc32\include
 SYSTEMINCLUDE    \epoc32\include\libc
 SYSTEMINCLUDE    \epoc32\include\fcppunit
+SYSTEMINCLUDE    \epoc32\include\fcppunit\cppunit
 
 STATICLIBRARY     FunambolAPI.lib               // Funambol APIs
 STATICLIBRARY     FCppUnit.lib
