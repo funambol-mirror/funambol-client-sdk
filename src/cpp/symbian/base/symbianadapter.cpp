@@ -151,6 +151,11 @@ static size_t estimateMaxSize(const char* format, PLATFORM_VA_LIST ap) {
                     }
                     break;
                 }
+                case '*': {
+                    // Symbian does not support %*[s|l|...]
+                    return (size_t)-2;
+                }
+
                 default:
                 {
                     // Floating point cases...
