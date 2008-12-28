@@ -45,9 +45,9 @@ USE_NAMESPACE
 
 POSIXLog::POSIXLog() :
     logFile(NULL),
-    logPath(NULL),
     logFileStdout(false),
     logName(LOG_NAME),
+    logPath(NULL),
     logRedirectStderr(false),
     fderr(-1),
     prefix("")
