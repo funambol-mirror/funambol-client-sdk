@@ -1,3 +1,6 @@
+2009-12-31
+- nichele: Made the url configurable using runtimeProperties
+
 2008-09-23
 - nichele: Updated dependencies
 
