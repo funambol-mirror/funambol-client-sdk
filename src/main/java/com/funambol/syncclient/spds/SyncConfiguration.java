@@ -164,22 +164,22 @@ public class SyncConfiguration {
 
         username = runtimeProperties.getProperty(PARAM_USERNAME);
         if (username == null || username.length() == 0) {
-            username = (String)syncParams.get(PARAM_USERNAME);
+            username = ((String)syncParams.get(PARAM_USERNAME)).trim();
         }
 
         password = runtimeProperties.getProperty(PARAM_PASSWORD);
         if (password == null || password.length() == 0) {
-            password = (String)syncParams.get(PARAM_PASSWORD);
+            password = ((String)syncParams.get(PARAM_PASSWORD)).trim();
         }
 
         deviceId = runtimeProperties.getProperty(PARAM_DEVICEID);
         if (deviceId == null || deviceId.length() == 0) {
-            deviceId = (String)syncParams.get(PARAM_DEVICEID);
+            deviceId = ((String)syncParams.get(PARAM_DEVICEID)).trim();
         }
 
-        value = syncParams.get(PARAM_SYNCMLURL);
-        if (value != null) {
-            url = ((String)value).trim();
+        url = runtimeProperties.getProperty(PARAM_SYNCMLURL);
+        if (url == null || url.length() == 0) {
+            url = ((String)syncParams.get(PARAM_SYNCMLURL)).trim();
         }
 
         value = syncParams.get(PARAM_MESSAGE_TYPE);

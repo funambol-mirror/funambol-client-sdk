@@ -75,6 +75,7 @@ import com.funambol.syncclient.spds.event.*;
  *  username
  *  password
  *  device-id
+ *  url
  *  </pre>
  * The information required by the synchronization engine for initialization and
  * to kick off a data synchronization session is stored in the device management
