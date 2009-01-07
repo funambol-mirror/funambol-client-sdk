@@ -1521,8 +1521,9 @@ int SyncManager::sync() {
                 fireSyncSourceEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), sources[count]->getSyncMode(), 0, SYNC_SOURCE_END);
 
             // The server might have included a <Sync> command without waiting
-            // for a 222 alert. If it hasn't, then nothing is done here.
-            ArrayList statusList;
+            // for a 222 alert. The Synthesis server does this.
+            // If the server hasn't included a <Sync>, then nothing is done here.
+             ArrayList statusList;
             if (checkForServerChanges(syncml, statusList)) {
                 goto finally;
             }
@@ -1532,6 +1533,13 @@ int SyncManager::sync() {
                 deleteStatus(&status);
                 commands.add(&statusList);
             }
+
+            // Add any map command pending for the active sources
+            for(int i=0; i<sourcesNumber; i++) {
+                addMapCommand(i);
+                // finalize the mapping in the storage
+                mmanager[i]->closeMappings();
+            }                       
 
             // deleteSyncML(&syncml);
 
