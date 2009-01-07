@@ -44,6 +44,7 @@ USE_NAMESPACE
 StringBuffer escapeString(const char* val) {
     StringBuffer s(val);
     s.trim();
+    s.replaceAll("\\", "\\\\");
     s.replaceAll("=", "\\=");
     return s;
 }
@@ -52,6 +53,7 @@ StringBuffer unescapeString(const char* val) {
     StringBuffer s(val);
     s.trim();
     s.replaceAll("\\=", "=");
+    s.replaceAll("\\\\", "\\");
     return s;
 }
 
@@ -223,20 +225,31 @@ int PropertyFile::removeAllProperties() {
 
 
 bool PropertyFile::separateKeyValue(StringBuffer& s, StringBuffer& key, StringBuffer& value) {
-    bool ret = false;
-    size_t found = 0;      
+    bool ret = false;        
+    bool foundSlash = false;
     
     for (unsigned int i = 0; i < s.length(); i++) {
-        if  (((found = s.find("=", found + 1)) != StringBuffer::npos) && (found > 1 && s.c_str()[found-1] != '\\')) {
-
-            key = unescapeString(s.substr(0, found));
-            value = unescapeString(s.substr(found + 1, (s.length() - (found + 2)))); // it remove the \n at the end                   
-            
-            ret = true;
-            break;
+        
+        if (s.c_str()[i] == '\\') {
+            if (foundSlash) {
+                foundSlash = false;
+            } else {
+                foundSlash = true;
+            }
+            continue;
         }
+        if (s.c_str()[i] == '=') {
+            if (foundSlash) {
+                foundSlash = false;
+                continue;
+            } else {
+                key = unescapeString(s.substr(0, i));
+                value = unescapeString(s.substr(i + 1, (s.length() - (i + 2)))); // it remove the \n at the end                                   
+                ret = true;
+                break;
+            }
+        }
+        
     }
-    
     return ret;
 }
-

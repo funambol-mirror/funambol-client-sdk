@@ -153,6 +153,15 @@ protected:
         propFile->setPropertyValue("1234=", "567=8");
         propFile->setPropertyValue("1=234=", "5=67=8");
         propFile->setPropertyValue(" 678= ", "  9=10=11  ");
+        propFile->setPropertyValue("6\\", "11");
+        propFile->setPropertyValue("\\", "11");
+        propFile->setPropertyValue("=", "11");
+        propFile->setPropertyValue("6=\\", "\\11");
+        propFile->setPropertyValue("6\\\\", "\\11");
+        propFile->setPropertyValue("6\\\\=", "\\11");
+        propFile->setPropertyValue("6\\=", "\\11");
+        propFile->setPropertyValue("6\\\\\\=\\", "\\11");
+        propFile->setPropertyValue("6\\\\\\=\\=", "=\\11");
 
         Enumeration& enumeration = propFile->getProperties();
         int i = 0;
@@ -160,14 +169,17 @@ protected:
             i++;
             enumeration.getNextElement();
         }
-        CPPUNIT_ASSERT(i == 7);
+        CPPUNIT_ASSERT(i == 16);
         
     }
     
     void testGetPropertiesFromStorage() {        
         // Now iterate on them
         Enumeration& enumeration = propFile->getProperties();
-        bool prop1 = false, prop2 = false, prop3 = false, prop4 = false, prop5 = false, prop6 = false;
+        bool prop1 = false, prop2 = false, prop3 = false, prop4 = false, prop5 = false, 
+             prop6 = false, prop7 = false, prop8 = false, prop9 = false, prop10 = false, 
+             prop11 = false, prop12 = false, prop13 = false, prop14 = false, prop15 = false,
+             prop16 = false;
         while (enumeration.hasMoreElement()) {
             KeyValuePair* item = (KeyValuePair*)enumeration.getNextElement();
             const char* key = item->getKey();
@@ -181,17 +193,38 @@ protected:
                 prop3 = true;
             } else if (strcmp(key, "123=4") == 0 && strcmp(value, "567=8") == 0 ) {
                 prop4 = true;
-            }  else if (strcmp(key, "1234=") == 0 && strcmp(value, "567=8") == 0 ) {
+            } else if (strcmp(key, "1234=") == 0 && strcmp(value, "567=8") == 0 ) {
                 prop5 = true;
-            }  else if (strcmp(key, "1=234=") == 0 && strcmp(value, "5=67=8") == 0 ) {
+            } else if (strcmp(key, "1=234=") == 0 && strcmp(value, "5=67=8") == 0 ) {
                 prop6 = true;
-            }  else if (strcmp(key, "678=") == 0 && strcmp(value, "9=10=11") == 0 ) {
-                prop6 = true;
-            }   
+            } else if (strcmp(key, "678=") == 0 && strcmp(value, "9=10=11") == 0 ) {
+                prop7 = true;
+            } else if (strcmp(key, "6\\") == 0 && strcmp(value, "11") == 0 ) {
+                prop8 = true;
+            } else if (strcmp(key, "\\") == 0 && strcmp(value, "11") == 0 ) {
+                prop9 = true;
+            } else if (strcmp(key, "=") == 0 && strcmp(value, "11") == 0 ) {
+                prop10 = true;
+            } else if (strcmp(key, "6=\\") == 0 && strcmp(value, "\\11") == 0 ) {
+                prop11 = true;
+            } else if (strcmp(key, "6\\\\") == 0 && strcmp(value, "\\11") == 0 ) {
+                prop12 = true;
+            } else if (strcmp(key, "6\\\\=") == 0 && strcmp(value, "\\11") == 0 ) {
+                prop13 = true;
+            } else if (strcmp(key, "6\\=") == 0 && strcmp(value, "\\11") == 0 ) {
+                prop14 = true;
+            } else if (strcmp(key, "6\\\\\\=\\") == 0 && strcmp(value, "\\11") == 0 ) {
+                prop15 = true;
+            } else if (strcmp(key, "6\\\\\\=\\=") == 0 && strcmp(value, "=\\11") == 0 ) {
+                prop16 = true;
+            }
 
         }
         propFile->close();
-        CPPUNIT_ASSERT(prop1 && prop2 && prop3 && prop4 && prop5 && prop6);        
+        CPPUNIT_ASSERT(prop1 && prop2 && prop3 && prop4 && prop5 && 
+                       prop6 && prop7 && prop8 && prop9 && prop10 && prop11 &&
+                       prop12 && prop13 && prop14 && prop15 && prop16);        
+        
     }
 
     
@@ -203,6 +236,9 @@ protected:
         StringBuffer e(" 1234 = 567\\=8 \n");
         StringBuffer f(" 12 34 = 56 7\\=8 \n");
         StringBuffer g(" 12 34 = 56 7\\=8 \\=   \n");
+        StringBuffer h("6=59660\n");
+        StringBuffer i("\\\\=59660\n");
+        StringBuffer l("\\==59660\n");
         
         StringBuffer key;
         StringBuffer value;
@@ -228,6 +264,15 @@ protected:
         propFile->separateKeyValue(g, key, value);
         CPPUNIT_ASSERT(key.trim() == "12 34");
         CPPUNIT_ASSERT(value.trim() == "56 7=8 =");
+        propFile->separateKeyValue(h, key, value);
+        CPPUNIT_ASSERT(key.trim() == "6");
+        CPPUNIT_ASSERT(value.trim() == "59660");
+        propFile->separateKeyValue(i, key, value);
+        CPPUNIT_ASSERT(key.trim() == "\\");
+        CPPUNIT_ASSERT(value.trim() == "59660");
+        propFile->separateKeyValue(l, key, value);
+        CPPUNIT_ASSERT(key.trim() == "=");
+        CPPUNIT_ASSERT(value.trim() == "59660");
        
         propFile->close();
 
