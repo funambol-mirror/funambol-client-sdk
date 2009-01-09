@@ -78,7 +78,6 @@ CurlInit CurlInit::singleton;
  */
 CurlTransportAgent::CurlTransportAgent(URL& newURL, Proxy& newProxy, unsigned int maxResponseTimeout) : TransportAgent(newURL, newProxy, maxResponseTimeout){
     easyhandle = CurlInit::easy_init();
-    slist = curl_slist_append(NULL, "Expect:");
 
     if (easyhandle) {
         curl_easy_setopt(easyhandle, CURLOPT_DEBUGFUNCTION, debugCallback);
@@ -91,7 +90,6 @@ CurlTransportAgent::CurlTransportAgent(URL& newURL, Proxy& newProxy, unsigned in
         curl_easy_setopt(easyhandle, CURLOPT_ERRORBUFFER, this->curlerrortxt );
         curl_easy_setopt(easyhandle, CURLOPT_AUTOREFERER, true);
         curl_easy_setopt(easyhandle, CURLOPT_FOLLOWLOCATION, true);
-        curl_easy_setopt(easyhandle, CURLOPT_HTTPHEADER, slist);
         if (proxy.host[0]) {
             curl_easy_setopt(easyhandle, CURLOPT_PROXY, proxy.host);
             if (proxy.port) {
@@ -119,9 +117,6 @@ void CurlTransportAgent::setUserAgent(const char*ua) {
 CurlTransportAgent::~CurlTransportAgent() {
     if (easyhandle) {
         curl_easy_cleanup(easyhandle);
-    }
-    if (slist) {
-        curl_slist_free_all(slist);
     }
 }
 
@@ -206,6 +201,12 @@ char* CurlTransportAgent::sendMessage(const char* msg) {
     char contenttype[256];
     sprintf(contenttype, "Content-Type: %s", SYNCML_CONTENT_TYPE);
     slist = curl_slist_append(slist, contenttype);
+    // Disable "Expect: 100": it is usually used to check without
+    // transmitting the data that the recipient is willing to accept
+    // the POST . With SyncML servers that should be the case, so the
+    // check just adds one round-trip and worse, "Expect: 100" is not
+    // supported by some proxies, causing a complete failure.
+    slist = curl_slist_append(slist, "Expect:");
     responsebuffersize = 64 * 1024;
     responsebuffer = new char[responsebuffersize];
     received = 0;
