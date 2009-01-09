@@ -1,3 +1,10 @@
+Funambol SDK C++ 7.1.4
+-----------------------
+
+2008-12-22:
+   - magi: fixed PropertyFile issue handling one-char key and with '\'
+           applied patch for issue "Sync broken against server that doesn't send code 222 (like Synthesis)"
+
 
 2008-12-22:
    - davide: minor fixes for Symbian APIT unit test build
