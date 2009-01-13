@@ -91,20 +91,18 @@ void CTPThreadPool::cleanup() {
     int i = 0;
     while(item) {
 
-        ThreadElement* thisItem;
-        FThread* curr;
-
-        curr = item->getThread();
-        thisItem = item;
+        FThread* curr = item->getThread();
         // Move to the next element so we do not conflict
         // if we erase the current item
         item = (ThreadElement*)threadList.next();
 
-        if (curr->finished()) {
+        if (curr->finished()) 
+        {
             threadList.removeElementAt(i);
+            // The Fthread* member has to be released manually
             delete curr;
-            delete thisItem;
-        } else {
+        } 
+        else {
             i++;
         }
     }
