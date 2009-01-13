@@ -1,3 +1,10 @@
+Funambol SDK C++ 7.1.5
+-----------------------
+
+2009-01-13
+   - toccy: fixed issue in CTPThreadPool.cpp, caused CTP threads to die (used just by Symbian Client).
+
+
 Funambol SDK C++ 7.1.4
 -----------------------
 
