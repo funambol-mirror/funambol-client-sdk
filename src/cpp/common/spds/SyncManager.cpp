@@ -1826,30 +1826,20 @@ int SyncManager::endSync() {
 
         if (syncml == NULL) {
             ret = getLastErrorCode();
+            setErrorF(ret, "End sync: error processing the latest server message. Error code %i", ret); 
+            LOG.error("%s", getLastErrorMsg());
             goto finally;
         }
         ret = syncMLProcessor.processSyncHdrStatus(syncml);
 
         if (isErrorStatus(ret)) {
-            //lastErrorCode = ret;
-            //sprintf(lastErrorMsg, "Server Failure: server returned error code %i", ret);
-            setErrorF(ret,  "Server Failure: server returned error code %i", ret);
+            setErrorF(ret, "Server Failure: server returned error code %i", ret);
             LOG.error("%s", getLastErrorMsg());
             goto finally;
         }
-        ret = 0;
-
-        //
-        // Process the status of mapping
-        //
-        ret = syncMLProcessor.processMapResponse(*sources[count], syncml->getSyncBody());
-        deleteSyncML(&syncml);
-        if (ret == -1) {
-            ret = getLastErrorCode();
-            goto finally;
-        }
+        ret = 0;        
+        deleteSyncML(&syncml);        
     }
-
 
     for (count = 0; count < sourcesNumber; count ++) {
         if (!sources[count]->getReport()->checkState()) {
@@ -1863,8 +1853,8 @@ int SyncManager::endSync() {
     }
 
  finally:
-
-    for (count = 0; count < sourcesNumber; count ++) {
+    // only update anchors if synchronization completed without error
+    for (count = 0; ret == 0 && count < sourcesNumber; count ++) {
         if (!sources[count]->getReport()->checkState()) {
             LOG.debug("The source %s got and error %i: %s", 
                             _wcc(sources[count]->getName()), 
