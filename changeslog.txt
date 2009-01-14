@@ -1,3 +1,10 @@
+Funambol SDK C++ 7.1.6
+-----------------------
+2009-01-14
+   - magi: fixed issue in endSync() method: added check to prevent to update the anchors
+           if there are http or synml errors.
+           updated Design Document
+
 Funambol SDK C++ 7.1.5
 -----------------------
 
