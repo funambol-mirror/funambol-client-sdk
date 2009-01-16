@@ -188,7 +188,7 @@ bool readFile(const char* name, char **message, size_t *len, bool binary = false
  *
  * @return - new allocated array of fileNames (NULL if errors)
  */
-char** readDir(char* name, int *count, bool onlyCount = false);
+char** readDir(const char* name, int *count, bool onlyCount = false);
 
 /**
 * Remove the named file in the directory. It doesn't remove the subdirectory
