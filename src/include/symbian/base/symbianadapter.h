@@ -41,6 +41,7 @@
 #include <e32def.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include <stdarg.h>
 #include <string.h>
 #include <utf.h>
@@ -50,7 +51,6 @@
 #define PLATFORM_VA_START   VA_START
 #define PLATFORM_VA_END     VA_END
 #define PLATFORM_VA_ARG     VA_ARG
-
 
 #ifdef __WINSCW__
     #define PLATFORM_VA_COPY(a,b) (a[0] = b[0])
@@ -67,6 +67,8 @@
 #define USE_WCHAR   1
 #define TEXT(_x)    L##_x
 
+#define _wcsicmp wcscasecmp
+
 BEGIN_NAMESPACE
 
 /* These functions miss in the Symbian libc and are implemented here */
@@ -76,14 +78,17 @@ int towupper(int c);
 size_t vsnprintf(char* s, size_t size, const char* format, PLATFORM_VA_LIST aq);
 size_t snwprintf(WCHAR *v, size_t size, const WCHAR* format, unsigned long value);
 WCHAR *wcschr(const WCHAR *ws, WCHAR wc);
-WCHAR *wcsstr(WCHAR *ws1, WCHAR *ws2);
+WCHAR *wcsstr(WCHAR *ws1, const WCHAR *ws2);
 WCHAR *wcstok(WCHAR *ws1, const WCHAR *ws2);
 WCHAR *wcsncat(WCHAR *ws1, const WCHAR *ws2, size_t n);
-double wcstod(const WCHAR *nptr, WCHAR ** endptr);
+double wcstod(const WCHAR *nptr, WCHAR ** endptr);	
 int _wtoi(const WCHAR *str);
+int wcscasecmp(const WCHAR* s1, const WCHAR* s2);
 bool readFile(const char* path, char **message, size_t *len, bool binary);
 bool saveFile(const char *filename, const char *buffer, size_t len, bool binary);
-
+bool fileExists(const char *aFileName);
+char** readDir(const char* name, int *count, bool onlyCount);
+bool removeDir(const char *aDirPath);
 END_NAMESPACE
 
 /* Symbian does not ship a stdint.h interface (unless you use PIPS or OpenC)
