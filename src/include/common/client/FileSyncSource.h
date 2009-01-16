@@ -68,10 +68,11 @@ BEGIN_NAMESPACE
  */
 class FileSyncSource : public CacheSyncSource {
 
-private:   
-    
+   
+protected:
     StringBuffer dir;
 
+private:
     // Copy is not allowed
     FileSyncSource(const FileSyncSource& s) : CacheSyncSource(s){};
     FileSyncSource& operator=(const FileSyncSource& s) { return *this; };
@@ -79,7 +80,8 @@ private:
 public:
 
     FileSyncSource(const WCHAR* name, AbstractSyncSourceConfig* sc);
-    ~FileSyncSource();
+    FileSyncSource(const WCHAR* name, AbstractSyncSourceConfig* sc, const StringBuffer& aDir); 
+    virtual ~FileSyncSource();
       
     void assign(FileSyncSource& s);
     
@@ -93,14 +95,14 @@ public:
     * Get the list of all the keys stored in a StringBuffer. It reads all the 
     * files name in the directory. The directory is set in the sync source.
     */
-    Enumeration* getAllItemList();
+    virtual Enumeration* getAllItemList();
     
     /**
      * Removes all the item of the sync source. It is called 
      * by the engine in the case of a refresh from server to clean      
      * all the client items before receiving the server ones.
      */
-    int removeAllItems();
+    virtual int removeAllItems();
 
     /**
      * Called by the sync engine to add an item that the server has sent.
@@ -112,7 +114,7 @@ public:
      * @param item    the item as sent by the server
      * @return SyncML status code
      */
-    int insertItem(SyncItem& item);
+    virtual int insertItem(SyncItem& item);
     
     /**
      * Called by the sync engine to update an item that the source already
@@ -121,7 +123,7 @@ public:
      * @param item    the item as sent by the server
      * @return SyncML status code
      */
-    int modifyItem(SyncItem& item);
+    virtual int modifyItem(SyncItem& item);
 
      /**
      * Called by the sync engine to update an item that the source already
@@ -130,7 +132,7 @@ public:
      *
      * @param item    the item as sent by the server
      */
-    int removeItem(SyncItem& item);
+    virtual int removeItem(SyncItem& item);
     
      /**
     * Get the content of an item given the key. It is used to populate
@@ -141,7 +143,7 @@ public:
     * @param key      the local key of the item
     * @param size     OUT: the size of the content
     */
-    void* getItemContent(StringBuffer& key, size_t* size);
+    virtual void* getItemContent(StringBuffer& key, size_t* size);
       
         
 };
