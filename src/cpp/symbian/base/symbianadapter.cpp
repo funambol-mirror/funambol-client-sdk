@@ -39,6 +39,8 @@
 #include <e32def.h>
 #include <e32std.h>
 #include <f32file.h> 
+#include <bautils.h>
+#include <unistd.h>
 
 #include "base/fscapi.h"
 #include "base/Log.h"
@@ -348,14 +350,14 @@ size_t snwprintf(WCHAR *v, size_t size, const WCHAR* format, unsigned long value
 
 bool saveFile(const char *filename, const char *buffer, size_t len, bool binary)
 {
-    //const char *mode = binary ? "wb" : "w" ;
-
-    FILE *f = fopen(filename, "w");
+    FILE *f = fopen(filename, "w+");
 
     if(!f)
         return false;
 
-    if (fwrite(buffer, sizeof(char), len, f) != len) {
+    fwrite(buffer, sizeof(char) * len, 1, f);
+    
+    if (ferror(f)) {
         fclose(f);
         return false;
     }
@@ -434,7 +436,7 @@ WCHAR *wcschr(const WCHAR *ws, WCHAR wc) {
     return NULL;
 }
 
-WCHAR *wcsstr(WCHAR *ws1, WCHAR *ws2) {
+WCHAR *wcsstr(WCHAR *ws1, const WCHAR *ws2) {
     LOG.error("***** wcsstr not implemented *****");
     return NULL;
 }
@@ -459,25 +461,98 @@ int _wtoi(const WCHAR *str) {
     return 0;
 }
 
-// TODO: implementation needed!
-bool removeFileInDir(const char* dir, const char* filename) {
-    return true;
+int wcscasecmp(const WCHAR* s1, const WCHAR* s2)
+{
+    int c1, c2;
+
+    if (s1 == s2)
+        return 0;
+
+    do
+    {
+        c1 = towlower(*s1++);
+        c2 = towlower(*s2++);
+        if (c1 == L'\0')
+            break;
+    }
+    while (c1 == c2);
+
+    return c1 - c2;
+}
+
+bool removeFileInDir(const char* d, const char* fname) {
+    char toFind    [512];
+    StringBuffer path;
+    bool ret = false;
+    char** totalFiles = NULL;
+    int numFiles = 0;
+
+    if (fname) {
+        sprintf(toFind, "%s/%s", d, fname);
+        path = contextToPath(toFind);
+        
+        if (remove(path.c_str()) != 0) {
+            LOG.error("Error deleting the %s file", path.c_str()); 
+        } else {
+            LOG.debug("File %s deleted succesfully", path.c_str());
+            ret = true;
+        }
+    }
+    else {        
+        totalFiles = readDir((char*)d, &numFiles, false);
+        if (totalFiles && numFiles > 0) {
+            for (int i = 0; i < numFiles; i++) {
+                sprintf(toFind, "%s/%s", d, totalFiles[i]);
+                path = contextToPath(toFind);
+                remove(path.c_str());            
+            }
+        }
+        ret = true;
+    }
+    if (totalFiles) {
+        for (int i = 0; i < numFiles; i++) {
+            delete [] totalFiles[i]; 
+        }
+        delete [] totalFiles; totalFiles = NULL;
+    }
+
+    return ret;
+}
+
+bool fileExists(const char *aPath)
+{
+    // Transform: "/" -> "\"
+    StringBuffer path = contextToPath(aPath);
+
+    // Connect to the file server
+    RFs fileSession;
+    TInt err = fileSession.Connect();
+    if (err) {
+        LOG.error("Cannot connect to the file server (code %d)", err);
+        return false;
+    }
+    CleanupClosePushL(fileSession);
+
+    RBuf aFileName;
+    aFileName.Assign(stringBufferToNewBuf(path));
+    TBool res = BaflUtils::FileExists(fileSession, aFileName);
+
+    aFileName.Close();
+    CleanupStack::PopAndDestroy(&fileSession);
+
+    return (res  ?  true  :  false);
 }
 
 int createFolder(const char *aPath) {
     TInt err = KErrNone;
-
     // Transform: "/" -> "\"
-    StringBuffer path(aPath);
-    path = contextToPath(path.c_str());
+    StringBuffer path = contextToPath(aPath);
 
     // Trailing char MUST be "\"
     const char* chars = path.c_str();
     if (chars[strlen(chars)-1] != '\\') {
         path += "\\";
     }
-
-    LOG.debug("creating dir: '%s'", path.c_str());
 
     // Connect to the file server
     RFs fileSession;
@@ -494,15 +569,89 @@ int createFolder(const char *aPath) {
     err = fileSession.MkDirAll(pathDes);
 
     // if folder already existed don't return error
-    if (err == KErrAlreadyExists) {
+    if (err == KErrAlreadyExists) {    
         err = KErrNone;
     }
- 
     pathDes.Close();
-
     CleanupStack::PopAndDestroy(&fileSession);
         
     return err;
 }
+
+char** readDir(const char* name, int *count, bool onlyCount) {
+    char **entries = NULL;
+    *count = 0;
+
+    // count entries
+    int total = 0;
+    DIR *dir = opendir(name);
+    if (dir) {
+        struct dirent *entry = readdir(dir);
+        while (entry) {
+            if (strcmp(entry->d_name, ".") &&
+                    strcmp(entry->d_name, "..")) {
+                total++;
+            }
+            entry = readdir(dir);
+        }
+
+        if (!onlyCount && total) {
+            entries = new char *[total];
+
+            rewinddir(dir);
+            entry = readdir(dir);
+            while (entry && *count < total) {
+                if (strcmp(entry->d_name, ".") &&
+                        strcmp(entry->d_name, "..")) {
+                    entries[*count] = stringdup(entry->d_name);
+                    ++*count;
+                }
+                entry = readdir(dir);
+            }
+        } else {
+            *count = total;    
+        }
+        
+        closedir(dir);
+    }
+
+    return entries;
+}
+
+bool removeDir(const char *aDirPath)
+{
+    TInt err = KErrNone;
+    // Transform: "/" -> "\"
+    StringBuffer path = contextToPath(aDirPath);
+
+    // Trailing char MUST be "\"
+    const char* chars = path.c_str();
+    if (chars[strlen(chars)-1] != '\\') {
+        path += "\\";
+    }
+    
+    // Connect to the file server
+    RFs fileSession;
+    err = fileSession.Connect();
+    if (err) {
+        LOG.error("Cannot connect to the file server (code %d)", err);
+        return false;
+    }
+    CleanupClosePushL(fileSession);
+
+    // delete the dir
+    RBuf pathDes;    
+    pathDes.Assign(stringBufferToNewBuf(path));
+    err = fileSession.RmDir(pathDes);
+    pathDes.Close();
+    CleanupStack::PopAndDestroy(&fileSession);
+
+    if (err == KErrNone) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 END_NAMESPACE
 
