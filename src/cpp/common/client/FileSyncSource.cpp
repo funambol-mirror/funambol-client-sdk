@@ -94,6 +94,13 @@ FileSyncSource::FileSyncSource(
    
 }
 
+FileSyncSource::FileSyncSource(
+            const WCHAR* name,
+            AbstractSyncSourceConfig* sc,
+            const StringBuffer& aDir)
+    : CacheSyncSource(name, sc), dir(aDir) {
+                           
+                        }
 FileSyncSource::~FileSyncSource() { }
 
 //-------------------------------------------------------------------------------- Public methods
