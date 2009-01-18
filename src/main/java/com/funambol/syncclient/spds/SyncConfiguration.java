@@ -39,9 +39,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import java.util.Properties;
 
-import com.funambol.syncclient.common.*;
 import com.funambol.syncclient.common.logging.*;
-import com.funambol.syncclient.spdm.*;
 
 /**
  * @version  $Id: SyncConfiguration.java,v 1.3 2007-12-22 18:09:17 nichele Exp $
@@ -81,6 +79,8 @@ public class SyncConfiguration {
     public static final String PARAM_USERNAME         = "username"            ;
     public static final String PARAM_USERPROXY        = "use-proxy"           ;
     public static final String PARAM_USERAGENT        = "user-agent"          ;
+
+    public static final String PARAM_IGNORE_SERVER_IN_RESPURI = "ignore-server-in-respuri";
 
     public static final String PROP_APPLICATION_DISPLAY_NAME =
         "applicationDisplayName";
@@ -146,6 +146,8 @@ public class SyncConfiguration {
 
     private String       userAgent              = null ;
 
+    private boolean      ignoreServerInRespURI  = false;
+
     // ------------------------------------------------------------ Constructors
 
     /**
@@ -181,6 +183,12 @@ public class SyncConfiguration {
         if (url == null || url.length() == 0) {
             url = ((String)syncParams.get(PARAM_SYNCMLURL)).trim();
         }
+        
+        String sIgnoreServerInRespURI = runtimeProperties.getProperty(PARAM_IGNORE_SERVER_IN_RESPURI);
+        if (sIgnoreServerInRespURI == null || sIgnoreServerInRespURI.length() == 0) {
+            sIgnoreServerInRespURI = (String)syncParams.get(PARAM_IGNORE_SERVER_IN_RESPURI);
+        }
+        ignoreServerInRespURI = Boolean.parseBoolean(sIgnoreServerInRespURI);
 
         value = syncParams.get(PARAM_MESSAGE_TYPE);
         if (value != null) {
@@ -466,5 +474,9 @@ public class SyncConfiguration {
 
     public String getUserAgent() {
         return userAgent;
+    }
+
+    public boolean getIgnoreServerInRespURI() {
+        return ignoreServerInRespURI;
     }
 }

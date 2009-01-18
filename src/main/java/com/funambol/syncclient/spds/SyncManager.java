@@ -48,6 +48,8 @@ import com.funambol.syncclient.common.logging.*;
 import com.funambol.syncclient.spdm.*;
 import com.funambol.syncclient.spds.engine.*;
 import com.funambol.syncclient.spds.event.*;
+import com.funambol.syncclient.spds.util.URLTools;
+import java.net.URL;
 
 /**
  * The <i>SyncManager</i> is the contact point between a host application and the
@@ -215,6 +217,13 @@ public class SyncManager implements SyncTransportListener {
     private SyncItemEvent      syncItemEvent          = null  ;
     private SyncSourceEvent    syncSourceEvent        = null  ;
     private SyncStatusEvent    syncStatusEvent        = null  ;
+
+    /**
+     * If true, the server specified in the respURI is ignored and the one specified
+     * in the syncml-url property is used. This can be usefull if the SyncManager is
+     * used in a testing environment with a proxy
+     */
+    private boolean            ignoreServerInRespURI  = false;
 
     // ------------------------------------------------------------ Constructors
 
@@ -855,6 +864,15 @@ public class SyncManager implements SyncTransportListener {
                                          syncMLClientClassName  +
                                          ": "                   +
                                          e.getMessage()         );
+            }
+
+            if (mgrConfig.getIgnoreServerInRespURI()) {
+                //
+                // We need to replace in the url the server with the one specified
+                // in the syncml-url
+                //
+                String syncmlURL = mgrConfig.getUrl();
+                url = URLTools.replaceServer(syncmlURL, url);
             }
 
             syncMLClient.setUrl         (url         ) ;
