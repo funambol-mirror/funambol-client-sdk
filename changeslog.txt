@@ -1,4 +1,10 @@
-2009-12-31
+2009-01-18
+- nichele: Added a new configuration property 'ignore-server-in-respuri' that can be
+           set to 'true' if the server in the RespURI must be replaced by the
+           server configured in the syncml-url property (this can be usefull if the
+           API are used as testing tool in an environment with a proxy)
+           
+2008-12-31
 - nichele: Made the url configurable using runtimeProperties
 
 2008-09-23
