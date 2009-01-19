@@ -420,7 +420,7 @@ unsigned long getFileModTime(const char* name) {
 
 #if defined(WIN32) || defined(_WIN32_WCE)
 /// Returns a file list from a directory, as char**.
-char** readDir(char* name, int *count, bool onlyCount) {
+char** readDir(const char* name, int *count, bool onlyCount) {
 
     *count = 0;
     char** fileNames = NULL;
