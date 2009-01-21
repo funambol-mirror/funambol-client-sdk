@@ -120,7 +120,7 @@ int FileData::parse(StringBuffer* s)
 	*/
 
 	if(XMLProcessor::getElementContent(s->c_str(), "File", NULL, &start, &end) == 0) {
-		LOG.error("FileData: can't find outer FILE section.");
+		LOG.debug("FileData::parse: can't find outer FILE section.");
 		return -1;
 	}
 	StringBuffer msg = s->substr(start, end-start);
