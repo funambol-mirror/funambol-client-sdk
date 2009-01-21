@@ -232,7 +232,7 @@ void* FileSyncSource::getItemContent(StringBuffer& key, size_t* size) {
     StringBuffer completeName(getCompleteName(dir, fileName));
     
     if (!readFile(completeName, &fileContent, size, true)) {        
-        LOG.error("Content of the file not read");
+        LOG.error("Content of the file not read: %s", completeName.c_str());
         return NULL;
     }
 
