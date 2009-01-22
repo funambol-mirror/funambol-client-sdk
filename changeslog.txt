@@ -1,3 +1,6 @@
+-----------------------
+Funambol J2SE API 7.1.0
+-----------------------
 2009-01-18
 - nichele: Added a new configuration property 'ignore-server-in-respuri' that can be
            set to 'true' if the server in the RespURI must be replaced by the
