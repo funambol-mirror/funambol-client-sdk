@@ -58,11 +58,22 @@ BEGIN_NAMESPACE
 static bool initCacheDir(StringBuffer& dir) {
     
     dir = PlatformAdapter::getConfigFolder();
-    dir += "/";
+    int len = dir.length();
+    
+    if (len == 0) {
+        return false;
+    }
+    
+    char pathEnd = dir[len - 1];
+    // check if cache dir path terminates with slash or backslash
+    if ((pathEnd != '/') && (pathEnd != '\\')) {
+        dir += "/";
+    }
+    
     dir += CACHE_FOLDER;
 
     if (createFolder(dir)){
-        LOG.error("initCacheDir: error creating cache directory");
+        LOG.error("initCacheDir: error creating cache directory '%s'", dir.c_str());
         dir = NULL;
         return false;
     }
@@ -190,7 +201,7 @@ SyncItem* CacheSyncSource::fillSyncItem(StringBuffer* key) {
         return NULL;
     }
     
-    LOG.debug("[%" WCHAR_PRINTF "] Filling item with key %s", getName(), key->c_str());
+    //LOG.debug("[%" WCHAR_PRINTF "] Filling item with key %s", getName(), key->c_str());
     
     content = getItemContent((*key), &size);
     
@@ -233,7 +244,7 @@ SyncItem* CacheSyncSource::getNextItem() {
         syncItem = fillSyncItem(s);
     }
     if (!syncItem) {
-        LOG.info("There are no more items to be exchanged. Return NULL");     
+        LOG.debug("There are no more items to be exchanged. Return NULL");     
     }
     return syncItem;
 
@@ -260,7 +271,7 @@ SyncItem* CacheSyncSource::getNextNewItem() {
         syncItem = fillSyncItem(s);
     }
     if (!syncItem) {
-        LOG.info("There are no more new items to be exchanged. Return NULL");     
+        LOG.debug("There are no more new items to be exchanged. Return NULL");     
     }
     return syncItem;   
 }
@@ -283,7 +294,7 @@ SyncItem* CacheSyncSource::getNextUpdatedItem() {
         syncItem = fillSyncItem(s);
     }
     if (!syncItem) {
-        LOG.info("There are no more updated items to be exchanged. Return NULL");     
+        LOG.debug("There are no more updated items to be exchanged. Return NULL");     
     }    
     return syncItem;    
 }
@@ -311,7 +322,7 @@ SyncItem* CacheSyncSource::getNextDeletedItem() {
         if (wkey) { delete [] wkey; wkey = NULL; }  
     }
     if (!syncItem) {
-        LOG.info("There are no more deleted items to be exchanged. Return NULL");     
+        LOG.debug("There are no more deleted items to be exchanged. Return NULL");     
     }    
          
     return syncItem;
