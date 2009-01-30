@@ -267,6 +267,7 @@ size_t POSIXLog::getLogSize() {
     if (logFile) {
         ret = fgetsize(logFile);
         fclose(logFile);
+        logFile = NULL;
     }
     return ret;
 }
