@@ -288,6 +288,10 @@ TInt CSymbianTransportAgent::MHFRunError( TInt aError,
     return KErrNone;
     */
     // Simply return the error
+    LOG.error("*** MHFRunError - code %d ****", aError);
+    
+    SetHttpClientError(aError);
+    
     return aError;
 }
 
@@ -305,6 +309,12 @@ void CSymbianTransportAgent::ConnectL()
  */
 char* CSymbianTransportAgent::sendMessage(const char* msg)
 {
+    // Check if user aborted current sync.
+    if (getLastErrorCode() == KErrCancel) {
+        LOG.debug("Leaving sendMessage - lastErrorCode is %d", getLastErrorCode());
+        User::Leave(KErrCancel);    // leave is trapped at SyncActiveObject::RunL().
+    }
+    
     // Just to be sure the response buffer is ok
     //TO BE VERIFIED!!!!
     delete iResponseBody;
@@ -380,6 +390,13 @@ char* CSymbianTransportAgent::sendMessage(const char* msg)
     // error the scheduler will be stopped in the event handler
     // This is a trick to implement a synchronous method
     iASWait->Start();  // TO BE VERIFIED!!!!
+    
+    
+    // Check if user aborted current sync.
+    if (getLastErrorCode() == KErrCancel) {
+        LOG.debug("Leaving sendMessage - lastErrorCode is %d", getLastErrorCode());
+        User::Leave(KErrCancel);    // leave is trapped at SyncActiveObject::RunL().
+    }
     
     // when all is finished, return char* to be delete []
     if(!iTransFailed)
