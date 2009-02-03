@@ -170,7 +170,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
             setProperty = CFReadStreamSetProperty( responseStream, 
                                                   kCFStreamPropertySSLSettings, 
                                                   sslProperties );
-            [sslProperties dealloc];
+            [sslProperties release];
         }
         
         if (!CFReadStreamOpen(responseStream)) {//Sends request
