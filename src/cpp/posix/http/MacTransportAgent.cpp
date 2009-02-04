@@ -155,10 +155,10 @@ char* MacTransportAgent::sendMessage(const char* msg){
         
         CFReadStreamRef responseStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, httpRequest);
         
-        bool setProperty;
+        //bool setProperty;
         //if we are trying to sync on a https server we have to have a trusted certificate.
         //no self signed certificates are accepted
-        if(strcmp(url.protocol, "https")==0){
+        /*if(strcmp(url.protocol, "https")==0){
             NSDictionary *sslProperties;
             sslProperties = [NSDictionary dictionaryWithObjectsAndKeys:
                                                (NSString *)kCFStreamSocketSecurityLevelNegotiatedSSL, kCFStreamSSLLevel,
@@ -171,7 +171,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
                                                   kCFStreamPropertySSLSettings, 
                                                   sslProperties );
             [sslProperties release];
-        }
+        }*/
         
         if (!CFReadStreamOpen(responseStream)) {//Sends request
             LOG.error("Failed to send HTTP request...");
