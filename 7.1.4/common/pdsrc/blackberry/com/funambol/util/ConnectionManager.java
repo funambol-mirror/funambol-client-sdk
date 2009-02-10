@@ -117,12 +117,8 @@ public class ConnectionManager {
             Log.debug("[ConnectionManager.getInstance]Creating new connection manager");
             instance = new ConnectionManager();
             instance.setConnectionListener(new BasicConnectionListener());
-            Log.debug("[ConnectionManager.getInstance]Instance created");
-            return instance;
-        } else {
-            Log.debug("[ConnectionManager.getInstance]Returning the existing connection manager insatnce");
-            return instance;
         }
+        return instance;
     }
 
     /**
@@ -147,7 +143,10 @@ public class ConnectionManager {
      * @return Connection related to the given parameters
      * @throws java.io.IOException
      */
-    public synchronized Connection open(String url, int accessMode, boolean enableTimeoutException) throws IOException {
+    public synchronized Connection open(String url, int accessMode,
+                                        boolean enableTimeoutException)
+    throws IOException {
+
         //A message connection is required. It needs no parameters
         if (url.indexOf(SMS_URL)>0) {
             return Connector.open(url);
@@ -159,11 +158,12 @@ public class ConnectionManager {
         ConnectionConfig.refreshServiceBookConfigurations();
 
         //Just displays the network coverage
-        Log.debug("[connectionManager.open]Current network informations:\n" + BlackberryUtils.getNetworkCoverageReport());
+        //Log.trace("[connectionManager.open]Current network informations:\n"
+        //          + BlackberryUtils.getNetworkCoverageReport());
 
         //Checks the wifi status and removes it if the bearer is offline and 
         //it is the current working configuration
-        Log.debug("[ConnectionManager.open]Checking wifi status");
+        Log.trace("[ConnectionManager.open]Checking wifi status");
         //Denies the wifi usage permission if the bearer is not available or 
         //turned off
         if (!BlackberryUtils.isWifiActive()||!BlackberryUtils.isWifiAvailable()) {
@@ -172,55 +172,64 @@ public class ConnectionManager {
             //available and the last working configuration was set to WIFI
             if (workingConfigID==ConnectionConfig.WIFI_CONFIG) {
                 workingConfigID++;//=ConnectionConfig.CONFIG_NONE;
-                Log.debug("[ConnectionManager.checkWifiStatus]Configuration removed");
             }
         }        
         
         //if the GPRS bearer is not available and wifi is available, then it 
         //become the working id 
-        if (workingConfigID>0&&BlackberryUtils.isWapGprsDataBearerOffline()) {
+        if (workingConfigID > 0 && BlackberryUtils.isWapGprsDataBearerOffline()) {
             Log.debug("[connectionManager.open]GPRS bearer is offline: switching to wifi if available");
-            if (BlackberryUtils.isWifiActive()&&BlackberryUtils.isWifiAvailable()) {
+            if (BlackberryUtils.isWifiActive() && BlackberryUtils.isWifiAvailable()) {
                 Log.debug("[connectionManager.open]WIFI bearer is online: changing working configuration");
                 workingConfigID=ConnectionConfig.WIFI_CONFIG;
             } else {
                 //Doesn't try the connection because in this case there is no 
                 //bearer available.
-                Log.debug("[connectionManager.open]WIFI bearer is offline: no suitable bearer were found. Throwing IOException");
+                Log.debug("[connectionManager.open]WIFI bearer is offline: "
+                          + "no suitable bearer were found. Throwing IOException");
                 throw new IOException();
             }
         }
         
-        if (workingConfigID<0) {
+        if (workingConfigID < 0) {
             Log.debug("[ConnectionManager.open]Setting up the connection...");
             return setup(url, accessMode, enableTimeoutException);
         } else {
-            Log.debug("[ConnectionManager.open]Working Configuration already assigned - ID=" + workingConfigID);
-            Log.debug("[ConnectionManager.open]Using configuration: ID=" + workingConfigID + " - Description " + configurations[workingConfigID].getDescription());
+            Log.trace("[ConnectionManager.open]Working Configuration already assigned - ID="
+                      + workingConfigID);
+            Log.trace("[ConnectionManager.open]Using configuration: ID="
+                      + workingConfigID + " - Description "
+                      + configurations[workingConfigID].getDescription());
             Connection ret = null;
             try {
-                Log.debug("[ConnectionManager.open]Opening connection with: " + configurations[workingConfigID].getDescription());
-                ret = Connector.open(url + configurations[workingConfigID].getUrlParameters(), accessMode, enableTimeoutException);
-            } catch (IOException ioe) {
-                Log.debug("[ConnectionManager.open]Error occured while accession the network with the last working configuration");
-                //If the working configuration is the custom TCP configuration 
-                //it could  happen that the user manually deleted it for any 
-                //reasons. The following check avoid to use TCP settings when an 
-                //invalid APN was inserted by the user or when it was deleted.
-                if (workingConfigID==ConnectionConfig.TCP_CONFIG) {
-                    Log.debug("[ConnectionManager.open]Configuration is TCP_CONFIG");
-                    workingConfigID=ConnectionConfig.CONFIG_NONE;
+                Log.debug("[ConnectionManager.open]Opening connection with: "
+                          + configurations[workingConfigID].getDescription());
+                String fullUrl = url + configurations[workingConfigID].getUrlParameters();
+                Log.trace("Opening url: " + fullUrl);
+                ret = Connector.open(fullUrl, accessMode, enableTimeoutException);
+            } catch (Exception ioe) {
+                Log.debug("[ConnectionManager.open]Error occured while accessing " +
+                          "the network with the last working configuration");
+                // If the current configuration no longer works, we try all the
+                // known connections to see if we find one that works.
+                // Connections that have already been granted/denied do not
+                // result in an extra prompt to the user, we rather keep his
+                // previous answer.
+                workingConfigID=ConnectionConfig.CONFIG_NONE;
+                // Close the connection if it got opened
+                if (ret != null) {
                     try {
                         ret.close();
                     } catch (Exception e) {
-                        Log.debug("[ConnectionManager.setup]Failed Closing connection: setting up another configuration");
+                        Log.debug("[ConnectionManager.setup]Failed Closing connection: " 
+                                  + "setting up another configuration");
                         Log.debug("[ConnectionManager.setup]Exception: " + e);
                     }
-                    configurations[ConnectionConfig.TCP_CONFIG].setPermission(ConnectionConfig.PERMISSION_DENIED);
-                    ret = setup(url, accessMode, enableTimeoutException);
-                } else {
-                    throw ioe;
                 }
+                // If all the possible connections are not working, the setup
+                // will throw an exception resulting in an exception in the
+                // "open".
+                ret = setup(url, accessMode, enableTimeoutException);
             }
             return ret;
         }
@@ -233,12 +242,15 @@ public class ConnectionManager {
      * @param url is the request url without configurations parameters
      * @return String representing the url with the optional parameter added
      */
-    private Connection setup(String url, int accessMode, boolean enableTimeoutException) throws IOException {
+    private Connection setup(String url, int accessMode, boolean enableTimeoutException)
+    throws IOException {
+
         Connection ret = null;
         String requestUrl = null;
         for (int i = 0; i < ConnectionConfig.MAX_CONFIG_NUMBER; i++) {
             try {
-                Log.debug("[ConnectionManager.setup]Looping configurations: " + (i+1) + "/" + ConnectionConfig.MAX_CONFIG_NUMBER);
+                Log.debug("[ConnectionManager.setup]Looping configurations: "
+                          + (i+1) + "/" + ConnectionConfig.MAX_CONFIG_NUMBER);
                 //If the open operation fails a subclass of IOException is thrown by the system
                 if (isConfigurationAllowed(i)) {
                     Log.debug("[ConnectionManager.setup]Configuration Allowed: " + (i+1));
@@ -258,40 +270,29 @@ public class ConnectionManager {
                 connectionListener.connectionConfigurationChanged();
                 Log.debug("[ConnectionManager.setup]Listener notified");
                 return ret;
-            } catch (IOException ioe) {
+            } catch (Exception ioe) {
                 Log.debug("[ConnectionManager.setup]Connection not opened at attempt " + (i + 1));
                 Log.debug("[ConnectionManager.setup] " + ioe);
-                if (workingConfigID==ConnectionConfig.TCP_CONFIG) {
-                    Log.debug("[ConnectionManager.open]Configuration is TCP_CONFIG");
-                    configurations[ConnectionConfig.TCP_CONFIG].setPermission(ConnectionConfig.PERMISSION_DENIED);
-                    
+
+                // Close the connection in case it got opened
+                if (ret != null) {
+                    try {
+                        ret.close();
+                    } catch (Exception e) {
+                        Log.debug("[ConnectionManager.setup]Failed Closing connection: " 
+                                  + "trying next configuration if exists");
+                        Log.debug("[ConnectionManager.setup]Exception: " + e);
+                    }
                 }
-                
-                try {
-                    ret.close();
-                } catch (Exception e) {
-                    Log.debug("[ConnectionManager.setup]Failed Closing connection: trying next configuration if exists");
-                    Log.debug("[ConnectionManager.setup]Exception: " + e);
-                }
-                //Modz for plugin
-                if(i==ConnectionConfig.MAX_CONFIG_NUMBER-1) {
-                    workingConfigID = ConnectionConfig.CONFIG_NONE;
-                    throw new IOException("[ConnectionManager.setup]Cannot find a suitable configuration");
-                } else {
-                    continue;
-                }
-            } catch (Exception e) {
-                Log.error("[ConnectionManager.setup]Unexpected Exception was thrown: " + e);
-            
+                ret = null;
             }
         }
-        //This statement cannot ever be reached, otherwise it means that no 
-        //configuration was allowed by the connection listener.
-        Log.debug("[ConnectionManager.setup]Unexpected reaching of last statement");
-        if (ret!=null) {
+
+        if (ret != null) {
             return ret;
         } else { 
-            //Doesn't return a null connection but thorws an IOException
+            workingConfigID = ConnectionConfig.CONFIG_NONE;
+            //Doesn't return a null connection but throws an IOException
             throw new IOException("[ConnectionManager.setup]Cannot find a suitable configuration");
         }
     }
@@ -347,7 +348,8 @@ public class ConnectionManager {
             }
             return isConfigurationAllowed;
         }
-        Log.debug("[ConnectionManager.isConfigurationAllowed]No suitable condition to allow the configuration (" + (configNumber+1) + ") was found");
+        Log.debug("[ConnectionManager.isConfigurationAllowed]No suitable condition "
+                  + "to allow the configuration (" + (configNumber+1) + ") was found");
         return false;
     }
     

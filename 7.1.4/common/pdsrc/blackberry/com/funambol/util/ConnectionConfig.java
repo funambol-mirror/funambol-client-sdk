@@ -157,26 +157,26 @@ public class ConnectionConfig {
 
         boolean isUsCountry = false;
         if (serviceBookApn != null) {
-            Log.debug("[ConnectionConfig.isUSCarrier]ServiceBook APN is not null");
+            Log.trace("[ConnectionConfig.isUSCarrier]ServiceBook APN is not null");
             WapGateway gateway = findGatewayByApn(serviceBookApn);
             if (gateway != null) {
-                Log.debug("[ConnectionConfig.isUSCarrier]Gateway is not null");
-                Log.debug("[ConnectionConfig.isUSCarrier]APN: " + gateway.getApn());
-                Log.debug("[ConnectionConfig.isUSCarrier]Username: " + gateway.getUsername());
-                Log.debug("[ConnectionConfig.isUSCarrier]Password: " + gateway.getPassword());
-                Log.debug("[ConnectionConfig.isUSCarrier]Country: " + gateway.getCountry());
+                Log.trace("[ConnectionConfig.isUSCarrier]Gateway is not null");
+                Log.trace("[ConnectionConfig.isUSCarrier]APN: " + gateway.getApn());
+                Log.trace("[ConnectionConfig.isUSCarrier]Username: " + gateway.getUsername());
+                Log.trace("[ConnectionConfig.isUSCarrier]Password: " + gateway.getPassword());
+                Log.trace("[ConnectionConfig.isUSCarrier]Country: " + gateway.getCountry());
                 //if in us return false
                 isUsCountry = COUNTRY_US.equals(gateway.getCountry());
-                Log.debug("[ConnectionConfig.isUSCarrier]US Country check: " + isUsCountry);
+                Log.trace("[ConnectionConfig.isUSCarrier]US Country check: " + isUsCountry);
                 return isUsCountry;
             } else {
-                Log.debug("[ConnectionConfig.isUSCarrier]Gateway is NULL");
+                Log.trace("[ConnectionConfig.isUSCarrier]Gateway is NULL");
             }
         } else {
-            Log.debug("[ConnectionConfig.isUSCarrier]ServiceBook APN is NULL");
+            Log.trace("[ConnectionConfig.isUSCarrier]ServiceBook APN is NULL");
         }
         Log.debug("[ConnectionConfig.isUSCarrier]Final value returned by: " + isUsCountry + " for " + serviceBookApn);
-        return true;
+        return isUsCountry;
     }
 
     /**

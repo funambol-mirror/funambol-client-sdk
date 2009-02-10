@@ -1,11 +1,18 @@
 Funambol J2ME Common API Changes Log
 ------------------------------------
+2009-02-10
+     - BlackBerry improvement in Connections Handling (backport from trunk). Do not
+       give up on using a connection configuration once a network problem
+       is encountered. This fixes a logical bug that could resolve bug #6755.
+
 2009-01-12 (7.1.2)
-	- Blackberry Connection Manager run in null pointer exception when the Connection 
-    Listener denied all of the available connection configuration. Now throws an
-    IOException returning the control to the caller.
+    - Blackberry Connection Manager run in null pointer exception when the Connection 
+      Listener denied all of the available connection configuration. Now throws an
+      IOException returning the control to the caller.
+
 2008-12-23 (7.1.2)
-	- Fixed bug #6507 - BB JAM Client - Issues updating from 7.0.5 to 7.1.2
+    - Fixed bug #6507 - BB JAM Client - Issues updating from 7.0.5 to 7.1.2
+
 2008-12-05 (7.1.2)
     - Fixed bug #6467 (support for wap.vodafone.de)
 
