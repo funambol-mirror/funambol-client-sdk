@@ -1,0 +1,55 @@
+Funambol J2ME Mail API Changes Log
+----------------------------------
+
+2008-11-14 (7.1.1)
+    - Improved support for encoding in base64 the contents of parts that need to
+      be encoded. This is part of US864 (bug #6025).
+
+2008-11-13
+    - WIFI introduced for Blackberry devices
+    - Connection framework changed
+
+2008-10-09
+    - Added composedMessagelength field that represents the length of the composed message. 
+      Is set to distinguish the replied/forwarded message from the new message.
+
+2007-09-24
+    - Address no longer implements Serializable. This way the class can be
+      obfuscated properly.
+
+2007-09-11
+    - Allow Message to load content and headers on demand, trading memory for
+      performance (depends on Message configuration)
+
+2007-09-03
+    - Added key and record id field to a Message
+    - Changed RMSStore to access messaged directly through their record id,
+      avoiding the usage of NamedObjectStore
+    - Changed Store interface to distinguish the cases for message add and
+      update
+
+2007-06-01 (6.0.10)
+    - Fix for the obsolete syntax: user@host.domain (User Name)
+    - Simplified exception scheme
+
+2007-05-18 (6.0.9)
+    - Header unfolding fixed. 
+    - Store flushing removed.
+
+2007-05-11 (6.0.8)
+    - Timezone handling for devices without TZ support
+    - Minimal handling of 'undisclosed-recipient:;' header
+
+2007-02-28
+    - MIMEProcessor and MIMEFormatted reworked 
+    - Automatic cleaning of older messages in RMSStore
+    - CC, BCC, REPLYTO handling
+    - Bugfix in Address
+
+2006-10-27
+    - First import on CVS.
+    - Basic RFC2822 parser/formatter, with support for multipart messages.
+    - Support for multimedia attachments and multilingual charset has to be
+      finished/tested.
+    - The only tested implementation of mail store is the RMSStore.
+
