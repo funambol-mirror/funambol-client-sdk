@@ -190,11 +190,10 @@
 				RelativePath="..\..\test\TestFileSource.cpp"
 				>
 			</File>
-                        <File
+			<File
 				RelativePath="..\..\test\TestFileSource.h"
 				>
 			</File>
-
 			<Filter
 				Name="spds"
 				>
@@ -287,6 +286,10 @@
 				Name="client"
 				>
 				<File
+					RelativePath="..\..\test\common\client\ConfigSyncSourceUnitTest.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\test\common\client\OptionParserTest.cpp"
 					>
 				</File>
@@ -296,6 +299,14 @@
 				>
 				<File
 					RelativePath="..\..\test\ClientTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\test\integration\ConfigSyncSourceTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\test\integration\ConfigSyncSourceTest.h"
 					>
 				</File>
 				<File

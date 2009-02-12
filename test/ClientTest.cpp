@@ -1634,6 +1634,8 @@ void SyncTests::addTests() {
 
     // test mappings
     ADD_TEST(SyncTests, testMappings);
+
+    ADD_TEST(SyncTests, testConfigSyncSource);
 }
 
 /** compare databases of first and second client */

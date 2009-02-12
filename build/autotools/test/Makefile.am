@@ -46,12 +46,14 @@ TESTS_SPDM = \
     ConfigTest.cpp
 
 TESTS_CLIENT = \
-    OptionParserTest.cpp
+    OptionParserTest.cpp \
+    ConfigSyncSourceUnitTest.cpp
 
 TESTS_EVENT = EventTest.cpp
 
 TESTS_SPDS = \
     MappingsTest.cpp \
+    ConfigSyncSourceTest.cpp \
     MappingTestSyncSource.cpp
     
 TESTCASES = $(TESTS_BASE) $(TESTS_FILTER) $(TESTS_SYNCML) $(TESTS_SPDM) $(TESTS_EVENT) $(TESTS_CLIENT) $(TESTS_SPDS)

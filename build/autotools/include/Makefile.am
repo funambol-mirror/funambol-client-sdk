@@ -34,6 +34,7 @@ nobase_pkginclude_HEADERS = \
     common/client/SyncClient.h \
     common/client/FileSyncSource.h \
     common/client/OptionParser.h \
+    common/client/ConfigSyncSource.h \
     common/event/constants.h \
     common/filter/Clause.h \
     common/filter/LogicalClause.h \

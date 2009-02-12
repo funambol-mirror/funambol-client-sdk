@@ -52,6 +52,7 @@
 #include <cppunit/TestFixture.h>
 #include "base/globalsdef.h"
 #include "MappingsTest.h"
+#include "ConfigSyncSourceTest.h"
 USE_NAMESPACE
 
 /**
@@ -776,6 +777,11 @@ protected:
     virtual void testMappings() {
         MappingsTest mapping;
         mapping.runTests();        
+    }
+
+    virtual void testConfigSyncSource() {
+        ConfigSyncSourceTest css;
+        css.runTests();        
     }
 
     /**

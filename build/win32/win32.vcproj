@@ -288,10 +288,6 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\src\cpp\common\base\util\MemoryKeyValueStore.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\cpp\common\base\util\baseutils.cpp"
 						>
 						<FileConfiguration
@@ -315,6 +311,10 @@
 					</File>
 					<File
 						RelativePath="..\..\src\cpp\common\base\util\BasicTime.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\cpp\common\base\util\MemoryKeyValueStore.cpp"
 						>
 					</File>
 					<File
@@ -514,6 +514,10 @@
 				>
 				<File
 					RelativePath="..\..\src\cpp\common\client\CacheSyncSource.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\client\ConfigSyncSource.cpp"
 					>
 				</File>
 				<File
@@ -3407,10 +3411,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\include\common\base\util\MemoryKeyValueStore.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\include\common\base\util\BasicTime.h"
 						>
 					</File>
@@ -3428,6 +3428,10 @@
 					</File>
 					<File
 						RelativePath="..\..\src\include\common\base\util\KeyValueStore.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\include\common\base\util\MemoryKeyValueStore.h"
 						>
 					</File>
 					<File
@@ -3481,6 +3485,10 @@
 				>
 				<File
 					RelativePath="..\..\src\include\common\client\CacheSyncSource.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\common\client\ConfigSyncSource.h"
 					>
 				</File>
 				<File
