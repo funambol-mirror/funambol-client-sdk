@@ -106,7 +106,7 @@ DMTClientConfig* getConf(const char* name) {
 
 void ConfigSyncSourceTest::testConfigSource() {
    // create the first configuration
-    DMTClientConfig* config1 = getConf("funambol_mappings_first");
+    DMTClientConfig* config1 = getConf("funambol_configSyncSourceIntegration");
 
     SyncSourceConfig *csconfig = config1->getSyncSourceConfig("config");          
     //CPPUNIT_ASSERT(csconfig);
@@ -115,7 +115,7 @@ void ConfigSyncSourceTest::testConfigSource() {
     config1->save();
     config1->open();
 
-    ConfigSyncSource source(TEXT("config"), "funambol_mappings_first", csconfig);
+    ConfigSyncSource source(TEXT("config"), "funambol_configSyncSourceIntegration", csconfig);
     ArrayList properties;
 
     StringBuffer pushstatus("./Push/Status");
