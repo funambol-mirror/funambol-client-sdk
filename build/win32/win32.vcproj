@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="libfunambol"
 	ProjectGUID="{D279EE74-36FB-4C4C-8F29-04947825C53E}"
 	RootNamespace="win32"
@@ -3335,6 +3335,38 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="push"
+				>
+				<File
+					RelativePath="..\..\src\cpp\common\push\CTPConfig.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\push\CTPMessage.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\push\CTPParam.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\push\CTPService.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\push\CTPThreadPool.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\windows\push\FSocket.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\windows\push\FThread.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -4313,6 +4345,42 @@
 				</File>
 				<File
 					RelativePath="..\..\src\include\windows\spdm\WinDMTreeManager.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="push"
+				>
+				<File
+					RelativePath="..\..\src\include\common\push\CTPConfig.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\common\push\CTPMessage.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\common\push\CTPParam.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\common\push\CTPService.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\common\push\CTPThreadPool.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\windows\push\FSocket.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\windows\push\FThread.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\common\push\PushListener.h"
 					>
 				</File>
 			</Filter>

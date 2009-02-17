@@ -174,6 +174,14 @@ nobase_pkginclude_HEADERS = \
     common/event/SyncSourceEvent.h \
     common/event/TransportEvent.h \
     common/event/Listener.h \
+    common/push/CTPConfig.h \
+    common/push/CTPMessage.h \
+    common/push/CTPParam.h \
+    common/push/CTPService.h \
+    common/push/CTPThreadPool.h \
+    common/push/PushListener.h \
+    posix/push/FThread.h \
+    posix/push/FSocket.h \
     posix/spdm/DeviceManagementNode.h \
     posix/base/posixlog.h \
     posix/base/posixadapter.h

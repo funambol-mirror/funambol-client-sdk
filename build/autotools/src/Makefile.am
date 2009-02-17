@@ -191,7 +191,16 @@ SOURCES_VOCL = \
     lvCardConverter.cpp \
     lvCardProperty.cpp
 
-SOURCES_LIBFUNAMBOL = $(SOURCES_BASE) $(SOURCES_EVENT) $(SOURCES_FRAMEWORK) $(SOURCES_HTTP) $(SOURCES_SPDM) $(SOURCES_SPDS) $(SOURCES_CLIENT) $(SOURCES_VOCL)
+SOURCES_PUSH = \
+    lCTPConfig.cpp \
+    lCTPMessage.cpp \
+    lCTPParam.cpp \
+    lCTPService.cpp \
+    lCTPThreadPool.cpp \
+    lFThread.cpp \
+    lFSocket.cpp
+
+SOURCES_LIBFUNAMBOL = $(SOURCES_BASE) $(SOURCES_EVENT) $(SOURCES_FRAMEWORK) $(SOURCES_HTTP) $(SOURCES_SPDM) $(SOURCES_SPDS) $(SOURCES_CLIENT) $(SOURCES_VOCL) $(SOURCES_PUSH)
 
 # Explicitly copy each source file here.
 # automake 1.10 creates rules which expect the *file* in this directory;
@@ -223,6 +232,7 @@ vpath %.cpp $(srcdir)/../../../src/cpp/common/base             \
             $(srcdir)/../../../src/cpp/common/http             \
             $(srcdir)/../../../src/cpp/common/spdm             \
             $(srcdir)/../../../src/cpp/common/spds             \
+            $(srcdir)/../../../src/cpp/common/push             \
             $(srcdir)/../../../src/cpp/common/test             \
             $(srcdir)/../../../src/cpp/common/vocl             \
             $(srcdir)/../../../src/cpp/common/vocl/iCalendar   \
@@ -231,7 +241,8 @@ vpath %.cpp $(srcdir)/../../../src/cpp/common/base             \
             $(srcdir)/../../../src/cpp/posix/base/adapter      \
             $(srcdir)/../../../src/cpp/posix/http              \
             $(srcdir)/../../../src/cpp/posix/spdm              \
-            $(srcdir)/../../../src/cpp/posix/spds
+            $(srcdir)/../../../src/cpp/posix/spds              \
+            $(srcdir)/../../../src/cpp/posix/push
 
 vpath %.c   $(srcdir)/../../../src/cpp/common/base
 

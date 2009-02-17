@@ -37,14 +37,15 @@
 #define INCL_CTP_MESSAGE
 /** @cond DEV */
 
+//#include <iostream>
+
 #include "base/fscapi.h"
 #include "syncml/core/SyncNotification.h" 
 #include "base/util/ArrayList.h"
 
 #include "push/CTPParam.h"
 
-    
-using namespace std;
+BEGIN_NAMESPACE
 
 /**
 * Commands
@@ -68,10 +69,7 @@ using namespace std;
 
 #define MAX_MESSAGE_SIZE        256
 #include "base/globalsdef.h"
-
-BEGIN_NAMESPACE
     
-
 class CTPMessage {
 
 private:

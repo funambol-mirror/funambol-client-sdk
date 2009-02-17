@@ -36,113 +36,94 @@
 #include <errno.h>
 #include <string.h>
 
+#include <winsock.h>
+
 #include "push/FSocket.h"
 #include "base/globalsdef.h"
 
 USE_NAMESPACE
 
-StringBuffer FSocket::lIP;
-
-FSocket::FSocket() : unixSock ( -1 )
-{
-    memset ( &unixAddr, 0, sizeof ( unixAddr ) );
+FSocket::FSocket() : winSocket ( INVALID_SOCKET ) {
+    memset ( &rAddress, 0, sizeof ( rAddress ) );
 }
 
 FSocket::~FSocket() {
     close();
 }
 
-bool FSocket::isValid() {
-    return unixSock != -1;
-}
-
 FSocket* FSocket::createSocket(const StringBuffer& peer, int32_t port) {
-    
+
     if(customSocket) {
         return customSocket;
     }
-    
-    int sock = socket ( AF_INET, SOCK_STREAM, 0 );
-
-    if ( sock == -1 )
+    // Create a socket
+    SOCKET sk = socket(AF_INET, SOCK_STREAM, 0);
+    if (sk == INVALID_SOCKET) {
         return NULL;
+    }
 
-    // TIME_WAIT - argh
+    // Set socket options
     int on = 1;
-    if ( setsockopt ( sock, SOL_SOCKET, SO_REUSEADDR, ( const char* ) &on, sizeof ( on ) ) == -1 ) {
+    if ( setsockopt ( sk, SOL_SOCKET, SO_REUSEADDR, ( const char* ) &on, sizeof ( on ) ) == -1 ) {
         return NULL;
     }
 
-    sockaddr_in addr;
-    memset((void*)&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons ( port );
-    //int status = inet_pton ( AF_INET, "85.18.37.27", &addr.sin_addr );
-    struct hostent *he = gethostbyname(peer.c_str());
-    if (he == NULL) { // do some error checking
-        return NULL;
+    u_long remoteAddr = inet_addr(peer.c_str());
+    if (remoteAddr == INADDR_NONE) {
+        
+        // peer isn't a dotted IP, so resolve it through DNS
+        hostent* he = gethostbyname(peer.c_str());
+        if (he == NULL) {
+            // The peer address cannot be reached
+            return NULL;
+        }
+        remoteAddr = *((u_long*)he->h_addr_list[0]);
     }
 
-    int status = inet_pton (AF_INET, inet_ntoa(*(struct in_addr*)he->h_addr),
-                            &addr.sin_addr);
-    if ( errno == EAFNOSUPPORT ) {
-        return NULL;
-    }
+    sockaddr_in raddress;
+    raddress.sin_family = AF_INET;
+    raddress.sin_addr.s_addr = remoteAddr;
+    raddress.sin_port = htons (port);
+    
+    // Connecting to the remote address
+    int status = connect(sk, (sockaddr*)&raddress, sizeof(raddress));
 
-    status = ::connect ( sock, ( sockaddr * ) &addr, sizeof ( addr ) );
-
-    if ( status == 0 ) {
-        FSocket* newSocket = new FSocket();
-        newSocket->unixSock = sock;
-        newSocket->unixAddr = addr;
-        return newSocket;
-    } else {
+    if ( status == SOCKET_ERROR ) {
+        // Error while connecting to the remote host
         return NULL;
-    }
+    } 
+    FSocket* newSocket = new FSocket();
+    newSocket->winSocket = sk;
+    newSocket->rAddress = raddress;
+    return newSocket;
 }
 
-
-int32_t FSocket::writeBuffer(const int8_t* const buffer, int32_t len)
-{
-    int32_t status = ::send ( unixSock, buffer, len, MSG_NOSIGNAL );
+int32_t FSocket::writeBuffer(const int8_t* buffer, int32_t len) {
+    int32_t status = send (winSocket, buffer, len, 0 );
     return status;
 }
 
 
-int32_t FSocket::readBuffer(int8_t* buffer, int32_t maxLen)
-{
+int32_t FSocket::readBuffer(int8_t* buffer, int32_t maxLen) {
     memset ( buffer, 0, maxLen );
-    int32_t status = ::recv ( unixSock, buffer, maxLen, 0 );
-
-    if ( status < 0 ) {
-        return -1;
-    } else if ( status == 0 ) {
-        return 0;
-    } else {
-        return status;
-    }
+    int32_t readBytes = recv ( winSocket, buffer, maxLen, 0 );
+    return readBytes;
 }
 
 const StringBuffer& FSocket::address() const {
-    return lAddress;
+    return pAddress;
 }
-
 const StringBuffer& FSocket::peerAddress() const {
     return pAddress;
 }
 
-
 void FSocket::close() {
     if ( isValid() )
-        ::close ( unixSock );
+        closesocket(winSocket);
 }
 
-const StringBuffer& FSocket::localIP() {
-    return lIP;
+bool FSocket::isValid() {
+    return winSocket != INVALID_SOCKET;
 }
 
 FSocket* FSocket::customSocket;
-
-
-
-

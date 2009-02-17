@@ -82,13 +82,13 @@ public:
 };
 
 /**
- * Test case for the class StringBuffer.
+ * Test suite for the class FThread.
  */
 class FThreadTest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(FThreadTest);
     CPPUNIT_TEST(FThreadStartWait1);
     CPPUNIT_TEST(FThreadStartWait2);
-    //CPPUNIT_TEST(FThreadStartWait3);
+    CPPUNIT_TEST(FThreadStartWait3);
     CPPUNIT_TEST(FThreadMultipleThreads);
     CPPUNIT_TEST(FThreadCascade);
     CPPUNIT_TEST_SUITE_END();
@@ -123,8 +123,8 @@ private:
         CPPUNIT_ASSERT(myThread.running());
         myThread.wait();
         // At this point myThread should be terminated
-        CPPUNIT_ASSERT(!myThread.finished());
-        CPPUNIT_ASSERT(myThread.running());
+        CPPUNIT_ASSERT(myThread.finished());
+        CPPUNIT_ASSERT(!myThread.running());
     }
 
     void FThreadMultipleThreads() {

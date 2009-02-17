@@ -19,7 +19,8 @@ vpath %.cpp	$(TESTDIR) \
 		$(TESTDIR)/common/filter \
 		$(TESTDIR)/common/client \
 		$(TESTDIR)/integration \
-		$(TESTDIR)/common/event
+		$(TESTDIR)/common/event \
+                $(TESTDIR)/common/push
 
 # Test runner sources
 SOURCES = client-test-main.cpp ClientTest.cpp TestFileSource.cpp
@@ -55,8 +56,12 @@ TESTS_SPDS = \
     MappingsTest.cpp \
     ConfigSyncSourceTest.cpp \
     MappingTestSyncSource.cpp
+
+TESTS_PUSH = \
+    FThreadTest.cpp \
+    CTPServiceTest.cpp
     
-TESTCASES = $(TESTS_BASE) $(TESTS_FILTER) $(TESTS_SYNCML) $(TESTS_SPDM) $(TESTS_EVENT) $(TESTS_CLIENT) $(TESTS_SPDS)
+TESTCASES = $(TESTS_BASE) $(TESTS_FILTER) $(TESTS_SYNCML) $(TESTS_SPDM) $(TESTS_EVENT) $(TESTS_CLIENT) $(TESTS_SPDS) $(TESTS_PUSH)
 
 client_test_SOURCES = $(SOURCES) $(TESTCASES)
 

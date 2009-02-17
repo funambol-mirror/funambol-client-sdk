@@ -241,7 +241,7 @@ void CTPConfig::saveCTPConfig() {
     
     // Save the nonce: save AuthConfig properties
     StringBuffer nodeName("");
-    nodeName.sprintf("%s%s%s", APPLICATION_URI, CONTEXT_SPDS_SYNCML, CONTEXT_AUTH);
+    nodeName.sprintf("%s%s%s", rootContext, CONTEXT_SPDS_SYNCML, CONTEXT_AUTH);
     node = dmt->readManagementNode(nodeName.c_str());
     if (node) {
         saveAuthConfig(*syncMLNode, *node);
@@ -263,7 +263,7 @@ void CTPConfig::saveCTPConfig() {
     //
     // Save the single CTP properties
     //
-    nodeName.sprintf("%s%s", APPLICATION_URI, CONTEXT_PUSH_CTP);
+    nodeName.sprintf("%s%s", rootContext, CONTEXT_PUSH_CTP);
     node = dmt->readManagementNode(nodeName.c_str());
     if (node) 
     {

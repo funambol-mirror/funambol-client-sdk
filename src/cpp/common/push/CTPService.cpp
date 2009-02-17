@@ -466,6 +466,11 @@ CTPMessage* CTPService::receiveStatusMsg() {
     delete receivedMsg;
     receivedMsg = NULL;
 
+    if (!ctpSocket) {
+        LOG.error("receiveStatusMsg error: socket not initialized.");
+        goto finally;
+    }
+    
     //
     // Receive socket message: could be split into more pkg
     //

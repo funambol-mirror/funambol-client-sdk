@@ -36,20 +36,9 @@
 #ifndef INCL_FSOCKET
 #define INCL_FSOCKET
 
+#include <winsock.h>
+
 #include "base/fscapi.h"
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-
-const int MAXHOSTNAME = 200;
-const int MAXCONNECTIONS = 5;
-const int MAXRECV = 500;
-
-#include "stdint.h"
 #include "base/util/StringBuffer.h"
 #include "base/globalsdef.h"
 
@@ -62,6 +51,20 @@ protected:
 
 public:
     virtual ~FSocket();
+
+    // This method is the factory to create sockets
+
+    /**
+     Opens a socket connecting to the peer host on the given port.
+     Returns a valid object if the connection can be establishd. Returns
+     NULL if the socket cannot be created for any reason.
+    */
+    static FSocket* createSocket(const StringBuffer& peer, int32_t port);
+
+    /**
+     Set a custom FSocket used instead of the platform dependent one
+    */
+    static void setSocket(FSocket* custom) { customSocket = custom; }
 
     /**
      Returns the local address associates to this socket in the form
@@ -100,49 +103,17 @@ public:
     */
     virtual void close();
 
-public:
-
-    // This method is the factory to create sockets
-
-    /**
-     Opens a socket connecting to the peer host on the given port.
-     Returns a valid object if the connection can be establishd. Returns
-     NULL if the socket cannot be created for any reason.
-    */
-    static FSocket* createSocket(const StringBuffer& peer, int32_t port);
-    
-    /**
-     Set a custom FSocket used instead of the platform dependent one
-     */
-    static void setSocket(FSocket* custom) { customSocket = custom; }
-    
-
-    // These methods are misc utilities
-
-    /**
-     Returns a string representing the local address in the form:
-     “address” where address can be the numerical IP or the symbolic
-     name. If the address cannot be retrieved, then the returned string is
-     empty.
-     If the device is not connected to the network then this method returns
-     an empty string and it does not attempt to set up a network
-     connection.
-    */
-    static const StringBuffer& localIP();
-
 private:
+
+	bool isValid();
+
     StringBuffer lAddress;
     StringBuffer pAddress;
-    static StringBuffer lIP;
 
-private:
-    bool isValid();
     static FSocket* customSocket;
 
-private:
-    int unixSock;
-    sockaddr_in unixAddr;
-
+    SOCKET      winSocket;
+    sockaddr_in rAddress;
 };
 
 END_NAMESPACE

@@ -33,49 +33,53 @@
  * the words "Powered by Funambol".
  */
 
-#include <stdlib.h>
-#include <time.h>
-#include <pthread.h>
-
-static void *pthreadEntryFunction(void* fthreadObj);
-
 #include "push/FThread.h"
 #include "base/globalsdef.h"
 
 USE_NAMESPACE
 
-FThread::FThread() :isRunning(false),
-                    terminate(false)
-{
+FThread::FThread() : isRunning(false) {
 }
 
 FThread::~FThread() {
+    CloseHandle(thread);
 }
 
 void FThread::start( FThread::Priority priority ) {
-
-    char* message = "PThread"; 
+    
     isRunning = true;
-    int ret = pthread_create( &pthread, NULL, pthreadEntryFunction, (void*)this);
+
+    thread = CreateThread( 
+                NULL,                 // default security attributes
+                0,                    // use default stack size  
+                threadEntryFunction,  // thread function name
+                (void*)this,          // argument to thread function 
+                0,                    // use default creation flags 
+                &threadID);           // returns the thread identifier
+
+    // Set the thread priority
+    if(priority != InheritPriority) {
+        SetThreadPriority(thread, getWindowsThreadPriority(priority));
+    }
 }
 
 void FThread::wait() {
-    pthread_join( pthread, NULL);
+    // Wait until the current thread has finished
+    WaitForSingleObject(thread, INFINITE);
 }
 
 bool FThread::wait(unsigned long timeout) {
+    // return true if the thread finishes before the timeout
+    return (WaitForSingleObject(thread, timeout) != WAIT_TIMEOUT);
+}
 
-    struct timespec t;
+void FThread::softTerminate() {
+    terminate = true;
+}
 
-    time_t seconds = timeout / 1000;
-    long   nanoseconds = (timeout % 1000) * 1000;
-
-    t.tv_sec  = seconds;
-    t.tv_nsec = nanoseconds;
-
-#if !defined(__APPLE__) && defined(__MACH__)
-    pthread_timedjoin_np(pthread, NULL, &t);
-#endif
+void FThread::sleep(unsigned long msec) {
+    // Sleep the current thread
+    Sleep(msec);
 }
 
 bool FThread::finished() const {
@@ -86,39 +90,28 @@ bool FThread::running() const {
     return isRunning;
 }
 
-void FThread::softTerminate() {
-    // pthread allows a thread to be killed (pthread_cancel)
-    // but this is somehow risky. What should we do?
-    terminate = true;
-}
-
-void FThread::sleep(long msec) {
-
-    struct timespec t, rt;
-    int ret = 0;
-
-    time_t seconds = msec / 1000;
-    long   nanoseconds = (msec % 1000) * 1000;
-
-    t.tv_sec  = seconds;
-    t.tv_nsec = nanoseconds;
-
-    do {
-        ret = nanosleep(&t, &rt);
-        t = rt;
-    } while (ret != 0);
-}
-
 void FThread::setRunning(bool value) {
     isRunning = value;
 }
 
+BEGIN_NAMESPACE
 
-static void *pthreadEntryFunction(void* fthreadObj) {
-    FThread* threadObj = (FThread*)fthreadObj;
+DWORD WINAPI threadEntryFunction( LPVOID lpParam ) {
+    FThread* threadObj = (FThread*)lpParam;
     threadObj->run();
     threadObj->setRunning(false);
-    pthread_exit(NULL);
     return NULL;
 }
 
+END_NAMESPACE
+
+int FThread::getWindowsThreadPriority(FThread::Priority priority) {
+    if(priority == IdlePriority)              return THREAD_PRIORITY_IDLE; 
+    else if(priority == LowestPriority)       return THREAD_PRIORITY_LOWEST;
+    else if(priority == LowPriority)          return THREAD_PRIORITY_BELOW_NORMAL;
+    else if(priority == NormalPriority)       return THREAD_PRIORITY_NORMAL;
+    else if(priority == HighPriority)         return THREAD_PRIORITY_ABOVE_NORMAL;
+    else if(priority == HighestPriority)      return THREAD_PRIORITY_HIGHEST;
+    else if(priority == TimeCriticalPriority) return THREAD_PRIORITY_TIME_CRITICAL;
+    else                                      return THREAD_PRIORITY_NORMAL;
+}

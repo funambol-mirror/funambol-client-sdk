@@ -35,25 +35,26 @@
 
 #ifndef INCL_FTHREAD
 #define INCL_FTHREAD
+
 #include "base/globalsdef.h"
+#include <windows.h>
 
 BEGIN_NAMESPACE
 
 class FThread {
 
-protected:
-    FThread();
-    bool terminate;
-
 public:
     virtual ~FThread();
+
+protected:
+    FThread();
+    
+    bool terminate;
 
 public:
     enum Priority { IdlePriority, LowestPriority, LowPriority,
                     NormalPriority, HighPriority, HighestPriority,
                     TimeCriticalPriority, InheritPriority };
-
-public:
 
     /**
      Starts this thread with the given priority. Threads entry point is
@@ -75,12 +76,12 @@ public:
     virtual bool wait(unsigned long timeout);
 
     /**
-     Returns true iff the thread execution is terminated
+     Returns true if the thread execution is terminated
     */
     virtual bool finished() const;
 
     /**
-     Returns true iff the thread is still running
+     Returns true if the thread is still running
     */
     virtual bool running() const;
 
@@ -90,26 +91,29 @@ public:
     */    
     virtual void softTerminate();
 
-protected:
-    virtual void run() = 0;
-
-public:
     /**
      * Suspend the current thread for the given time (milliseconds)
      */
-    static void sleep(long msec);
-
-    friend void* pthreadEntryFunction(void* fthreadObj);
-
-
-private:
-    bool isRunning;
-    pthread_t pthread;
-
-private:
+    static void sleep(unsigned long msec);
+    
+protected:
+	virtual void run() = 0;
     void setRunning(bool value);
-};
 
+private:
+
+	friend DWORD WINAPI threadEntryFunction( LPVOID lpParam );
+
+    /**
+     * Obtains the Windows thread priority from the FThread Priority enumeration
+     */
+    int getWindowsThreadPriority(FThread::Priority priority);
+ 
+    bool   isRunning;
+    HANDLE thread;
+    DWORD  threadID;
+
+};
 
 END_NAMESPACE
 
