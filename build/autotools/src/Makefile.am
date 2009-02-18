@@ -211,7 +211,7 @@ $(SOURCES_LIBFUNAMBOL): l% : %
 CLEANFILES = $(SOURCES_LIBFUNAMBOL)
 
 libfunambol_la_SOURCES = $(SOURCES_LIBFUNAMBOL:%=l%)
-libfunambol_la_LDFLAGS = -version-info @SO_VERSION_INFO@ @CURL_LDFLAGS@ @CPPUNIT_LDFLAGS@
+libfunambol_la_LDFLAGS = -version-info @SO_VERSION_INFO@ @CURL_LDFLAGS@ @CPPUNIT_LDFLAGS@ -lpthread
 libfunambol_la_CXXFLAGS = @CURL_CFLAGS@ @CPPUNIT_CXXFLAGS@
 
 # client_SOURCES = client.cpp TestSyncSource.cpp TestSyncSource2.cpp

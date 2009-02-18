@@ -53,10 +53,8 @@ FThread::~FThread() {
 }
 
 void FThread::start( FThread::Priority priority ) {
-
-    char* message = "PThread"; 
     isRunning = true;
-    int ret = pthread_create( &pthread, NULL, pthreadEntryFunction, (void*)this);
+    pthread_create( &pthread, NULL, pthreadEntryFunction, (void*)this);
 }
 
 void FThread::wait() {
@@ -74,8 +72,11 @@ bool FThread::wait(unsigned long timeout) {
     t.tv_nsec = nanoseconds;
 
 #if !defined(__APPLE__) && defined(__MACH__)
-    pthread_timedjoin_np(pthread, NULL, &t);
+    if(pthread_timedjoin_np(pthread, NULL, &t) == ETIMEDOUT) {
+        return true;
+    }
 #endif
+    return false;
 }
 
 bool FThread::finished() const {

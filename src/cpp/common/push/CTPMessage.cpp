@@ -69,7 +69,7 @@ void CTPMessage::initialize() {
 int32_t CTPMessage::parse(const char* package, int32_t maxPackageLen) {
     
 // This macro increments local pointer p or return error if out of bounds.
-#define IncP(Num) p+(Num)<end ? p+=(Num) : p = NULL
+#define IncP(Num) (p+(Num)<end ? p+=(Num) : p = NULL)
     
     LOG.debug("Parsing msg...");
     int32_t ret = 0;
