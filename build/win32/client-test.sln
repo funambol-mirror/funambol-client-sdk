@@ -5,6 +5,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfunambol", "win32.vcproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client-test", "client-test.vcproj", "{68DB1569-6AFC-4288-B7B0-79AF45F2F37C}"
 	ProjectSection(ProjectDependencies) = postProject
+		{0D9AE957-1F6A-442D-8404-82898E11337F} = {0D9AE957-1F6A-442D-8404-82898E11337F}
 		{D279EE74-36FB-4C4C-8F29-04947825C53E} = {D279EE74-36FB-4C4C-8F29-04947825C53E}
 	EndProjectSection
 EndProject
