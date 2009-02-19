@@ -61,6 +61,10 @@
     
 #include "client/ConfigSyncSource.h"
 
+#define SOURCE_CONFIG_NAME "config"
+#define CONTEXT "funambol_configSyncSourceIntegration"
+//#define CONTEXT "funambol_mappings_first"
+
 USE_NAMESPACE
 
 ConfigSyncSourceTest::ConfigSyncSourceTest() {
@@ -77,45 +81,72 @@ DMTClientConfig* getConf(const char* name) {
     
     PlatformAdapter::init(name, true);
     DMTClientConfig* config = new DMTClientConfig();
-    config->read();
-    DeviceConfig &dc(config->getDeviceConfig());
+    
+	if (config->read() == false) {
+    	AccessConfig* ac = DefaultConfigFactory::getAccessConfig();
+    	config->setAccessConfig(*ac);
+
+		//set custom configuration
+    	if(serverUrl) {
+        	config->getAccessConfig().setSyncURL(serverUrl);
+    	}
+    	if(username) {
+        	config->getAccessConfig().setUsername(username);
+    	}
+    	if(password) {
+        	config->getAccessConfig().setPassword(password);
+    	}
+
+    	delete ac;
+
+    	DeviceConfig* dc = DefaultConfigFactory::getDeviceConfig();
+    	StringBuffer devid("sc-pim-"); devid += name;
+    	dc->setDevID(devid);
+    	config->setDeviceConfig(*dc);
+    	delete dc;
+
+    	SyncSourceConfig* sc = DefaultConfigFactory::getSyncSourceConfig(SOURCE_CONFIG_NAME);
+    	sc->setEncoding ("bin");
+    	sc->setType     ("text/plain");
+    	sc->setURI      ("configuration");
+    	config->setSyncSourceConfig(*sc);
+    	delete sc;
+
+    
+		config->save();
+	}
+
+/*
+	//DeviceConfig &dc(config->getDeviceConfig());
     if (!strlen(dc.getDevID())) {            
-        config->setClientDefaults();
-        config->setSourceDefaults("config"); 
+    	LOG.info("PIPPO=================================================================================================");
+	    config->setClientDefaults();
+        config->setSourceDefaults(SOURCE_CONFIG_NAME); 
         StringBuffer devid("sc-pim-"); devid += name;
         dc.setDevID(devid);
-        SyncSourceConfig* s = config->getSyncSourceConfig("config");
-        s->setEncoding("bin");
+        SyncSourceConfig* s = config->getSyncSourceConfig(SOURCE_CONFIG_NAME);
+        //SyncSourceConfig* s = new SyncSourceConfig();
+        if(!s){
+		LOG.error("Syncsourceconfig null");
+	}
+	s->setEncoding("bin");
         s->setURI("configuration");
         s->setType("text/plain");
+	//config->setSyncSourceConfig(*s);
     }
+  */  
     
-    //set custom configuration
-    if(serverUrl) {
-        config->getAccessConfig().setSyncURL(serverUrl);
-    }
-    if(username) {
-        config->getAccessConfig().setUsername(username);
-    }
-    if(password) {
-        config->getAccessConfig().setPassword(password);
-    }
-
     return config;
 }
 
 void ConfigSyncSourceTest::testConfigSource() {
    // create the first configuration
-    DMTClientConfig* config1 = getConf("funambol_configSyncSourceIntegration");
+    DMTClientConfig* config1 = getConf(CONTEXT);
 
-    SyncSourceConfig *csconfig = config1->getSyncSourceConfig("config");          
-    //CPPUNIT_ASSERT(csconfig);
-    //ccontact1->setSync("refresh-from-client");
+    SyncSourceConfig *csconfig = config1->getSyncSourceConfig(SOURCE_CONFIG_NAME);          
+    CPPUNIT_ASSERT(csconfig);
 
-    config1->save();
-    config1->open();
-
-    ConfigSyncSource source(TEXT("config"), "funambol_configSyncSourceIntegration", csconfig);
+    ConfigSyncSource source(TEXT("config"), CONTEXT, csconfig);
     ArrayList properties;
 
     StringBuffer pushstatus("./Push/Status");
@@ -127,7 +158,7 @@ void ConfigSyncSourceTest::testConfigSource() {
     properties.add(filterstatus);
     properties.add(emailaddress);
     properties.add(displayname);
-    source.setConfigProperties(properties);
+    //source.setConfigProperties(properties);
 
     SyncSource* sources[2];
     sources[0] = &source;
@@ -136,9 +167,9 @@ void ConfigSyncSourceTest::testConfigSource() {
     SyncClient client;
     int ret = 0;       
     ret = client.sync(*config1, sources);
-    CPPUNIT_ASSERT(!ret);
     config1->save();
-    //Sleep(INTERVAL);
+    CPPUNIT_ASSERT(!ret);
+
     delete config1; 
 
 }
