@@ -37,6 +37,8 @@
 #define INCL_FTHREAD
 #include "base/globalsdef.h"
 
+#include <pthread.h>
+
 BEGIN_NAMESPACE
 
 class FThread {
