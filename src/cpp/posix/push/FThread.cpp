@@ -44,8 +44,8 @@ static void *pthreadEntryFunction(void* fthreadObj);
 
 USE_NAMESPACE
 
-FThread::FThread() :isRunning(false),
-                    terminate(false)
+FThread::FThread() : terminate(false),
+                     isRunning(false)
 {
 }
 
