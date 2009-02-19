@@ -136,13 +136,15 @@ public:
         /******* Catch the heartbeat [READY] messages ********/
         CTPMessage msg; msg.parse((char*)buffer, len);
         if(msg.getGenericCommand() == CM_READY) {
-            // Reply OK
+            // Reply OK -> it may override a push message
+            /*
             CTPMessage reply;
             reply.setGenericCommand(ST_OK);
             reply.setProtocolVersion(CTP_PROTOCOL_VERSION);
             char* msgbuffer = reply.toByte(); 
             int   msgbuffer_len = reply.getBufferLength(); 
             setInputSocketBuffer(msgbuffer, msgbuffer_len);
+            */
             return len;
         }
         /*****************************************************/
@@ -473,7 +475,6 @@ public:
         CTPASSERT_COMMAND(CM_AUTH);
         simulateServerResponse(ST_OK);
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
-        FThread::sleep(500);
         simulateServerPush();
         CTPASSERT_NOTIFICATION();
         CTP_SERVICE->stopCTP();
