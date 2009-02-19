@@ -137,14 +137,12 @@ public:
         CTPMessage msg; msg.parse((char*)buffer, len);
         if(msg.getGenericCommand() == CM_READY) {
             // Reply OK -> it may override a push message
-            /*
             CTPMessage reply;
             reply.setGenericCommand(ST_OK);
             reply.setProtocolVersion(CTP_PROTOCOL_VERSION);
             char* msgbuffer = reply.toByte(); 
             int   msgbuffer_len = reply.getBufferLength(); 
             setInputSocketBuffer(msgbuffer, msgbuffer_len);
-            */
             return len;
         }
         /*****************************************************/
@@ -426,11 +424,12 @@ public:
         CTP_SERVICE->startCTP();
         CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
         simulateServerResponse(ST_OK);
-        CTPASSERT_STATE(CTPService::CTP_STATE_READY);
+        CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
         CTP_SERVICE->stopCTP();
         
         //Used to kill the receiver thread
         FakeSocket::setConnectionClosed(true);
+        CTPASSERT_STATE(CTPService::CTP_STATE_DISCONNECTED);
         FThread::sleep(2000);
     }
 
@@ -442,13 +441,14 @@ public:
         CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
         simulateServerResponse(ST_NOT_AUTHENTICATED);
         CTPASSERT_COMMAND(CM_AUTH);
+        CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
         simulateServerResponse(ST_OK);
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
         CTP_SERVICE->stopCTP();
-        CTPASSERT_STATE(CTPService::CTP_STATE_DISCONNECTED);
 
         //Used to kill the receiver thread
         FakeSocket::setConnectionClosed(true);
+        CTPASSERT_STATE(CTPService::CTP_STATE_DISCONNECTED);
         FThread::sleep(2000);
     }
 
@@ -473,14 +473,18 @@ public:
         LOG.debug("######################### CTPTestPush #########################");
         CTP_SERVICE->startCTP();
         CTPASSERT_COMMAND(CM_AUTH);
+        CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
         simulateServerResponse(ST_OK);
+        FThread::sleep(500);
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
         simulateServerPush();
         CTPASSERT_NOTIFICATION();
+        CTPASSERT_STATE(CTPService::CTP_STATE_READY);
         CTP_SERVICE->stopCTP();
         
         //Used to kill the receiver thread
         FakeSocket::setConnectionClosed(true);
+        CTPASSERT_STATE(CTPService::CTP_STATE_DISCONNECTED);
         FThread::sleep(2000);
     }
 
