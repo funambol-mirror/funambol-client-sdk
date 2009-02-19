@@ -272,28 +272,28 @@ void CTPConfig::saveCTPConfig() {
         node->setPropertyValue(PROPERTY_CTP_SERVER, "");
         
         StringBuffer value("");
-        value.sprintf("%ld", ctpCmdTimeout);
+        value.sprintf("%d", ctpCmdTimeout);
         node->setPropertyValue(CTP_CMD_TIMEOUT, value.c_str());
         
-        value.sprintf("%ld", ctpConnTimeout);
+        value.sprintf("%d", ctpConnTimeout);
         node->setPropertyValue(CTP_CONN_TIMEOUT, value.c_str());
         
-        value.sprintf("%ld", ctpPort);
+        value.sprintf("%d", ctpPort);
         node->setPropertyValue(CTP_PORT, value.c_str());
         
-        value.sprintf("%ld", ctpReady);
+        value.sprintf("%d", ctpReady);
         node->setPropertyValue(CTP_READY, value.c_str());
         
-        value.sprintf("%ld", ctpRetry);
+        value.sprintf("%d", ctpRetry);
         node->setPropertyValue(CTP_RETRY, value.c_str());
         
-        value.sprintf("%ld", maxCtpRetry);
+        value.sprintf("%d", maxCtpRetry);
         node->setPropertyValue(CTP_MAX_RETRY_TIMEOUT, value.c_str());
         
-        value.sprintf("%ld", notifyTimeout);
+        value.sprintf("%d", notifyTimeout);
         node->setPropertyValue(PROPERTY_NOTIFY_TIMEOUT, value.c_str());
         
-        value.sprintf("%ld", maxCtpRetry);
+        value.sprintf("%d", maxCtpRetry);
         node->setPropertyValue(CTP_MAX_RETRY_TIMEOUT, value.c_str());
         
         /* -- Not used now --
