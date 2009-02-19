@@ -406,11 +406,6 @@ int32_t CTPService::sendMsg(CTPMessage* message) {
         return 1;
     }
 
-    if (!ctpSocket) {
-        LOG.error("sendMsg error: socket not initialized.");
-        return 2;
-    }
-
     int ret = 0;
     // The msg is owned by the CTPMessage and there is no need to delete it
     char* msg = message->toByte();
@@ -423,7 +418,12 @@ int32_t CTPService::sendMsg(CTPMessage* message) {
     LOG.debug("Sending %d bytes:", msgLength);
     hexDump(msg, msgLength);
 
+    if (!ctpSocket) {
+        LOG.error("sendMsg error: socket not initialized.");
+        return 2; 
+    }
     ret = ctpSocket->writeBuffer((const int8_t* const) msg, msgLength);
+    
     if (ret != msgLength) {
         LOG.error("CTPService::sendMsg - send() error (%d bytes sent)", ret);
         return -1;
@@ -466,16 +466,15 @@ CTPMessage* CTPService::receiveStatusMsg() {
     delete receivedMsg;
     receivedMsg = NULL;
 
-    if (!ctpSocket) {
-        LOG.error("receiveStatusMsg error: socket not initialized.");
-        goto finally;
-    }
-    
     //
     // Receive socket message: could be split into more pkg
     //
     while (1) {
         LOG.debug("Waiting for Server message...");
+        if (!ctpSocket) {
+            LOG.error("receiveStatusMsg error: socket not initialized.");
+            goto finally;
+        }
         int pkgLen = ctpSocket->readBuffer((int8_t*)buffer, sizeof(buffer));
 
         if (pkgLen <= 0) {
