@@ -423,8 +423,6 @@ public:
         LOG.debug("######################### CTPStartStopServiceTest #########################");
         CTP_SERVICE->startCTP();
         CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
-        simulateServerResponse(ST_OK);
-        CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
         CTP_SERVICE->stopCTP();
         
         //Used to kill the receiver thread
@@ -475,8 +473,8 @@ public:
         CTPASSERT_COMMAND(CM_AUTH);
         CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
         simulateServerResponse(ST_OK);
-        FThread::sleep(500);
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
+        FThread::sleep(500);
         simulateServerPush();
         CTPASSERT_NOTIFICATION();
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
