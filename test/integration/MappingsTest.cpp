@@ -120,7 +120,7 @@ MappingsTest::MappingsTest() {
 DMTClientConfig* getConfiguration(const char* name) {
     
     const char *serverUrl = getenv("CLIENT_TEST_SERVER_URL");
-    const char *username = getenv("CLIENT_TEST_USARNAME");
+    const char *username = getenv("CLIENT_TEST_USERNAME");
     const char *password = getenv("CLIENT_TEST_PASSWORD");
     
     PlatformAdapter::init(name, true);
