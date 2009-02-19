@@ -61,6 +61,9 @@
     
 #include "client/ConfigSyncSource.h"
 
+#include "spdm/DMTree.h"
+#include "spdm/ManagementNode.h"
+
 #define SOURCE_CONFIG_NAME "config"
 #define CONTEXT "funambol_configSyncSourceIntegration"
 //#define CONTEXT "funambol_mappings_first"
@@ -139,6 +142,13 @@ DMTClientConfig* getConf(const char* name) {
     return config;
 }
 
+void setpropertyconfig(const char* prop, const char* value){
+    DMTree tree(CONTEXT);
+    ManagementNode* node = tree.getNode(prop);
+    node->setPropertyValue(value, "");
+    delete node;
+}
+
 void ConfigSyncSourceTest::testConfigSource() {
    // create the first configuration
     DMTClientConfig* config1 = getConf(CONTEXT);
@@ -158,7 +168,13 @@ void ConfigSyncSourceTest::testConfigSource() {
     properties.add(filterstatus);
     properties.add(emailaddress);
     properties.add(displayname);
-    //source.setConfigProperties(properties);
+    source.setConfigProperties(properties);
+
+    
+    setpropertyconfig("Push","Status");
+    setpropertyconfig("Email","FilterStatus");
+    setpropertyconfig("Email","Address");
+    setpropertyconfig("Email","DisplayName");
 
     SyncSource* sources[2];
     sources[0] = &source;
