@@ -294,7 +294,7 @@ void AccessConfig::setSyncURL(const char* v) {
 
             set(&syncURL, dest);
 
-            delete dest;
+            delete [] dest;
     }
 
     dirty |= DIRTY_SYNC_URL;
