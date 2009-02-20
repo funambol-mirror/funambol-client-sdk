@@ -89,8 +89,9 @@ private:
         DMTree tree(APPLICATIONURI);
         ManagementNode* node = tree.getNode("Email");
         char* value = node->readPropertyValue("Address");
-
+        delete node;
         CPPUNIT_ASSERT((strcmp(VALUE,value)==0));
+        delete [] value; 
 
     }
     //test te getFirstItem. We pass all the values into the properties ArrayList
@@ -104,10 +105,12 @@ private:
         properties.add(emailaddress);
         source.setConfigProperties(properties);
 
-        source.getAllItemList();
+        Enumeration* val = source.getAllItemList();
         SyncItem* value = source.getFirstItem();
         StringBuffer valuedata((const char*)value->getData(),value->getDataSize());
         CPPUNIT_ASSERT(valuedata == VALUE);
+	delete val;
+	delete value;
     }
     //Test the update of the syncItem. In the ConfigSyncSource the value in not
     //modified but inserted
@@ -122,9 +125,9 @@ private:
         DMTree tree(APPLICATIONURI);
         ManagementNode* node = tree.getNode("Email");
         char* value = node->readPropertyValue("Address");
-
+	delete node;
         CPPUNIT_ASSERT((strcmp(VALUEMOD,value)==0));
-        
+        delete [] value;
     }
 private:
     DMTClientConfig* config;
