@@ -468,13 +468,29 @@ public:
     }
 
     void CTPTestPush() {
+        
         LOG.debug("######################### CTPTestPush #########################");
         CTP_SERVICE->startCTP();
         CTPASSERT_COMMAND(CM_AUTH);
         CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
         simulateServerResponse(ST_OK);
+        
+        //Wait CTP_STATE_READY state after auth [OK]
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
-        FThread::sleep(500);
+        
+        //Wait CTP_STATE_WAITING_RESPONSE for heartbeat [READY]
+        int timeout = 3000;
+        while(CTP_SERVICE->getCtpState() != CTPService::CTP_STATE_WAITING_RESPONSE ) {
+            FThread::sleep(100); timeout -= 100;
+            if(timeout < 0)  break;
+        }
+        
+        //Wait CTP_STATE_READY state after [OK] msg
+        timeout = 3000;
+        while(CTP_SERVICE->getCtpState() != CTPService::CTP_STATE_READY ) {
+            FThread::sleep(100); timeout -= 100;
+            if(timeout < 0)  break;
+        }
         simulateServerPush();
         CTPASSERT_NOTIFICATION();
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
