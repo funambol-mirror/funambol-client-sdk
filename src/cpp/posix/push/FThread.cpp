@@ -50,6 +50,7 @@ FThread::FThread() : terminate(false),
 }
 
 FThread::~FThread() {
+    pthread_detach( pthread );
 }
 
 void FThread::start( FThread::Priority priority ) {

@@ -118,6 +118,10 @@ const StringBuffer& FSocket::peerAddress() const {
 }
 
 void FSocket::close() {
+    if(customSocket) {
+        customSocket->close();
+        customSocket = NULL;
+    }
     if ( isValid() )
         closesocket(winSocket);
 }

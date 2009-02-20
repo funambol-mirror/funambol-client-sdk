@@ -80,12 +80,15 @@ USE_NAMESPACE
  */
 class FakeSocket : public FSocket {
 
-public:
-    
-/***************************** FSOCKET METHODS ********************************/
-    
+private:
+
     FakeSocket() { }
     ~FakeSocket() { }
+
+    
+/***************************** FSOCKET METHODS ********************************/
+
+public:
 
     /** FSocket createSocket */
     static FSocket* createSocket(const StringBuffer& peer, int32_t port) {
@@ -255,10 +258,8 @@ private:
     /** Input/Output buffers */
     static char* input_socket_buffer;
     static int   input_socket_buffer_len;
-
     static char* output_socket_buffer;
     static int   output_socket_buffer_len;
-    
     static bool  connectionClosed;
 };
 
@@ -266,7 +267,6 @@ char*   FakeSocket::input_socket_buffer;
 int     FakeSocket::input_socket_buffer_len;
 char*   FakeSocket::output_socket_buffer;
 int     FakeSocket::output_socket_buffer_len;
-
 bool    FakeSocket::connectionClosed;
 
 
@@ -523,13 +523,14 @@ public:
             // assert credentials
             //
             // Create the expected auth message
-            CTPMessage authMsg = getAuthMessage();
-            char* authbuffer = authMsg.toByte(); 
-            int   authbuffer_len = authMsg.getBufferLength();
+            CTPMessage* authMsg = getAuthMessage();
+            char* authbuffer = authMsg->toByte(); 
+            int   authbuffer_len = authMsg->getBufferLength();
             CPPUNIT_ASSERT_EQUAL(len, authbuffer_len);
             for(int i=0; i<len; i++) {
                 CPPUNIT_ASSERT_EQUAL(authbuffer[i], buffer[i]);
             }
+            delete authMsg; authMsg = NULL;
         }
     }
 
@@ -635,28 +636,28 @@ public:
 private:
 
     /* Format the authentication message from client defaults */
-    CTPMessage getAuthMessage() {
+    CTPMessage* getAuthMessage() {
         
-        CTPMessage authMsg;
-        authMsg.setGenericCommand(CM_AUTH);
-        authMsg.setProtocolVersion(CTP_PROTOCOL_VERSION);
+        CTPMessage* authMsg = new CTPMessage();
+        authMsg->setGenericCommand(CM_AUTH);
+        authMsg->setProtocolVersion(CTP_PROTOCOL_VERSION);
 
         CTPParam devId;
         devId.setParamCode(P_DEVID);
         devId.setValue(TEST_DEVID, (int32_t)strlen(TEST_DEVID));
-        authMsg.addParam(&devId);
+        authMsg->addParam(&devId);
 
         CTPParam username;
         username.setParamCode(P_USERNAME);
         username.setValue(TEST_USERNAME, (int32_t)strlen(TEST_USERNAME));
-        authMsg.addParam(&username);
+        authMsg->addParam(&username);
 
         CTPParam cred;
         cred.setParamCode(P_CRED);
         StringBuffer credentials = MD5CredentialData(TEST_USERNAME, 
             TEST_PASSWORD, CTP_SERVICE->getConfig()->getCtpNonce());
         cred.setValue(credentials.c_str(), credentials.length());
-        authMsg.addParam(&cred);
+        authMsg->addParam(&cred);
 
         return authMsg;
     }
