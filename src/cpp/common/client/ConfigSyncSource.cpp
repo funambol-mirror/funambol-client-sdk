@@ -150,10 +150,12 @@ Enumeration* ConfigSyncSource::getAllItemList() {
     StringBuffer value;
 	int keysListSize = keysList.size();
     for(int i = 0; i< keysListSize; i++){
-		value = readItemContent(((StringBuffer*)keysList.get(i))->c_str(), &size);
+		char* content = readItemContent(((StringBuffer*)keysList.get(i))->c_str(), &size);
+        value = content;
         if (!value.empty()) {
             itemsList.add(value);
         }
+        delete [] content;  content = NULL;
 	}
 
     // Collect all local items (their keys)
