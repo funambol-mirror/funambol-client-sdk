@@ -83,7 +83,10 @@ class FakeSocket : public FSocket {
 private:
 
     FakeSocket() { }
-    ~FakeSocket() { }
+    
+    ~FakeSocket() { 
+        close();
+    }
 
     
 /***************************** FSOCKET METHODS ********************************/
@@ -227,10 +230,15 @@ private:
 
     /** Create a string buffer */
     static char* createBuffer(char* buffer, int len) {
-        char* s = 0;
-        s = (char *)realloc(s, len * sizeof(char) );
-        memcpy(s, buffer, len);
-        return s;
+        if(len>0) {
+            char* s = 0;
+            s = (char *)realloc(s, len * sizeof(char) );
+            memcpy(s, buffer, len);
+            return s;
+        }
+        else {
+            return NULL;
+        }
     }
 
     /** Delete a string buffer */
@@ -285,7 +293,6 @@ class CTPServiceTest : public CppUnit::TestFixture, public PushListener {
     CPPUNIT_TEST(CTPByeMessageTest);
     CPPUNIT_TEST(CTPConnectionTest);
     CPPUNIT_TEST(CTPAuthenticationTest);    
-    CPPUNIT_TEST(CTPStartStopServiceTest);
     CPPUNIT_TEST(CTPAuthenticationFailTest1);
     CPPUNIT_TEST(CTPAuthenticationFailTest2);
     CPPUNIT_TEST(CTPTestPush);
@@ -417,18 +424,6 @@ public:
         simulateServerResponse(ST_OK);
         CTP_SERVICE->receiveStatusMsg();
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
-    }
-
-    void CTPStartStopServiceTest() {
-        LOG.debug("######################### CTPStartStopServiceTest #########################");
-        CTP_SERVICE->startCTP();
-        CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
-        CTP_SERVICE->stopCTP();
-        
-        //Used to kill the receiver thread
-        FakeSocket::setConnectionClosed(true);
-        CTPASSERT_STATE(CTPService::CTP_STATE_DISCONNECTED);
-        FThread::sleep(2000);
     }
 
     /* Simulate auth error only one time */
@@ -654,8 +649,11 @@ private:
 
         CTPParam cred;
         cred.setParamCode(P_CRED);
-        StringBuffer credentials = MD5CredentialData(TEST_USERNAME, 
-            TEST_PASSWORD, CTP_SERVICE->getConfig()->getCtpNonce());
+        char* content = MD5CredentialData(TEST_USERNAME, 
+                                       TEST_PASSWORD, CTP_SERVICE->getConfig()->getCtpNonce());
+        StringBuffer credentials = content;
+        delete [] content; content = NULL;
+        
         cred.setValue(credentials.c_str(), credentials.length());
         authMsg->addParam(&cred);
 
