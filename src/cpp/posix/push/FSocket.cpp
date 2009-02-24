@@ -41,8 +41,6 @@
 
 USE_NAMESPACE
 
-StringBuffer FSocket::lIP;
-
 FSocket::FSocket() : unixSock ( -1 )
 {
     memset ( &unixAddr, 0, sizeof ( unixAddr ) );
@@ -131,19 +129,9 @@ const StringBuffer& FSocket::peerAddress() const {
     return pAddress;
 }
 
-
 void FSocket::close() {
-    
-    if(customSocket) {
-        customSocket->close();
-        customSocket = NULL;
-    }
     if ( isValid() )
         ::close ( unixSock );
-}
-
-const StringBuffer& FSocket::localIP() {
-    return lIP;
 }
 
 FSocket* FSocket::customSocket;

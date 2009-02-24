@@ -283,8 +283,7 @@ int32_t CTPService::closeConnection() {
 
     int ret = 0;
     if (ctpSocket) {
-        ctpSocket->close();
-        ctpSocket = NULL;
+        delete ctpSocket; ctpSocket = NULL;
         LOG.debug("Socket connection closed");
     }
 

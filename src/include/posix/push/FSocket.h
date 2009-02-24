@@ -116,24 +116,9 @@ public:
      */
     static void setSocket(FSocket* custom) { customSocket = custom; }
     
-
-    // These methods are misc utilities
-
-    /**
-     Returns a string representing the local address in the form:
-     “address” where address can be the numerical IP or the symbolic
-     name. If the address cannot be retrieved, then the returned string is
-     empty.
-     If the device is not connected to the network then this method returns
-     an empty string and it does not attempt to set up a network
-     connection.
-    */
-    static const StringBuffer& localIP();
-
 private:
     StringBuffer lAddress;
     StringBuffer pAddress;
-    static StringBuffer lIP;
 
 private:
     bool isValid();
