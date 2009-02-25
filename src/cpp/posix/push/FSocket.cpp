@@ -121,14 +121,6 @@ int32_t FSocket::readBuffer(int8_t* buffer, int32_t maxLen)
     }
 }
 
-const StringBuffer& FSocket::address() const {
-    return lAddress;
-}
-
-const StringBuffer& FSocket::peerAddress() const {
-    return pAddress;
-}
-
 void FSocket::close() {
     if ( isValid() )
         ::close ( unixSock );

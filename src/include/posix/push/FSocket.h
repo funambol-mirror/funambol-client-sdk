@@ -64,19 +64,6 @@ public:
     virtual ~FSocket();
 
     /**
-     Returns the local address associates to this socket in the form
-     “address:port” where address can be either the numerical IP or the
-     symbolic name
-    */
-    const StringBuffer& address() const;
-    /**
-     Returns the local address associates to this socket in the form
-     “address:port” where address can be either the numerical IP or the
-     symbolic name
-    */
-    const StringBuffer& peerAddress() const;
-
-    /**
      Reads all available bytes from the socket, up to the maximum specified 
      by the second parameter. This call is synchronous and it blocks the
      caller until something is available or the max length is reached.
@@ -115,16 +102,12 @@ public:
      Set a custom FSocket used instead of the platform dependent one
      */
     static void setSocket(FSocket* custom) { customSocket = custom; }
-    
-private:
-    StringBuffer lAddress;
-    StringBuffer pAddress;
+
 
 private:
     bool isValid();
     static FSocket* customSocket;
 
-private:
     int unixSock;
     sockaddr_in unixAddr;
 

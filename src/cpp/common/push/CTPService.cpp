@@ -64,6 +64,15 @@ CTPService* CTPService::getInstance() {
     return pinstance;
 }
 
+/**
+ * Method to delete the sole instance of CTPService
+ */
+void CTPService::dispose() {
+    if (pinstance) {
+        delete pinstance; pinstance = NULL;
+    }
+}
+
 
 /**
  * Constructor: reads the CTPConfig from registry and init members.
