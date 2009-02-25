@@ -35,7 +35,6 @@
 
 #include "base/globalsdef.h"
 #include "base/fscapi.h"
-#include "base/Log.h"
 #include "base/adapter/PlatformAdapter.h"
 #include "spds/DefaultConfigFactory.h"
 
@@ -127,7 +126,6 @@ public:
             // there is still package segments to read
             input_socket_buffer += readBytes;
         }
-        LOG.debug("FakeSocket - reading buffer data");
         hexDump((char*)buffer, readBytes);
 
         return readBytes;
@@ -136,7 +134,6 @@ public:
     /** FSocket writeBuffer */
     int32_t writeBuffer(const int8_t* const buffer, int32_t len) {
         
-        LOG.debug("FakeSocket - writing buffer");
         hexDump((char*)buffer, len);
 
         /******* Catch the heartbeat [READY] messages ********/
@@ -259,7 +256,6 @@ private:
         }
         tmp[pos-1] = ']';
         tmp[pos] = 0;
-        LOG.debug("FakeSocket - %s", tmp);
         delete [] tmp;
     }
 
@@ -307,17 +303,13 @@ public:
      */
     void setUp() {
         
-        LOG.setLevel(LOG_LEVEL_DEBUG);
-        
         //Initialize test configuration
         initConfig();
 
         //Register push listener
-        LOG.debug("CTPServiceTest - Register the push listener");
         CTP_SERVICE->registerPushListener(*this);
 
         //Set the custom socket as a fake socket
-        LOG.debug("CTPServiceTest - Set a fake FSocket");
         FSocket::setSocket(FakeSocket::createSocket(CTP_SERVICE->getConfig()->getUrlTo(), 
                                                     CTP_SERVICE->getConfig()->getCtpPort()));
         //Reset socket buffers
@@ -338,7 +330,6 @@ public:
         PlatformAdapter::init(CTP_TEST_APPLICATION_URI, true);
 
         // Set up a default test configuration
-        LOG.debug("CTPServiceTest - Initializing the client configuration");
         DMTClientConfig config;
         config.setClientDefaults();
         
@@ -354,7 +345,6 @@ public:
         config.save();
         
         // Initialize test CTPConfig
-        LOG.debug("CTPServiceTest - Initializing the ctp configuration");
         CTPConfig* ctpConfig = CTP_SERVICE->getConfig();
         ctpConfig->setUrlTo         (CTP_URL_TO);
         ctpConfig->setCtpCmdTimeout (CTP_CMD_TIMEOUT);
@@ -370,7 +360,6 @@ public:
 /********************************** TEST CASES *********************************/
 
     void CTPConfigTest() {
-        LOG.debug("######################### CTPConfigTest #########################");
         CPPUNIT_ASSERT(strcmp(CTP_SERVICE->getConfig()->getUsername(), TEST_USERNAME) == 0);
         CPPUNIT_ASSERT(strcmp(CTP_SERVICE->getConfig()->getPassword(), TEST_PASSWORD) == 0);
         CPPUNIT_ASSERT(strcmp(CTP_SERVICE->getConfig()->getDevID(), TEST_DEVID) == 0);
@@ -378,7 +367,6 @@ public:
     }
 
     void CTPConnectionTest() {
-        LOG.debug("######################### CTPConnectionTest #########################");
         // Open connection with the server
         CTP_SERVICE->openConnection();
         CPPUNIT_ASSERT_EQUAL(CTP_SERVICE->getCtpState(), CTPService::CTP_STATE_CONNECTED);
@@ -389,7 +377,6 @@ public:
     }
 
     void CTPReadyMessageTest() {
-        LOG.debug("######################### CTPReadyMessageTest #########################");
         // Ensure there's an opened connection with the server
         CTP_SERVICE->openConnection();
         
@@ -398,20 +385,24 @@ public:
         
         // The READY command is catched by the Socket (see FakeSocket writeBuffer method)
         //CTPASSERT_COMMAND(CM_READY);
+        
+        // Close connection
+        CTP_SERVICE->closeConnection();
     }
 
     void CTPByeMessageTest() {
-        LOG.debug("######################### CTPByeMessageTest #########################");
         // Ensure there's an opened connection with the server
         CTP_SERVICE->openConnection();
 
         // Send bye message 
         CTP_SERVICE->sendByeMsg();
         CTPASSERT_COMMAND(CM_BYE);
+        
+        // Close connection
+        CTP_SERVICE->closeConnection();
     }
 
     void CTPAuthenticationTest() {
-        LOG.debug("######################### CTPAuthenticationTest #########################");
         // Ensure there's an opened connection with the server
         CTP_SERVICE->openConnection();
 
@@ -424,11 +415,13 @@ public:
         simulateServerResponse(ST_OK);
         CTP_SERVICE->receiveStatusMsg();
         CTPASSERT_STATE(CTPService::CTP_STATE_READY);
+        
+        // Close connection
+        CTP_SERVICE->closeConnection();
     }
 
     /* Simulate auth error only one time */
     void CTPAuthenticationFailTest1() {
-        LOG.debug("######################### CTPAuthenticationFailTest1 #########################");
         CTP_SERVICE->startCTP();
         CTPASSERT_COMMAND(CM_AUTH);
         CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
@@ -447,7 +440,6 @@ public:
 
     /* Simulate auth error two times */
     void CTPAuthenticationFailTest2() {
-        LOG.debug("######################### CTPAuthenticationFailTest2 #########################");
         CTP_SERVICE->startCTP();
         CTPASSERT_COMMAND(CM_AUTH);
         CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);
@@ -463,8 +455,6 @@ public:
     }
 
     void CTPTestPush() {
-        
-        LOG.debug("######################### CTPTestPush #########################");
         CTP_SERVICE->startCTP();
         CTPASSERT_COMMAND(CM_AUTH);
         CTPASSERT_STATE(CTPService::CTP_STATE_WAITING_RESPONSE);

@@ -58,6 +58,7 @@
 
 #include "base/globalsdef.h"
 #include <base/Log.h>
+#include "push/CTPService.h"
 
 USE_NAMESPACE
 
@@ -245,6 +246,8 @@ int main(int argc, char* argv[])
               runner.run(argv[test], false, true, false);
           }
       }
+      // Dispose the singleton objects
+      CTPService::dispose();
 
       // Return error code 1 if the one of test failed.
       return syncListener.hasFailed() ? 1 : 0;
