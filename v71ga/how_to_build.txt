@@ -1,0 +1,27 @@
+How to build the Funambol JSE SDK
+--------------------------------------------------------------
+
+This file contains the instructions to build the Funambol JSE SDK package.
+The directory that contains this document and all source code will be referred
+as <SOURCE_CODE>.
+
+1. To build the Funambol JSE SDK, you need to download and install the following:
+
+     - JDK 1.5
+     - Maven 2.0.9
+
+2. Setting up Maven
+
+       You need to configure your maven setting in order to use:
+           http://m2.funambol.org/repositories/artifacts
+       as artifacts and plug-ins repository (see http://maven.apache.org/settings.html).
+
+3.  To build the package edition:
+
+    1) Go to the folder: '<SOURCE_CODE>'
+    2) Open a shell
+    3) Type:
+       - 'mvn package': to package the sdk
+       - 'mvn install': to install the package in your local maven repository.
+
+    You will find the packages in the directory '<SOURCE_CODE>/target'.
