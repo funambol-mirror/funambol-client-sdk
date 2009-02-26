@@ -48,6 +48,8 @@ import com.funambol.util.ConsoleAppender;
 
 import com.funambol.util.FunBasicTest;
 import j2meunit.framework.*;
+import java.util.Calendar;
+import java.util.Date;
 
 public class VCardParserTest extends FunBasicTest {
 
@@ -62,10 +64,10 @@ public class VCardParserTest extends FunBasicTest {
         
         switch(testNumber) {
             case 0:
-                testParserBlindly();
+                testVCard1();
                 break;
             case 1:
-                testVCard1();
+                testParserBlindly();
                 break;
             default:
                 break;
@@ -92,6 +94,13 @@ public class VCardParserTest extends FunBasicTest {
         String otherTel = "678901";
         String org      = "Data Services";
         String note     = "Carla's friend";
+        String birthday = "1999-11-15";
+        Calendar birthdate = Calendar.getInstance();
+        birthdate.set(Calendar.YEAR,1999);
+        birthdate.set(Calendar.MONTH,Calendar.NOVEMBER);
+        birthdate.set(Calendar.DAY_OF_MONTH,15);
+
+
 
         String name[] = new String[10];
         name[Contact.NAME_FAMILY] = "Hall";
@@ -99,20 +108,26 @@ public class VCardParserTest extends FunBasicTest {
         name[Contact.NAME_PREFIX] = "Miss";
 
         String homeAddress[] = new String[20];
+        homeAddress[Contact.ADDR_EXTRA] = "Extended home";
         homeAddress[Contact.ADDR_STREET] = "45, Michigan Street";
         homeAddress[Contact.ADDR_REGION] = "Georgia";
         homeAddress[Contact.ADDR_POSTALCODE] = "23456";
         homeAddress[Contact.ADDR_COUNTRY] = "USA";
         homeAddress[Contact.ADDR_LOCALITY] = "Atlanta";
+        
 
         String workAddress[] = new String[20];
+        workAddress[Contact.ADDR_EXTRA] = "Extended work";
         workAddress[Contact.ADDR_STREET] = "1, Main Street";
         workAddress[Contact.ADDR_REGION] = "Georgia";
         workAddress[Contact.ADDR_POSTALCODE] = "23456";
         workAddress[Contact.ADDR_COUNTRY] = "USA";
         workAddress[Contact.ADDR_LOCALITY] = "Atlanta";
+        
 
-        String vcard = createVCard(name, displayName, title, email, web,
+
+
+        String vcard = createVCard(name, displayName, title, birthday, email, web,
                                    workTel, faxTel, pagerTel, cellTel, homeTel, otherTel,
                                    org, homeAddress, workAddress, note, "");
 
@@ -130,9 +145,9 @@ public class VCardParserTest extends FunBasicTest {
 
         // Now check the Contact fields
         String[] cName = contact.getStringArray(Contact.NAME, 0);
-        assertTrue(name[Contact.NAME_FAMILY].equals(cName[Contact.NAME_FAMILY]));
-        assertTrue(name[Contact.NAME_GIVEN].equals(cName[Contact.NAME_GIVEN]));
-        assertTrue(name[Contact.NAME_PREFIX].equals(cName[Contact.NAME_PREFIX]));
+        assertEquals("name family",name[Contact.NAME_FAMILY],cName[Contact.NAME_FAMILY]);
+        assertEquals("name given",name[Contact.NAME_GIVEN],cName[Contact.NAME_GIVEN]);
+        assertEquals("name prefix",name[Contact.NAME_PREFIX],cName[Contact.NAME_PREFIX]);
 
         String[] cWorkAddress = null;
         String[] cHomeAddress = null;
@@ -148,24 +163,34 @@ public class VCardParserTest extends FunBasicTest {
         }
 
         assertTrue(cHomeAddress != null);
-        assertTrue(homeAddress[Contact.ADDR_STREET].equals(cHomeAddress[Contact.ADDR_STREET]));
-        assertTrue(homeAddress[Contact.ADDR_REGION].equals(cHomeAddress[Contact.ADDR_REGION]));
-        assertTrue(homeAddress[Contact.ADDR_POSTALCODE].equals(cHomeAddress[Contact.ADDR_POSTALCODE]));
-        assertTrue(homeAddress[Contact.ADDR_COUNTRY].equals(cHomeAddress[Contact.ADDR_COUNTRY]));
-        assertTrue(homeAddress[Contact.ADDR_LOCALITY].equals(cHomeAddress[Contact.ADDR_LOCALITY]));
+        assertEquals("Home addr street - ",homeAddress[Contact.ADDR_STREET],cHomeAddress[Contact.ADDR_STREET]);
+        assertEquals("Home addr region - ",homeAddress[Contact.ADDR_REGION],cHomeAddress[Contact.ADDR_REGION]);
+        assertEquals("Home addr postalcode - ",homeAddress[Contact.ADDR_POSTALCODE],cHomeAddress[Contact.ADDR_POSTALCODE]);
+        assertEquals("Home addr country - ", homeAddress[Contact.ADDR_COUNTRY],cHomeAddress[Contact.ADDR_COUNTRY]);
+        assertEquals("Home addr locality - ",homeAddress[Contact.ADDR_LOCALITY],cHomeAddress[Contact.ADDR_LOCALITY]);
+        assertEquals("Home addr extra - ",homeAddress[Contact.ADDR_EXTRA],cHomeAddress[Contact.ADDR_EXTRA]);
 
         assertTrue(cWorkAddress != null);
-        assertTrue(workAddress[Contact.ADDR_STREET].equals(cWorkAddress[Contact.ADDR_STREET]));
-        assertTrue(workAddress[Contact.ADDR_REGION].equals(cWorkAddress[Contact.ADDR_REGION]));
-        assertTrue(workAddress[Contact.ADDR_POSTALCODE].equals(cWorkAddress[Contact.ADDR_POSTALCODE]));
-        assertTrue(workAddress[Contact.ADDR_COUNTRY].equals(cWorkAddress[Contact.ADDR_COUNTRY]));
-        assertTrue(workAddress[Contact.ADDR_LOCALITY].equals(cWorkAddress[Contact.ADDR_LOCALITY]));
+        assertEquals("Home addr street - ",workAddress[Contact.ADDR_STREET],cWorkAddress[Contact.ADDR_STREET]);
+        assertEquals("Home addr region - ",workAddress[Contact.ADDR_REGION],cWorkAddress[Contact.ADDR_REGION]);
+        assertEquals("Home addr postalcode - ",workAddress[Contact.ADDR_POSTALCODE],cWorkAddress[Contact.ADDR_POSTALCODE]);
+        assertEquals("Home addr country - ",workAddress[Contact.ADDR_COUNTRY],cWorkAddress[Contact.ADDR_COUNTRY]);
+        assertEquals("Home addr locality - ",workAddress[Contact.ADDR_LOCALITY],cWorkAddress[Contact.ADDR_LOCALITY]);
+        assertEquals("Home addr extra - ",workAddress[Contact.ADDR_EXTRA],cWorkAddress[Contact.ADDR_EXTRA]);
 
-        assertTrue(title.equals(contact.getString(Contact.TITLE, 0)));
-        assertTrue(web.equals(contact.getString(Contact.URL, 0)));
-        assertTrue(org.equals(contact.getString(Contact.ORG, 0)));
-        assertTrue(note.equals(contact.getString(Contact.NOTE, 0)));
+        long contactlong = contact.getDate(Contact.BIRTHDAY, 0);
+        Calendar contactBirth = Calendar.getInstance();
+        contactBirth.setTime(new Date(contactlong));
+        
+        assertEquals("birthday - year",birthdate.get(Calendar.YEAR),contactBirth.get(Calendar.YEAR));
+        assertEquals("birthday - month",birthdate.get(Calendar.MONTH),contactBirth.get(Calendar.MONTH));
+        assertEquals("birthday - day",birthdate.get(Calendar.DAY_OF_MONTH),contactBirth.get(Calendar.DAY_OF_MONTH));
 
+        assertEquals("title - ",title,contact.getString(Contact.TITLE, 0));
+        assertEquals("web - ",web,contact.getString(Contact.URL, 0));
+        assertEquals("org - ",org,contact.getString(Contact.ORG, 0));
+        assertEquals("note - ",note,contact.getString(Contact.NOTE, 0));
+        
         // Check Phone numbers
         int phonesChecked = 0;
         for (int i = 0; i < contact.countValues(Contact.TEL); i++)
@@ -174,36 +199,38 @@ public class VCardParserTest extends FunBasicTest {
             final int type = contact.getAttributes(Contact.TEL, i);
             switch (type) {
                 case Contact.ATTR_HOME:
-                    assertTrue(homeTel.equals(value));
+                    assertEquals(homeTel,value);
                     ++phonesChecked;
                     break;
                 case Contact.ATTR_WORK:
-                    assertTrue(workTel.equals(value));
+                    assertEquals(workTel,value);
                     ++phonesChecked;
                     break;
                 case Contact.ATTR_PAGER:
-                    assertTrue(pagerTel.equals(value));
+                    assertEquals(pagerTel,value);
                     ++phonesChecked;
                     break;
                 case Contact.ATTR_FAX:
-                    assertTrue(faxTel.equals(value));
+                    assertEquals(faxTel,value);
                     ++phonesChecked;
                     break;
                 case Contact.ATTR_MOBILE:
-                    assertTrue(cellTel.equals(value));
+                    assertEquals(cellTel,value);
                     ++phonesChecked;
                     break;
                 case Contact.ATTR_OTHER:
-                    assertTrue(otherTel.equals(value));
+                    assertEquals(otherTel,value);
                     ++phonesChecked;
                     break;
             }
         }
-        assertTrue(phonesChecked == 6);
+        
+        assertEquals("phonesChecked",phonesChecked, 6);
+        
         //System.getProperty(FileConnection.dir.photos);
     }
 
-    private String createVCard(String name[], String displayName, String title,
+    private String createVCard(String name[], String displayName, String title, String birthday,
                                String email[], String url, String workTel, String faxTel,
                                String pagerTel, String cellTel, String homeTel,
                                String otherTel, String org, String homeAddress[],
@@ -230,7 +257,7 @@ public class VCardParserTest extends FunBasicTest {
         vcard.append("TEL;VOICE:").append(otherTel).append("\r\n");
 
         vcard.append("ADR;HOME:").append(";");
-        vcard.append(";");
+        vcard.append(homeAddress[Contact.ADDR_EXTRA]).append(";");
         vcard.append(homeAddress[Contact.ADDR_STREET]).append(";");
         vcard.append(homeAddress[Contact.ADDR_LOCALITY]).append(";");
         vcard.append(homeAddress[Contact.ADDR_REGION]).append(";");
@@ -238,13 +265,14 @@ public class VCardParserTest extends FunBasicTest {
         vcard.append(homeAddress[Contact.ADDR_COUNTRY]).append("\r\n");
 
         vcard.append("ADR;WORK:").append(";");
-        vcard.append(";");
+        vcard.append(workAddress[Contact.ADDR_EXTRA]).append(";");
         vcard.append(workAddress[Contact.ADDR_STREET]).append(";");
         vcard.append(workAddress[Contact.ADDR_LOCALITY]).append(";");
         vcard.append(workAddress[Contact.ADDR_REGION]).append(";");
         vcard.append(workAddress[Contact.ADDR_POSTALCODE]).append(";");
         vcard.append(workAddress[Contact.ADDR_COUNTRY]).append("\r\n");
 
+        vcard.append("BDAY:").append(birthday).append("\r\n");
         vcard.append("ORG:").append(org).append("\r\n");
         vcard.append("TITLE:").append(title).append("\r\n");
         vcard.append("NOTE:").append(note).append("\r\n");
