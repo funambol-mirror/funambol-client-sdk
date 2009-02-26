@@ -1,0 +1,18 @@
+This is a subset of the original Algorithm::Diff distribution, added
+here to avoid the external dependency. No other changes were made.
+
+The original sources should always be available from the Comprehensive
+Perl Archive Network (CPAN).  Visit <URL:http://www.perl.com/CPAN/> to
+find a CPAN site near you.
+
+The Algorithm::Diff copyright is as follows:
+
+| Parts Copyright (c) 2000-2004 Ned Konz.  All rights reserved.
+| Parts by Tye McQueen.
+|
+| This program is free software; you can redistribute it and/or modify it
+| under the same terms as Perl.
+
+The content of this directory is distributed under the original license:
+dual-licensed under GPL-2 (../../COPYING) and Larry Wall's "Artistic
+License" (./Artistic).
