@@ -1,0 +1,38 @@
+Funambol J2ME SyncML API Changes Log
+----------------------------------
+2008-11-15
+	- WIFI introduced for Blackberry devices
+	- Connection framework changed
+
+2007-08-10
+Released J2ME client 6.5.0
+
+    - Added SyncListener interface. The SyncManager notifies
+      the interface during synchronization, providing complete
+      information on what is going on.
+    - Extended SyncSource interface to allow retrieving of a synthetic error
+      code and retrival of more information about items to be sent to the server
+      (client can ask for the number of deleted/updated/added items)
+
+2007-07-2 (6.0.11)
+    - Retry on broken connection
+
+2007-06-1 (6.0.10)
+    - Simplified exception scheme
+    - Default User agent changed
+
+2007-05-11 (6.0.8)
+    - Handling of error 503 from server
+
+2007-04-02
+    - syncml parser optimized
+
+2007-02-27
+    - memory optimization
+    - compress http stream
+    - mapping sent for each message
+
+2006-10-27
+    - First import on CVS.
+    - Basic Java ME SyncML implementation
+

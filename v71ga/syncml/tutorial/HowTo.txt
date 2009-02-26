@@ -1,0 +1,119 @@
+How to build a simple sync MIDlet with the Funambol JavaME APIs.
+================================================================
+
+1.  Overview.
+    ---------
+    This Howto will guide you through the steps necessary to create a simple
+MIDlet, which is able to synchronize text files with a SyncML server. The
+sample MIDlet will have also basic editing capabilities, to let you try the
+add and updates from the client.
+
+    It is highly recommended that you have read the Funambol APIs design
+document and you have a basic understanding of what the OMA-DS (SyncML)
+protocol is, before going through this howto.
+
+    It is also assumed that the reader is already confident with JavaME and is
+able to write a simple MIDlet. If this is not the case, you can find a valid
+tutorial here: http://.....
+
+
+2.  What you need to start.
+    -----------------------
+
+    1.  Sun WTK:
+        the sample has been tested with WTK version 2.5, but also earlier
+        versions should work.
+        http://.....
+
+    2.  Ant and Antenna:
+        the Funambol APIs and the samples comes with an ANTenna script, so you
+        need it to follow this howto.
+        Antenna is an extension to Apache Ant made to make the MIDlet
+        development easier.
+        http://www.apache.org/....
+        http://antenna.home/.....
+
+    3.  Funambol Common API:
+        for the basic Logging and Serialization facilities.
+        http://..................
+
+    4.  Funambol SyncML API:
+        this is the Funambol SyncML SDK.
+        http://................
+
+
+3.  Design of the application.
+    --------------------------
+    The application we are going to write is a simple but non-trivial MIDlet,
+    which is able to synchronize small text files with a SyncML server. Using
+    the Funambol server, this means to sync with the briefcase SyncSource, and
+    thus finding the files on the server's file system under:
+
+        <Funambol_home>/ds-server/db/briefcase
+
+    you can create new files here (smaller than 2k) and see them going to the
+    mobile device, or, using the simple editor contained in the MIDlet, create
+    or change the files on the device and see them in the server's file
+    system. You can also use two different devices to sync the notes between 
+    them.
+
+    To achieve these goals, our application will need some UI panels:
+
+    . MainScreen: which is a simple list where the messages related to the
+      current status (number of local items, sync progress) will be written.
+    . ListScreen: where all the notes currently on the device will be
+      listed.
+    . EditScreen: where the user can see or change the content of a note.
+
+    These classes are grouped in the sample.view package.
+    The text notes are stored locally in the device RMS, in one record store,
+    one record for each note, using the class ObjectStore from the Funambol
+    Common library (see com.funambol.util.ObjectStore in the Javadoc).
+    The storage-related classes of the sample are in the package sample.db.
+    They are:
+
+    . TextNote: this class represent the note, with an index to the RMS
+      and the content.
+    . NotesStore: this class provide the interface toward the ObjectStore,
+      so that can be easily re-implemented to access another storage backend.
+
+    To start the sync and to handle the interaction with the sync engine, we
+    need:
+
+    . SyncTask: this class is responsible to start the sync in a separate
+      thread, and to update the UI with the sync progress.
+    . SyncEvent: this class is used to let the SyncTask update the UI.
+    . NotesSyncSource: this is the implementation of the SyncSource interface.
+      See below for a detailed explanation of this class.
+    
+    These classes are grouped in the sample.sync package. The rest of this
+    HowTo will focus on this package, because it is the key interface with
+    the Funambol APIs.
+
+
+4. Building the sync client classes.
+   --------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+3.  Building the APIs
+    -----------------
+    This step is not strictly necessary, since the sample build script will
+    build the API sources directly into the MIDlet (in Javame, you can't put
+    a Jar file inside a MIDlet), but is more a verification of your building
+    environment.
+    [.........]
+
+
+
+
+
