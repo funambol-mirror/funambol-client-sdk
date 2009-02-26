@@ -67,7 +67,7 @@ public abstract class FunBasicTest extends TestCase {
     }
 
     public void fail(String message) {
-        Log.error("******* FAILURE DETECTED ********** " + name);
+        Log.error("******* FAILURE DETECTED ********** " + name + " - " + message);
     }
 }
 
