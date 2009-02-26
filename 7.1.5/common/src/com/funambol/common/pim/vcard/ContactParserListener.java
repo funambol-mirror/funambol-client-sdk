@@ -38,6 +38,7 @@ package com.funambol.common.pim.vcard;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Calendar;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.ByteArrayOutputStream;
@@ -378,7 +379,7 @@ public class ContactParserListener implements VCardSyntaxParserListener
         flist.addValue(content);
 
         int pos;  // Position in tlist (i.e. position of the current value field)
-        String street, locality, region, postalcode, country;
+        String extended_addr, street, locality, region, postalcode, country;
 
         // Business Address
         String arrayField[] = new String[7];
@@ -398,12 +399,11 @@ public class ContactParserListener implements VCardSyntaxParserListener
         pos = 1;
         if (flist.size()>pos) {
             text=unfold(flist.getElementAt(pos));
-            text=decode(text,plist.getEncoding(), plist.getCharset());
+            extended_addr=decode(text,plist.getEncoding(), plist.getCharset());
         } else {
-            text="";
+            extended_addr="";
         }
-        // Not supported
-
+       
         // Street
         pos = 2;
         if (flist.size()>pos) {
@@ -448,7 +448,8 @@ public class ContactParserListener implements VCardSyntaxParserListener
         } else {
             country="";
         }
-
+        
+        arrayField[Contact.ADDR_EXTRA] = extended_addr;
         arrayField[Contact.ADDR_STREET] = street;
         arrayField[Contact.ADDR_LOCALITY] = locality;
         arrayField[Contact.ADDR_REGION] = region;
@@ -459,13 +460,31 @@ public class ContactParserListener implements VCardSyntaxParserListener
             contact.addStringArray(Contact.ADDR, Contact.ATTR_WORK,arrayField);
         } else if (plist.containsKey("HOME")) {
             contact.addStringArray(Contact.ADDR, Contact.ATTR_HOME,arrayField);
-        }
+        } 
     }
 
     public void setBirthday(String content, ParamList plist,
                             Token group) throws ParseException {
-        // Not supported
-        Log.debug("Setting Birthday skipped");
+        Log.debug("Setting Birthday");
+        
+        PIMList list = contact.getPIMList();
+        if (list.isSupportedField(Contact.BIRTHDAY))
+        {
+            if(content.length()==10){
+                String year = content.substring(0, 4);
+                String month = content.substring(5, 7);
+                String day = content.substring(8, 10);
+                Calendar date = Calendar.getInstance();
+                date.set(Calendar.YEAR, Integer.parseInt(year));
+                date.set(Calendar.MONTH, Integer.parseInt(month)-1);
+                date.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
+                contact.addDate(Contact.BIRTHDAY, Contact.ATTR_NONE, date.getTime().getTime());
+            }else if (content.length()>10) {
+                Log.error("Parsing a wrong date format for birthday field :" +content);
+                throw new ParseException("wrong date format for birthday field :" +content);
+            }
+        }
+        
     }
 
     public void setLabel(String content, ParamList plist,

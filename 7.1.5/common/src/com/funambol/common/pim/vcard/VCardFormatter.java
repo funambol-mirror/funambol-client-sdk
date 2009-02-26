@@ -39,6 +39,9 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.microedition.pim.Contact;
 import javax.microedition.pim.PIM;
 import javax.microedition.pim.PIMList;
@@ -91,6 +94,7 @@ public class VCardFormatter {
     private static final String PHOTO_TAG      = "PHOTO";
     private static final String CATEGORIES_TAG = "CATEGORIES";
     private static final String VERSION_TAG    = "VERSION";
+    private static final String BIRTHDAY_TAG   = "BDAY";
 
     private static final String DEFAULT_PHOTO_TYPE = "jpeg";
 
@@ -135,6 +139,11 @@ public class VCardFormatter {
         Log.debug("Formatting Address");
         if (list.isSupportedField(Contact.ADDR)) {
             formatAddress(contact, os, allFields);
+        }
+
+        Log.debug("Formatting Birthday");
+        if (list.isSupportedField(Contact.BIRTHDAY)) {
+            formatBirthday(contact, os, allFields);
         }
 
         Log.debug("Formatting Email");
@@ -429,8 +438,12 @@ public class VCardFormatter {
     protected void formatAddress(String address[], String tag, OutputStream os) throws PIMException {
         StringBuffer addr = new StringBuffer();
 
-        addr.append(";");                    // postoffice
-        addr.append(";");                    // extended address
+        addr.append(";");     //postoffice             
+
+        String extendedAddress = escape(address[Contact.ADDR_EXTRA]);
+        if (extendedAddress == null){
+            extendedAddress = "";
+        }
 
         String street = escape(address[Contact.ADDR_STREET]);
         if (street == null) {
@@ -457,6 +470,7 @@ public class VCardFormatter {
             country = "";
         }
 
+        addr.append(extendedAddress).append(";");
         addr.append(street).append(";");
         addr.append(locality).append(";");
         addr.append(region).append(";");
@@ -537,6 +551,39 @@ public class VCardFormatter {
 
         if (allFields || v.length() > 0) {
             formatField(CATEGORIES_TAG, v, os);
+        }
+    }
+
+    protected void formatBirthday(Contact contact, OutputStream os,
+                                    boolean allFields) throws PIMException
+    {
+         String birthDay = "";
+
+
+        if (contact.countValues(Contact.BIRTHDAY) > 0){
+            long birthdayLong  = contact.getDate(Contact.BIRTHDAY, Contact.ATTR_NONE);
+            Date birthDate = new Date (birthdayLong);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(birthDate);
+            StringBuffer value = new StringBuffer();
+
+            value.append(cal.get(Calendar.YEAR)).append("-");
+
+            int monthInt =cal.get(Calendar.MONTH)+1;
+            String month= (monthInt<10 ? "0"+monthInt : ""+monthInt );
+            value.append(month).append("-");
+
+            int dayInt =cal.get(Calendar.DAY_OF_MONTH);
+            String day= (dayInt<10 ? "0"+dayInt : ""+dayInt );
+            value.append(day);
+
+            birthDay = value.toString();
+        }else{
+            birthDay ="0";
+        }
+
+        if (allFields || birthDay.length() > 0) {
+            formatField(BIRTHDAY_TAG, birthDay, os);
         }
     }
 
