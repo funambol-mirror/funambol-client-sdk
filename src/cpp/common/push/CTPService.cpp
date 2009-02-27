@@ -117,6 +117,9 @@ CTPService::~CTPService() {
     delete receivedMsg;
     // Cleanup any running thread
     threadPool.cleanup();
+    if(ctpThread && ctpThread->finished()) {
+        delete ctpThread;   ctpThread = NULL;
+    }
 }
 
 
