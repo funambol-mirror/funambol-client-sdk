@@ -123,6 +123,8 @@ SymbianLog::~SymbianLog() {
     iLogFileName.Close();
     iLogName.Close();
     iRollLogName.Close();
+    fsSession.Close();
+    iSemaphore.Close();
 }
 
 void SymbianLog::setLogPath(const char* configLogPath ) 
