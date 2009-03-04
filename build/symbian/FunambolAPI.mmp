@@ -138,5 +138,3 @@ SOURCE       DESEncoder.cpp DESDecoder.cpp
 
 SOURCEPATH ..\..\src\cpp\symbian\base\adapter
 SOURCE PlatformAdapter.cpp
-
-LIBRARY bafl.lib
