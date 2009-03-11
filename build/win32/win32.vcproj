@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="libfunambol"
 	ProjectGUID="{D279EE74-36FB-4C4C-8F29-04947825C53E}"
 	RootNamespace="win32"
@@ -3260,6 +3260,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\cpp\common\event\SyncItemEvent.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\event\SyncItemListener.cpp"
 					>
 				</File>
 				<File
