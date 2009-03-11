@@ -51,7 +51,7 @@ TestFileSource::TestFileSource(const std::string &id) :
         const char *sourcelist = getenv("CLIENT_TEST_SOURCES");
         const char *server =     getenv("CLIENT_TEST_SERVER");
         const char *serverUrl =  getenv("CLIENT_TEST_SERVER_URL");
-        const char *username =   getenv("CLIENT_TEST_USARNAME");
+        const char *username =   getenv("CLIENT_TEST_USERNAME");
         const char *password =   getenv("CLIENT_TEST_PASSWORD");
     
         /* set up source list */
