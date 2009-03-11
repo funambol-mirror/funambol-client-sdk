@@ -33,53 +33,43 @@
  * the words "Powered by Funambol".
  */
 
-
-#ifndef INCL_SYNC_ITEM_LISTENER
-#define INCL_SYNC_ITEM_LISTENER
-/** @cond DEV */
-
-#include "event/SyncItemEvent.h"
-#include "event/Listener.h"
-#include "base/globalsdef.h"
+#include "base/Log.h"
+#include "event/SyncItemListener.h"
 
 BEGIN_NAMESPACE
 
+void logEvent(const char* msg, SyncItemEvent& event) {
+    LOG.debug("%s: (%s, %s, %s)", msg, event.getItemKey(), event.getSourceName(), event.getSourceURI());
+}
 
-/*
- * Set Listeners for each event in SyncItemEvent
- */
+// listen for the Item added by Server Event
+void SyncItemListener::itemAddedByServer(SyncItemEvent& event) {
+    logEvent("item added by server", event);
+}
 
-class SyncItemListener : public Listener {
+// listen for the Item  deleted by Server Event
+void SyncItemListener::itemDeletedByServer(SyncItemEvent& event) {
+    logEvent("item deleted by server", event);
+}
 
-public:
-    //Constructor
-    SyncItemListener(const char *name = "") : Listener(name) {};
+// listen for the Item updated by Server Event
+void SyncItemListener::itemUpdatedByServer(SyncItemEvent& event) {
+    logEvent("item updated by server", event);
+}
 
-    // Virtual destructor
-    virtual ~SyncItemListener() {}
+// listen for the Item added by Client Event
+void SyncItemListener::itemAddedByClient(SyncItemEvent& event) {
+    logEvent("item added by client", event);
+}
 
-    // listen for the Item added by Server Event
-    virtual void itemAddedByServer(SyncItemEvent& event);
+// listen for the Item deleted by Client Event
+void SyncItemListener::itemDeletedByClient(SyncItemEvent& event) {
+    logEvent("item deleted by client", event);
+}
 
-    // listen for the Item  deleted by Server Event
-    virtual void itemDeletedByServer(SyncItemEvent& event);
-
-    // listen for the Item updated by Server Event
-    virtual void itemUpdatedByServer(SyncItemEvent& event);
-
-    // listen for the Item added by Client Event
-    virtual void itemAddedByClient(SyncItemEvent& event);
-
-    // listen for the Item deleted by Client Event
-    virtual void itemDeletedByClient(SyncItemEvent& event);
-
-    // listen for the Item updated by Server Event
-    virtual void itemUpdatedByClient(SyncItemEvent& event);
-};
-
+// listen for the Item updated by Server Event
+void SyncItemListener::itemUpdatedByClient(SyncItemEvent& event) {
+    logEvent("item updated by server", event);
+}
 
 END_NAMESPACE
-
-/** @endcond */
-#endif
-
