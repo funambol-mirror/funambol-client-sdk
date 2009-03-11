@@ -1279,6 +1279,14 @@ int SyncManager::sync() {
                                     break;
                                 }
 
+                                if (syncItem && !syncItemOffset) {
+                                    // Fire Sync Item Event - New Item Detected
+                                    // For multi-chunck items (Large objects): fire only the chunk
+                                    LOG.debug("before fireSyncItemEvent for new item");
+                                    fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), syncItem->getKey(), ITEM_ADDED_BY_CLIENT);
+                                    LOG.debug("after fireSyncItemEvent for new item");
+                                }
+
                                 msgSize += changeOverhead;
                                 msgSize +=
                                     syncMLBuilder.addItem(modificationCommand,
@@ -1289,8 +1297,6 @@ int SyncManager::sync() {
 
                                 if (syncItem) {
                                     if (syncItemOffset == syncItem->getDataSize()) {
-                                        // Fire Sync Item Event - New Item Detected
-                                        fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), syncItem->getKey(), ITEM_ADDED_BY_CLIENT);
                                         delete syncItem; syncItem = NULL;
                                     } else {
                                         assert(msgSize >= maxMsgSize);
@@ -1340,6 +1346,11 @@ int SyncManager::sync() {
                                     break;
                                 }
 
+                                if (syncItem && !syncItemOffset) {
+                                    // Fire Sync Item Event - Item Updated
+                                    // For multi-chunck items (Large objects): fire only the chunk
+                                    fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), syncItem->getKey(), ITEM_UPDATED_BY_CLIENT);
+                                }
 
                                 msgSize += changeOverhead;
                                 msgSize +=
@@ -1351,8 +1362,6 @@ int SyncManager::sync() {
 
                                 if (syncItem) {
                                     if (syncItemOffset == syncItem->getDataSize()) {
-                                        // Fire Sync Item Event - Item Updated
-                                        fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), syncItem->getKey(), ITEM_UPDATED_BY_CLIENT);
                                         delete syncItem; syncItem = NULL;
                                     } else {
                                         assert(msgSize >= maxMsgSize);
