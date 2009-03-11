@@ -1,3 +1,9 @@
+2009-03-11
+   - toccy: SyncManager: moved the fireSyncItemEvent for items added by Client, so that we get notified by the APIs at the beginning of the sending of a big item.
+            Some small code refactoring of SyncManager
+            Added a default implementation for SyncItemListener (which logs at debug level the events)
+            Added syncItemListener for Client::Sync::vcard21 unit tests, to check the use of SyncItemListener during sync
+
 2009-02-17
    - carlo: Added FThread and FSocket implementation for Windows
             Added CTPService unit test
