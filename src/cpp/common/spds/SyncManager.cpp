@@ -70,6 +70,8 @@ static char prevSourceName[64];
 static char prevSourceUri[64];
 static SyncMode prevSyncMode;
 
+static const int changeOverhead = 150;
+
 static bool isFiredSyncEventBEGIN;
 //static bool isFiredSyncEventEND;
 
@@ -92,6 +94,26 @@ inline static bool isErrorStatus(int status) {
  */
 inline static bool isAuthFailed(int status) {
     return (status) && ((status == 401) || (status == 407));
+}
+
+/**
+ * Return true is the given item is too big to go in the current message
+ * given the current parameters
+ * 
+ * @param totItems total number of items already sent
+ * @param maxMsgSize the max message size of a SyncML message
+ * @param msgSize 
+ * @param syncItem the sync item
+ * @param syncItemOffset bytes already sent
+ */
+inline static bool isTooBig(unsigned int totItems      , 
+                            int          maxMsgSize    , 
+                            long         msgSize       , 
+                            SyncItem&    syncItem      , 
+                            long         syncItemOffset) {
+    return (totItems &&
+            maxMsgSize &&
+            (msgSize + changeOverhead + syncItem.getDataSize() - syncItemOffset) > maxMsgSize);
 }
 
 /**
@@ -1109,7 +1131,7 @@ int SyncManager::sync() {
             // assumes a constant overhead for each message and change item 
             // and then adds the actual item data sent.
             deleteSyncML(&syncml);
-            static long changeOverhead = 150;
+            
             long msgSize = 0;
             Sync* sync = syncMLBuilder.prepareSyncCommand(*sources[count]);
             ArrayList* list = new ArrayList();
@@ -1269,22 +1291,27 @@ int SyncManager::sync() {
                                 if (syncItem == NULL) {
                                     syncItem = getItem(*sources[count], &SyncSource::getNextNewItem);
                                     syncItemOffset = 0;
+
+                                    //
+                                    // If syncItem is still null, there are no more items to process, we can
+                                    // go to the next step
+                                    //
+                                    if (syncItem == NULL) {
+
+                                        step++;
+                                        break;
+                                    }
                                 }
 
-                                if (tot &&
-                                    maxMsgSize &&
-                                    syncItem &&
-                                    msgSize + changeOverhead + syncItem->getDataSize() - syncItemOffset > maxMsgSize) {
+                                if (isTooBig(tot, maxMsgSize, msgSize, *syncItem, syncItemOffset)) {
                                     // avoid adding another item that exceeds the message size
                                     break;
                                 }
 
-                                if (syncItem && !syncItemOffset) {
+                                // For multi-chunck items (Large objects): fire only the first chunk
+                                if (syncItemOffset == 0) {
                                     // Fire Sync Item Event - New Item Detected
-                                    // For multi-chunck items (Large objects): fire only the chunk
-                                    LOG.debug("before fireSyncItemEvent for new item");
                                     fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), syncItem->getKey(), ITEM_ADDED_BY_CLIENT);
-                                    LOG.debug("after fireSyncItemEvent for new item");
                                 }
 
                                 msgSize += changeOverhead;
@@ -1295,18 +1322,14 @@ int SyncManager::sync() {
                                                           ADD_COMMAND_NAME,
                                                           syncItem, sources[count]->getConfig().getType());
 
-                                if (syncItem) {
-                                    if (syncItemOffset == syncItem->getDataSize()) {
-                                        delete syncItem; syncItem = NULL;
-                                    } else {
-                                        assert(msgSize >= maxMsgSize);
-                                        break;
-                                    }
-                                }
-                                else {
-                                    step++;
+                                
+                                if (syncItemOffset == syncItem->getDataSize()) {
+                                    delete syncItem; syncItem = NULL;
+                                } else {
+                                    assert(msgSize >= maxMsgSize);
                                     break;
                                 }
+                               
                                 tot++;
                             } while(msgSize < maxMsgSize);
                         }
@@ -1336,19 +1359,28 @@ int SyncManager::sync() {
                                 if (syncItem == NULL) {
                                     syncItem = getItem(*sources[count], &SyncSource::getNextUpdatedItem);
                                     syncItemOffset = 0;
+
+                                    //
+                                    // If syncItem is still null, there are no more items to process, we can
+                                    // go to the next step
+                                    //
+                                    if (syncItem == NULL) {
+
+                                        step++;
+                                        break;
+                                    }
+
                                 }
 
-                                if (tot &&
-                                    maxMsgSize &&
-                                    syncItem &&
-                                    msgSize + changeOverhead + syncItem->getDataSize() - syncItemOffset > maxMsgSize) {
+                                if (isTooBig(tot, maxMsgSize, msgSize, *syncItem, syncItemOffset)) {
                                     // avoid adding another item that exceeds the message size
                                     break;
                                 }
 
-                                if (syncItem && !syncItemOffset) {
+                                //
+                                // For multi-chunck items (Large objects): fire only the first chunk
+                                if (syncItemOffset == 0) {
                                     // Fire Sync Item Event - Item Updated
-                                    // For multi-chunck items (Large objects): fire only the chunk
                                     fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), syncItem->getKey(), ITEM_UPDATED_BY_CLIENT);
                                 }
 
@@ -1360,16 +1392,10 @@ int SyncManager::sync() {
                                                           REPLACE_COMMAND_NAME,
                                                           syncItem, sources[count]->getConfig().getType());
 
-                                if (syncItem) {
-                                    if (syncItemOffset == syncItem->getDataSize()) {
-                                        delete syncItem; syncItem = NULL;
-                                    } else {
-                                        assert(msgSize >= maxMsgSize);
-                                        break;
-                                    }
-                                }
-                                else {
-                                    step++;
+                                if (syncItemOffset == syncItem->getDataSize()) {
+                                    delete syncItem; syncItem = NULL;
+                                } else {
+                                    assert(msgSize >= maxMsgSize);
                                     break;
                                 }
                                 tot++;
