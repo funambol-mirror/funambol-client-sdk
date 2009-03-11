@@ -685,6 +685,10 @@ protected:
     /** utility functions for second client */
     SyncTests *accessClientB;
 
+    /** Listeners for all sync tests */
+    SyncItemListener* itemListener;
+    // TODO: add other listeners
+
     enum DeleteAllMode {
         DELETE_ALL_SYNC,   /**< make sure client and server are in sync,
                               delete locally,
@@ -753,6 +757,7 @@ protected:
     virtual void testOneWayFromClient();
     virtual void testItems();
     virtual void testAddUpdate();
+
 
     // test copying with maxMsg and no large object support
     void testMaxMsg() {

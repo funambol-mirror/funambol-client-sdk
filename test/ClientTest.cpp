@@ -48,6 +48,8 @@
 #include "base/test.h"
 #include "base/util/StringBuffer.h"
 #include "ClientTest.h"
+#include "event/ManageListener.h"
+#include "event/SetListener.h"
 
 #include <memory>
 #include <vector>
@@ -1532,8 +1534,10 @@ void LocalTests::testLinkedItemsInsertBothUpdateParent() {
 
 
 SyncTests::SyncTests(const std::string &name, ClientTest &cl, std::vector<int> sourceIndices, bool isClientA) :
-    CppUnit::TestSuite(name),
-    client(cl) {
+                    CppUnit::TestSuite(name),
+                    client(cl),
+                    itemListener(NULL) {
+
     sourceArray = new int[sourceIndices.size() + 1];
     for (std::vector<int>::iterator it = sourceIndices.begin();
          it != sourceIndices.end();
@@ -1555,6 +1559,9 @@ SyncTests::SyncTests(const std::string &name, ClientTest &cl, std::vector<int> s
     } else {
         accessClientB = 0;
     }
+
+    itemListener = new SyncItemListener();
+    ManageListener::getInstance().setSyncItemListener(itemListener);
 }
 
 SyncTests::~SyncTests() {
@@ -1567,6 +1574,8 @@ SyncTests::~SyncTests() {
     if (accessClientB) {
         delete accessClientB;
     }
+
+    ManageListener::releaseAllListeners();
 }
 
 /** adds the supported tests to the instance itself */
@@ -1821,6 +1830,7 @@ void SyncTests::testUpdate() {
 
     compareDatabases();
 }
+
 
 // test that a two-way sync copies updates from database to the other client,
 // using data that some, but not all servers support, like adding a second
