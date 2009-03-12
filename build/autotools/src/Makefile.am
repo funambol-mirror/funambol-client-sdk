@@ -29,6 +29,7 @@ SOURCES_EVENT = \
     lSetListener.cpp \
     lSyncEvent.cpp \
     lSyncItemEvent.cpp \
+    lSyncItemListener.cpp \
     lSyncSourceEvent.cpp \
     lSyncStatusEvent.cpp \
     lTransportEvent.cpp 
@@ -168,13 +169,11 @@ SOURCES_VOCL = \
     lVObject.cpp \
     lVObjectFactory.cpp \
     lVProperty.cpp \
-\
     lCalendar.cpp \
     lEvent.cpp \
     lToDo.cpp \
     liCalConverter.cpp \
     liCalProperty.cpp \
-\
     lAddress.cpp \
     lBusinessDetail.cpp \
     lContact.cpp \
@@ -247,4 +246,3 @@ vpath %.cpp $(srcdir)/../../../src/cpp/common/base             \
 vpath %.c   $(srcdir)/../../../src/cpp/common/base
 
 AM_CPPFLAGS = -DFUNAMBOL_BUILD_API -I$(srcdir)/../../../src/include/posix -I$(srcdir)/../../../src/include/common
-
