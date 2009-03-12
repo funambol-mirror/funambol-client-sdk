@@ -408,6 +408,7 @@
 		7CB0367A0DB4EC8A003F4E5F /* SQLKeyValueStore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CB036780DB4EC8A003F4E5F /* SQLKeyValueStore.cpp */; };
 		7CB0367E0DB4EC9A003F4E5F /* SQLKeyValueStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CB0367C0DB4EC9A003F4E5F /* SQLKeyValueStore.h */; };
 		AB3E85FA0E07F8CC00581A6C /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB3E85F90E07F8CB00581A6C /* SystemConfiguration.framework */; };
+		AB40DF830F695B2F00E4CD39 /* SyncItemListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB40DF820F695B2F00E4CD39 /* SyncItemListener.cpp */; };
 		AB43F7350EDACE1100183D6B /* StringMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB43F7340EDACE1100183D6B /* StringMap.cpp */; };
 		AB43F7370EDACE2800183D6B /* StringMap.h in Headers */ = {isa = PBXBuildFile; fileRef = AB43F7360EDACE2800183D6B /* StringMap.h */; };
 		AB4B1B060ED6F6D3007C477B /* PlatformAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB4B1B050ED6F6D3007C477B /* PlatformAdapter.cpp */; };
@@ -851,6 +852,7 @@
 		7CB036780DB4EC8A003F4E5F /* SQLKeyValueStore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLKeyValueStore.cpp; sourceTree = "<group>"; };
 		7CB0367C0DB4EC9A003F4E5F /* SQLKeyValueStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLKeyValueStore.h; sourceTree = "<group>"; };
 		AB3E85F90E07F8CB00581A6C /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		AB40DF820F695B2F00E4CD39 /* SyncItemListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncItemListener.cpp; sourceTree = "<group>"; };
 		AB43F7340EDACE1100183D6B /* StringMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringMap.cpp; sourceTree = "<group>"; };
 		AB43F7360EDACE2800183D6B /* StringMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringMap.h; sourceTree = "<group>"; };
 		AB4B1B050ED6F6D3007C477B /* PlatformAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlatformAdapter.cpp; path = adapter/PlatformAdapter.cpp; sourceTree = "<group>"; };
@@ -1043,6 +1045,7 @@
 		7C9F52290DAF4CB1007E0091 /* event */ = {
 			isa = PBXGroup;
 			children = (
+				AB40DF820F695B2F00E4CD39 /* SyncItemListener.cpp */,
 				7C9F522A0DAF4CB1007E0091 /* BaseEvent.cpp */,
 				7C9F522B0DAF4CB1007E0091 /* FireEvent.cpp */,
 				7C9F522D0DAF4CB1007E0091 /* ManageListener.cpp */,
@@ -2312,6 +2315,7 @@
 				7C8B0C500DB73C2E005113A8 /* SQLiteKeyValueStore.cpp in Sources */,
 				AB4B1B060ED6F6D3007C477B /* PlatformAdapter.cpp in Sources */,
 				AB43F7350EDACE1100183D6B /* StringMap.cpp in Sources */,
+				AB40DF830F695B2F00E4CD39 /* SyncItemListener.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
