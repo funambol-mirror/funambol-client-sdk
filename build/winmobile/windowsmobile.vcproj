@@ -17050,6 +17050,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\cpp\common\event\SyncItemListener.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\cpp\common\event\SyncSourceEvent.cpp"
 					>
 				</File>
@@ -18144,19 +18148,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\include\common\spdm\errors.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\include\common\base\errors.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\include\common\http\errors.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\include\common\spds\errors.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\include\common\spdm\errors.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\include\common\base\errors.h"
 				>
 			</File>
 			<File
