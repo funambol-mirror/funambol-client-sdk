@@ -1,5 +1,7 @@
 2009-03-23
    - toccy: fixed FileSyncSource::insertItem(). Don't set the global error when inserting an item already existing.
+   - toccy: anticipated the fire of Items Added/Replaced/Deleted by Server in SyncManager, to inform the Client as
+            soon as possible because big items can be splitted in many chunks.
 
 2009-03-11
    - toccy: SyncManager: moved the fireSyncItemEvent for items added by Client, so that we get notified 

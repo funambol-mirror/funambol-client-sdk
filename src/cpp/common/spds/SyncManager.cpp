@@ -2177,6 +2177,25 @@ Status *SyncManager::processSyncItem(Item* item, const CommandInfo &cmdInfo, Syn
                 incomingItem->setData(data, size);
             }
             if (incomingItem) {
+
+                // Fire SyncItem Event: Item Added/Replaced/Deleted by Server
+                // We want to fire these events at the beginning of an item (offset = 0) to inform the client as soon
+                // as possible, because big items (like pictures) can be splitted in many chunks.
+                if (incomingItem->offset == 0) {
+
+                    const char* uri  = sources[count]->getConfig().getURI();
+                    const char* name = sources[count]->getConfig().getName();
+                    
+                    int eventType = ITEM_ADDED_BY_SERVER;
+                    if (!strcmp(cmdInfo.commandName, REPLACE)) {
+                        eventType = ITEM_UPDATED_BY_SERVER;
+                    }
+                    else if (!strcmp(cmdInfo.commandName, DEL)) {
+                        eventType = ITEM_DELETED_BY_SERVER;
+                    }
+                    fireSyncItemEvent(uri, name, incomingItem->getKey(), eventType);
+                }
+
                 incomingItem->offset += size;
             }
         }
@@ -2216,8 +2235,6 @@ Status *SyncManager::processSyncItem(Item* item, const CommandInfo &cmdInfo, Syn
 
             // Process item ------------------------------------------------------------
             if ( strcmp(cmdInfo.commandName, ADD) == 0) {
-                // Fire Sync Item Event - New Item Added by Server
-                fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), incomingItem->getKey(), ITEM_ADDED_BY_SERVER);
 
                 incomingItem->setState(SYNC_STATE_NEW);
                 code = sources[count]->addItem(*incomingItem);
@@ -2245,9 +2262,6 @@ Status *SyncManager::processSyncItem(Item* item, const CommandInfo &cmdInfo, Syn
                 // check that before passing to client
                 decodeItemKey(incomingItem);
 
-                // Fire Sync Item Event - Item Updated by Server
-                fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), incomingItem->getKey(), ITEM_UPDATED_BY_SERVER);
-
                 incomingItem->setState(SYNC_STATE_UPDATED);
                 code = sources[count]->updateItem(*incomingItem);
                 status = syncMLBuilder.prepareItemStatus(REPLACE, itemName, cmdInfo.cmdRef, code);
@@ -2261,9 +2275,6 @@ Status *SyncManager::processSyncItem(Item* item, const CommandInfo &cmdInfo, Syn
                 // item key as stored on the server might have been encoded by library,
                 // check that before passing to client
                 decodeItemKey(incomingItem);
-
-                // Fire Sync Item Event - Item Deleted by Server
-                fireSyncItemEvent(sources[count]->getConfig().getURI(), sources[count]->getConfig().getName(), incomingItem->getKey(), ITEM_DELETED_BY_SERVER);
 
                 incomingItem->setState(SYNC_STATE_DELETED);
                 code = sources[count]->deleteItem(*incomingItem);
