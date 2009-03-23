@@ -158,8 +158,10 @@ int FileSyncSource::insertItem(SyncItem& item) {
     }
 
     if (ret == STC_OK) {
-        ret = STC_ITEM_ADDED;
         LOG.debug("Added item: %" WCHAR_PRINTF, item.getKey());
+    }
+    else if (ret == STC_ALREADY_EXISTS) {
+        LOG.debug("Item not added (already exists): %" WCHAR_PRINTF, item.getKey());
     }
     else {
         report->setLastErrorCode(ERR_ITEM_ERROR);

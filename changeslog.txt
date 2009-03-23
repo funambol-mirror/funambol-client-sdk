@@ -1,5 +1,9 @@
+2009-03-23
+   - toccy: fixed FileSyncSource::insertItem(). Don't set the global error when inserting an item already existing.
+
 2009-03-11
-   - toccy: SyncManager: moved the fireSyncItemEvent for items added by Client, so that we get notified by the APIs at the beginning of the sending of a big item.
+   - toccy: SyncManager: moved the fireSyncItemEvent for items added by Client, so that we get notified 
+            by the APIs at the beginning of the sending of a big item.
             Some small code refactoring of SyncManager
             Added a default implementation for SyncItemListener (which logs at debug level the events)
             Added syncItemListener for Client::Sync::vcard21 unit tests, to check the use of SyncItemListener during sync
