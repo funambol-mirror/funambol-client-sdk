@@ -169,6 +169,13 @@ public:
     void setUp() {
         ManageListener& m = ManageListener::getInstance();
 
+        // Remember the number of listeners already registered before this test.
+        existingSyncListeners       = m.countSyncListeners();
+        existingSyncItemListeners   = m.countSyncItemListeners();
+        existingSyncSourceListeners = m.countSyncSourceListeners();
+        existingSyncStatusListeners = m.countSyncStatusListeners();
+        existingTransportListeners  = m.countTransportListeners();
+
         m.setSyncListener(new TSyncListener("T1"));
         m.setSyncListener(new TSyncListener("T2"));
 
@@ -192,14 +199,22 @@ public:
 
 private:
 
+        // Used to remember the number of listeners already registered before this test.
+        int existingSyncListeners;
+        int existingSyncItemListeners;
+        int existingSyncSourceListeners;
+        int existingSyncStatusListeners;
+        int existingTransportListeners;
+
+
     void testSetListeners() {
         ManageListener& m = ManageListener::getInstance();
 
-        CPPUNIT_ASSERT_EQUAL(2, m.countSyncListeners());
-        CPPUNIT_ASSERT_EQUAL(2, m.countSyncItemListeners());
-        CPPUNIT_ASSERT_EQUAL(2, m.countSyncSourceListeners());
-        CPPUNIT_ASSERT_EQUAL(2, m.countSyncStatusListeners());
-        CPPUNIT_ASSERT_EQUAL(2, m.countTransportListeners());
+        CPPUNIT_ASSERT_EQUAL(existingSyncListeners       + 2, m.countSyncListeners());
+        CPPUNIT_ASSERT_EQUAL(existingSyncItemListeners   + 2, m.countSyncItemListeners());
+        CPPUNIT_ASSERT_EQUAL(existingSyncSourceListeners + 2, m.countSyncSourceListeners());
+        CPPUNIT_ASSERT_EQUAL(existingSyncStatusListeners + 2, m.countSyncStatusListeners());
+        CPPUNIT_ASSERT_EQUAL(existingTransportListeners  + 2, m.countTransportListeners());
     }
 
     void testGetListeners() {
