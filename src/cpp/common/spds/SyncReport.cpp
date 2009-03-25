@@ -145,7 +145,7 @@ const unsigned int SyncReport::getSyncSourceReportCount() const {
 
 void SyncReport::initialize() {
     lastErrorCode  = ERR_NONE;
-    lastErrorMsg   = NULL;
+    lastErrorMsg   = stringdup("");
     ssReportCount  = 0;
     ssReport       = NULL;
 }

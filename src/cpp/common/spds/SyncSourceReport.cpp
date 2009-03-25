@@ -89,14 +89,6 @@ SyncSourceReport::~SyncSourceReport() {
         delete [] sourceName;
         sourceName = NULL;
     }
-
-    //clientAddItems->clear();
-    //clientModItems->clear();
-    //clientDelItems->clear();
-
-    //serverAddItems->clear();
-    //serverModItems->clear();
-    //serverDelItems->clear();
     if (clientAddItems){
         delete clientAddItems;
         clientAddItems = NULL;
@@ -314,7 +306,7 @@ bool SyncSourceReport::isSuccessful(const int status) {
 
 void SyncSourceReport::initialize() {
     lastErrorCode  = ERR_NONE;
-    lastErrorMsg   = NULL;
+    lastErrorMsg   = stringdup("");
     sourceName     = NULL;
     state          = SOURCE_INACTIVE;
     clientAddItems = NULL;
