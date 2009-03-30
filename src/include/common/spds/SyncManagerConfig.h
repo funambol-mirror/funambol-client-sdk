@@ -175,6 +175,10 @@ class SyncManagerConfig : public AbstractSyncConfig {
         virtual unsigned int getMaxObjSize() const { return getClientConfig().getMaxObjSize(); }
         virtual const char*  getDevInfHash() const { return getClientConfig().getDevInfHash(); }
         virtual void setDevInfHash(const char *hash) { getClientConfig().setDevInfHash(hash); }
+
+        virtual bool getSendDevInfo() const { return getClientConfig().getSendDevInfo(); }
+        virtual void setSendDevInfo(bool v) { getClientConfig().setSendDevInfo(v); }
+
 };
 
 

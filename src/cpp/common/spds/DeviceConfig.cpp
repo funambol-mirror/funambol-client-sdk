@@ -63,6 +63,8 @@ DeviceConfig::DeviceConfig() {
 
     smartSlowSync   = 2;
 	verDTD			= NULL;
+
+    sendDevInfo     = true;
 }
 
 DeviceConfig::DeviceConfig(DeviceConfig& s) {
@@ -229,7 +231,14 @@ void DeviceConfig::setVerDTD(const char *v) {
     set(&verDTD, v);
 }
 
+bool DeviceConfig::getSendDevInfo() const {
+     return sendDevInfo;
+}
 
+void DeviceConfig::setSendDevInfo(bool v) {
+    sendDevInfo = v; 
+}
+ 
 /*
  * Sets the values of this object with with the values from the given
  * DeviceConfig source object.
@@ -256,5 +265,7 @@ void DeviceConfig::assign(const DeviceConfig& s) {
 
     setSmartSlowSync(s.getSmartSlowSync() );
 	setVerDTD       (s.getVerDTD	   () );
+
+	setSendDevInfo  (s.getSendDevInfo   () );
 }
 

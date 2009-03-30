@@ -1,3 +1,10 @@
+2009-03-30
+   - davide: added methods (setSendDevInfo, getSendDevInfo) to disable send of devinfo 
+             to DeviceConfig, SyncManagerConfig and AbstractSyncConfig classes. Added
+             check of sendDevInfo property (default value set to true) in SyncManger 
+             at sync start.
+             Desing Document updated.
+             
 2009-03-23
    - toccy: fixed FileSyncSource::insertItem(). Don't set the global error when inserting an item already existing.
    - toccy: anticipated the fire of Items Added/Replaced/Deleted by Server in SyncManager, to inform the Client as

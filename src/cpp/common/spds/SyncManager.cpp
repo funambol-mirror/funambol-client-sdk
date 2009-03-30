@@ -387,32 +387,39 @@ int SyncManager::prepareSync(SyncSource** s) {
     syncMLBuilder.resetMessageID();
     config.setBeginSync(timestamp);
 
-    // Create the device informations.
-    devInf = createDeviceInfo();
+    // check if devinfo should be sent
+    if (config.getSendDevInfo()) { 
+        // Create the device informations.
+        devInf = createDeviceInfo();
 
-    // check device information for changes
-    if (devInf) {
-        char md5[16];
-        devInfStr = Formatter::getDevInf(devInf);
-        LOG.debug("Checking devinfo...");
-        // Add syncUrl to devInfHash, so hash changes if syncUrl has changed
-        devInfStr->append("<SyncURL>");
-        devInfStr->append(config.getSyncURL());
-        devInfStr->append("</SyncURL>");
-        calculateMD5(devInfStr->c_str(), devInfStr->length(), md5);
-        devInfHash[b64_encode(devInfHash, md5, sizeof(md5))] = 0;
-        LOG.debug("devinfo hash: %s", devInfHash);
+        // check device information for changes
+        if (devInf) {
+            char md5[16];
+            devInfStr = Formatter::getDevInf(devInf);
+            LOG.debug("Checking devinfo...");
+            // Add syncUrl to devInfHash, so hash changes if syncUrl has changed
+            devInfStr->append("<SyncURL>");
+            devInfStr->append(config.getSyncURL());
+            devInfStr->append("</SyncURL>");
+            calculateMD5(devInfStr->c_str(), devInfStr->length(), md5);
+            devInfHash[b64_encode(devInfHash, md5, sizeof(md5))] = 0;
+            LOG.debug("devinfo hash: %s", devInfHash);
 
-        // compare against previous device info hash:
-        // if different, then the local config has changed and
-        // infos should be sent again
-        if (strcmp(devInfHash, config.getDevInfHash())) {
-            putDevInf = true;
+            // compare against previous device info hash:
+            // if different, then the local config has changed and
+            // infos should be sent again
+            if (strcmp(devInfHash, config.getDevInfHash())) {
+                putDevInf = true;
+            }
+            LOG.debug("devinfo %s", putDevInf ? "changed, retransmit" : "unchanged, no need to send");
+        } else {
+            LOG.debug("no devinfo available");
         }
-        LOG.debug("devinfo %s", putDevInf ? "changed, retransmit" : "unchanged, no need to send");
     } else {
-        LOG.debug("no devinfo available");
+        devInf = NULL;
+        LOG.debug("devinfo not sent by configuration");
     }
+
 
     if (isServerAuthRequired == false) {
         isServerAuthenticated = true;

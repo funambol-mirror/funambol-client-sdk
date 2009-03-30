@@ -76,7 +76,7 @@ class DeviceConfig {
 		// 2 cannot determinate
 		int          smartSlowSync;
 		char*		 verDTD;
-
+        bool         sendDevInfo; // send device info on sync start (by default set to true)
 
         /**
          * Sets the given buffer with the given value, dealing correctly with
@@ -157,6 +157,8 @@ class DeviceConfig {
 		const char*  getVerDTD() const        ;
         void setVerDTD(const char*  v)        ;
 
+        bool getSendDevInfo() const             ;
+        void setSendDevInfo(bool)               ;
         /**
          * Sets the values of this object with with the values from the given
          * DeviceConfig source object.

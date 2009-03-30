@@ -288,6 +288,13 @@ class AbstractSyncConfig {
      */
     virtual const char*  getDevInfHash() const = 0;
     virtual void setDevInfHash(const char *hash) = 0;
+
+    /**
+     * Specifies if devinfo should be sent
+     */
+    virtual bool getSendDevInfo() const = 0;
+    virtual void setSendDevInfo(bool v) = 0;
+
 };
 
 
