@@ -1,3 +1,7 @@
+2009-04-01
+   - toccy: Added SyncSource boolean 'enabled' to enable/disable a source
+            without losing the sync direction information
+
 2009-03-30
    - davide: added methods (setSendDevInfo, getSendDevInfo) to disable send of devinfo 
              to DeviceConfig, SyncManagerConfig and AbstractSyncConfig classes. Added

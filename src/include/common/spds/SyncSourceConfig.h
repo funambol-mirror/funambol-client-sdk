@@ -69,6 +69,13 @@ class SyncSourceConfig : public AbstractSyncSourceConfig {
         // CTCap data
         bool fieldLevel         ;
         ArrayList ctCaps        ;
+        
+        /**
+         * If false, the source exists but is disabled.
+         * Usually a source can be disabled by the user from Client's UI, to avoid syncing it.
+         * By default it's true.
+         */
+        bool enabled            ;
 
         /**
         * Create a new CTCap object, based on the current source configuration.
@@ -196,6 +203,18 @@ class SyncSourceConfig : public AbstractSyncSourceConfig {
          * @param s the supported types string
          */
         void setSupportedTypes(const char*  s);
+        
+        /**
+         * Checks if the source is enabled
+         * @return true if the source is enabled
+         */
+        const bool isEnabled() const;
+        
+        /**
+         * Sets the flag 'enabled' for this source
+         * @param s  true to enable this source, false to disable it
+         */
+        void setIsEnabled(const bool s);
 
         /**
          * Sets the last sync timestamp

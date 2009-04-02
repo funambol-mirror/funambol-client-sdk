@@ -1068,6 +1068,10 @@ bool DMTClientConfig::readSourceConfig(int i,
     tmp = sourceNode.readPropertyValue(PROPERTY_SOURCE_SUPP_TYPES);
     sourceConfigs[i].setSupportedTypes(tmp);
     delete [] tmp;
+    
+    tmp = sourceNode.readPropertyValue(PROPERTY_SOURCE_ENABLED);
+    sourceConfigs[i].setIsEnabled(strcmp(tmp, "0")? true:false);    // Set true if any value different from "0" (also if empty)
+    delete [] tmp;
 
     return true;
 }
@@ -1075,14 +1079,15 @@ bool DMTClientConfig::readSourceConfig(int i,
 void DMTClientConfig::saveSourceConfig(int i,
                                        ManagementNode& /* sourcesNode */,
                                        ManagementNode& sourceNode) {
-    sourceNode.setPropertyValue(PROPERTY_SOURCE_NAME, sourceConfigs[i].getName());
-    sourceNode.setPropertyValue(PROPERTY_SOURCE_URI, sourceConfigs[i].getURI());
-    sourceNode.setPropertyValue(PROPERTY_SOURCE_TYPE, sourceConfigs[i].getType());
-    sourceNode.setPropertyValue(PROPERTY_SOURCE_VERSION, sourceConfigs[i].getVersion());
+    sourceNode.setPropertyValue(PROPERTY_SOURCE_NAME,       sourceConfigs[i].getName());
+    sourceNode.setPropertyValue(PROPERTY_SOURCE_URI,        sourceConfigs[i].getURI());
+    sourceNode.setPropertyValue(PROPERTY_SOURCE_TYPE,       sourceConfigs[i].getType());
+    sourceNode.setPropertyValue(PROPERTY_SOURCE_VERSION,    sourceConfigs[i].getVersion());
     sourceNode.setPropertyValue(PROPERTY_SOURCE_SYNC_MODES, sourceConfigs[i].getSyncModes());
-    sourceNode.setPropertyValue(PROPERTY_SOURCE_SYNC, sourceConfigs[i].getSync());
-    sourceNode.setPropertyValue(PROPERTY_SOURCE_ENCODING, sourceConfigs[i].getEncoding());
+    sourceNode.setPropertyValue(PROPERTY_SOURCE_SYNC,       sourceConfigs[i].getSync());
+    sourceNode.setPropertyValue(PROPERTY_SOURCE_ENCODING,   sourceConfigs[i].getEncoding());
     sourceNode.setPropertyValue(PROPERTY_SOURCE_SUPP_TYPES, sourceConfigs[i].getSupportedTypes());
+    sourceNode.setPropertyValue(PROPERTY_SOURCE_ENABLED,    sourceConfigs[i].isEnabled()? "1":"0");
     sourceNode.setPropertyValue(PROPERTY_SOURCE_ENCRYPTION, sourceConfigs[i].getEncryption());
 
 }

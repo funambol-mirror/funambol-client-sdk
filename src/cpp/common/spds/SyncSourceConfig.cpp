@@ -53,6 +53,7 @@ SyncSourceConfig::SyncSourceConfig() {
     version         = NULL;
     supportedTypes  = NULL;
     encryption      = NULL;
+    enabled         = true;
 
 }
 
@@ -188,6 +189,14 @@ void SyncSourceConfig::setSupportedTypes(const char* s) {
     supportedTypes = stringdup(s);
 }
 
+const bool SyncSourceConfig::isEnabled() const {
+    return enabled;
+}
+void SyncSourceConfig::setIsEnabled(const bool s) {
+    enabled = s;
+}
+
+
 CTCap* SyncSourceConfig::createCtCap(ArrayList *props, const char *ct_Type, const char *ver_CT, bool fLevel) {
 
     return new CTCap(ct_Type , ver_CT, fLevel, *props);
@@ -238,6 +247,7 @@ void SyncSourceConfig::assign(const SyncSourceConfig& sc) {
     setEncoding      (sc.getEncoding      ());
     setVersion       (sc.getVersion       ());
     setSupportedTypes(sc.getSupportedTypes());
+    setIsEnabled     (sc.isEnabled        ());
 //    setCtCap         (sc.getCtCap         ());
     setEncryption    (sc.getEncryption    ());
 

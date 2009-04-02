@@ -82,6 +82,7 @@
 #define PROPERTY_SOURCE_SENT           "Sent"
 #define PROPERTY_SOURCE_ENCODING       "encoding"
 #define PROPERTY_SOURCE_SUPP_TYPES     "supportedTypes"
+#define PROPERTY_SOURCE_ENABLED        "enabled"
 #define PROPERTY_READ_BUFFER_SIZE      "readBufferSize"
 #define PROPERTY_USER_AGENT            "userAgent"
 #define PROPERTY_CHECK_CONN            "checkConn"
