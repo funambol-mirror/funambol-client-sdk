@@ -1,3 +1,9 @@
+2009-04-08
+   - magi:  Added usage of getSSLVerifyServer in the WinTransportAgent. By default
+            it is true as usual.
+            Added support to use also GET instead only POST method. Useful for Windows clients
+            that want to use the WinTransportAgent class with different verb.
+
 2009-04-01
    - toccy: Added SyncSource boolean 'enabled' to enable/disable a source
             without losing the sync direction information

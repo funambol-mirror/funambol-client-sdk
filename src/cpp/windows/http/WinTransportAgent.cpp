@@ -109,6 +109,7 @@ WinTransportAgent::WinTransportAgent(URL& newURL, Proxy& newProxy,
     isToDeflate    = false;
     isFirstMessage = true;
     isToInflate    = false;
+    setHttpVerb(HTTP_POST);
 
 #ifdef _WIN32_WCE
     // used by default. check connection before...
@@ -200,8 +201,7 @@ char* WinTransportAgent::sendMessage(const char* msg) {
               | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
               ;
     }
-
-
+    
     //
     // Open Internet connection.
     //
@@ -244,11 +244,17 @@ char* WinTransportAgent::sendMessage(const char* msg) {
     LOG.debug("Requesting resource %s", url.resource);
 
     //
-    // Open an HTTP request handle.
-	//
+    // Open an HTTP request handle. By default it uses the POST method (see constructor).
+    // it could be set the GET if someone would use it. The api doesn't use
+    // GET at all.
+	//    
+    const WCHAR* http_verb = METHOD_POST;
+    if (getHttpVerb() == HTTP_GET) {
+        http_verb = METHOD_GET;
+    }
     wurlResource = toWideChar(url.resource);
     if (!(request = HttpOpenRequest (connection,
-                                     METHOD_POST,
+                                     http_verb,
                                      wurlResource,
                                      HTTP_VERSION,
                                      NULL,
@@ -328,6 +334,16 @@ char* WinTransportAgent::sendMessage(const char* msg) {
     DWORD timeoutMsec = timeout*1000;
     InternetSetOption(request, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeoutMsec, sizeof(DWORD));
 
+    // if the client allows to sync over https even if the server
+    // has an invalid certificate, the flag is false. By default it is true
+    if (getSSLVerifyServer() == false) {
+        DWORD dwFlags, dwBuffLen = sizeof(dwFlags);
+        InternetQueryOption (request, INTERNET_OPTION_SECURITY_FLAGS,
+            (LPVOID)&dwFlags, &dwBuffLen);    
+        dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+        InternetSetOption (request, INTERNET_OPTION_SECURITY_FLAGS,
+                        &dwFlags, sizeof (dwFlags));        
+    }
 
     //
     // Try MAX_RETRIES times to send http request, in case of network errors
@@ -344,10 +360,36 @@ char* WinTransportAgent::sendMessage(const char* msg) {
 
             errorCode = GetLastError();
             char* tmp = createHttpErrorMessage(errorCode);
-            //sprintf(lastErrorMsg, "HttpSendRequest error %d: %s", errorCode, tmp);
             setErrorF(GetLastError(), "HttpSendRequest error %d: %s", errorCode, tmp);
-            LOG.debug("%s", getLastErrorMsg());
+            LOG.info("%s", getLastErrorMsg());
+            delete [] tmp; tmp = NULL;
+            //
+            // The certificate is not trusted. Send the right error code to the
+            // client
+            //
+            if (errorCode == ERROR_INTERNET_INVALID_CA) {
+                
+                setError(ERR_HTTPS_INVALID_CA, "The certificate is invalid");
+                LOG.error("%s", getLastErrorMsg());
+                                                
+                // try to understand a bit more on the certificate
+                INTERNET_CERTIFICATE_INFO   certificateInfo;
+                DWORD                       certInfoLength = sizeof(INTERNET_CERTIFICATE_INFO);                
+                if (TRUE == InternetQueryOption(request, 
+                                                INTERNET_OPTION_SECURITY_CERTIFICATE_STRUCT, 
+                                                &certificateInfo, &certInfoLength)) {
+                    
+                    char* subj   = (char*)certificateInfo.lpszSubjectInfo;
+                    char* issuer = (char*)certificateInfo.lpszIssuerInfo;    
+                    LOG.debug("Cert Subject %s", subj);
+                    LOG.debug("Cert Issuer %s",  issuer);
 
+                } else {                        
+                    LOG.debug("Cannot retrieve info about the certificate");
+                }     
+                goto exit;                
+            }
+            
             if (errorCode == ERROR_INTERNET_OFFLINE_MODE) {                     // 00002 -> retry
                 LOG.debug("Offline mode detected: go-online and retry...");
                 WCHAR* wurl = toWideChar(url.fullURL);

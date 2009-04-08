@@ -84,7 +84,10 @@
 
 BEGIN_NAMESPACE
 
-
+typedef enum {
+    HTTP_POST = 0,
+    HTTP_GET    
+} HTTPVerbs;
 
 /**
  * This class is the transport agent responsible for messages exchange
@@ -111,12 +114,22 @@ public:
      * @return     the message received from the Server
      */
     char*  sendMessage(const char*  msg);
-
+    
+    /**
+     * Set the value of the verb to communicate in http. This value could be
+     * HTTP_GET or HTTP_POST (default). 
+     *
+     */
+    void setHttpVerb(HTTPVerbs value) { httpVerb = value; }
+    
 private:
     bool isToDeflate;           // to be zipped
     bool isFirstMessage;        // first message is clear
     bool isToInflate;           // to be unzipped
 
+    HTTPVerbs httpVerb;         // It uses the HTTP_GET and HTTP_POST (default).
+    HTTPVerbs getHttpVerb() const { return httpVerb; }
+    
     char* createHttpErrorMessage(DWORD errorCode);
     void  dumpMessage(const char* msg, const int msgLen);
 };
