@@ -119,14 +119,17 @@ int PropertyFile::read() {
     if (!f) {
         // LOG.debug("PropertyFile: there is no journal file: '%s'", nodeJour.c_str());        
     } else {
+        LOG.debug("PropertyFile: journal file found! (%s)", nodeJour.c_str()); 
         while(fgets(line, 511, f) != NULL) {
             StringBuffer s(line);
             StringBuffer key;
             StringBuffer value;
             if (separateKeyValue(s, key, value)) {
                 if (value == REMOVED) {
+                    LOG.debug("removing cache item (key = %s)", key.c_str());
                     MemoryKeyValueStore::removeProperty(key);
                 } else {
+                    LOG.debug("setting cache item (key = %s)", key.c_str());
                     MemoryKeyValueStore::setPropertyValue(key, value);
                 }
             }                  

@@ -58,7 +58,7 @@ SOURCEPATH   ..\..\src\cpp\common\spdm
 SOURCE       DMTree.cpp ManagementNode.cpp
 
 SOURCEPATH   ..\..\src\cpp\common\client
-SOURCE       DMTClientConfig.cpp SyncClient.cpp CacheSyncSource.cpp FileSyncSource.cpp
+SOURCE       DMTClientConfig.cpp SyncClient.cpp CacheSyncSource.cpp FileSyncSource.cpp MediaSyncSource.cpp
 
 SOURCEPATH   ..\..\src\cpp\common\spds
 SOURCE       AccessConfig.cpp B64Decoder.cpp B64Encoder.cpp BodyPart.cpp

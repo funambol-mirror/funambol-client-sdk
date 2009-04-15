@@ -1,8 +1,25 @@
+2009-04-15
+    - toccy: merged from branch US1744 (Picture Sync - avoid to send a picture twice)
+             Added MediaSyncSource class under client.
+
+2009-04-09
+    - toccy: [US1744] MediaSyncSource: implemented smart slow-sync (treat slow syncs as it was a normal fast sync).
+    - toccy: [US1744] MediaSyncSource handles the cache stored inside the 'dir' folder (the folder under sync).
+             This cache file also contains special params (server url, username, swv) used by MediaSyncSource
+             to check if the cache is valid. Some CacheSyncSource methods have been overrided for this.
+    - toccy: [US1744] getItemSignature method has been reimplemented in MediaSyncSource: the signature is the file last_mod_time
+
 2009-04-08
-   - magi:  Added usage of getSSLVerifyServer in the WinTransportAgent. By default
-            it is true as usual.
-            Added support to use also GET instead only POST method. Useful for Windows clients
-            that want to use the WinTransportAgent class with different verb.
+    - toccy: [US1744] FileSyncSource can now recurse into subfolders (added bool recurse, default value = false)
+    - magi:  Added usage of getSSLVerifyServer in the WinTransportAgent. By default
+             it is true as usual.
+             Added support to use also GET instead only POST method. Useful for Windows clients
+             that want to use the WinTransportAgent class with different verb.
+
+2009-04-06
+    - toccy: [US1744] added MediaSyncSource class, to define a special behavior for generic "media files" 
+             to be synchronized between the Server and a mobile Client
+    - toccy: created branch US1744 (Picture Sync - avoid to send a picture twice) from r579
 
 2009-04-01
    - toccy: Added SyncSource boolean 'enabled' to enable/disable a source
