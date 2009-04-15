@@ -121,11 +121,7 @@ static bool removeAllFiles(ArrayList& files) {
 
 //---------------------------------------------------------------------------------- Constructors
 
-FileSyncSource::FileSyncSource(const WCHAR* name, AbstractSyncSourceConfig* sc)
-                              : CacheSyncSource(name, sc), 
-                              dir(DEFAULT_SYNC_DIR), 
-                              recursive(false) { 
-}
+
 
 FileSyncSource::FileSyncSource(const WCHAR* name, AbstractSyncSourceConfig* sc, 
                                const StringBuffer& aDir, KeyValueStore* cache)

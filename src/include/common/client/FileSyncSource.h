@@ -51,8 +51,11 @@
 // for stat 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <errno.h>
+
+#ifndef S_ISDIR
+#define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
+#endif
 
 BEGIN_NAMESPACE
 
@@ -122,7 +125,6 @@ private:
 
 public:
     
-    FileSyncSource(const WCHAR* name, AbstractSyncSourceConfig* sc);
     FileSyncSource(const WCHAR* name, AbstractSyncSourceConfig* sc, 
                    const StringBuffer& aDir = DEFAULT_SYNC_DIR, 
                    KeyValueStore* cache = NULL);
