@@ -178,6 +178,8 @@ StringBuffer MailSyncSourceConfig::print() {
     ret += "SupportedType:\t"; ret += getSupportedTypes(); ret += "\r\n";
     ret += "Last:\t\t"; ret.append(getLast()); ret += "\r\n";
     ret += "Encryption:\t"; ret += getEncryption(); ret += "\r\n";    
+    ret += "Enabled:\t"; ret += (isEnabled() == true ? "1" : "0"); ret += "\r\n";    
+
 
     ret += "DownloadAge:\t"; ret.append(getDownloadAge()); ret += "\r\n";    
     ret += "BodySize:\t"; ret.append(getBodySize()); ret += "\r\n";
