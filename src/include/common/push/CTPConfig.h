@@ -67,13 +67,13 @@ private:
     * 2: CTP
     * 3: STP with fallback CTP
     */
-    int32_t push;
+    int push;
 
     /**
     * This key enables the polling feature if the value is 
     * greater than 0, otherwise the polling is disabled.
     */
-    int32_t polling;
+    int polling;
     
     /**
     * Enable or disable the feature of storing the pending 
@@ -85,19 +85,19 @@ private:
     * The time interval, in seconds, after which the 
     * client will restore the connection.
     */
-    int32_t ctpRetry;
+    int ctpRetry;
 
     /**
     * The time interval, in seconds, for the maximum 
     * retry timeout (see failure handling).
     */
-    int32_t maxCtpRetry;
+    int maxCtpRetry;
     
     /**
     * The time, in seconds, for which the client 
     * shall wait for the server response, after sending a command.        
     */
-    int32_t ctpCmdTimeout;
+    int ctpCmdTimeout;
     
     /**
     * The time, in seconds, for which the connection with 
@@ -105,12 +105,12 @@ private:
     * A value of zero indicates that the connection must be 
     * kept open forever.
     */
-    int32_t ctpConnTimeout;
+    int ctpConnTimeout;
 
     /**
     * TCP/IP port used by the server to listen for CTP requests. 
     */
-    int32_t ctpPort;
+    int ctpPort;
 
     ///
     /// the nonce used for the MD5 auth. The nonce is sent by the server
@@ -121,7 +121,7 @@ private:
     /**
     * The interval of the heartbeat
     */
-    int32_t ctpReady;
+    int ctpReady;
 
     /**
     * The url to contact. From DM
@@ -139,7 +139,7 @@ private:
     * CTP will wait until this sync ends, after this timeout the
     * CTP is started.
     */
-    int32_t notifyTimeout;
+    int notifyTimeout;
 
     StringBuffer checkPrefix(char* url);
 
@@ -170,14 +170,14 @@ public:
     /**
     * set/get method for push parameter
     */
-    void setPush(int32_t v) { push = v; }
-    int getPush()           { return push; }
+    void setPush(int v) { push = v; }
+    int getPush()       { return push; }
 
     /**
     * set/get method for polling parameter
     */
-    int32_t getPolling()       { return polling; }
-    void setPolling(int32_t v) { polling = v; }
+    int getPolling()       { return polling; }
+    void setPolling(int v) { polling = v; }
     
     /**
     * set/get method for queuePush parameter
@@ -188,38 +188,38 @@ public:
     /**
     * set/get method for ctpRetry parameter
     */
-    int32_t getCtpRetry()       { return ctpRetry; }
-    void setCtpRetry(int32_t v) { ctpRetry = v; }
+    int getCtpRetry()       { return ctpRetry; }
+    void setCtpRetry(int v) { ctpRetry = v; }
     
     /**
     * set/get method for maxCtpRetry parameter
     */
-    int32_t getMaxCtpRetry()       { return maxCtpRetry; }
-    void setMaxCtpRetry(int32_t v) { maxCtpRetry = v; }
+    int getMaxCtpRetry()       { return maxCtpRetry; }
+    void setMaxCtpRetry(int v) { maxCtpRetry = v; }
     
     /**
     * set/get method for ctpCmdTimeout parameter
     */
-    int32_t getCtpCmdTimeout()       { return ctpCmdTimeout; }
-    void setCtpCmdTimeout(int32_t v) { ctpCmdTimeout = v; }
+    int getCtpCmdTimeout()       { return ctpCmdTimeout; }
+    void setCtpCmdTimeout(int v) { ctpCmdTimeout = v; }
     
     /**
     * set/get method for ctpConnTimeout parameter
     */
-    int32_t getCtpConnTimeout()       { return ctpConnTimeout; }
-    void setCtpConnTimeout(int32_t v) { ctpConnTimeout = v; }
+    int getCtpConnTimeout()       { return ctpConnTimeout; }
+    void setCtpConnTimeout(int v) { ctpConnTimeout = v; }
     
     /**
     * set/get method for ctpPort parameter
     */
-    int32_t getCtpPort()       { return ctpPort; }
-    void setCtpPort(int32_t v) { ctpPort = v; }
+    int getCtpPort()       { return ctpPort; }
+    void setCtpPort(int v) { ctpPort = v; }
     
     /**
     * set/get method for ctpReady parameter
     */
-    int32_t getCtpReady()       { return ctpReady; }
-    void setCtpReady(int32_t v) { ctpReady = v; }
+    int getCtpReady()       { return ctpReady; }
+    void setCtpReady(int v) { ctpReady = v; }
     
 
     /**
