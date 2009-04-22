@@ -37,7 +37,7 @@
     <dependency>
       <groupId>funambol</groupId>
       <artifactId>core-framework</artifactId>
-      <version>8.0.0-SNAPSHOT</version>
+      <version>8.0.1-SNAPSHOT</version>
     </dependency>
 
     <!-- 
