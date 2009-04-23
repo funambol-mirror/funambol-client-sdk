@@ -1,3 +1,13 @@
+2009-04-23
+    - toccy: merged from branch US2194 (Picture Sync - handle pictures with the same name on different memory cards)
+
+2009-04-17
+    - toccy: [US2194] Added a LUID-Map in MediaSyncSource to generate unique item's keys (incremental numbers).
+             The LUID-Map is owned by MediaSyncSource and it's a PropertyFile containing <full path;LUID> pairs for each item in cache.
+
+2009-04-16
+    - toccy: created branch US2194 (Picture Sync - handle pictures with the same name on different memory cards) from r605
+
 2009-04-15
     - toccy: merged from branch US1744 (Picture Sync - avoid to send a picture twice)
              Added MediaSyncSource class under client.

@@ -42,14 +42,19 @@
 #include "client/FileSyncSource.h"
 #include "client/MediaSyncSource.h"
 #include "base/util/PropertyFile.h"
+#include "base/adapter/PlatformAdapter.h"
 
 BEGIN_NAMESPACE
 
-#define MEDIA_CACHE_FILE_NAME   "funambol_cache.dat"
+#define MEDIA_CACHE_FILE_NAME    "funambol_cache.dat"
+#define MEDIA_LUID_MAP_FILE_NAME "funambol_luid.dat"
 
-#define CACHE_PROPERTY_URL      "_SERVER_URL_"
-#define CACHE_PROPERTY_USERNAME "_USERNAME_"
-#define CACHE_PROPERTY_SWV      "_CLIENT_SWV_"
+#define CACHE_PROPERTY_URL       "_SERVER_URL_"
+#define CACHE_PROPERTY_USERNAME  "_USERNAME_"
+#define CACHE_PROPERTY_SWV       "_CLIENT_SWV_"
+
+#define CONFIG_PROPS_EXT         "_params.ini"      // config props file will be "<sourcename>_params.ini"
+#define PROPERTY_NEXT_LUID       "nextLUID"
 
 
 /**
@@ -81,7 +86,58 @@ MediaSyncSource::MediaSyncSource(const WCHAR* wname,
                                  const StringBuffer& aDir, 
                                  MediaSyncSourceParams mediaParams) 
                                  : FileSyncSource(wname, sc, aDir, getMediaCache(aDir)), 
-                                 params(mediaParams) {}
+                                 params(mediaParams) {
+    
+    //
+    // Load the config_params: "<sourcename>_params.ini"
+    //
+    StringBuffer configParamsName = PlatformAdapter::getConfigFolder();
+    if (!configParamsName.endsWith("\\") && !configParamsName.endsWith("/")) {
+        configParamsName += "/";
+    }
+    configParamsName += getConfig().getName();
+    configParamsName += CONFIG_PROPS_EXT;
+    LOG.debug("MediaSyncSource: config params file is %s", configParamsName.c_str());
+    
+    configParams = new PropertyFile(configParamsName);
+    
+    // Read and set the nextLUID from config_params KeyValueStore
+    int next = readNextLUID();
+    if (next >= params.getNextLUID()) {
+        params.setNextLUID(next);
+    }
+    
+    
+    //
+    // Load the LUID map (list of path=LUID)
+    //
+    StringBuffer mapFileName(dir);
+    if (dir.endsWith("\\") || dir.endsWith("/")) {
+        mapFileName = dir.substr(0, dir.length()-1);
+    }
+    mapFileName += "/";
+    mapFileName += MEDIA_LUID_MAP_FILE_NAME;
+    LOG.debug("MediaSyncSource: LUID map file is %s", mapFileName.c_str());
+    
+    LUIDMap = new PropertyFile(mapFileName);
+    
+    // Safe check: scan the LUIDMap and check if there's a LUID >= than the passed one.
+    if (verifyNextLUIDValue()) {
+        LOG.debug("NextLUID updated scanning existing values: next LUID = %d", params.getNextLUID());
+        saveNextLUID(params.getNextLUID());
+    }
+}
+
+
+MediaSyncSource::~MediaSyncSource() 
+{
+    if (LUIDMap) { 
+        delete LUIDMap;
+    }
+    if (configParams) {
+        delete configParams;
+    }
+}
 
 
 int MediaSyncSource::beginSync() {
@@ -95,22 +151,6 @@ int MediaSyncSource::beginSync() {
     // Saves the cache: it's updated with right special props in case
     // something goes wrong during the sync.
     saveCache();
-    
-    
-    // NO: if sync crashes, next time these props would be removed from
-    //     the cache because of the journal file
-    // Remove those values from cache, so the CacheSyncSource 
-    // won't see them during sync.
-//    KeyValuePair url, user, swv;
-//    
-//    url.setKey (CACHE_PROPERTY_URL);
-//    user.setKey(CACHE_PROPERTY_USERNAME);
-//    swv.setKey (CACHE_PROPERTY_SWV);
-//    
-//    removeFromCache(url);
-//    removeFromCache(user);
-//    removeFromCache(swv);
-    
     
     return FileSyncSource::beginSync();
 }
@@ -144,10 +184,6 @@ bool MediaSyncSource::checkCacheValidity()
 
 int MediaSyncSource::saveCache()
 {
-    
-    // TODO: save the LUIDMap file
-    
-    
     // Update cache with the right values of special props.
     KeyValuePair url, user, swv;
     
@@ -159,9 +195,21 @@ int MediaSyncSource::saveCache()
     updateInCache(user, REPLACE);
     updateInCache(swv,  REPLACE);
     
+    //
+    // Persist the cache in memory.
+    //
+    int ret = FileSyncSource::saveCache();
     
-    // Will persist the cache in memory.
-    return FileSyncSource::saveCache();
+    //
+    // Refresh and save the LUIDMap file
+    //
+    refreshLUIDMap();
+    LOG.debug("[%s] Saving LUID map", getConfig().getName());
+    if (LUIDMap->close()) {
+        LOG.error("Error saving LUID map file for source %s", getConfig().getName());
+    }
+    
+    return ret;
 }
 
 
@@ -248,7 +296,7 @@ int MediaSyncSource::insertItem(SyncItem& item)
     key.convert(item.getKey());
     LOG.debug("Warning: unexpected call MediaSyncSource::insertItem() for item key = %s", key.c_str());
     
-    return STC_OK;
+    return STC_COMMAND_NOT_ALLOWED;
 }
 
 int MediaSyncSource::modifyItem(SyncItem& item) 
@@ -259,7 +307,7 @@ int MediaSyncSource::modifyItem(SyncItem& item)
     key.convert(item.getKey());
     LOG.debug("Warning: unexpected call MediaSyncSource::modifyItem() for item key = %s", key.c_str());
     
-    return STC_OK;
+    return STC_COMMAND_NOT_ALLOWED;
 }
 
 int MediaSyncSource::removeItem(SyncItem& item) 
@@ -270,7 +318,7 @@ int MediaSyncSource::removeItem(SyncItem& item)
     key.convert(item.getKey());
     LOG.debug("Warning: unexpected call MediaSyncSource::removeItem() for item key = %s", key.c_str());
     
-    return STC_OK;
+    return STC_COMMAND_NOT_ALLOWED;
 }
 
 
@@ -342,6 +390,176 @@ bool MediaSyncSource::fillItemModifications()
     }
 
     return ret;
+}
+
+
+SyncItem* MediaSyncSource::fillSyncItem(StringBuffer* key, const bool fillData)
+{
+    SyncItem* syncItem = FileSyncSource::fillSyncItem(key, fillData);
+    
+    // FIX the item's key.
+    // Outgoing item: the key to send is the item's LUID.
+    if (syncItem && key) {
+        StringBuffer luid = getLUIDFromPath(*key);
+        LOG.debug("MediaSyncSource::fillSyncItem - LUID of item '%s' is %s", key->c_str(), luid.c_str());
+        WCHAR* wluid = toWideChar(luid.c_str());
+        
+        syncItem->setKey(wluid);
+        if (wluid) { delete [] wluid; }
+    }
+    return syncItem;
+}
+
+void MediaSyncSource::getKeyAndSignature(SyncItem& item, KeyValuePair& kvp)
+{
+    // FIX the item's key.
+    // Incoming item: the key for the cache is the full path.
+    StringBuffer key;
+    key.convert(item.getKey());
+    
+    StringBuffer sign = getItemSignature(key);
+    StringBuffer path = getPathFromLUID(key);
+    
+    if (!path.null()) {
+        kvp.setKey(path);
+        kvp.setValue(sign);
+    }
+}
+
+
+void MediaSyncSource::setItemStatus(const WCHAR* wkey, int status, const char* command) {
+    
+    StringBuffer key;
+    key.convert(wkey);
+    
+    KeyValuePair vp;
+    switch (status) {
+        
+        case 200:
+        case 201:
+        case 418: 
+        {
+             LOG.info("[%s], Received success status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);        
+             StringBuffer path = getPathFromLUID(key);
+             vp.setKey(path);                           // Cache's key is the path.
+             if (strcmp(command, DEL)) {
+                 vp.setValue(getItemSignature(path));
+             }
+             break;
+        }
+        case 500:        
+        default:
+            LOG.info("[%s], Received failed status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);
+            // error. it doesn't update the cache
+            break;
+    }
+    if (vp.getKey()) {
+        updateInCache(vp, command);
+    }
+
+}
+
+
+StringBuffer MediaSyncSource::getLUIDFromPath(const StringBuffer& path)
+{
+    StringBuffer luid = LUIDMap->readPropertyValue(path.c_str());
+    
+    if (luid.null()) {
+        // No correspondence found: use a new LUID.
+        int newLUID = params.getNextLUID();
+        luid.sprintf("%d", newLUID);
+        
+        // Add the new entry <path,LUID> in the LUIDMap
+        LUIDMap->setPropertyValue(path.c_str(), luid.c_str());
+        LOG.debug("LUID not found for item '%s' -> using new LUID = %s", path.c_str(), luid.c_str());
+        
+        // Set and persist the nextLUID for next time
+        newLUID ++;
+        params.setNextLUID(newLUID);
+        saveNextLUID(newLUID);
+    }
+    
+    return luid;
+}
+
+StringBuffer MediaSyncSource::getPathFromLUID(const StringBuffer& luid)
+{
+    StringBuffer path(NULL);
+    Enumeration& props = LUIDMap->getProperties();
+    
+    while (props.hasMoreElement()) {
+        KeyValuePair* kvp = (KeyValuePair*)props.getNextElement();
+        if (kvp->getValue() == luid) {
+            path = kvp->getKey();
+            break;
+        }
+    }
+    
+    if (path.null()) {
+        // Not found... should not happen! 
+        LOG.error("MediaSyncSource - path not found in LUIDMap for LUID '%s'!", luid.c_str());
+    }
+    return path;
+}
+
+
+
+bool MediaSyncSource::verifyNextLUIDValue()
+{
+    bool updated = false;
+    Enumeration& props = LUIDMap->getProperties();
+
+    while (props.hasMoreElement()) {
+        
+        KeyValuePair* kvp = (KeyValuePair*)props.getNextElement();
+        int currentLUID = strtol(kvp->getValue().c_str(), NULL, 10);
+        
+        if (currentLUID >= params.getNextLUID()) {
+            // NextLUID must be updated!
+            params.setNextLUID(currentLUID + 1);
+            updated = true;
+        }
+    }
+    return updated;
+}
+
+bool MediaSyncSource::refreshLUIDMap()
+{
+    bool updated = false;
+    Enumeration& props = LUIDMap->getProperties();
+
+    while (props.hasMoreElement()) {
+        
+        KeyValuePair* kvp = (KeyValuePair*)props.getNextElement();
+        const StringBuffer& path = kvp->getKey();
+        
+        if ( readCachePropertyValue(path.c_str()).null() ) {
+            // Not found in cache -> remove it from LUIDMap
+            LUIDMap->removeProperty(path.c_str());
+            updated = true;
+        }
+        
+    }
+    return updated;
+}
+
+
+const int MediaSyncSource::readNextLUID()
+{
+    int ret = 0;
+    StringBuffer value = configParams->readPropertyValue(PROPERTY_NEXT_LUID);
+    if (!value.null()) {
+        ret = strtol(value.c_str(), NULL, 10);
+    }
+    return ret;
+}
+
+void MediaSyncSource::saveNextLUID(const int nextLUID)
+{
+    StringBuffer value;
+    value.sprintf("%d", nextLUID);
+    configParams->setPropertyValue(PROPERTY_NEXT_LUID, value);
+    configParams->close();
 }
 
 

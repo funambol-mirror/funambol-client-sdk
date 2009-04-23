@@ -58,28 +58,30 @@ BEGIN_NAMESPACE
 class MediaSyncSourceParams
 {
 private:
-    
-    //StringBuffer dir;           /**< The media directory to sync */
-    //bool recursive;             /**< If true, will recurse into subfolders of dir. Default is false. */
     StringBuffer url;           /**< The Sync Server URL. */
     StringBuffer username;      /**< The current username. */ 
     StringBuffer swv;           /**< The current Client software version. */
     
+    /** 
+     * Incremental number, used as the next LUID of media items.
+     * The MediaSyncSource will use (and then increment) this value to send a unique
+     * item's key to the Server.
+     */
+    int nextLUID;
+    
 public:
-    MediaSyncSourceParams() /*: dir("."), recursive(false)*/ {}
+    MediaSyncSourceParams()  { nextLUID = 0; }
     ~MediaSyncSourceParams() {};
     
-    //const StringBuffer& getDir()          { return dir;       }
-    //const bool          getRecursive()    { return recursive; }
     const StringBuffer& getUrl()          { return url;       }
     const StringBuffer& getUsername()     { return username;  }
     const StringBuffer& getSwv()          { return swv;       }
+    const int           getNextLUID()     { return nextLUID;  }
     
-    //void setDir      (const StringBuffer& v) { dir       = v; }
-    //void setRecursive(const bool        & v) { recursive = v; }
     void setUrl      (const StringBuffer& v) { url       = v; }
     void setUsername (const StringBuffer& v) { username  = v; }
     void setSwv      (const StringBuffer& v) { swv       = v; }
+    void setNextLUID (const int           v) { nextLUID  = v; }
 };
 
 
@@ -105,7 +107,7 @@ public:
                    const StringBuffer& aDir, 
                    MediaSyncSourceParams mediaParams);
 
-    ~MediaSyncSource() {};
+    ~MediaSyncSource();
     
     /**
      * Overrides FileSyncSource::beginSync().
@@ -146,11 +148,41 @@ public:
      */
     StringBuffer getItemSignature(StringBuffer& key);
    
+    /**
+     * Overrides CacheSyncSource::setItemStatus().
+     * The key received from Server is the item's LUID.
+     * We need to retrieve the item's path from the LUID (full path is the key
+     * fro the cache).
+     */
+    void setItemStatus(const WCHAR* wkey, int status, const char* command);
+    
     
 protected:
     
     /// Contains parameters used by this class.
     MediaSyncSourceParams params;
+    
+    
+    /**
+     * Overrides CacheSyncSource::fillSyncItem().
+     * The SyncItem key set is the LUID of this item.
+     * It is used by the method getXXXItem to
+     * complete the SyncItem.
+     */
+    virtual SyncItem* fillSyncItem(StringBuffer* key, const bool fillData = true);       
+
+    /**
+     * Overrides CacheSyncSource::getKeyAndSignature().
+     * Utility method that populates the keyValuePair with 
+     * the couple key/signature starting from the SyncItem.
+     * The SyncItem key set is the LUID of this item.
+     * Used in the addItem and updateItem
+     *
+     * @param item - IN:  the SyncItem
+     * @param kvp  - OUT: the KeyValuePair to be populate
+     */
+    virtual void getKeyAndSignature(SyncItem& item, KeyValuePair& kvp);
+    
     
     /**
      * Overrides CacheSyncSource::fillItemModifications().
@@ -180,7 +212,43 @@ protected:
     virtual int saveCache();
     
     
+    /**
+     * Utility method to retrieve the LUID of an item, given its path.
+     * This is called for outgoing items: we send a LUID as key to the Server.
+     */
+    StringBuffer getLUIDFromPath(const StringBuffer& path);
+    
+    /**
+     * Utility method to retrieve the full path of an item, given its LUID.
+     * This is called for incoming items and when receiving item's status: 
+     * we need the full path to update the cache.
+     * Note: returns a NULL StringBuffer if LUID not found in the LUIDMap.
+     * 
+     * @param luid  the item's LUID
+     * @return      the item's full path (NULL StringBuffer if LUID not found)
+     */
+    StringBuffer getPathFromLUID(const StringBuffer& luid);
+    
+ 
 private:
+    
+    /**
+     * Map of: Full items Path <-> Items LUID
+     * The LUID is an incremental number, different for every new item.
+     * It's used as the SyncItem's key when sending the items to the Server, 
+     * to make sure we never send 2 items with the same key.
+     * The map is stored as a PropertyFile in the 'dir' folder.
+     */
+    KeyValueStore* LUIDMap;
+    
+    /**
+     * Used to store KeyValuePairs containing config parameters used by this class.
+     * It is saved under the system config folder, with name "<sourcename>_params.ini".
+     * Actually tho only parameter used is 'nextLUID', which is an incremental number
+     * used as the item's key when sending items to the Server (to be sure the key is unique).
+     */
+    KeyValueStore* configParams;
+    
     
     /// Used during (smart) slow syncs. If true, means the New items are finished.
     bool smartSlowNewItemsDone;
@@ -200,7 +268,38 @@ private:
      * @return  true if the cache file is valid, false if not.
      */
     bool checkCacheValidity();
+    
+    /**
+     * Utility method: scans the LUIDMap and check if there's a LUID >= than the passed one.
+     * If so, updates the params::nextLUID value and returns true.
+     * This method is called just once in the constructor.
+     */
+    bool verifyNextLUIDValue();
+    
+    /**
+     * Utility method: scans and compress the LUIDMap PropertyFile, removing
+     * all entries that have no correspondence in the cache.
+     * This method is called before saving the LUIDMap file at the end of sync
+     * to avoid the propertyfile growing indefinitely.
+     * @return  true if the LUIDMap was resized
+     */
+    bool refreshLUIDMap();
+    
+    
+    /**
+     * Reads the nextLUID value from the KeyValueStore, under config folder.
+     * @return the nextLUID value read
+     */
+    const int readNextLUID();
 
+    /**
+     * Stores the nextLUID value in the KeyValueStore, under config folder.
+     * This method is called in case a new item is found locally, and so 
+     * a new LUID is generated for it.
+     * @param nextLUID  the updated value of nextLUID. 
+     */
+    void saveNextLUID(const int nextLUID);
+    
 };
 
 END_NAMESPACE

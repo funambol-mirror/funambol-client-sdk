@@ -100,22 +100,6 @@ private:
     KeyValueStore* cache; 
 
 
-    /**
-     * Fills the sync item given the key. It is used by the method getXXXItem to
-     * complete the SyncItem.
-     */
-    SyncItem* fillSyncItem(StringBuffer* key);       
-
-    /**
-     * Utility private method that populates the keyValuePair with 
-     * the couple key/signature starting from the SyncItem.
-     * Used in the addItem and updateItem
-     *
-     * @param item - IN:  the SyncItem
-     * @param kvp  - OUT: the KeyValuePair to be populate
-     */
-    void getKeyAndSignature(SyncItem& item, KeyValuePair& kvp);
-
 protected:
     
     /**
@@ -138,6 +122,25 @@ protected:
      * It is an enumeration of StringBuffer keys
      */
     Enumeration* allKeys;
+    
+    
+    /**
+     * Fills the sync item given the key. It is used by the method getXXXItem to
+     * complete the SyncItem.
+     * @param fillData [OPTIONAL] if false, don't set the SyncItem data
+     *                 (sets only the key, for deleted items). Default = true.
+     */
+    virtual SyncItem* fillSyncItem(StringBuffer* key, const bool fillData = true);       
+
+    /**
+     * Utility method that populates the keyValuePair with 
+     * the couple key/signature starting from the SyncItem.
+     * Used in the addItem and updateItem
+     *
+     * @param item - IN:  the SyncItem
+     * @param kvp  - OUT: the KeyValuePair to be populate
+     */
+    virtual void getKeyAndSignature(SyncItem& item, KeyValuePair& kvp);
     
     
     /**
@@ -264,7 +267,7 @@ public:
      * @param command  - the SyncML command associated to the item
      * 
      */
-    void setItemStatus(const WCHAR* wkey, int status, const char* command);       
+    virtual void setItemStatus(const WCHAR* wkey, int status, const char* command);       
     
     /**
      * Return the key of the first SyncItem of all.
