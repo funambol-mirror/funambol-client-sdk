@@ -63,6 +63,26 @@ static StringBuffer getCompleteName(const char *dir, const WCHAR *name) {
     }
 }
 
+
+//Returns the relative path+name of a file under the 'dir' folder, given its full name.
+StringBuffer getRelativeName(const StringBuffer& dir, const StringBuffer& fullName) {
+    
+    if (dir.empty()) {
+        return fullName;
+    }
+    
+    StringBuffer relativeName("");
+    int start = dir.length() + 1;
+    
+    // Get the relative path (cuts the trailing 'dir')
+    if (fullName.length() > start) {
+        relativeName = fullName.substr(start, fullName.length() - start);
+    }
+    return relativeName;
+}
+
+
+
 static int saveFileContent(const char *name, const char *content, size_t size, bool isUpdate) {
     
     if (!isUpdate) { // it is an add
@@ -264,6 +284,9 @@ void* FileSyncSource::getItemContent(StringBuffer& key, size_t* size) {
     WCHAR* fileName = toWideChar(key);
     StringBuffer completeName(getCompleteName(dir, fileName));
     
+    StringBuffer relativeName(getRelativeName(dir, completeName));
+    WCHAR* wRelativeName = toWideChar(relativeName.c_str());
+    
     if (!readFile(completeName, &fileContent, size, true)) {        
         LOG.error("Content of the file not read: %s", completeName.c_str());
         return NULL;
@@ -277,9 +300,21 @@ void* FileSyncSource::getItemContent(StringBuffer& key, size_t* size) {
         // the item content must be set as OMA file obj format
         FileData file;
 
-        file.setName(fileName);
+        file.setName(wRelativeName);
         file.setSize(*size);
         file.setBody(fileContent, *size);
+        
+        // Sets the file creation time, if info available
+        struct stat st;
+        memset(&st, 0, sizeof(struct stat));
+        if (stat(completeName, &st) >= 0) {
+            StringBuffer tmp;
+            tmp.sprintf("%i", st.st_mtime);
+            WCHAR* time = toWideChar(tmp.c_str());
+            
+            file.setModified(time);
+            delete [] time;
+        }
 
         itemContent = file.format();
         *size = strlen(itemContent);
@@ -293,6 +328,7 @@ void* FileSyncSource::getItemContent(StringBuffer& key, size_t* size) {
     }
 
     delete [] fileName; fileName = NULL;
+    delete [] wRelativeName; wRelativeName = NULL;
 
     return itemContent;
 }

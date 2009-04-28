@@ -1,3 +1,7 @@
+2009-04-28
+    - toccy: FileSyncSource: the tag 'name' is the relative path + name of file (was the absolute path + name)
+                             added the 'Modified' tag information for files, when last modification time is available
+
 2009-04-23
     - toccy: merged from branch US2194 (Picture Sync - handle pictures with the same name on different memory cards)
 
