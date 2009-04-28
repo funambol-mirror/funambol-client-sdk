@@ -72,13 +72,34 @@ StringBuffer getRelativeName(const StringBuffer& dir, const StringBuffer& fullNa
     }
     
     StringBuffer relativeName("");
-    int start = dir.length() + 1;
+    unsigned int start = dir.length() + 1;
     
     // Get the relative path (cuts the trailing 'dir')
     if (fullName.length() > start) {
         relativeName = fullName.substr(start, fullName.length() - start);
     }
     return relativeName;
+}
+
+//Returns the file name, given its full (absolute path) name.
+StringBuffer getFileName(const StringBuffer& fullName) {
+    
+    StringBuffer fileName("");
+    
+    unsigned long pos = fullName.rfind("/");
+    if (pos == StringBuffer::npos) {
+        pos = fullName.rfind("\\");
+        if (pos == StringBuffer::npos) {
+            // fullName is already the file name
+            return fullName;
+        }
+    }
+    
+    // Move to the first char of the filename
+    pos += 1;
+    
+    fileName = fullName.substr(pos, fullName.length() - pos);
+    return fileName;
 }
 
 
@@ -281,11 +302,15 @@ void* FileSyncSource::getItemContent(StringBuffer& key, size_t* size) {
     char* fileContent = NULL; 
     char* itemContent = NULL;
     *size = 0;
-    WCHAR* fileName = toWideChar(key);
-    StringBuffer completeName(getCompleteName(dir, fileName));
     
-    StringBuffer relativeName(getRelativeName(dir, completeName));
-    WCHAR* wRelativeName = toWideChar(relativeName.c_str());
+    WCHAR* fullName = toWideChar(key);
+    StringBuffer completeName(getCompleteName(dir, fullName));
+    
+    StringBuffer fileName(getFileName(completeName));
+    WCHAR* wFileName = toWideChar(fileName.c_str());
+    
+    LOG.debug("complete = %s", completeName.c_str());
+    LOG.debug("name = %s", fileName.c_str());
     
     if (!readFile(completeName, &fileContent, size, true)) {        
         LOG.error("Content of the file not read: %s", completeName.c_str());
@@ -300,7 +325,7 @@ void* FileSyncSource::getItemContent(StringBuffer& key, size_t* size) {
         // the item content must be set as OMA file obj format
         FileData file;
 
-        file.setName(wRelativeName);
+        file.setName(wFileName);
         file.setSize(*size);
         file.setBody(fileContent, *size);
         
@@ -327,8 +352,8 @@ void* FileSyncSource::getItemContent(StringBuffer& key, size_t* size) {
         itemContent = fileContent;
     }
 
-    delete [] fileName; fileName = NULL;
-    delete [] wRelativeName; wRelativeName = NULL;
+    delete [] fullName;  fullName  = NULL;
+    delete [] wFileName; wFileName = NULL;
 
     return itemContent;
 }

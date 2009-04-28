@@ -1,5 +1,5 @@
 2009-04-28
-    - toccy: FileSyncSource: the tag 'name' is the relative path + name of file (was the absolute path + name)
+    - toccy: FileSyncSource: the tag 'name' is just the file name(was the absolute path + name)
                              added the 'Modified' tag information for files, when last modification time is available
 
 2009-04-23
