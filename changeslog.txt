@@ -1,4 +1,8 @@
 2009-04-29
+    - magi: merged from branch US1746 (Picture Sync - avoid to send pictures twice)
+            fixed memory leak in vocl component for WinContact, WinCalendar, WinNote, WinTask
+
+2009-04-29
    - toccy: updated trunk version to "8.5.0"
 
 2009-04-28

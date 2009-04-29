@@ -175,7 +175,7 @@ bool fileExists(const char *pathname);
  * @param len - length of the read content
  * @param binary - if true the file has to be opened in binary mode
  *
- * @return - true if file is succesfully read
+ * @return - true if file is successfully read
  */
 bool readFile(const char* name, char **message, size_t *len, bool binary = false );
 

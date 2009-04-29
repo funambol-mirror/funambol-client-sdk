@@ -68,7 +68,9 @@ VObject* VConverter::parse(const WCHAR* buffer) {
         delete prop;
     }
 
-    delete [] buffCopy; buffCopy  = NULL;
+    if(objType)    { delete [] objType;    objType    = NULL; }
+    if(objVersion) { delete [] objVersion; objVersion = NULL; }
+    if (buffCopy)  { delete [] buffCopy;   buffCopy   = NULL; }
 
     return vo;
 }
@@ -350,20 +352,33 @@ WCHAR* VConverter::extractObjectProperty(const WCHAR* buffer, const WCHAR *prope
 }
 
 WCHAR* VConverter::extractObjectType(const WCHAR* buffer) {
-    static WCHAR* buffCopy;
-    static size_t buffCopyLen;
+    WCHAR* buffCopy = NULL;
+    size_t buffCopyLen = NULL;
 
-    return extractObjectProperty(buffer, TEXT("BEGIN"),
+    WCHAR* tmp = extractObjectProperty(buffer, TEXT("BEGIN"),
                                  buffCopy, buffCopyLen);
+
+    WCHAR* ret = wstrdup(tmp);
+
+    if (buffCopy) { delete [] buffCopy; }
+    buffCopyLen = 0;
+
+    return ret;
 }
 
 
 WCHAR* VConverter::extractObjectVersion(const WCHAR* buffer) {
-    static WCHAR* buffCopy;
-    static size_t buffCopyLen;
+    WCHAR* buffCopy = NULL;
+    size_t buffCopyLen = NULL;
 
-    return extractObjectProperty(buffer, TEXT("VERSION"),
+    WCHAR* tmp = extractObjectProperty(buffer, TEXT("VERSION"),
                                  buffCopy, buffCopyLen);
+    
+    WCHAR* ret = wstrdup(tmp);
+    if (buffCopy) { delete [] buffCopy; }
+    buffCopyLen = 0;
+
+    return ret;
 }
 
 bool VConverter::extractGroup(WCHAR* propertyName, WCHAR* propertyGroup) {

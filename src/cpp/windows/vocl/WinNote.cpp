@@ -180,6 +180,9 @@ wstring& WinNote::toString() {
         vNote = tmp;
         delete [] tmp;
     }
+
+    if (vo) { delete vo; vo = NULL; }
+
     return vNote;
 }
 
@@ -258,6 +261,8 @@ int WinNote::parse(const wstring dataString) {
         element = vp->getPropComponent(4);  
         if (element && wcslen(element)>0)  { setProperty(L"Width", element);  }
     }
+    
+    if (vo) { delete vo; vo = NULL; }
 
     return 0;
 }

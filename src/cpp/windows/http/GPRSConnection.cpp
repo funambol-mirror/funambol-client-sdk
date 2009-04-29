@@ -107,7 +107,7 @@ bool EstablishConnection() {
                     LOG.debug("Attempting to connect...");
                     break;
                 case CONNMGR_STATUS_CONNECTED:
-                    LOG.debug("Internet connection succesfully completed!");
+                    LOG.debug("Internet connection successfully completed!");
                     ret = true;
                     goto finally;
                 case CONNMGR_STATUS_CONNECTIONCANCELED:

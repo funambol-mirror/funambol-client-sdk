@@ -46,12 +46,12 @@
 
 BEGIN_NAMESPACE
 
-#define MEDIA_CACHE_FILE_NAME    "funambol_cache.dat"
+#define MEDIA_CACHE_FILE_NAME   "funambol_cache.dat"
 #define MEDIA_LUID_MAP_FILE_NAME "funambol_luid.dat"
 
-#define CACHE_PROPERTY_URL       "_SERVER_URL_"
-#define CACHE_PROPERTY_USERNAME  "_USERNAME_"
-#define CACHE_PROPERTY_SWV       "_CLIENT_SWV_"
+#define CACHE_PROPERTY_URL      "_SERVER_URL_"
+#define CACHE_PROPERTY_USERNAME "_USERNAME_"
+#define CACHE_PROPERTY_SWV      "_CLIENT_SWV_"
 
 #define CONFIG_PROPS_EXT         "_params.ini"      // config props file will be "<sourcename>_params.ini"
 #define PROPERTY_NEXT_LUID       "nextLUID"
@@ -388,10 +388,36 @@ bool MediaSyncSource::fillItemModifications()
         }
         i++;
     }
+        
+    //
+    // Fire the total number of items 
+    //
+    int count = 0; keys = NULL;
+
+    keys = (ArrayListEnumeration*)newKeys;
+    if (keys) {
+        count += keys->size();
+    }
+    keys = (ArrayListEnumeration*)updatedKeys;
+    if (keys) {
+        count += keys->size();
+    }
+    keys = (ArrayListEnumeration*)deletedKeys;
+    if (keys) {
+        count += keys->size();
+    }
+
+    fireSyncSourceEvent(getConfig().getURI(), 
+                        getConfig().getName(), 
+                        getSyncMode(), count, 
+                        SYNC_SOURCE_TOTAL_CLIENT_ITEMS);
 
     return ret;
 }
 
+void MediaSyncSource::fireClientTotalNumber(int number) {
+    // void implementation...
+}
 
 SyncItem* MediaSyncSource::fillSyncItem(StringBuffer* key, const bool fillData)
 {
@@ -425,40 +451,28 @@ void MediaSyncSource::getKeyAndSignature(SyncItem& item, KeyValuePair& kvp)
         kvp.setValue(sign);
     }
 }
-
-
 void MediaSyncSource::setItemStatus(const WCHAR* wkey, int status, const char* command) {
     
     StringBuffer key;
     key.convert(wkey);
     
     KeyValuePair vp;
-    switch (status) {
-        
-        case 200:
-        case 201:
-        case 418: 
-        {
-             LOG.info("[%s], Received success status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);        
-             StringBuffer path = getPathFromLUID(key);
-             vp.setKey(path);                           // Cache's key is the path.
-             if (strcmp(command, DEL)) {
-                 vp.setValue(getItemSignature(path));
-             }
-             break;
+    if (!isErrorCode(status)) {
+        LOG.info("[%s], Received success status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);        
+        StringBuffer path = getPathFromLUID(key);
+        vp.setKey(path);                           // Cache's key is the path.
+        if (strcmp(command, DEL)) {
+            vp.setValue(getItemSignature(path));
         }
-        case 500:        
-        default:
-            LOG.info("[%s], Received failed status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);
+    } else {
+        // 500 etc...
+        LOG.info("[%s], Received failed status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);
             // error. it doesn't update the cache
-            break;
-    }
+    }    
     if (vp.getKey()) {
         updateInCache(vp, command);
-    }
-
+    }    
 }
-
 
 StringBuffer MediaSyncSource::getLUIDFromPath(const StringBuffer& path)
 {
@@ -561,6 +575,4 @@ void MediaSyncSource::saveNextLUID(const int nextLUID)
     configParams->setPropertyValue(PROPERTY_NEXT_LUID, value);
     configParams->close();
 }
-
-
 END_NAMESPACE

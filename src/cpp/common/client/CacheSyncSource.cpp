@@ -137,25 +137,17 @@ void CacheSyncSource::setItemStatus(const WCHAR* wkey, int status, const char* c
     key.convert(wkey);
     
     KeyValuePair vp;
-    switch (status) {
-        
-        case 200:
-        case 201:
-        case 418: 
-        {
-             LOG.info("[%s], Received success status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);        
-             vp.setKey(key.c_str());
-             if (strcmp(command, DEL)) {
-                 vp.setValue(getItemSignature(key));
-             }
-             break;
-        }      
-        case 500:        
-        default:
-            LOG.info("[%s], Received failed status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);
-            // error. it doesn't update the cache
-            break;
-    }
+    if (!isErrorCode(status)) {
+        LOG.info("[%s], Received success status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);        
+        vp.setKey(key.c_str());
+        if (strcmp(command, DEL)) {
+            vp.setValue(getItemSignature(key));
+        }
+    } else {
+        // 500 etc...
+        LOG.info("[%s], Received failed status code from server for %s on item with key %s - code: %d", getConfig().getName(), command, key.c_str(), status);
+        // error. it doesn't update the cache
+    }    
     if (vp.getKey()) {
         updateInCache(vp, command);
     }
@@ -230,7 +222,18 @@ SyncItem* CacheSyncSource::getFirstItem() {
     // A slow sync is started -> clear the cache
     clearCache();
 
-    allKeys = getAllItemList();      
+    allKeys = getAllItemList();   
+
+    /* @TODO. some reset of the iterator??
+    // it is an Enumeration so we have to loop on the keys
+    int count = 0;
+    while (allKeys && allKeys->hasMoreElement()) {
+        count++;
+        allKeys->getNextElement();
+    }
+    fireClientTotalNumber(count);
+    */
+
     return getNextItem();
 
 };
@@ -265,6 +268,24 @@ SyncItem* CacheSyncSource::getNextItem() {
  */
 SyncItem* CacheSyncSource::getFirstNewItem() {    
     fillItemModifications();   
+    
+    /* @TODO some reset of iterator???
+    // get the total number of items
+    int count = 0;
+    while (newKeys && newKeys->hasMoreElement()) {
+        count++;
+        newKeys->getNextElement();
+    }
+    while (updatedKeys && updatedKeys->hasMoreElement()) {
+        count++;
+        updatedKeys->getNextElement();
+    }
+    while (deletedKeys && deletedKeys->hasMoreElement()) {
+        count++;
+        deletedKeys->getNextElement();
+    }
+    fireClientTotalNumber(count);
+    */
     return getNextNewItem();    
 
 }
@@ -335,7 +356,7 @@ SyncItem* CacheSyncSource::getNextDeletedItem() {
     
     SyncItem* syncItem = NULL;
     if (deletedKeys && deletedKeys->hasMoreElement()) {
-        StringBuffer* s = (StringBuffer*)deletedKeys->getNextElement();
+        StringBuffer* s = (StringBuffer*)deletedKeys->getNextElement();  
         syncItem = fillSyncItem(s, false);  // Don't set SyncItem data, just the key.
     }
     
@@ -476,20 +497,15 @@ int CacheSyncSource::addItem(SyncItem& item) {
     StringBuffer key;
     key.convert(item.getKey());
     
-    switch (ret) {        
-        case 200:
-        case 201:
-        case 418: {
-            LOG.info("[%s] Successful add of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
-            KeyValuePair k;
-            getKeyAndSignature(item, k);
-            insertInCache(k);
-        }
-        break;
-        default:
-            LOG.error("[%s] Failed add of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
-        break;
+    if (!isErrorCode(ret)) {
+        LOG.info("[%s] Successful add of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
+        KeyValuePair k;
+        getKeyAndSignature(item, k);
+        insertInCache(k);
+    } else {
+         LOG.error("[%s] Failed add of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
     }
+
     return ret;
 }
 
@@ -500,20 +516,15 @@ int CacheSyncSource::updateItem(SyncItem& item) {
     StringBuffer key;
     key.convert(item.getKey());
     
-    switch (ret) {        
-        case 200:
-        case 201:
-        case 418: {
-            LOG.info("[%s] Successful update of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
-            KeyValuePair k;
-            getKeyAndSignature(item, k);
-            updateInCache(k);
-        }
-        break;
-        default:
-            LOG.error("[%s] Failed update of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
-        break;
+    if (!isErrorCode(ret)) {
+        LOG.info("[%s] Successful update of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
+        KeyValuePair k;
+        getKeyAndSignature(item, k);
+        updateInCache(k);
+    } else {
+         LOG.error("[%s] Failed add of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
     }
+
     return ret;
 }
 
@@ -523,22 +534,16 @@ int CacheSyncSource::deleteItem(SyncItem& item) {
     StringBuffer key;
     key.convert(item.getKey());
     
-    switch (ret) {        
-        case 200:
-        case 201:
-        case 418: {
-            LOG.info("[%s] Successful delete of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);  
-            char* t = toMultibyte(item.getKey());
-            KeyValuePair k (t, "");
-            removeFromCache(k);
-            delete [] t;
-        }
-        break;
-        default:
-            LOG.error("[%s] Failed delete of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
-        break;
+    if (!isErrorCode(ret)) {
+        LOG.info("[%s] Successful delete of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);  
+        char* t = toMultibyte(item.getKey());
+        KeyValuePair k (t, "");
+        removeFromCache(k);
+        delete [] t;
+    } else {
+        LOG.error("[%s] Failed delete of item with key %s - code %d", getConfig().getName(), key.c_str(), ret);
+       
     }
-    
     return ret;
 } 
 
@@ -549,5 +554,27 @@ StringBuffer CacheSyncSource::readCachePropertyValue(const char* prop)
 }
 
 
+bool CacheSyncSource::isErrorCode(int code) {
+    
+    if ((code >= STC_OK && code < STC_MULTIPLE_CHOICES && 
+         code != STC_CHUNKED_ITEM_ACCEPTED &&
+         code != STC_PARTIAL_CONTENT       && 
+         code != STC_RESET_CONTENT         && 
+         code != STC_NO_CONTENT            ) ||                 
+         code == STC_ALREADY_EXISTS) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+void CacheSyncSource::fireClientTotalNumber(int number) {
+
+    fireSyncSourceEvent(getConfig().getURI(), 
+                        getConfig().getName(), 
+                        getSyncMode(), number, 
+                        SYNC_SOURCE_TOTAL_CLIENT_ITEMS);
+
+}
 
 END_NAMESPACE

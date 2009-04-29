@@ -116,8 +116,22 @@
     
     #ifdef POSIX
         #include "base/posixadapter.h"
+        #include <sys/stat.h>
+        #include <errno.h>
+        #include <sys/types.h>
+        
+        #ifndef S_ISDIR
+        #define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
+        #endif
     #elif SYMBIAN
         #include "base/symbianadapter.h"
+        #include <sys/stat.h>
+        #include <errno.h>
+        #include <sys/types.h>
+        
+        #ifndef S_ISDIR
+        #define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
+        #endif
     #elif defined(_WIN32_WCE) || defined(WIN32)
         // Windows common stuff
         #define WIN32_LEAN_AND_MEAN     // Exclude rarely-used stuff from Windows headers
@@ -131,14 +145,22 @@
 
         #if defined(WIN32) && !defined(_WIN32_WCE)
             #include <sys/stat.h>
+            #include <errno.h>
+            #include <sys/types.h>
             #include "shlobj.h"        
             #include <wchar.h>
             #include <time.h>
             #include <stdlib.h>
+            
+            #ifndef S_ISDIR
+            #define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
+            #endif
         #endif
 
         #ifdef _WIN32_WCE
             #include "base/time.h"
+            #include "base/stat.h" // for file handling on wm
+            const int errno = -1;
         #endif
     #endif
 

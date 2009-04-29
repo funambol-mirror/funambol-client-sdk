@@ -50,6 +50,7 @@
 #include "base/util/Enumeration.h"
 #include "base/util/KeyValueStore.h"
 #include "base/util/KeyValuePair.h"
+#include "event/FireEvent.h"
 
 BEGIN_NAMESPACE
 
@@ -431,6 +432,25 @@ public:
      */
     virtual int removeItem(SyncItem& item) = 0;
     
+    /**
+     * Called by the setItemStatus, addItem, updateItem, deleteItem to decide if
+     * the code is an error code or not. Based on the result, is udpates the cache
+     * or leave. Currently it consider good values the renge between 200 <= code < 300
+     * and code = 418. The remaining code are errors.
+     *
+     * @code the code to be analyzed
+     * @return true if it is an error code, false otherwise
+     *
+     */
+    virtual bool isErrorCode(int code);  
+
+    /**
+     * Fires the total number of the item from client side to the associated listener.      
+     * It is called after the getAllItemList and fillItemModifications. 
+     * Currently it is not used...
+     * @number the items the number of items
+     */
+    virtual void fireClientTotalNumber(int number);
 };
 
 END_NAMESPACE

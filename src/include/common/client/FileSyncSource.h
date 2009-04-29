@@ -49,13 +49,15 @@
 #include "client/CacheSyncSource.h"
 
 // for stat 
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <errno.h>
+//#include <errno.h>
+//#include "sys/types.h"
+//#include "sys/stat.h"
 
-#ifndef S_ISDIR
-#define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
-#endif
+
+
+//#ifndef S_ISDIR
+//#define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
+//#endif
 
 BEGIN_NAMESPACE
 

@@ -243,6 +243,7 @@ ArrayElement* VProperty::clone() {
             for (int i=0; i<valueCount(); i++) {
                 WString* valueCopy = (WString*)values->get(i)->clone();
                 cloneProperty->addValue(valueCopy->c_str());
+                delete valueCopy;
             }
         }
 

@@ -328,6 +328,7 @@ wstring& WinEvent::toString() {
         vCalendar = tmp;
         delete [] tmp;
     }
+    if (vo) { delete vo; vo = NULL; }
     return vCalendar;
 }
 
@@ -651,6 +652,8 @@ int WinEvent::parse(const wstring dataString) {
     if(element = getVObjectPropertyValue(vo, L"X-FUNAMBOL-AALARMOPTIONS")) {
         setProperty(L"ReminderOptions", element);
     }
+    
+    if (vo) { delete vo; vo = NULL; }
 
     return 0;
 }

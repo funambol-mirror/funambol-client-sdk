@@ -210,7 +210,7 @@ int SyncSourceReport::getItemReportSuccessfulCount(const char* target, const cha
     ArrayList* list = getList(target, command);
     ItemReport* e;
 
-    // Scan for succesful codes
+    // Scan for successful codes
     int good = 0;
     if (list->size() > 0) {
         e = (ItemReport*)list->front();

@@ -298,6 +298,8 @@ wstring& WinTask::toString() {
         vCalendar = tmp;
         delete [] tmp;
     }
+    if (vo) { delete vo; vo = NULL; }
+
     return vCalendar;
 }
 
@@ -466,6 +468,8 @@ int WinTask::parse(const wstring dataString) {
     if (element = getVObjectPropertyValue(vo, TEXT("X-FUNAMBOL-TOTALWORK"))) {
         setProperty(TEXT("TotalWork"), element);
     }
+    
+    if (vo) { delete vo; vo = NULL; }
 
     return 0;
 }

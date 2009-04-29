@@ -633,7 +633,7 @@ bool removeFileInDir(const char* dir, const char* filename);
 
 static int findCodePage(const char *encoding)
 {
-    if (encoding){
+    if (encoding && strcmp(encoding, "")){
         for(int i=0; encodings[i].name; i++) {
             if(_stricmp(encodings[i].name, encoding) == 0) {
                 // Found

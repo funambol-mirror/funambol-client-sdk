@@ -149,13 +149,20 @@ public:
     StringBuffer getItemSignature(StringBuffer& key);
    
     /**
+     * Overwrite the way to send the total number of items to the client
+     * This because the MediaSyncSource has to remove some fake items in the
+     * cache file. It should not be overloaded...
+     * @number of items that will be updated
+     */
+    virtual void fireClientTotalNumber(int number);
+    
+    /**
      * Overrides CacheSyncSource::setItemStatus().
      * The key received from Server is the item's LUID.
      * We need to retrieve the item's path from the LUID (full path is the key
      * fro the cache).
      */
     void setItemStatus(const WCHAR* wkey, int status, const char* command);
-    
     
 protected:
     
@@ -268,7 +275,7 @@ private:
      * @return  true if the cache file is valid, false if not.
      */
     bool checkCacheValidity();
-    
+
     /**
      * Utility method: scans the LUIDMap and check if there's a LUID >= than the passed one.
      * If so, updates the params::nextLUID value and returns true.

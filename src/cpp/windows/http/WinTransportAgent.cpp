@@ -435,7 +435,7 @@ char* WinTransportAgent::sendMessage(const char* msg) {
         
         // OK: status 200
         if (status == HTTP_STATUS_OK) {
-        	LOG.debug("Data sent succesfully to server. Server responds OK");
+        	LOG.debug("Data sent successfully to server. Server responds OK");
             break;
         }
 

@@ -99,7 +99,7 @@ WCHAR* VObject::getProdID() {
 }
 
 void VObject::addProperty(VProperty* vProp) {
-    properties->add((ArrayElement&) *vProp);
+    properties->add(*vProp);
 }
 
 int VObject::propertiesCount() {

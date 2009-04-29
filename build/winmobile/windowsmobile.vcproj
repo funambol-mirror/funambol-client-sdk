@@ -1466,6 +1466,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\cpp\windows\base\stat.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\cpp\windows\base\time.cpp"
 					>
 				</File>
@@ -2222,6 +2226,14 @@
 				Name="client"
 				>
 				<File
+					RelativePath="..\..\src\cpp\common\client\CacheSyncSource.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\client\ConfigSyncSource.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\cpp\common\client\DMTClientConfig.cpp"
 					>
 					<FileConfiguration
@@ -2340,6 +2352,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\src\cpp\common\client\FileSyncSource.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\cpp\common\client\MailSourceManagementNode.cpp"
 					>
 					<FileConfiguration
@@ -2456,6 +2472,10 @@
 							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\client\MediaSyncSource.cpp"
+					>
 				</File>
 				<File
 					RelativePath="..\..\src\cpp\common\client\SyncClient.cpp"
@@ -18072,10 +18092,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\include\common\http\constants.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\include\common\base\constants.h"
 				>
 			</File>
@@ -18085,6 +18101,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\include\common\spds\constants.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\include\common\http\constants.h"
 				>
 			</File>
 			<File
@@ -18148,10 +18168,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\include\common\http\errors.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\include\common\spds\errors.h"
 				>
 			</File>
@@ -18161,6 +18177,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\include\common\base\errors.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\include\common\http\errors.h"
 				>
 			</File>
 			<File
@@ -18256,6 +18276,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\include\windows\base\stat.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\include\common\base\util\StringBuffer.h"
 				>
 			</File>
@@ -18333,6 +18357,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\include\windows\base\winlog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\include\common\base\util\WKeyValuePair.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\include\common\base\util\WString.h"
 				>
 			</File>
 			<File
