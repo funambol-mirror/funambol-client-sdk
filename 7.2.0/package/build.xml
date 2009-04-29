@@ -1,0 +1,223 @@
+<!--
+/*
+ * Funambol is a mobile platform developed by Funambol, Inc. 
+ * Copyright (C) 2003 - 2007 Funambol, Inc.
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License version 3 as published by
+ * the Free Software Foundation with the addition of the following permission 
+ * added to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED
+ * WORK IN WHICH THE COPYRIGHT IS OWNED BY FUNAMBOL, FUNAMBOL DISCLAIMS THE 
+ * WARRANTY OF NON INFRINGEMENT  OF THIRD PARTY RIGHTS.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License 
+ * along with this program; if not, see http://www.gnu.org/licenses or write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301 USA.
+ * 
+ * You can contact Funambol, Inc. headquarters at 643 Bair Island Road, Suite 
+ * 305, Redwood City, CA 94063, USA, or at email address info@funambol.com.
+ * 
+ * The interactive user interfaces in modified source and object code versions
+ * of this program must display Appropriate Legal Notices, as required under
+ * Section 5 of the GNU Affero General Public License version 3.
+ * 
+ * In accordance with Section 7(b) of the GNU Affero General Public License
+ * version 3, these Appropriate Legal Notices must retain the display of the
+ * "Powered by Funambol" logo. If the display of the logo is not reasonably 
+ * feasible for technical reasons, the Appropriate Legal Notices must display
+ * the words "Powered by Funambol".
+ */
+ -->
+ 
+ <?html version="1.0" enconding="UTF-8"?>
+
+<!-- $Id: build.xml,v 1.10 2008-04-07 15:15:05 magi Exp $
+=============================================================================
+Forge file for Funambol C++ API
+
+=============================================================================
+-->
+
+<project basedir="." default="inform" name="Funambol SDK C++ ">
+
+    <!--
+    ========================================================================
+      Setting variable
+    ========================================================================
+    -->
+    <target name="init">
+
+        <property file="release.properties"/>
+
+        <property name="package.name" value="funambol-cpp-api-${release.major}.${release.minor}.${build.number}"/>
+        <property name="dir.forge" value="output/${package.name}"/>
+        <property name="dir.sources" value="${dir.forge}/Funambol/sdk/cpp/"/>                
+
+        <property file="${user.home}/api-native-build.properties"/>
+        <property file="api-native-build.properties"/>
+
+    </target>
+
+    
+  <target name="inform">       
+    <echo message="*******************************************"/>
+       <echo message=""/> 
+       <echo message="To forge without doxygen docs  : all"/>
+       <echo message="To forge with doxygen docs     : all-docs"/>       
+    <echo message="*******************************************"/>
+    </target>        
+    <!--
+    ========================================================================
+      ALL
+    ========================================================================
+    -->
+    <target name="all" depends="clean, mkdirs, build, checkout, forge"/>
+    
+    <target name="no-checkout" depends="clean, mkdirs, build, forge-no-checkout"/>
+
+    <!--
+    ========================================================================
+      ALL-DOC
+    ========================================================================
+    -->
+    <target name="all-docs" depends="clean, mkdirs, build, checkout, create-docs, forge"/>
+
+    <!--
+    ========================================================================
+      MKMDIRS
+    ========================================================================
+    -->
+    <target name="mkdirs" depends="init">
+      <mkdir dir="${dir.forge}"/>
+      <mkdir dir="${dir.sources}"/>
+    </target>
+     
+    <!--
+    ========================================================================
+      BUILD
+    ========================================================================
+    -->
+    <target name="build" depends="init">
+        <propertyfile file = "release.properties"
+                      comment = "Funambol C++ Client SDK version file" >
+            <entry key="build.date"   type="date" value="now" pattern="yyyyMMdd"/>
+            <!--entry key="build.number" type="int"  operation = "+" default="1"   /-->
+        </propertyfile>
+
+        <!-- Load release.propeties -->
+        <property file="release.properties"/>
+
+        <echo message="Build release: ${release.major}.${release.minor}.${build.number}" />
+    </target>
+    
+    <!--
+    ========================================================================
+      CHECKOUT
+    ========================================================================
+    -->
+    <target name="checkout" depends="init">             
+      <echo message="Checkout source files from SVN (tag = ${svn.tag})..."/>
+        <echo message="svn export --username guest ${svn.url}/${svn.tag}"/>
+	    <exec dir="${basedir}" executable="svn" failonerror="true" output="log.SVN">		
+		<arg line="export --username guest --force ${svn.url}/${svn.tag} ${dir.sources} "/> 
+		</exec> 
+    </target>
+
+    <!--
+    ========================================================================
+      FORGE
+    ========================================================================
+    -->
+    <target name="forge" depends="init">     
+      <!--
+          Zip up everything
+      -->
+      <zip destfile="output/${package.name}.zip">
+        <fileset dir="${dir.forge}" includes="**/*" excludes="**/CVS"/>
+      </zip>
+    </target>
+
+    
+     <!--
+    ========================================================================
+      FORGE
+    ========================================================================
+    -->
+    <target name="forge-no-checkout" depends="init">
+
+      <!--
+          Copy all stuffs.
+          Note that only public include files are released.
+      -->
+      <copy todir="${dir.sources}">
+        <fileset dir="..">
+            <exclude name="**/${cppapi.targetwm5}/"/>
+            <exclude name="**/${cppapi.targetppc}/"/>
+            <exclude name="**/${cppapi.targetppc}/**"/>
+            <exclude name="**/${cppapi.targetwm5}/**"/>
+            <exclude name="**/*.user"/>
+            <exclude name="**/*.old*"/> <!-- old file name -->
+            <exclude name="**/*.ori*"/> <!-- ori file name -->    
+            <exclude name="**/*.bak*"/> <!-- bak file name -->    
+            <exclude name="**/output/"/>        
+            <exclude name="**/output/**"/>    
+            <exclude name="**/*.suo*"/> <!-- project extension-->
+            <exclude name="**/*.vcb*"/> <!-- project extension-->
+            <exclude name="**/*.ncb*"/> <!-- project extension-->   
+            <exclude name="**/CVS/"/> <!-- CVS-->                           
+            <exclude name="**/CVS/**"/> <!-- CVS-->                           
+            <exclude name="**/latex/**"/>                            
+        </fileset>             
+      </copy>
+      <!--
+          Zip up everything
+      -->
+      <zip destfile="output/${package.name}.zip">
+        <fileset dir="${dir.forge}" includes="**/*" excludes="**/CVS"/>
+      </zip>
+    </target>
+    
+    <!--
+    ========================================================================
+    CLEAN
+    ========================================================================
+    -->
+    <target name="clean" depends="init">
+      <delete dir="output"/>
+    </target>
+
+
+    <!--
+    ========================================================================
+    CREATE DOCS
+    ========================================================================
+    -->
+    <target name="create-docs" depends="init">
+      <echo message="Creating documentation with doxygen ${dir.sources}" />
+	        <exec dir="${dir.sources}/docs" executable="doxygen" >
+        	  <arg line="../docs/Doxyfile" />
+	          <env key="FUNAMBOL_NATIVE_ROOT" path="${dir.sources}/" />
+	          <env key="ENABLED_SECTIONS" value="API" />
+	          <env key="HAVE_DOT" value="YES" />
+        	</exec>
+    </target>
+    
+    <target name="create-docs-only">
+      <echo message="Creating documentation with doxygen" />
+	          <exec executable="doxygen" >
+        	  <arg line="../docs/Doxyfile" />
+	          <env key="FUNAMBOL_NATIVE_ROOT" path="../" />
+	          <env key="ENABLED_SECTIONS" value="API" />
+	          <env key="HAVE_DOT" value="YES" />
+        	</exec>
+    </target>
+
+
+</project>
+
