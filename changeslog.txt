@@ -1,3 +1,6 @@
+2009-04-29
+   - toccy: updated trunk version to "8.5.0"
+
 2009-04-28
     - toccy: FileSyncSource: the tag 'name' is just the file name(was the absolute path + name)
                              added the 'Modified' tag information for files, when last modification time is available
@@ -44,7 +47,7 @@
              to DeviceConfig, SyncManagerConfig and AbstractSyncConfig classes. Added
              check of sendDevInfo property (default value set to true) in SyncManger 
              at sync start.
-             Desing Document updated.
+             Design Document updated.
              
 2009-03-23
    - toccy: fixed FileSyncSource::insertItem(). Don't set the global error when inserting an item already existing.
