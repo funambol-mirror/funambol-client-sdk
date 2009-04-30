@@ -71,8 +71,8 @@ void Time_tToFileTime(time_t t, FILETIME &ft) {
      // http://support.microsoft.com/default.aspx?scid=KB;en-us;q167296
      LONGLONG ll;
      ll = Int32x32To64(t, 10000000) + 116444736000000000;
-     ft.dwLowDateTime = (DWORD)ll;
-     ft.dwHighDateTime = ll >> 32;    
+     ft.dwLowDateTime =  (DWORD)ll;
+     ft.dwHighDateTime = (DWORD)(ll >> 32);    
      
 }
 
@@ -97,7 +97,7 @@ int stat(const char* filename, struct stat* Stat) {
         goto finally;
     }
 
-    Stat->st_mode = wdata.dwFileAttributes;
+    Stat->st_mode =  (unsigned short)wdata.dwFileAttributes;
     Stat->st_mtime = FileTimeToTime_t(wdata.ftLastWriteTime);  // only write: it is the modification
     Stat->st_atime = FileTimeToTime_t(wdata.ftLastAccessTime); // both read/write
     Stat->st_ctime = FileTimeToTime_t(wdata.ftCreationTime); 
