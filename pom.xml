@@ -14,7 +14,7 @@
   <parent>
     <groupId>funambol</groupId>
     <artifactId>funambol</artifactId>
-    <version>8.5.0-SNAPSHOT</version>
+    <version>8.5.0</version>
   </parent>
 
   <dependencies>
