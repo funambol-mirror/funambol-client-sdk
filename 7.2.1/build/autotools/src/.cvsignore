@@ -1,0 +1,14 @@
+.deps
+.libs
+Makefile
+Makefile.in
+stamp-h1
+client
+NotifProcessorTest
+vcardconverter
+*.o
+*.lo
+*.loT
+*.la
+*.log
+*~

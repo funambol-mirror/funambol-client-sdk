@@ -1,0 +1,594 @@
+Funambol SDK C++ 7.1.6
+-----------------------
+2009-01-14
+   - magi: fixed issue in endSync() method: added check to prevent to update the anchors
+           if there are http or synml errors.
+           updated Design Document
+
+Funambol SDK C++ 7.1.5
+-----------------------
+
+2009-01-13
+   - toccy: fixed issue in CTPThreadPool.cpp, caused CTP threads to die (used just by Symbian Client).
+
+
+Funambol SDK C++ 7.1.4
+-----------------------
+
+2008-12-22:
+   - magi: fixed PropertyFile issue handling one-char key and with '\'
+           applied patch for issue "Sync broken against server that doesn't send code 222 (like Synthesis)"
+
+
+2008-12-22:
+   - davide: minor fixes for Symbian APIT unit test build
+             PlatformAdapter integration for CTPConfig.cpp  
+
+
+Funambol SDK C++ 7.1.3
+-----------------------
+
+2008-12-18:
+   - magi: modified WinEvent to support BusyStatus property both as number or as string (FREE, BUSY...)
+           Updated tests
+
+
+Funambol SDK C++ 7.1.2
+-----------------------
+
+2008-12-15:
+   - davide: PlatformAdapter integration for unit tests - client-test.cpp removed 
+             and refactorized in TestFileSource.cpp and TestFileSource.h (avoid
+             PlatformAdapter class static variables initialization issues).
+
+Funambol SDK C++ 7.1.1
+-----------------------
+
+2008-11-24
+   - magi: fixed build files
+
+2008-11-24
+   - magi: added trim() method to StringBuffer - updated tests
+           changed ":" separator with "=" in PropertyFile - updated tests
+
+2008-11-13
+   - gazza: multiple listeners implemented.
+
+2008-11-11
+   - gazza: new macros for the Funambol namespace
+
+2008-11-10
+   - toccy: fixed parser/formatter of contacts for Windows Clients (WinContact.cpp), to support all vCard properties.
+            Now using X-ANNIVERSARY, X-MANAGER, X-SPOUSE.
+
+Funambol SDK C++ 7.1.0
+-----------------------
+
+2008-10-31
+   - teo: added serverConfig feature. It is possible to store in a DeviceConfig object
+          the server capabilities. Currently it's up to the clients to fill this 
+	  object with the right data
+          as soon as the server capabilities will be implemented will be in charge
+          to the api
+
+2008-10-29
+   - magi: added feature to cache mapping amongst different sync. 
+   - magi: added integration test for mappings handling feature
+
+2008-10-14
+   - gazza: OptionParser and StringMap classes added.
+            
+2008-09-10
+   - gazza: 
+        * moved to subversion, root changed from /3x to /funambol
+        * src/c++ renamed to src/cpp
+        * md5.c renamed to md5.cpp
+
+2008-07-15
+   - gazza: renamed autotools generated library to libfunambol.a
+
+2008-04-07
+   - magi: * added 
+                CacheSyncSource.h, CacheSyncSource.cpp
+                KeyValueStore.h
+                ArrayListKeyValueStore.h, ArrayListKeyValueStore.cpp
+                Enumeration.h
+                ArrayListEnumeration.h
+                PropertyFile.h, PropertyFile.cpp
+                BriefcaseCacheSyncSource.h, BriefcaseCacheSyncSource.cpp
+                BriefcaseClient.cpp
+                These are to try the cache sync source that keeps track about the changes on the
+                items based on the crc of the content of the items
+            
+            * updated the Makefile.am to compile all new stuff
+            * updated windadapter and posixadapter 
+            * applied Patrick's patch on SyncItem (the const get methods)
+            * updated SyncSource interface
+                                    
+
+2008-04-02
+   - toccy: first add of base classes and adapters for new Symbian client.
+
+2008-02-13
+    - toccy: * 'lastErrorMsg' is now a StringBuffer
+             * 'lastErrorMsg' and 'lastErrorCode' are no more global, 
+                they must be accessed only by provided get/set methods.
+             * removed char[] in log.cpp, using StringBuffer,
+               'logmsg' is now deprecated
+
+2008-01-29
+    - toccy: windows/http/GPRSConnection.cpp:
+             revised the function to estabilish GPRS connection, used by WM clients.
+
+2008-01-04
+    - teo: added CtCap.
+           Now we pass to the formatter an ArrayList of CtCap to handle different capabilities.
+           In SyncSourceConfig there's a new method called addCtCap to add an element to the 
+           ArrayList of CtCap.
+           This method has 4 parameters CtType VerCt an arraylist of properties and an int with 
+           3 status to handle the FieldLevel param (FLEVEL_DISABLED, FLEVEL_ENABLED, 
+           FLEVEL_UNDEFINED)
+           CtCype VerCt and FieldLevel are optional. 
+           If one of this parameters is not set the method use the default one setted 
+           in the configuration. 
+
+getCtCaps returns a reference to the ArrayList of CtCaps 
+
+2008-01-03
+    - teo: removed a bug related to the creation and the destruction of the operands arraylist
+           in ClauseUtils.cpp.
+           
+           removed all the embedded tests in client.cpp.
+           all the tests in the old client.cpp are moved in the corrisponding class and corrected to 
+           work properly with the cppunit framework
+
+    - toccy: Added support for timezones, for SIF events, under Windows branch (windows/vocl).
+             SIF version upgraded to "1.1"
+
+2008-01-02
+    - toccy: Added support for timezones, for vCalendar 1.0, under Windows branch (windows/vocl).
+             From Client to Server, recurring events are sent out with timezone informations 
+             if the Client fills the tzInfo structure.
+             From Server to Client, events without timezones are still accepted (like before).
+
+2007-12-21
+    - toccy: merged differences from "b_v65"
+
+2007-12-06
+    - toccy: windows/vocl/WinNote: added parser and formatter for vNote 1.1
+
+2007-11-28
+  - Changed headers of source files (AGPL)
+
+2007-11-15
+    - gazza: unit test refactoring
+
+2007-11-15
+    - teo:   syncml parser unit tests
+    - gazza: code refactoring - indirection of SyncManager members 'commands' 
+             and 'mappings' reduced of one level.
+
+2007-11-08
+    - gazza: Unit tests updated - the testcases are under test, under the same
+             folder structure of the sources. The windows solution and the
+             unix makefile have been updated accordingly.
+
+2007-11-07
+    - toccy: WinTransportAgent - added support for http status codes 402 & 403
+
+2007-10-23
+    - pohly: POSIX configuration files now strip trailing spaces
+             at the line end; previously this was preserved, but
+             this turned out to confuse many user (unintentional
+             space after password, additional carriage-return...)
+
+
+Funambol SDK C++ 6.5.1
+-----------------------
+
+2007-10-10
+    - magi:  fixed minor bug in parsing mail encoding and date field.              
+
+2007-10-09
+    - gazza: fixes applied for 64 bit compatibility. Test client updated.
+2007-10-01
+    - toccy: WinTransportAgent: removed 'compression' check when reading 
+             response, to accept compressed data even if 'compression' 
+             flag is disabled.
+
+Funambol SDK C++ 6.5.0
+-----------------------
+
+2007-08-08
+    - toccy: Improved vCalendar parser/formatter (WinEvent.cpp) to handle all
+             supported properties
+    - gazza: Removed old Palm defines from the header files.
+             Minor fixes for Posix build.
+             Uncompress in WinTransportAgent more robust when some headers
+             are cut by proxies.
+
+2007-08-03
+    - magi:  Added WinContactSif class. It is used to handle the SIF properties
+             in a different way. So it is possible to handle also other likes
+             Photo.
+             Commented code in the Converter class for the b64 binary handling
+             Added in Property class the way to set a property without any conversion
+             WinContact: added photo handling in vacard. Modified the returned
+                         value in toString method        
+             WinItem: added the crc encode function
+             
+2007-07-24
+    - teo:   ArrayList modified to improve the performance.
+             The method size() return a value that is incremented 
+             and decremented everytime there's an add or a remove.
+             The method add is also improved when there is an add in the last 
+             element (a sort of pushback)
+             Removed the remove method now there's only the method
+             removeElementAt(index) in SyncSourceReport in the
+             SyncSourceReport::addItem method was removed a for cycle that
+             check if there is a element clone of the one to add. 
+             This for cycle is very negative for the performance and useless.
+             
+2007-07-19
+    - toccy: improved parser/formatter of vCard for windows clients (WinContact)
+
+2007-07-11
+    - toccy: first add: WinObject classes used by Windows clients to manage
+             vCard and vCal
+    - toccy: added 'stringUtils.cpp' and 'timeUtils' utils functions for
+             Windows system
+
+2007-06-22
+    - toccy: win32 and winmobile source files has been unified under 'windows' dir.
+             WinTransportAgent reworked to be used both by Win32 and Winmobile
+             plugins.
+    - toccy: devinfo is sent with informations for all sources, not only the
+             ones currently synchronized.
+             So it will not be sent again if we add/remove a source from
+             synchronization.
+
+
+Funambol SDK C++ 6.0.9
+-----------------------
+
+2007-06-13
+    - gazza: old platforms removed.
+    - magi: copyright header updated.
+    - magi: fixed suport for obsolete RFC2822 date syntax
+    - magi: fixed enpty line at the beginning of the message
+    - magi: updated ant build 
+    - teo: demo client updated
+    - teo: compression of the tcp stream made configurable (for the adapter
+           with compression support)
+    - pohly: tests updated
+
+Funambol SDK C++ 6.0.8
+-----------------------
+
+2007-04-26
+    - toccy: Fixed vObject parser, to manage empty fields sent by server (now a property with empty value is generated)
+
+
+Funambol SDK C++ 6.0.7
+-----------------------
+
+2007-04-16
+    - toccy: Win32TransportAgent, added check for windows offline mode (IExplorer).
+             If is offline, call 'InternetGoOnline' to ask the user to connect (retry 5 times)
+
+
+Funambol SDK C++ 6.0.6
+-----------------------
+
+2007-04-13
+    - magi: fixed return codes in WMTransportAgent
+
+2007-04-11
+    - toccy: fixed bug inside SyncMLBuider::prepareAlertStatus(), caused crash if (authStatusCode < 400)
+
+2007-04-06
+    - toccy: changed 'maxMsgSize' default value to 512k
+             'responseTimout' from configuration is now passed to transportAgent constructor
+
+2007-03-26
+    - toccy: fixed some memory leaks
+
+
+Funambol SDK C++ 6.0.4
+-----------------------
+
+2007-03-14
+    - gazza: potential null pointer access fixed in ArrayList
+    - gazza: WMTransportAgent reworked
+
+2007-03-13
+    - toccy: Win32TransportAgent - added support for gzip compression on SyncML
+             messages
+    - toccy: use maxMsgSize to send items instead of maxModPerMsg
+    - gazza: use maxMsgSize to send mappings.
+
+2007-02-23
+     - toccy: Win32TransportAgent - fixed bug #306633: Content-length not
+              available cause client to crash
+
+
+Funambol SDK C++ 6.0.2
+------------------------
+
+2007-02-09
+     alpha release
+
+
+Funambol SDK C++ 6.0.1
+------------------------
+2007-01-30
+     - toccy: Win32TransportAgent - added a timeout of 10min to receive a response from server during sync.
+
+2007-01-22
+     - magi:  fixed emailMessage issues in decoding mail fields with tab char inside
+
+2007-01-08
+     - magi:  modified windows mobile DeviceManagementNode. It uses the RegFlushKey instruction to store
+              the settings permanently also after a soft release. 
+              Modification in EmailData to resume the Ext tag
+    
+2007-01-03
+     - magi:  fixed objectweb bug #306397. Modification in SyncManager.cpp to handle the refresh-from-client
+              and update-from-client.
+              Added modification in EmailData parsing to handle properly the subject decoding.
+              Commented the Ext feature for V6
+
+2006-11-28
+     - magi:  merge modifications from branch b_funambol31.               
+              Fixed SyncManager and SyncmlProcessor issues to handle 
+                begin and end sync source events
+              Improved EmailData and MailMessage classes
+              Fixed Parser.cpp issue to avoid bug if the Data contains syncml log
+              Improved ppcTransportAgent to handle Server error code 500
+              Log.cpp modified for GMT +00:00 instead of GMT -00:00
+              
+2006-10-31
+     - magi:  merge modifications from branch b_funambol31. 
+              modified LOG timestamp for posix, winmobile and win32 platform. 
+              Now it get the gmt info. 
+              Fixed SyncManager for update_remote_data syncmode
+2006-10-31
+     - magi:  merge modifications from branch b_funambol31. 
+              Applied Patrick's patch to handle the key with non permitted xml chars.
+              see bug http://forge.objectweb.org/tracker/index.php?func=detail&aid=306335&group_id=96&atid=100096
+              for details
+
+
+2006-10-31
+     - magi:  merge modifications from branch b_funambol31. 
+              fixed in SyncManager credentialInfo property to handle username/password greater then 256 chars
+              fixed MaxObjSize position. It has to be put in every source Alert and not only in the Header
+                The header is fine for the DM but not for DS. Without the fix the MaxObjSize was not consider by
+                the server.
+              improved FileData. fixed memory leak
+              added new constructor in StringBuffer
+              
+
+2006-10-11
+     - toccy: added tolerance of 6% on size of incoming items in case of large object
+              improved Win32TransportAgent: added http error message explanations associated to error codes
+              added an array of syncsource names in SyncManager: "sortedSourcesFromServer" ....
+
+2006-10-06
+     - toccy: fixed Win32TransportAgent with a sanity check on rensponse read (proxy related issue)
+              moved 'encryption' property from AccessConfig to SyncSourceConfig (it's a source property)
+              encryption changed from boolean to string ("des" is the only accepted value now)
+              SyncManagerConfig::getSyncSourceConfig() now returns a pointer to internal object
+
+2006-10-03
+     - pholy: added Large Object support (items splitted if bigger than maxMsgSize)
+              moved encoding/decoding of item data into SyncItem::changeDataEncoding
+              added SyncManager::getItem(), a wrapper around the various SyncItem methods for outgoing items
+
+2006-09-29
+     - toccy: first add of fileSync project: sync of generic files from a directory (only slow sync now)
+              added SyncReport: owned by SyncClient, collect all synchronization results
+                - lastErrorCode/Msg is copied into SyncReport
+                - sources error/state is stored in each SyncSourceReport
+                - each item status is stored in arraylists inside each SyncSourceReport
+              
+2006-09-27
+     - magi:  added SyncSource events for: NOC by server - NOC by client - SyncMode requested
+              added SyncClient methods to alert user if slow sync requested (empty default implementation)
+
+2006-09-19
+     - toccy: replace all: [BCHAR -> char]  [wchar_t -> WCHAR]
+              removed unused functions (bsprintf, bstrcpy,...)
+ 
+2006-09-11
+     - toccy: config object passed to SyncClient as parameter of sync() methods
+              added properties 'version' and 'supportedTypes' in SyncSourceConfig
+              adapted win32 example to new API logic (SyncClient-config)
+
+2006-09-07
+     - pholy: restructured DMTClientConfig with smaller functions
+
+2006-09-06
+     - toccy: EVENT HANDLING: added firing events in SyncManager/TransportAgents for event handling
+              removed utf8len/utf82wc/wc2utf8 functions
+              modified SyncManagerConfig to set a SyncSourceConfig not already present in config
+              added syncUrl property to generate devInfHash (if syncUrl changes, devInfHash changes)
+
+2006-08-31
+     - toccy: applied devinfo.patch (pohly) and changed SyncClient/config logic:
+              * added Client capabilities handling (DevInf tag): 'createDefInf()' inside SyncManager.prepareSync()
+              * changed DMTree structure: now settings under 5 nodes (Auth-Conn-DevInfo-DevDetail-Ext)
+              * Sync4jClient class renamed as SyncClient
+              * config object managed by client (not by SyncClient)
+              * the config object passed to SyncClient and then to SyncManager is a SyncManagerConfig (was DMTClientConfig)
+              * added method SyncClient::sync(BCHAR** sourceNames = NULL)
+              * added DeviceConfig class for all device config settings
+              * added methods in SyncManagerConfig: 'getDeviceConfig()' and 'setDeviceConfig(&c)'.
+              * added DefaultConfigFactory class to generate default Config objects in case that the configuration can't be read correctly.
+              * added SyncSourceConfig object inside SyncSource (settings copied from config in the constructor)
+              * userAgent string generated from 'mod + swV' properties if the 'userAgent' property is empty
+              * added methods 'readDeviceConfig()' 'saveDeviceConfig()' in DMTClientConfig class.
+
+2006-08-30:
+     - magi: modified PPC2003TransportAgent. The FunctionHttpSendRequest doesn't set lastErrorCode anymore
+
+2006-08-09:
+     - magi: applied patches sync-mode-names,item-type,64bit-errors,synthesis,single-tag.
+             modified Credential LocName issue instead of passing parameter to some methods
+             removed <![CDATA[ ... ]]> FileData and FolderData formatter because the CDATA is in the Formatter.cpp          
+
+2006-08-08:
+     - toccy: improved Win32TransportAgent. Fixed proxy authentication process.
+
+
+Funambol SDK C++ 3.0.20
+------------------------- 
+2006-07-21:
+
+     - magi: improved PocketPC Transport Agent. It avoids the blocks if server respons fails. 
+             improved PocketPC Transport Agent and Win32: no cookies sent to server.
+             After a time out (5 minutes by default) it break the connection. It improves network reliability
+             Fixed Formatter.cpp bug. Error in deleting an object.     
+
+
+Funambol SDK C++ 3.0.19
+------------------------- 
+2006-07-06:
+
+     - magi: fixed memory leaks in all code
+             improved PocketPC Transport Agent. It tries to sent request to the server if it doesn't respond          
+      
+
+Funambol SDK C++ 3.0.18
+------------------------- 
+2006-06-16:
+      305364    endless loop if second of two sync sources fails in SyncSource::beginSync()
+      305474    patch for memory leaks in VOCL
+      
+    - toccy: vocl fix about folding feature, escape special char and b64 encoding
+      improved StringBuffer stability
+      fixed some memory leaks
+      added proxy authentication parameters used in Win32 Transport Agent
+      
+
+Funambol SDK C++ 3.0.17
+------------------------- 
+2006-05-24:
+    Enanchement: Adding the version number to the user agent
+
+Funambol SDK C++ 3.0.16
+------------------------- 
+2006-05-16:
+  - fixed bugs:
+      305019	Ordering of elements in File object incorrect
+      305020	Writeable attribute not generated
+      305155	WString::replace - write-after-free due to dangling pointer
+      304786	ampersand as part of vcard -&gt; XML encoding problems
+
+Funambol SDK C++ 3.0.15
+------------------------- 
+2006-04-14:
+  - setHeaders() and getHeaders() methods in MailMessage.cpp
+  - fix error on StringBuffer() on empty string assignment.
+
+2006-03-29:
+  - pohly: fixed Linux build
+  - pohly: #304771: parsing vcards with quotation marks
+    in the header fails
+  - pohly: #304829: mixing quoted-printable encoding of
+    linebreaks with non-ASCII characters
+
+Funambol SDK C++ 3.0.12
+------------------------- 
+  - SDK is now based on char, and data is transferred transparently
+  - Handle charset different from UTF-8 in the data
+  - minor bugs fixed
+
+Funambol SDK C++ 3.0.11
+------------------------- 
+2006-03-16
+  - Fixed email date parsing
+  - Fixed refresh from client/one-way from client
+  - Added FileData object (OMA 1.2)
+  - Fixed encryption 
+  - Fixed mail filter
+  - Fixed bug 304701 (Refresh or slow sync on Briefcase loose file names)
+
+2006-03-11
+  - pohly: a =0A=0D must be translated into a \n on Linux (VObject::toNativeEncoding())
+
+
+Funambol SDK C++ 3.0.6
+-------------------------   
+2006-02-02
+  - minor fixes
+      
+
+Funambol SDK C++ 3.0.0
+    
+    new major release
+-------------------------   
+
+
+2005-12-13
+  - magi: added sourceParent and targetParent into SyncItem, SyncManager, Parser and Formatter
+
+2005-12-07:
+  - gazza: Class EmailData for SyncML E-Mail transport
+           Fix crash in Sync4jClient on multiple calls
+           New methods on StringBuffer and ArrayList
+           Completed MailMessage format (multipart)
+
+2005-12-05:
+  - gazza: implemented class MailMchangeslog.txtessage, with basic MIME parsing, for e-mail
+           sync. Classes StringBuffer and ArrayList enhanced with new
+           operators and methods for use in the parser.
+           SyncManager now checks beginSync() retcode.
+
+2005-11-28
+  - magi: implemented ONE_WAY_FROM_SERVER, REFRESH_FROM_SERVER in SyncManager
+
+2005-11-25
+  - gazza: new DM and DS config structure 
+  
+2005-11-18
+  - gazza: class reordered with platform/module order.
+  
+2005-11-16
+  - magi: modification in SyncManager.cpp, SyncMLBuilder and SyncMLProcessor for authentication stuffs  
+    
+2005-11-15
+  - magi: modification to ObjectDel.cpp and .h to substitute the NotZeroStringBufferLenght function
+  - gazza: added NotifyProcessor and SyncAlert classes for server alerted notification
+
+2005-11-12
+  - magi: added beginSync() and endSync() pure virtual method to the SyncSource 
+          modified SyncManager to call there method
+          modified TestSyncSource to implement this method
+          updated DeviceManagementNode for ppc whit new properties
+
+2005-11-11
+  - magi: added the authentication basic and md5 process 
+          added multimessage process          
+          added new package "client"
+          added sync4jclient class
+          added ErrorHandler and LogErrorHandler classes (to be implemented)
+          modification of syncsources and config interface
+          added new TestSyncSource
+          modification of test client
+          modification of packages: 
+            accessConfig, SyncSourceConfig -> spds/common
+            AccessManagementNode, SourceManagementNode -> client/common
+          modification of transportAgent: added properties
+             maxMsgSize 
+             maxModPerMsg
+          added conf.reg (under "doc") containing the properties for the configuration (to be moved into the DM tree)
+          
+          Note: currently the api syncs only the first element of the SyncSource array. to be improved
+          
+            
+2005-10-31
+  - patrick stuffs...
+ 
+2005-08-26
+  - magi: first add
