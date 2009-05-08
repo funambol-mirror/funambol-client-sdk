@@ -199,18 +199,6 @@ private:
     int32_t sendMsg(CTPMessage* message);
     StringBuffer createMD5Credentials();
     StringBuffer createErrorMsg(uint32_t errorCode = 0);
-    
-
-    /**
-     * Extracts the list of ServerURI names inside the SyncNotification.
-     * Each ServerURI corresponds to a source that we've been notified for,
-     * but it's the Client that knows the right correspondence with the source name.
-     * TODO: will be moved in PushManager
-     * 
-     * @param sn  pointer to the SyncNotification object to read
-     * @return    an ArrayList of ServerURI names (StringBuffers)
-     */
-    ArrayList getUriListFromSAN(SyncNotification* sn);
 
     
 protected:
@@ -305,6 +293,18 @@ public:
     
     /// Stops the ctpThread and sets the pointer to NULL.
     void stopCtpThread();
+    
+    
+    /**
+     * Extracts the list of ServerURI names inside the SyncNotification.
+     * Each ServerURI corresponds to a source that we've been notified for,
+     * but it's the Client that knows the right correspondence with the source name.
+     * TODO: will be moved in PushManager
+     * 
+     * @param sn  pointer to the SyncNotification object to read
+     * @return    an ArrayList of ServerURI names (StringBuffers)
+     */
+    ArrayList getUriListFromSAN(SyncNotification* sn);
 
     
 private:
