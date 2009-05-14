@@ -1,0 +1,50 @@
+; Installation file for symbian application
+;
+; This is an auto-generated PKG file by Carbide.
+; This file uses variables specific to Carbide builds that will not work
+; on command-line builds. If you want to use this generated PKG file from the
+; command-line tools you will need to modify the variables with the appropriate
+; values: $(EPOCROOT), $(PLATFORM), $(TARGET)
+;
+;Language - standard language definitions
+&EN
+
+; standard SIS file header
+#{"FunambolAPIUTest"},(0xEEBB239B),1,0,0
+
+;Localised Vendor name
+%{"Vendor-EN"}
+
+;Unique Vendor name
+:"Funambol"
+
+;Supports Series 60 v 3.0
+[0x101F7961], 0, 0, 0, {"Series60ProductID"}
+
+;Files to install
+;You should change the source paths to match that of your environment
+;<source> <destination>
+"$(EPOCROOT)epoc32\release\GCCE\UREL\symbian_0xEEBB239B.exe"		-"!:\sys\bin\symbian_0xEEBB239B.exe"
+"$(EPOCROOT)epoc32\data\z\resource\apps\symbian_0xEEBB239B.rsc"		-"!:\resource\apps\symbian_0xEEBB239B.rsc"
+"$(EPOCROOT)epoc32\data\z\private\10003a3f\apps\symbian_0xEEBB239B_reg.rsc"	-"!:\private\10003a3f\import\apps\symbian_0xEEBB239B_reg.rsc"
+"$(EPOCROOT)epoc32\data\z\resource\apps\symbian_0xEEBB239B.mif" -"!:\resource\apps\symbian_0xEEBB239B.mif"
+"..\help\symbian_0xEEBB239B.hlp"							 -"!:\resource\help\symbian_0xEEBB239B.hlp"
+
+;Testcases input files
+"..\..\..\testcases\ex1.xml" -"!:\private\EEBB239B\ex1.xml"
+"..\..\..\testcases\ex2.xml" -"!:\private\EEBB239B\ex2.xml"
+"..\..\..\testcases\syncML1.xml" -"!:\private\EEBB239B\syncML1.xml"
+"..\..\..\testcases\syncML2.xml" -"!:\private\EEBB239B\syncML2.xml"
+"..\..\..\testcases\syncML3.xml" -"!:\private\EEBB239B\syncML3.xml"
+"..\..\..\testcases\syncML4.xml" -"!:\private\EEBB239B\syncML4.xml"
+"..\..\..\testcases\syncML5.xml" -"!:\private\EEBB239B\syncML5.xml"
+"..\..\..\testcases\syncML6.xml" -"!:\private\EEBB239B\syncML6.xml"
+"..\..\..\testcases\syncML7.xml" -"!:\private\EEBB239B\syncML7.xml"
+"..\..\..\testcases\syncML8.xml" -"!:\private\EEBB239B\syncML8.xml"
+"..\..\..\testcases\wrongex.xml" -"!:\private\EEBB239B\wrongex.xml"
+
+; Add any installation notes if applicable
+;"symbian.txt"		-"!:\private\EEBB239B\symbian.txt"
+
+;required for application to be covered by backup/restore facility 
+"..\sis\backup_registration.xml"		-"!:\private\EEBB239B\backup_registration.xml"
