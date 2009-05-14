@@ -329,17 +329,19 @@ void* FileSyncSource::getItemContent(StringBuffer& key, size_t* size) {
         file.setSize(*size);
         file.setBody(fileContent, *size);
         
+        // Removed because the Server expects creation time in UTC format (TODO), 
+        // not as a timestamp. So this field is actually useless.
+        // 
         // Sets the file creation time, if info available
-        struct stat st;
+        /*struct stat st;
         memset(&st, 0, sizeof(struct stat));
         if (stat(completeName, &st) >= 0) {
             StringBuffer tmp;
             tmp.sprintf("%i", st.st_mtime);
             WCHAR* time = toWideChar(tmp.c_str());
-            
             file.setModified(time);
             delete [] time;
-        }
+        }*/
 
         itemContent = file.format();
         *size = strlen(itemContent);
