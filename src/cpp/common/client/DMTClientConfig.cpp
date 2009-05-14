@@ -964,6 +964,10 @@ bool DMTClientConfig::readExtDevConfig(ManagementNode& /* syncMLNode */,
         tmp = extNode.readPropertyValue(PROPERTY_DEVINF_HASH);
         clientConfig.setDevInfHash(tmp);
         delete [] tmp;
+
+        tmp = extNode.readPropertyValue(PROPERTY_SEND_CLIENT_DEVINF);
+        clientConfig.setSendDevInfo((*tmp == '0') ? false : true);          // So if different the default is true (send client devinf)
+        delete [] tmp;
     }
 
     return true;
@@ -1004,6 +1008,8 @@ void DMTClientConfig::saveExtDevConfig(ManagementNode& /* syncMLNode */,
 
         sprintf(buf, "%u", clientConfig.getMaxObjSize());
         extNode.setPropertyValue(PROPERTY_MAX_OBJ_SIZE, buf);
+
+        extNode.setPropertyValue(PROPERTY_SEND_CLIENT_DEVINF,      (clientConfig.getSendDevInfo() ? "1": "0") );
     }
 }
 

@@ -112,6 +112,7 @@
 #define PROPERTY_LOG_LEVEL                  "logLevel"
 #define PROPERTY_MAX_OBJ_SIZE               "maxObjSize"
 #define PROPERTY_DEVINF_HASH                "devInfHash"
+#define PROPERTY_SEND_CLIENT_DEVINF         "sendClientDevInf"
 
 
 
