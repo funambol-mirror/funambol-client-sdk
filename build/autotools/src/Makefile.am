@@ -153,6 +153,9 @@ SOURCES_SPDS = \
     lSyncSource.cpp \
     lSyncSourceConfig.cpp \
     lSyncSourceReport.cpp \
+    lFolderData.cpp \
+    lFolderExt.cpp \
+    lMailAccount.cpp \
     lspdsutils.cpp 
 
 SOURCES_CLIENT = \

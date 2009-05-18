@@ -751,7 +751,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\cpp\common\spds\FolderData.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\spds\FolderExt.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\cpp\common\spds\ItemReport.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\spds\MailAccount.cpp"
 					>
 				</File>
 				<File
@@ -4228,7 +4240,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\include\common\spds\FolderExt.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\include\common\spds\ItemReport.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\include\common\spds\MailAccount.h"
 					>
 				</File>
 				<File

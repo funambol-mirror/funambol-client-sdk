@@ -72,6 +72,9 @@ nobase_pkginclude_HEADERS = \
     common/spds/errors.h \
     common/spds/DefaultConfigFactory.h \
     common/spds/FileData.h \
+    common/spds/FolderData.h \
+    common/spds/FolderExt.h \
+    common/spds/MailAccount.h \
     common/syncml/core/AbstractCommand.h \
     common/syncml/core/Add.h \
     common/syncml/core/AlertCode.h \

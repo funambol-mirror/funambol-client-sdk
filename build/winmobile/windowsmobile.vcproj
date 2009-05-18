@@ -3942,7 +3942,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\cpp\common\spds\FolderExt.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\cpp\common\spds\ItemReport.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\cpp\common\spds\MailAccount.cpp"
 					>
 				</File>
 				<File

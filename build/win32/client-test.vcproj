@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="client-test"
 	ProjectGUID="{68DB1569-6AFC-4288-B7B0-79AF45F2F37C}"
 	RootNamespace="cppunit"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..;..\..\test;..\..\test\integration;..\..\src\include\windows;..\..\src\include\common;..\..\..\..\tools\cppunit\include"
+				AdditionalIncludeDirectories="..\..;..\..\test;..\..\test\integration;..\..\src\include\windows;..\..\src\include\common;..\..\tools\cppunit\include"
 				PreprocessorDefinitions="WIN32;_DEBUG_;ENABLE_UNIT_TESTS;ENABLE_INTEGRATION_TESTS;ENABLE_NAMESPACE;_CRT_SECURE_NO_DEPRECATE;CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -64,7 +64,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="cppunitd.lib wininet.lib wsock32.lib Netapi32.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\tools\cppunit\lib"
+				AdditionalLibraryDirectories="..\..\tools\cppunit\lib"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -198,7 +198,23 @@
 				Name="spds"
 				>
 				<File
+					RelativePath="..\..\test\common\spds\AccountFolderTest.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\test\common\spds\EncryptionTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\test\common\spds\FolderDataTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\test\common\spds\FolderExtTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\test\common\spds\MailAccountTest.cpp"
 					>
 				</File>
 			</Filter>

@@ -38,8 +38,10 @@
 #include "base/util/XMLProcessor.h"
 #include "syncml/formatter/Formatter.h"
 #include "spds/FolderData.h"
+#include "spds/FolderExt.h"
 #include "base/quoted-printable.h"
 #include "base/globalsdef.h"
+#include "base/util/KeyValuePair.h"
 
 USE_NAMESPACE
 
@@ -58,9 +60,9 @@ USE_NAMESPACE
 #define FOLDER_MODIFIED   "modified"
 #define FOLDER_NAME       "name"
 #define FOLDER_CREATED    "created"
-#define FOLDER_EXT    "ext"
-#define FOLDER_XNAM    "XNam"
-#define FOLDER_XVAL    "XVal"
+#define FOLDER_EXT        "Ext"
+#define FOLDER_XNAM       "XNam"
+#define FOLDER_XVAL       "XVal"
 
 
 FolderData::FolderData()
@@ -91,6 +93,7 @@ FolderData::~FolderData()
     name.reset();
     created.reset();
     role.reset();
+
 
 }
 int FolderData::parse(const char *syncmlData, size_t len)
@@ -175,8 +178,13 @@ int FolderData::parse(const char *syncmlData, size_t len)
     }
 
     if( XMLProcessor::getElementContent (msg, FOLDER_EXT, NULL, &start, &end) ) {
-        ;
-        // In this version the extention fields are not suported
+        StringBuffer extmsg = msg;
+        while( XMLProcessor::getElementContent (extmsg, FOLDER_EXT, NULL, &start, &end) ) {
+            FolderExt ext;
+            ext.parse(extmsg.substr(start, end-start));
+            extended.add(ext);
+            extmsg = extmsg.substr( extmsg.find("</Ext>") + strlen("</Ext>"));
+        }
     }
 
     return ret;
@@ -221,6 +229,12 @@ char* FolderData::format() {
 
     if (role.length() > 0)
         out += XMLProcessor::makeElement(FOLDER_ROLE, _wcc(role));
+
+    if (!(extended.isEmpty())){
+        for(int i=0; i < extended.size(); i++){
+            out += ((FolderExt*)extended.get(i))->format();
+        }
+    }
 
     out += "</Folder>\n";
     return stringdup(out.c_str());

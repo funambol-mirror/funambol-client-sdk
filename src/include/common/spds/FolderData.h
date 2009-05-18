@@ -41,6 +41,7 @@
 #include "base/util/ArrayElement.h"
 #include "base/util/WString.h"
 #include "base/util/StringBuffer.h"
+#include "base/util/ArrayList.h"
 #include "base/globalsdef.h"
 
 BEGIN_NAMESPACE
@@ -63,6 +64,7 @@ class FolderData : public ArrayElement {
 		bool readable;
 		bool executable;
 		WString role;
+        ArrayList extended;
 
         // represents the presence of their equivalent tag
         bool isHiddenPresent;
@@ -126,6 +128,13 @@ class FolderData : public ArrayElement {
 		const WCHAR* getRole() { return role; }
 		void setRole(const WCHAR* v) { role = v; }
 
+        void setExtList(ArrayList& list){extended = list;};
+        /**
+         * getter of the Ext list. 
+         * @returns an ArrayList of KeyValuePairs with all the ext values
+         */
+        ArrayList getExtList() { return extended; };
+
 
     // ----------------------------------------------------- Public Methods
         int parse(const char *syncmlData, size_t len = WString::npos) ;
@@ -140,4 +149,3 @@ END_NAMESPACE
 
 /** @endcond */
 #endif
-
