@@ -14,7 +14,7 @@ AM_CPPFLAGS = -I$(INCDIR)/posix -I$(INCDIR)/common -I$(TESTDIR)/integration -DFU
 vpath %.cpp	$(TESTDIR) \
 		$(TESTDIR)/common/base/util \
 		$(TESTDIR)/common/base \
-		$(TESTDIR)/common/spds/ \
+	#	$(TESTDIR)/common/spds/ \
 		$(TESTDIR)/posix/spdm/ \
 		$(TESTDIR)/common/syncml \
 		$(TESTDIR)/common/filter \
@@ -60,7 +60,6 @@ TESTS_SPDS = \
     FolderDataTest.cpp \
     FolderExtTest.cpp \
     MailAccountTest.cpp \
-    ConfigSyncSourceTest.cpp \
     MappingTestSyncSource.cpp
 
 TESTS_PUSH = \
