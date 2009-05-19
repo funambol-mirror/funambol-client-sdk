@@ -1,3 +1,6 @@
+2009-05-19
+    - toccy: fixed bug #311685: avoid segfault after failed authentication with Memotoo server
+
 2009-05-18
     - teo: extended FolderData to handle ext tag
            added FolderExt to handle ext in FolderData

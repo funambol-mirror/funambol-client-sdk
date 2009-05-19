@@ -755,7 +755,7 @@ int SyncManager::prepareSync(SyncSource** s) {
                 }
             } else {
                 if (strcmp(requestedAuthType, AUTH_TYPE_MD5) == 0 && clientAuthRetries == 1)  {
-                    if (clientChal->getNextNonce()) {
+                    if (clientChal && clientChal->getNextNonce()) {
                         credentialHandler.setClientNonce(clientChal->getNextNonce()->getValueAsBase64());
                     }
 
