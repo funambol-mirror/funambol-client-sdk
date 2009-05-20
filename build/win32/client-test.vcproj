@@ -273,6 +273,10 @@
 					RelativePath="..\..\test\common\syncml\ParserTest.cpp"
 					>
 				</File>
+				<File
+					RelativePath="..\..\test\common\syncml\ServerDevInfTest.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="event"
@@ -505,6 +509,34 @@
 			<Filter
 				Name="SyncML"
 				>
+				<File
+					RelativePath="..\..\test\testcases\devInfResults.xml"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Copying $(InputDir)$(InputFileName)"
+							CommandLine="copy $(InputDir)$(InputFileName) $(TargetDir)"
+							Outputs="$(TargetDir)$(InputFileName)"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\test\testcases\devInfResults2.xml"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Copying $(InputDir)$(InputFileName)"
+							CommandLine="copy $(InputDir)$(InputFileName) $(TargetDir)"
+							Outputs="$(TargetDir)$(InputFileName)"
+						/>
+					</FileConfiguration>
+				</File>
 				<File
 					RelativePath="..\..\test\testcases\ex1.xml"
 					>

@@ -293,8 +293,66 @@ class AbstractSyncConfig {
      * Specifies if devinfo should be sent
      */
     virtual bool getSendDevInfo() const = 0;
-    virtual void setSendDevInfo(bool v) = 0;
 
+
+    //
+    // Following methods are used to store Server device capabilities (devInf) when received
+    //
+
+    /**
+     * Specifies if Server devinfo should be asked even if not necessary.
+     * Can be used by Clients to force asking Server caps.
+     */
+    virtual bool getForceServerDevInfo() const = 0;
+
+    /// Specifies the Server software version.
+    virtual const char* getServerSwv() const = 0;
+    virtual void setServerSwv(const char* v) = 0;
+
+    /**
+     * Specifies the Server URL correspondant to the devInf obtained.
+     * It's used to check if the Server URL changed from last time, in this
+     * case the Server devInf are obsolete (will ask them again).
+     */
+    virtual const char* getServerLastSyncURL() const = 0;
+    virtual void setServerLastSyncURL(const char* v) = 0;
+
+    /// Specifies the name of the manufacturer of the Server.
+    virtual void setServerMan(const char* v) = 0;
+
+    /// Specifies the model name or model number of the Server.
+    virtual void setServerMod(const char* v) = 0;
+
+    /// Specifies the OEM (Original Equipment Manufacturer) of the Server.
+    virtual void setServerOem(const char* v) = 0;
+
+    /// Specifies the firmware version of the Server.
+    virtual void setServerFwv(const char* v) = 0;
+
+    /// Specifies the hardware version of the Server.
+    virtual void setServerHwv(const char* v) = 0;
+
+    /// Specifies the Server identifier.
+    virtual void setServerDevID(const char* v) = 0;
+
+    /// Specifies the Server type (expected "server")
+    virtual void setServerDevType(const char* v) = 0;
+
+    /// Specifies if the Server supports UTC based time.
+    virtual void setServerUtc(const bool v) = 0;
+
+    /// Specifies if the Server supports handling of large objects.
+    virtual void setServerLoSupport(const bool v) = 0;
+
+    /// Specifies if the Server supports number of changes.
+    virtual void setServerNocSupport(const bool v) = 0;
+
+    /// Specifies the DTD version of the Server (expected "1.2")
+    virtual void setServerVerDTD(const char* v) = 0;
+
+    /// Specifies if the Server supports the Smart Slow sync.
+    virtual void setServerSmartSlowSync(const int  v) = 0;
+    
 };
 
 

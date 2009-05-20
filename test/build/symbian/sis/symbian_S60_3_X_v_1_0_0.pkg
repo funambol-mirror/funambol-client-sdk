@@ -31,6 +31,8 @@
 "..\help\symbian_0xEEBB239B.hlp"							 -"!:\resource\help\symbian_0xEEBB239B.hlp"
 
 ;Testcases input files
+"..\..\..\testcases\devInfResults.xml" -"!:\private\EEBB239B\devInfResults.xml"
+"..\..\..\testcases\devInfResults2.xml" -"!:\private\EEBB239B\devInfResults2.xml"
 "..\..\..\testcases\ex1.xml" -"!:\private\EEBB239B\ex1.xml"
 "..\..\..\testcases\ex2.xml" -"!:\private\EEBB239B\ex2.xml"
 "..\..\..\testcases\syncML1.xml" -"!:\private\EEBB239B\syncML1.xml"

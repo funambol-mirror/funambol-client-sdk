@@ -108,7 +108,7 @@ void SyncBody::setCommands(ArrayList* commands) {
     }
     if (err == false) {
         //this->commands->clear();
-        if (this->commands == NULL){
+        if (this->commands != NULL){
             delete this->commands;
             this->commands = NULL;
         }

@@ -40,6 +40,7 @@
 #include "base/util/utils.h"
 #include "spds/constants.h"
 #include "spds/SyncMLProcessor.h"
+#include "spds/SyncMLBuilder.h"
 #include "spds/spdsutils.h"
 
 #include "event/FireEvent.h"
@@ -175,6 +176,199 @@ finally:
 
     return ret;
 }
+
+
+ArrayList* SyncMLProcessor::processGetCommand(AbstractCommand* cmd, DevInf* devInf) {
+
+    ArrayList* ret = new ArrayList();
+
+    if (!cmd) {
+        return ret;
+    }
+    StringBuffer name = cmd->getName();
+    Get* get = (Get*)cmd;
+    if ((name != GET) || !get) {
+        return ret;
+    }
+
+    ArrayList *items = get->getItems();
+    bool sendDevInf = false;
+
+    Results results;
+    for (int i = 0; i < items->size(); i++) {
+        Item *item = (Item *)items->get(i);
+
+        // we are not very picky: as long as the Item is
+        // called "./devinf11" as required by the standard
+        // we return our device infos
+        Target *target = item->getTarget();
+        if (target && target->getLocURI() && 
+            !strcmp(target->getLocURI(), DEVINF_URI)) {
+            sendDevInf = true;
+        } else {
+            LOG.debug("ignoring request to Get item #%d", i);
+        }
+    }
+
+    // cannot send if we have nothing, then simply acknowledge the request, but ignore it
+    if (sendDevInf && devInf) {
+        SyncMLBuilder syncMLBuilder;
+        AbstractCommand *result = syncMLBuilder.prepareDevInf(cmd, *devInf);
+        if (result) {
+            ret->add(*result);
+            delete result;
+        }
+    }
+
+    // Send back status code 200
+    int statusCode = 200; 
+    SyncMLBuilder syncMLBuilder;
+    Status* status = syncMLBuilder.prepareCmdStatus(*cmd, statusCode);
+    if (status) {
+        // Fire Sync Status Event: status from client
+        fireSyncStatusEvent(status->getCmd(), status->getStatusCode(), NULL, NULL, NULL , CLIENT_STATUS);
+        ret->add(*status);
+        deleteStatus(&status);
+    }
+
+    return ret;
+}
+
+
+ArrayList* SyncMLProcessor::processPutCommand(AbstractCommand* cmd, AbstractSyncConfig& config) {
+
+    ArrayList* ret = new ArrayList();
+
+    if (!cmd) {
+        return ret;
+    }
+    StringBuffer name = cmd->getName();
+    Put* put = (Put*)cmd;
+    if ((name != PUT) || !put) {
+        return ret;
+    }
+
+    if (processServerDevInf(cmd, config)) {
+        LOG.debug("Server capabilities obtained");
+    }
+
+    // Send back status code 200
+    int statusCode = 200; 
+    SyncMLBuilder syncMLBuilder;
+    Status* status = syncMLBuilder.prepareCmdStatus(*cmd, statusCode);
+    if (status) {
+        // Fire Sync Status Event: status from client
+        fireSyncStatusEvent(status->getCmd(), status->getStatusCode(), NULL, NULL, NULL , CLIENT_STATUS);
+        ret->add(*status);
+        deleteStatus(&status);
+    }
+
+    return ret;
+}
+
+
+
+bool SyncMLProcessor::processServerDevInf(AbstractCommand* cmd, AbstractSyncConfig& config) {
+
+    ItemizedCommand* command = (ItemizedCommand*)cmd;
+    if (!command) {
+        return false;
+    }
+
+    //
+    // Should we check the meta type = "application/vnd.syncml-devinf+xml" ?
+    //
+    //Meta* meta = command->getMeta();
+    //if (meta) {
+    //    StringBuffer type = meta->getType();
+    //    if (type != DEVINF_FORMAT) {
+    //        return false;
+    //    }
+    //}
+
+    ArrayList *items = command->getItems();
+    for (int i=0; i < items->size(); i++) {
+
+        Item* item = (Item*)items->get(i);
+        if (!item) { continue; }
+        
+        Source* source = item->getSource();
+        if (!source) { continue; }
+        StringBuffer locURI = source->getLocURI();
+        if (locURI == DEVINF_URI) {
+            //
+            // This is a Server devInf item -> process it.
+            //
+            ComplexData* data = item->getData();
+            if (!data) { continue; }
+
+            DevInf* devInf = data->getDevInf();
+            if (!devInf) { continue; }
+
+
+            // Set all Server devInf params to config
+            VerDTD* verDTD = devInf->getVerDTD();
+            if (verDTD) { 
+                config.setServerVerDTD(verDTD->getValue());
+            }
+            config.setServerMan       (devInf->getMan()   );
+            config.setServerMod       (devInf->getMod()   );
+            config.setServerOem       (devInf->getOEM()   );
+            config.setServerFwv       (devInf->getFwV()   );
+            config.setServerSwv       (devInf->getSwV()   );
+            config.setServerHwv       (devInf->getHwV()   );
+            config.setServerUtc       (devInf->getUTC()   );
+            config.setServerDevID     (devInf->getDevID() );
+            config.setServerDevType   (devInf->getDevTyp());
+            config.setServerLoSupport (devInf->getSupportLargeObjs());
+            config.setServerNocSupport(devInf->getSupportNumberOfChanges());
+            
+            // Process devInf Extension properties
+            ArrayList* ext = devInf->getExt();
+            if (ext) {
+                for (int i=0; i < ext->size(); i++) {
+                    Ext* element = (Ext*)ext->get(i);
+                    if (element) {
+                        StringBuffer xName = element->getXNam();
+
+                        // The only extension expected
+                        if (xName == "X-funambol-smartslow") {
+                            config.setServerSmartSlowSync(true);
+                        }
+                    }
+                }
+            }
+
+            // Store the Server location corresponding to these capabilities
+            // so we'll ask devInf again if the location changes next time.
+            config.setServerLastSyncURL(config.getSyncURL());
+
+            //
+            // Server Datastores/CTCaps: not stored now... do we need them? (TODO)
+            //
+            //ArrayList* dataStores = devInf->getDataStore();
+            //if (dataStores) {
+            //    for (int i=0; i < dataStores->size(); i++) {
+            //        dataStores->get(i);
+            //    }
+            //}
+            //
+            //ArrayList* ctCap = devInf->getCTCap();
+            //if (ctCap) {
+            //    for (int i=0; i < ctCap->size(); i++) {
+            //        ctCap->get(i);
+            //    }
+            //}
+
+            return true;
+        }
+    }
+
+    // If here, no Server devInf found.
+    return false;
+}
+
+
 
 
 char** SyncMLProcessor::getSortedSourcesFromServer(SyncML* syncml, int sourcesNumber) {

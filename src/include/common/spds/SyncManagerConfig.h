@@ -143,6 +143,7 @@ class SyncManagerConfig : public AbstractSyncConfig {
         virtual const char* getProxyUsername() const { return getAccessConfig().getProxyUsername(); }
         virtual const char* getProxyPassword() const { return getAccessConfig().getProxyPassword(); }
         virtual const char*  getSyncURL() const { return getAccessConfig().getSyncURL(); }
+        virtual void setSyncURL(const char*  v) { getAccessConfig().setSyncURL(v); }
         virtual void setBeginSync(unsigned long timestamp) { getAccessConfig().setBeginSync(timestamp); }
         virtual void setEndSync(unsigned long timestamp) { getAccessConfig().setEndSync(timestamp); }
         virtual bool getServerAuthRequired() const { return getAccessConfig().getServerAuthRequired(); }
@@ -178,6 +179,40 @@ class SyncManagerConfig : public AbstractSyncConfig {
 
         virtual bool getSendDevInfo() const { return getClientConfig().getSendDevInfo(); }
         virtual void setSendDevInfo(bool v) { getClientConfig().setSendDevInfo(v); }
+
+        virtual bool getForceServerDevInfo() const { return getClientConfig().getForceServerDevInfo(); }
+        virtual void setForceServerDevInfo(bool v) { getClientConfig().setForceServerDevInfo(v); }
+
+
+        virtual void setServerSwv(const char* v)        { getServerConfig().setSwv(v); }
+        virtual void setServerFwv(const char* v)        { getServerConfig().setFwv(v); }
+        virtual void setServerHwv(const char* v)        { getServerConfig().setHwv(v); }
+        virtual void setServerMan(const char* v)        { getServerConfig().setMan(v); }
+        virtual void setServerMod(const char* v)        { getServerConfig().setMod(v); }
+        virtual void setServerOem(const char* v)        { getServerConfig().setOem(v); }
+        virtual void setServerDevID     (const char* v) { getServerConfig().setDevID(v);     }
+        virtual void setServerDevType   (const char* v) { getServerConfig().setDevType(v);   }
+        virtual void setServerUtc       (const bool  v) { getServerConfig().setUtc(v);       }
+        virtual void setServerLoSupport (const bool  v) { getServerConfig().setLoSupport(v); }
+        virtual void setServerNocSupport(const bool  v) { getServerConfig().setNocSupport(v);}
+        virtual void setServerVerDTD    (const char* v) { getServerConfig().setVerDTD(v);    }
+        virtual void setServerSmartSlowSync(const int v){ getServerConfig().setSmartSlowSync(v); }
+        virtual void setServerLastSyncURL(const char* v){ getServerConfig().setServerLastSyncURL(v); }
+
+        virtual const char* getServerSwv() const        { return getServerConfig().getSwv(); }
+        virtual const char* getServerFwv() const        { return getServerConfig().getFwv(); }
+        virtual const char* getServerHwv() const        { return getServerConfig().getHwv(); }
+        virtual const char* getServerMan() const        { return getServerConfig().getMan(); }
+        virtual const char* getServerMod() const        { return getServerConfig().getMod(); }
+        virtual const char* getServerOem() const        { return getServerConfig().getOem(); }
+        virtual const char* getServerDevID() const      { return getServerConfig().getDevID(); }
+        virtual const char* getServerDevType() const    { return getServerConfig().getDevType(); }
+        virtual bool getServerUtc() const               { return getServerConfig().getUtc(); }
+        virtual bool getServerLoSupport() const         { return getServerConfig().getLoSupport(); }
+        virtual bool getServerNocSupport() const        { return getServerConfig().getNocSupport(); }
+        virtual const char* getServerVerDTD() const     { return getServerConfig().getVerDTD(); }
+        virtual int getServerSmartSlowSync() const      { return getServerConfig().getSmartSlowSync(); }
+        virtual const char* getServerLastSyncURL() const{ return getServerConfig().getServerLastSyncURL(); }
 
 };
 

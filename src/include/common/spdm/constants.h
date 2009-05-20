@@ -113,7 +113,8 @@
 #define PROPERTY_MAX_OBJ_SIZE               "maxObjSize"
 #define PROPERTY_DEVINF_HASH                "devInfHash"
 #define PROPERTY_SEND_CLIENT_DEVINF         "sendClientDevInf"
-
+#define PROPERTY_SMART_SLOW_SYNC            "smartSlowSync"
+#define PROPERTY_SERVER_LAST_SYNC_URL       "lastSyncURL"
 
 
 #define DIRTY_USERNAME                 0x00001

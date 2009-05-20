@@ -467,6 +467,15 @@ int SyncManager::prepareSync(SyncSource** s) {
 
         }
 
+        // Ask Server DevInf if necessary (Get command)
+        if (askServerDevInf()) {
+            AbstractCommand* get = syncMLBuilder.prepareServerDevInf();
+            if (get) {
+                commands.add(*get);
+                delete get;
+            }
+        }
+
         // actively send out device infos?
         if (putDevInf) {
             AbstractCommand* put = syncMLBuilder.prepareDevInf(NULL, *devInf);
@@ -673,68 +682,51 @@ int SyncManager::prepareSync(SyncSource** s) {
         }
 
         //
-        // Process Put/Get commands
+        // Process Get commands
         //
-        list = syncml->getSyncBody()->getCommands();
-        int cmdindex;
-        for (cmdindex = 0; cmdindex < list->size(); cmdindex++) {
-            AbstractCommand* cmd = (AbstractCommand*)list->get(cmdindex);
-            const char* name = cmd->getName();
-            if (name) {
-                bool isPut = !strcmp(name, PUT);
-                bool isGet = !strcmp(name, GET);
-
-                if (isGet || isPut) {
-                    int statusCode = 200; // if set, then send it (on by default)
-
-                    if (isGet) {
-                        Get *get = (Get *)cmd;
-                        ArrayList *items = get->getItems();
-                        bool sendDevInf = false;
-
-                        Results results;
-                        for (int i = 0; i < items->size(); i++) {
-                            Item *item = (Item *)items->get(i);
-
-                            // we are not very picky: as long as the Item is
-                            // called "./devinf11" as required by the standard
-                            // we return our device infos
-                            Target *target = item->getTarget();
-                            if (target && target->getLocURI() &&
-                                !strcmp(target->getLocURI(),
-                                         DEVINF_URI)) {
-                                sendDevInf = true;
-                            } else {
-                                LOG.debug("ignoring request to Get item #%d", i);
-                            }
-                        }
-
-                        // cannot send if we have nothing, then simply acknowledge the request,
-                        // but ignore it
-                        if (sendDevInf && devInf) {
-                            AbstractCommand *result = syncMLBuilder.prepareDevInf(cmd, *devInf);
-                            if (result) {
-                                commands.add(*result);
-                                delete result;
-                            }
-                        }
-                    } else {
-                        // simply acknowledge Put
-                    }
-
-                    if (statusCode) {
-                        status = syncMLBuilder.prepareCmdStatus(*cmd, statusCode);
-                        if (status) {
-                            // Fire Sync Status Event: status from client
-                            fireSyncStatusEvent(status->getCmd(), status->getStatusCode(), NULL, NULL, NULL , CLIENT_STATUS);
-
-                            commands.add(*status);
-                            deleteStatus(&status);
-                        }
-                    }
-                }
+        list = syncMLProcessor.getCommands(syncml->getSyncBody(), GET);
+        for (int i=0; i < list->size(); i++) {
+            AbstractCommand* cmd = (AbstractCommand*)list->get(i);
+            ArrayList* responseCmd = NULL;
+            if (responseCmd = syncMLProcessor.processGetCommand(cmd, devInf)) {
+                commands.add(responseCmd);
+                delete responseCmd;
             }
         }
+        delete list;
+        list = NULL;
+
+        //
+        // Process Put commands
+        //
+        list = syncMLProcessor.getCommands(syncml->getSyncBody(), PUT);
+        for (int i=0; i < list->size(); i++) {
+            AbstractCommand* cmd = (AbstractCommand*)list->get(i);
+            ArrayList* responseCmd = NULL;
+            if (responseCmd = syncMLProcessor.processPutCommand(cmd, config)) {
+                commands.add(responseCmd);
+                delete responseCmd;
+            }
+        }
+        delete list;
+        list = NULL;
+
+
+        //
+        // Process Server devInf (Results to our Get command)
+        //
+        list = syncMLProcessor.getCommands(syncml->getSyncBody(), RESULTS);
+        for (int i=0; i < list->size(); i++) {
+            AbstractCommand* cmd = (AbstractCommand*)list->get(i);
+            if (syncMLProcessor.processServerDevInf(cmd, config)) {
+                LOG.debug("Server capabilities obtained");
+                break;
+            }
+        }
+        delete list;
+        list = NULL;
+
+
 
         //
         // Client Authentication. The auth of the client on the server
@@ -2446,6 +2438,68 @@ DevInf *SyncManager::createDeviceInfo()
 
     return devinfo;
 }
+
+
+bool SyncManager::askServerDevInf() {
+
+    // 1. The Client can force to always ask the Server devInf
+    if (config.getForceServerDevInfo()) {
+        LOG.debug("Client forced to ask Server capabilities");
+        return true;
+    }
+
+    // 2. If Server URL changed from last time we obtained the Server caps,
+    //    we must ask them again (and clear invalid data)
+    StringBuffer currentURL = config.getSyncURL();
+    StringBuffer lastURL    = config.getServerLastSyncURL();
+    if (currentURL != lastURL) {
+        LOG.debug("Server capabilities are invalid (Server URL changed)");
+        clearServerDevInf();
+        return true;
+    }
+
+    // 3. If the Server swv is not available, we need to ask Server caps.
+    //    Server_swv is considered a mandatory property.
+    StringBuffer serverSwv = config.getServerSwv();
+    if (serverSwv.empty()) {
+        LOG.debug("Server capabilities not found in config");
+        return true;
+    }
+
+    // TODO: we should ask Server devInf also if we don't have enough
+    //       information on any source actually under sync.
+    //       (we don't store Server DataStore at the moment)
+    //
+    /*for (int i=0; s[i]; i++) {
+        const char* name = s[i]->getConfig().getName();
+        AbstractSyncSourceConfig* ssconfig = config.getAbstractSyncSourceConfig(name);
+        if (ssconfig) {
+        }
+    }*/
+
+    LOG.debug("Server capabilities found in config: no need to ask them");
+    return false;
+}
+
+
+void SyncManager::clearServerDevInf() {
+
+    config.setServerVerDTD    ("");
+    config.setServerMan       ("");
+    config.setServerMod       ("");
+    config.setServerOem       ("");
+    config.setServerFwv       ("");
+    config.setServerSwv       ("");
+    config.setServerHwv       ("");
+    config.setServerUtc       (false);
+    config.setServerDevID     ("");
+    config.setServerDevType   ("");
+    config.setServerLoSupport (false);
+    config.setServerNocSupport(false);
+    config.setServerSmartSlowSync(false);
+    config.setServerLastSyncURL("");
+}
+
 
 
 /* Copy from AbstractSyncSourceConfig::getSupportedTypes() format into array list

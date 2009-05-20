@@ -1,10 +1,27 @@
+2009-05-20
+    - toccy: merged from branch US2275 to trunk (C++ Sync Clients - Support for Server capabilities)
+             The Server capabilities are autonomously processed by APIs and params are stored under Server config node
+             Clients can force to request Server caps via the flag: 'forceServerDevInfo'
+
 2009-05-19
+    - toccy: [US2275] Some small refactoring of SyncManager::prepareSync() to process Get/Put commands, 
+                      moved in specialized methods under SyncMLProcessor
+    - toccy: [US2275] Added tests on Server capabilities (ServerDevInfTest suite)
+    - toccy: [US2275] Fixed parsed of devInf
+    - toccy: [US2275] Server capabilities are parsed and values are stored under Server config node
+    - toccy: [US2275] Added serverLastSync property under Server config node: to ask Server devInf if URL changed
     - toccy: fixed bug #311685: avoid segfault after failed authentication with Memotoo server
 
 2009-05-18
     - teo: extended FolderData to handle ext tag
            added FolderExt to handle ext in FolderData
            added MailAccount to wrap the Account information sent by Folder from the server
+
+2009-05-14
+    - toccy: [US2275] Added Get command to obtain Server Capabilies (added SyncMLBuilder::prepareServerDevInf())
+    - toccy: [US2275] Added 'forceServerDevInfo' param in ClientConfig, to let a Client to force the Get of Server devInf
+    - toccy: created branch US2275 (C++ Sync Clients - Support for Server capabilities) - rev. 702
+
 2009-04-29
     - magi: merged from branch US1746 (Picture Sync - avoid to send pictures twice)
             fixed memory leak in vocl component for WinContact, WinCalendar, WinNote, WinTask

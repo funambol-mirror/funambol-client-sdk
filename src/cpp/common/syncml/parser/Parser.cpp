@@ -1639,6 +1639,10 @@ ComplexData* Parser::getComplexData(const char* allxml, const char* command, uns
 }
 
 DevInf* Parser::getDevInf(const char*xml) {
+    if (!xml) {
+        return NULL;
+    }
+
     DevInf* ret             = NULL;
     DataStore* dataStore    = NULL;
     CTCap* ctCap            = NULL;
@@ -1654,8 +1658,7 @@ DevInf* Parser::getDevInf(const char*xml) {
     SyncCap* syncCap        = NULL;
 
     unsigned int pos = 0;
-    StringBuffer t;
-    verDTD = getVerDTD(t.c_str());
+    verDTD = getVerDTD(xml);
     StringBuffer man, mod, oem, fwV, swV, hwV, devId, devTyp;
 
     XMLProcessor::copyElementContent(man, xml, MAN,           NULL);
@@ -1673,6 +1676,7 @@ DevInf* Parser::getDevInf(const char*xml) {
     pos = 0;
 
     // DataStore
+    StringBuffer t;
     XMLProcessor::copyElementContent(t, &xml[pos], DATA_STORE, &pos);
     while ((dataStore = getDataStore(t.c_str())) != NULL) {
         if (dataStore) {
@@ -1714,31 +1718,28 @@ DevInf* Parser::getDevInf(const char*xml) {
     // The large object value depends on SUPPORT_LARGE_OBJECT tag.
     //
     StringBuffer value;
-    XMLProcessor::copyElementContent(value, xml, SUPPORT_LARGE_OBJECT, NULL);
-    if (!value.empty()) {
-        if (wcscmpIgnoreCase(value.c_str(), "TRUE")) {
-            supportLargeObjs = true;
-        }
+    pos = StringBuffer::npos;
+    XMLProcessor::copyElementContent(value, xml, SUPPORT_LARGE_OBJECT, &pos);
+    if (pos != StringBuffer::npos) {
+        supportLargeObjs = true;
     }
 
     //
-    // The large object value depends on SUPPORT_NUMBER_OF_CHANGES tag.
+    // The number of changes value depends on SUPPORT_NUMBER_OF_CHANGES tag.
     //
-    XMLProcessor::copyElementContent(value, xml, SUPPORT_NUMBER_OF_CHANGES, NULL);
-    if (!value.empty()) {
-        if (wcscmpIgnoreCase(value.c_str(), "TRUE")) {
-            supportNumberOfChanges = true;
-        }
+    pos = StringBuffer::npos;
+    XMLProcessor::copyElementContent(value, xml, SUPPORT_NUMBER_OF_CHANGES, &pos);
+    if (pos != StringBuffer::npos) {
+        supportNumberOfChanges = true;
     }
 
     //
-    // The large object value depends on UTC tag.
+    // The utc value depends on UTC tag.
     //
-    XMLProcessor::copyElementContent(value, xml, UTC, NULL);
-    if (!value.empty()) {
-        if (wcscmpIgnoreCase(value.c_str(), "TRUE")) {
-            utc = true;
-        }
+    pos = StringBuffer::npos;
+    XMLProcessor::copyElementContent(value, xml, UTC, &pos);
+    if (pos != StringBuffer::npos) {
+        utc = true;
     }
 
     bool notNull = NotNullCheck(8, man.c_str(), mod.c_str(), oem.c_str(),

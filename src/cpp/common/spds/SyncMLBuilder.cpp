@@ -499,6 +499,49 @@ AbstractCommand *SyncMLBuilder::prepareDevInf(AbstractCommand *cmd, DevInf &devI
 }
 
 
+AbstractCommand *SyncMLBuilder::prepareServerDevInf()
+{
+    AbstractCommand *res = NULL;
+
+    Target target(DEVINF_URI);
+    Meta meta;
+    meta.setType(DEVINF_FORMAT);
+    // meta.setFormat("xml");
+    Item item(&target,
+              NULL,
+              NULL,
+              NULL,
+              false);
+
+    ++cmdID;
+    char* cmdid = itow(cmdID);
+    CmdID commandID(cmdid);
+    delete [] cmdid; cmdid = NULL;
+    ArrayList items;
+    items.add(item);
+
+    /*
+    <Get>
+        <CmdID>3</CmdID>
+        <Meta><Type xmlns=’syncml:metinf’>application/vnd.syncml-devinf+xml</Type></Meta>
+        <Item>
+            <Target><LocURI>./devinf12</LocURI></Target>
+        </Item>
+    </Get>
+    */
+
+    res = new Get(&commandID,
+                  false,
+                  NULL,
+                  NULL,
+                  &meta,
+                  &items);
+
+    return res;
+}
+
+
+
 Alert* SyncMLBuilder::prepareAlert(SyncSource& s, int code) {
 
     ++cmdID;

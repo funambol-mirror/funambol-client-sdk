@@ -98,6 +98,8 @@ verbatim_files = \
 	test/testcases/vcard21.vcf \
 	test/testcases/vcard30.vcf \
 	test/testcases/imemo20.ics \
+	test/testcases/devInfResults.xml \
+	test/testcases/devInfResults2.xml \
 	test/testcases/ex1.xml \
 	test/testcases/ex2.xml \
 	test/testcases/syncML1.xml \

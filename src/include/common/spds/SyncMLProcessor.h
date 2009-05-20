@@ -112,6 +112,41 @@ BEGIN_NAMESPACE
         int processAlertStatus(SyncSource& source, SyncML* syncml, ArrayList* alerts);
 
         int processServerAlert(SyncSource& source, SyncML* syncml);
+
+        /**
+         * Process Get command from the Server.
+         * If Server asks for Client's devInf, we reply sending them (only if devInf is not NULL).
+         * Anyway if there was a Get command, we always reply with a 200 status.
+         *
+         * @param cmd    the SyncML command containing the Server Put to process
+         * @param devInf the deviceInfo corresponding to Client's capabilities
+         * @return       new allocated ArrayList of commands to be added in the response msg
+         */
+        ArrayList* processGetCommand(AbstractCommand* cmd, DevInf* devInf);
+
+        /**
+         * Process Put command from the Server.
+         * If Server devInf found, they're processed and stored (processServerDevInf).
+         * Anyway if there was a Put command, we always reply with a 200 status.
+         *
+         * @param cmd    the SyncML command containing the Server Put to process
+         * @param config reference to AbstractSyncConfig configuration
+         * @return       new allocated ArrayList of commands to be added in the response msg
+         */
+        ArrayList* processPutCommand(AbstractCommand* cmd, AbstractSyncConfig& config);
+
+        /**
+         * Parse and process Server device capabilities if found.
+         * If so, stores all the data in configuration (under Server node).
+         * It can be called either in case of Server response to our Get command (Results)
+         * or in case of a Put command from the Server.
+         * 
+         * @param cmd    the SyncML command containing the Server devInf to process
+         * @param config reference to AbstractSyncConfig configuration
+         * @return true  if Server devInf found and processed
+         */
+        bool processServerDevInf(AbstractCommand* cmd, AbstractSyncConfig& config);
+
         /*
         * Get the chal from a syncBody object. It is used to get the auth type and next nonce if needed
         */
