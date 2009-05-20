@@ -142,7 +142,7 @@ class SyncMLBuilder {
         /**
          * Prepare a Get for the Server device infos.
          */
-        AbstractCommand *SyncMLBuilder::prepareServerDevInf();
+        AbstractCommand* prepareServerDevInf();
 
         /*
         * Prepare the Sync object. It doesn't contain any items. It is to prepare the insert of items
