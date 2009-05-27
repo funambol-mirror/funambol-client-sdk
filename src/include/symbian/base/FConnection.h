@@ -45,7 +45,7 @@ BEGIN_NAMESPACE
 
 
 /// Max number of times we retry the connection, in case of errors.
-#define         MAX_RETRY_CONNECTION    3
+#define         MAX_RETRY_CONNECTION    1
 
 
 
