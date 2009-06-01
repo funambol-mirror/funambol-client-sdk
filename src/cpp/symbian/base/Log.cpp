@@ -281,7 +281,7 @@ void SymbianLog::printMessage(const char* level, const char* msg, PLATFORM_VA_LI
 {
     iSemaphore.Wait();
     
-    StringBuffer currentTime = createCurrentTime(false);
+    StringBuffer currentTime = createCurrentTime(true);
     
     TInt err = file.Open(fsSession, iLogName, EFileWrite|EFileShareAny);
     TInt pos = 0;
