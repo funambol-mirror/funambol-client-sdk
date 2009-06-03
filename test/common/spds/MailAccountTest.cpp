@@ -106,6 +106,8 @@ private:
 
        CPPUNIT_ASSERT( strcmp(val1, VISIBLENAME) == 0);
        CPPUNIT_ASSERT( strcmp(val2, EMAILADDRESS) == 0);
+       delete [] val1;
+       delete [] val2;
     }
 
 };

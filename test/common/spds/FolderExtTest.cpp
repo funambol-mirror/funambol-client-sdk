@@ -79,8 +79,10 @@ private:
 
         ext.setXNam(NAME);
         ext.setXVals(xvals);
-
-        StringBuffer folderString(ext.format());
+	
+	const char* temp = ext.format();
+        StringBuffer folderString(temp);
+	delete [] temp;
         folderString.replaceAll("\n", "");
         CPPUNIT_ASSERT(strcmp(folderString.c_str(), FOLDER_STRING) == 0);
     }

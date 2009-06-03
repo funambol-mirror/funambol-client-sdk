@@ -232,7 +232,9 @@ char* FolderData::format() {
 
     if (!(extended.isEmpty())){
         for(int i=0; i < extended.size(); i++){
-            out += ((FolderExt*)extended.get(i))->format();
+            const char* temp =  ((FolderExt*)extended.get(i))->format();
+            out += temp;
+            delete [] temp;
         }
     }
 

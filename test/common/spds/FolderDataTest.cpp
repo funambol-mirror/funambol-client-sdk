@@ -80,7 +80,9 @@ private:
         folder.setName(FOLDER_NAME);
         folder.setCreated(CREATED);
         folder.setRole(ROLE);
-        StringBuffer folderString(folder.format());
+        const char* temp = folder.format();
+        StringBuffer folderString(temp);
+        delete [] temp;
         folderString.replaceAll("\n", "");
         CPPUNIT_ASSERT(strcmp(folderString.c_str(), FOLDER_STRING) == 0);
     }
