@@ -103,8 +103,9 @@ private:
         exts.add(ext);
 
         folder.setExtList(exts);
-
-        StringBuffer folderString(folder.format());
+        char* temp = folder.format();
+        StringBuffer folderString(temp);
+        delete temp;
         folderString.replaceAll("\n", "");
         CPPUNIT_ASSERT(strcmp(folderString.c_str(), FOLDER_STRING) == 0);
     }

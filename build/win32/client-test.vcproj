@@ -518,7 +518,7 @@
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Copying $(InputDir)$(InputFileName)"
-							CommandLine="copy $(InputDir)$(InputFileName) $(TargetDir)"
+							CommandLine="copy $(InputDir)$(InputFileName) $(TargetDir)&#x0D;&#x0A;"
 							Outputs="$(TargetDir)$(InputFileName)"
 						/>
 					</FileConfiguration>
@@ -532,7 +532,7 @@
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Copying $(InputDir)$(InputFileName)"
-							CommandLine="copy $(InputDir)$(InputFileName) $(TargetDir)"
+							CommandLine="copy $(InputDir)$(InputFileName) $(TargetDir)&#x0D;&#x0A;"
 							Outputs="$(TargetDir)$(InputFileName)"
 						/>
 					</FileConfiguration>
