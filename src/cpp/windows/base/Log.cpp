@@ -54,7 +54,27 @@ static FILE* logFile = NULL;
 static WString      wlogDir(TEXT("\\"));
 static StringBuffer logName(LOG_NAME);
 static StringBuffer logPath("\\");
+static WCHAR mutexName[128];
 
+HANDLE winLog::wait() {
+  
+    HANDLE hMutex = CreateMutex(NULL, TRUE, mutexName);
+    switch(GetLastError()) {
+        case ERROR_SUCCESS:
+            break;
+        case ERROR_ALREADY_EXISTS:
+            CloseHandle(hMutex);
+            hMutex = NULL;
+            break;
+        default:
+            {}
+    }    
+    return hMutex;        
+}
+
+void winLog::signal(HANDLE hMutex) {
+    CloseHandle(hMutex);
+}
 
 winLog::winLog(bool resetLog, const char* path, const char* name) {
 
@@ -119,6 +139,7 @@ void winLog::setLogName(const char* configLogName) {
 
     if (configLogName != NULL) {
         logName = configLogName;
+        wsprintf(mutexName, TEXT("%S"), logName);
     }
     else {
         logName = LOG_NAME;
@@ -169,37 +190,50 @@ static StringBuffer createCurrentTime(bool complete) {
 
 
 void winLog::error(const char*  msg, ...) {
+   HANDLE h = wait();
+   if (!h) return;
     va_list argList;
     va_start (argList, msg);
     printMessage(LOG_ERROR, msg, argList);
     va_end(argList);
+
+   signal(h);
 }
 
 void winLog::info(const char*  msg, ...) {
+    HANDLE h = wait();
+    if (!h) return;
     if (isLoggable(LOG_LEVEL_INFO)) {
         va_list argList;
-	    va_start (argList, msg);
+        va_start (argList, msg);
         printMessage(LOG_INFO, msg, argList);
-	    va_end(argList);
+        va_end(argList);
     }
+    signal(h);
 }
 
 void winLog::debug(const char*  msg, ...) {
+    HANDLE h = wait();
+    if (!h) return;
     if (isLoggable(LOG_LEVEL_DEBUG)) {
-	    va_list argList;
+        va_list argList;
         va_start (argList, msg);
         printMessage(LOG_DEBUG, msg, argList);
         va_end(argList);
     }
+    signal(h);
 }
 
 void winLog::developer(const char*  msg, ...) {
+    HANDLE h = wait();
+    if (!h) return;
     if (isLoggable(LOG_LEVEL_INFO)) {
         va_list argList;
         va_start (argList, msg);
         printMessage(LOG_DEBUG, msg, argList);
         va_end(argList);
     }
+    signal(h);
 }
 
 

@@ -59,7 +59,9 @@ BEGIN_NAMESPACE
 class winLog : public Log {
 
 private:
-
+    
+    HANDLE wait();
+    void signal(HANDLE hMutex);
     void printMessage(const char*  level, const char*  msg, va_list argList);
     
     /*

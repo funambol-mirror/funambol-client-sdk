@@ -353,7 +353,7 @@ WCHAR* VConverter::extractObjectProperty(const WCHAR* buffer, const WCHAR *prope
 
 WCHAR* VConverter::extractObjectType(const WCHAR* buffer) {
     WCHAR* buffCopy = NULL;
-    size_t buffCopyLen = NULL;
+    size_t buffCopyLen = 0;
 
     WCHAR* tmp = extractObjectProperty(buffer, TEXT("BEGIN"),
                                  buffCopy, buffCopyLen);
@@ -369,7 +369,7 @@ WCHAR* VConverter::extractObjectType(const WCHAR* buffer) {
 
 WCHAR* VConverter::extractObjectVersion(const WCHAR* buffer) {
     WCHAR* buffCopy = NULL;
-    size_t buffCopyLen = NULL;
+    size_t buffCopyLen = 0;
 
     WCHAR* tmp = extractObjectProperty(buffer, TEXT("VERSION"),
                                  buffCopy, buffCopyLen);
