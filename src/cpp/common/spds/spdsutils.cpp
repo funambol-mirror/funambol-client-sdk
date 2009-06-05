@@ -70,6 +70,14 @@ SyncMode syncModeCode(const char* syncMode) {
              strcmp(syncMode,"refresh-from-client") == 0)
         return SYNC_REFRESH_FROM_CLIENT;
     //--------- Funambol extension --------------------
+    else if (strcmp(syncMode,"smart-one-way-from-client") == 0)
+        return SYNC_SMART_ONE_WAY_FROM_CLIENT;
+    else if (strcmp(syncMode,"smart-one-way-from-server") == 0)
+        return SYNC_SMART_ONE_WAY_FROM_SERVER;
+    else if (strcmp(syncMode,"incremental-smart-one-way-from-client") == 0)
+        return SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT;
+    else if (strcmp(syncMode,"incremental-smart-one-way-from-server") == 0)
+        return SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_SERVER;
     else if (strcmp(syncMode, "addrchange") == 0)
         return SYNC_ADDR_CHANGE_NOTIFICATION;
     return SYNC_NONE;
@@ -103,6 +111,14 @@ const char *syncModeKeyword(SyncMode syncMode) {
             return "one-way-from-server-by-server";
         case SYNC_REFRESH_FROM_SERVER_BY_SERVER:
             return "refresh-from-server-by-server";
+        case SYNC_SMART_ONE_WAY_FROM_CLIENT:
+            return "smart-one-way-from-client";
+        case SYNC_SMART_ONE_WAY_FROM_SERVER:
+            return "smart-one-way-from-server";
+        case SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT:
+            return "incremental-smart-one-way-from-client";
+        case SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_SERVER:
+            return "incremental-smart-one-way-from-server";
     }
 
     return "";

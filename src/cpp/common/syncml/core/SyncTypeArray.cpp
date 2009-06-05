@@ -50,6 +50,10 @@ SyncTypeArray::SyncTypeArray(){
     SyncType ONE_WAY_FROM_SERVER = SyncType(5);
     SyncType REFRESH_FROM_SERVER = SyncType(6);
     SyncType SERVER_ALERTED      = SyncType(7);
+    SyncType SMART_ONE_WAY_FROM_CLIENT             = SyncType(50);
+    SyncType SMART_ONE_WAY_FROM_SERVER             = SyncType(51);
+    SyncType INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT = SyncType(52);
+    SyncType INCREMENTAL_SMART_ONE_WAY_FROM_SERVER = SyncType(53);
 
     syncTypeArray->add(TWO_WAY);
     syncTypeArray->add(SLOW);
@@ -58,6 +62,10 @@ SyncTypeArray::SyncTypeArray(){
     syncTypeArray->add(ONE_WAY_FROM_SERVER);
     syncTypeArray->add(REFRESH_FROM_SERVER);
     syncTypeArray->add(SERVER_ALERTED);
+    syncTypeArray->add(SMART_ONE_WAY_FROM_CLIENT);
+    syncTypeArray->add(SMART_ONE_WAY_FROM_SERVER);
+    syncTypeArray->add(INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT);
+    syncTypeArray->add(INCREMENTAL_SMART_ONE_WAY_FROM_SERVER);
 
 }
 

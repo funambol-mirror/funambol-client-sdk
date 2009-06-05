@@ -93,8 +93,6 @@ public:
  * Differences from FileSyncSource are:
  * - cache file is stored inside the 'dir' folder (the folder under sync)
  * - in case the URL or username changes, the cache file is resetted
- * - in case of slow sync, the cache file is not cleared and new/mod/del items are sent (as if it was a fast sync). 
- * - in case of slow sync, delete items are sent as empty update items (the Server doesn't expect deletes during slow syncs)
  * - manages a mapping between the LUID and the items keys (full paths), to ensure the items are not sent 2 times.
  *   This LUID_Map is stored inside the 'dir' folder (the folder under sync)
  */
@@ -115,19 +113,6 @@ public:
      * If not, the cache is cleared.
      */
     int beginSync();
-
-    /**
-     * Overrides CacheSyncSource::getFirstItem(), for smart slow-sync.
-     * Calls getFirstNewItem(), as it was a fast sync.
-     */
-    SyncItem* getFirstItem();
-    
-    /**
-     * Overrides CacheSyncSource::getNextItem(), for smart slow-sync.
-     * Calls getNew/Updated/DeletedItem() in sequence, as it was
-     * a normal fast-sync.
-     */
-    SyncItem* getNextItem();
     
     /// Overrides FileSyncSource::insertItem - implemented empty.
     int insertItem(SyncItem& item);
@@ -255,16 +240,6 @@ private:
      * used as the item's key when sending items to the Server (to be sure the key is unique).
      */
     KeyValueStore* configParams;
-    
-    
-    /// Used during (smart) slow syncs. If true, means the New items are finished.
-    bool smartSlowNewItemsDone;
-    
-    /// Used during (smart) slow syncs. If true, means the Updated items are finished.
-    bool smartSlowUpdatedItemsDone;
-    
-    /// Used during (smart) slow syncs. If true, means we need to retrieve the first item of new/mod/del lists.
-    bool smartSlowFirstItem;
     
     
     /**

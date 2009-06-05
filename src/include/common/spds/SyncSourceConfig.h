@@ -132,6 +132,10 @@ class SyncSourceConfig : public AbstractSyncSourceConfig {
          * - one-way-from-server
          * - one-way-from-client
          * - addrchange
+         * - smart-one-way-from-client
+         * - smart-one-way-from-server
+         * - incremental-smart-one-way-from-client
+         * - incremental-smart-one-way-from-server
          */
         const char*  getSyncModes() const;
 

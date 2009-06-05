@@ -56,20 +56,24 @@
 #define ERR_REPRESENTATION  700
 
 typedef enum SyncMode{
-        SYNC_NONE                          = 000,
-        SYNC_TWO_WAY                       = 200,
-        SYNC_SLOW                          = 201,
-        SYNC_ONE_WAY_FROM_CLIENT           = 202,
-        SYNC_REFRESH_FROM_CLIENT           = 203,
-        SYNC_ONE_WAY_FROM_SERVER           = 204,
-        SYNC_REFRESH_FROM_SERVER           = 205,
-        SYNC_TWO_WAY_BY_SERVER             = 206,
-        SYNC_ONE_WAY_FROM_CLIENT_BY_SERVER = 207,
-        SYNC_REFRESH_FROM_CLIENT_BY_SERVER = 208,
-        SYNC_ONE_WAY_FROM_SERVER_BY_SERVER = 209,
-        SYNC_REFRESH_FROM_SERVER_BY_SERVER = 210,
+        SYNC_NONE                                   = 000,
+        SYNC_TWO_WAY                                = 200,
+        SYNC_SLOW                                   = 201,
+        SYNC_ONE_WAY_FROM_CLIENT                    = 202,
+        SYNC_REFRESH_FROM_CLIENT                    = 203,
+        SYNC_ONE_WAY_FROM_SERVER                    = 204,
+        SYNC_REFRESH_FROM_SERVER                    = 205,
+        SYNC_TWO_WAY_BY_SERVER                      = 206,
+        SYNC_ONE_WAY_FROM_CLIENT_BY_SERVER          = 207,
+        SYNC_REFRESH_FROM_CLIENT_BY_SERVER          = 208,
+        SYNC_ONE_WAY_FROM_SERVER_BY_SERVER          = 209,
+        SYNC_REFRESH_FROM_SERVER_BY_SERVER          = 210,
         //---Funambol extension-----------------
-        SYNC_ADDR_CHANGE_NOTIFICATION      = 745
+        SYNC_SMART_ONE_WAY_FROM_CLIENT              = 250,
+        SYNC_SMART_ONE_WAY_FROM_SERVER              = 251,
+        SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT  = 252,
+        SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_SERVER  = 253,
+        SYNC_ADDR_CHANGE_NOTIFICATION               = 745
 } SyncMode;
 
 #define CONTEXT_SPDS_SYNCML  "/spds/syncml"

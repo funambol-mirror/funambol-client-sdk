@@ -40,22 +40,25 @@
 #include "base/fscapi.h"
 
 
-#define DISPLAY                        100
-#define TWO_WAY                        200
-#define SLOW                           201
-#define ONE_WAY_FROM_CLIENT            202
-#define REFRESH_FROM_CLIENT            203
-#define ONE_WAY_FROM_SERVER            204
-#define REFRESH_FROM_SERVER            205
-#define TWO_WAY_BY_SERVER              206
-#define ONE_WAY_FROM_CLIENT_BY_SERVER  207
-#define REFRESH_FROM_CLIENT_BY_SERVER  208
-#define ONE_WAY_FROM_SERVER_BY_SERVER  209
-#define REFRESH_FROM_SERVER_BY_SERVER  210
-#define RESULT_ALERT                   221
-#define NEXT_MESSAGE                   222
-#define NO_END_OF_DATA                 223
-
+#define DISPLAY                               100
+#define TWO_WAY                               200
+#define SLOW                                  201
+#define ONE_WAY_FROM_CLIENT                   202
+#define REFRESH_FROM_CLIENT                   203
+#define ONE_WAY_FROM_SERVER                   204
+#define REFRESH_FROM_SERVER                   205
+#define TWO_WAY_BY_SERVER                     206
+#define ONE_WAY_FROM_CLIENT_BY_SERVER         207
+#define REFRESH_FROM_CLIENT_BY_SERVER         208
+#define ONE_WAY_FROM_SERVER_BY_SERVER         209
+#define REFRESH_FROM_SERVER_BY_SERVER         210
+#define RESULT_ALERT                          221
+#define NEXT_MESSAGE                          222
+#define NO_END_OF_DATA                        223
+#define SMART_ONE_WAY_FROM_CLIENT             250
+#define SMART_ONE_WAY_FROM_SERVER             251
+#define INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT 252
+#define INCREMENTAL_SMART_ONE_WAY_FROM_SERVER 251
 
 
 /**
@@ -72,6 +75,10 @@
 *   <li> REFRESH_FROM_CLIENT_BY_SERVER
 *   <li> ONE_WAY_FROM_SERVER_BY_SERVER
 *   <li> REFRESH_FROM_SERVER_BY_SERVER
+*   <li> SMART_ONE_WAY_FROM_CLIENT
+*   <li> SMART_ONE_WAY_FROM_SERVER
+*   <li> INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT
+*   <li> INCREMENTAL_SMART_ONE_WAY_FROM_SERVER
 * </ul>
 *
 * @param code the code to be checked
@@ -90,6 +97,10 @@ bool isInitializationCode(int code) {
          || (code == REFRESH_FROM_CLIENT_BY_SERVER)
          || (code == ONE_WAY_FROM_SERVER_BY_SERVER)
          || (code == REFRESH_FROM_SERVER_BY_SERVER)
+         || (code == SMART_ONE_WAY_FROM_CLIENT    )
+         || (code == SMART_ONE_WAY_FROM_SERVER    )
+         || (code == INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT)
+         || (code == INCREMENTAL_SMART_ONE_WAY_FROM_SERVER)
          );
 }
 
@@ -100,6 +111,8 @@ bool isInitializationCode(int code) {
 * <ul>
 *   <li>ONE_WAY_FROM_CLIENT</li>
 *   <li>REFRESH_FROM_CLIENT</li>
+*   <li>SMART_ONE_WAY_FROM_CLIENT</li>
+*   <li>INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT</li>
 * </ul>
 *
 * @param code the code to be checked
@@ -109,6 +122,8 @@ bool isInitializationCode(int code) {
 bool isClientOnlyCode(int code) {
   return (  (code == ONE_WAY_FROM_CLIENT)
          || (code == REFRESH_FROM_CLIENT)
+         || (code == SMART_ONE_WAY_FROM_CLIENT)
+         || (code == INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT)
          );
 }
 

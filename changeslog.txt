@@ -1,3 +1,9 @@
+2009-06-05
+   - toccy: added syncmodes: smart-one-way-from-client/server and incremental-smart-one-way-from-client/server (codes 250,251,252,253)
+            used for Media items (pictures).
+   - toccy: MediaSyncSource does not override the Slow-sync anymore: we now use a specific syncmode 
+            (smart-one-way-from-client) so the slow-sync should be never triggered.
+
 2009-05-20
     - toccy: merged from branch US2275 to trunk (C++ Sync Clients - Support for Server capabilities)
              The Server capabilities are autonomously processed by APIs and params are stored under Server config node

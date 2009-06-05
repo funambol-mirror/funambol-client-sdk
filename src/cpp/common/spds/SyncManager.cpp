@@ -1098,7 +1098,9 @@ int SyncManager::sync() {
             */
             switch (sources[count]->getSyncMode()) {
                 case SYNC_TWO_WAY:
-                case SYNC_ONE_WAY_FROM_SERVER: {
+                case SYNC_ONE_WAY_FROM_SERVER:
+                case SYNC_SMART_ONE_WAY_FROM_SERVER:
+                case SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_SERVER: {
                     Enumeration& en = mmanager[count]->getMappings();
                     ArrayList tmpMapItems;            
                     while(en.hasMoreElement()) {
@@ -1208,6 +1210,8 @@ int SyncManager::sync() {
                     break;
                     
                 case SYNC_ONE_WAY_FROM_SERVER:
+                case SYNC_SMART_ONE_WAY_FROM_SERVER:
+                case SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_SERVER:
                     last = true;
                     break;
 
@@ -1612,7 +1616,9 @@ int SyncManager::sync() {
                 continue;
             }
             if ((sources[count]->getSyncMode() != SYNC_ONE_WAY_FROM_CLIENT) &&
-                (sources[count]->getSyncMode() != SYNC_REFRESH_FROM_CLIENT))
+                (sources[count]->getSyncMode() != SYNC_REFRESH_FROM_CLIENT) &&
+                (sources[count]->getSyncMode() != SYNC_SMART_ONE_WAY_FROM_CLIENT) && 
+                (sources[count]->getSyncMode() != SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT))
             {
                 alert = syncMLBuilder.prepareAlert(*sources[count]);
                 commands.add(*alert);
@@ -1797,11 +1803,13 @@ int SyncManager::endSync() {
             continue;
         }
         
-        if (  (sources[count]->getSyncMode() == SYNC_ONE_WAY_FROM_CLIENT &&
-                commands.isEmpty() && (mmanager[count]->getMappings().hasMoreElement() == false)) ||
-                (sources[count]->getSyncMode() == SYNC_REFRESH_FROM_CLIENT &&
-                commands.isEmpty() && (mmanager[count]->getMappings().hasMoreElement() == false))
-                ) {
+        SyncMode sMode = sources[count]->getSyncMode();
+        if ( (sMode == SYNC_ONE_WAY_FROM_CLIENT || 
+              sMode == SYNC_REFRESH_FROM_CLIENT || 
+              sMode == SYNC_SMART_ONE_WAY_FROM_CLIENT ||
+              sMode == SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT) &&
+             commands.isEmpty() && 
+             (mmanager[count]->getMappings().hasMoreElement() == false) ) {
             // No need to send the final msg (no mapping).
         }
         else {
@@ -2357,6 +2365,10 @@ DevInf *SyncManager::createDeviceInfo()
         { SYNC_ONE_WAY_FROM_SERVER, 5 }, // Support of 'one-way sync from server only'
         { SYNC_REFRESH_FROM_SERVER, 6 }, // Support of 'refresh sync from server only'
         // 7, // Support of 'server alerted sync'
+        { SYNC_SMART_ONE_WAY_FROM_CLIENT, 50 },             // Support of 'smart-one-way sync from client only'
+        { SYNC_SMART_ONE_WAY_FROM_SERVER, 51 },             // Support of 'smart-one-way sync from client only'
+        { SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_CLIENT, 52 }, // Support of 'incremental-smart-one-way sync from server only'
+        { SYNC_INCREMENTAL_SMART_ONE_WAY_FROM_SERVER, 53 }, // Support of 'incremental-smart-one-way sync from server only'
         { SYNC_NONE, -1 }
     };
 
