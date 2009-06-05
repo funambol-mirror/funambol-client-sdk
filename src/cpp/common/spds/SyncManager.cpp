@@ -504,22 +504,26 @@ int SyncManager::prepareSync(SyncSource** s) {
 
         currentState = STATE_PKG1_SENDING;
 
+        // If transportAgent not set explicitly by the Client, get the default one.
         if (transportAgent == NULL) {
             transportAgent = TransportAgentFactory::getTransportAgent(url, proxy, responseTimeout, maxMsgSize);
-            transportAgent->setReadBufferSize(readBufferSize);
-            transportAgent->setSSLServerCertificates(config.getSSLServerCertificates());
-            transportAgent->setSSLVerifyServer(config.getSSLVerifyServer());
-            transportAgent->setSSLVerifyHost(config.getSSLVerifyHost());
-            // Here we also ensure that the user agent string is valid
-            const char* ua = getUserAgent(config);
-            LOG.debug("User Agent = %s", ua);
-            transportAgent->setUserAgent(ua);
-            transportAgent->setCompression(config.getCompression());
-            delete [] ua; ua = NULL;
         }
         else {
             transportAgent->setURL(url);
         }
+        transportAgent->setReadBufferSize(readBufferSize);
+        transportAgent->setSSLServerCertificates(config.getSSLServerCertificates());
+        transportAgent->setSSLVerifyServer(config.getSSLVerifyServer());
+        transportAgent->setSSLVerifyHost(config.getSSLVerifyHost());
+    
+        // Here we also ensure that the user agent string is valid
+        const char* ua = getUserAgent(config);
+        LOG.debug("User Agent = %s", ua);
+        transportAgent->setUserAgent(ua);
+        transportAgent->setCompression(config.getCompression());
+        delete [] ua; ua = NULL;
+
+
         if (getLastErrorCode() != 0) { // connection: lastErrorCode = 2005: Impossible to establish internet connection
             ret = getLastErrorCode();
             goto finally;
@@ -1030,6 +1034,7 @@ int SyncManager::sync() {
     //ArrayList* list      = new ArrayList();
     bool isFinalfromServer = false;
     bool isAtLeastOneSourceCorrect = false;
+    bool sendFinalAfterClientMods = true;
 
     //
     // If this is the first message, currentState is STATE_PKG1_SENT,
@@ -1598,10 +1603,12 @@ int SyncManager::sync() {
 
     //
     // If this was the last chunk, we move the state to STATE_PKG3_SENT
-    // At this time "last" is always true. The client is going to send
-    // the 222 package for to get the server modification if at least a source is correct
+    // At this time "last" SHOULD always be true. If not, it means there was an error
+    // and the APIs didn't send the <Final> tag yet.
+    // In this case we MUST send the Final tag now, to notify the Server we completed
+    // the "Clients modification" phase.
     //
-    last = true;
+    sendFinalAfterClientMods = !last;
     currentState = STATE_PKG3_SENT;
 
     //
@@ -1626,7 +1633,7 @@ int SyncManager::sync() {
             }
         }
 
-        syncml = syncMLBuilder.prepareSyncML(&commands, false);
+        syncml = syncMLBuilder.prepareSyncML(&commands, sendFinalAfterClientMods);
         msg    = syncMLBuilder.prepareMsg(syncml);
 
         LOG.debug("Alert to request server changes");
@@ -2576,16 +2583,7 @@ static void fillContentTypeInfoList(ArrayList &l, const char* types) {
     }
 }
 
-/*
- * Ensure that the user agent string is valid.
- * If property 'user agent' is empty, it is replaced by 'mod' and 'SwV'
- * properties from AbstractDeviceConfig.
- * If also 'mod' property is empty, return a default user agent.
- *
- * @param config: reference to the current AbstractSyncConfig
- * @return      : user agent property as a new char*
- *                (need to be freed by the caller)
- */
+
 const char* SyncManager::getUserAgent(AbstractSyncConfig& config) {
 
     char* ret;
@@ -2613,5 +2611,9 @@ const char* SyncManager::getUserAgent(AbstractSyncConfig& config) {
     }
 
     return ret;
+}
+
+void SyncManager::setTransportAgent(TransportAgent* t) {
+    transportAgent = t;
 }
 

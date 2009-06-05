@@ -1,4 +1,13 @@
 2009-06-05
+   - toccy: merged from v8 branch - fixed possible loop in SyncManager::sync(), because of a missing <Final> tag in case of Server error
+   - toccy: Clients can set a defined TransportAgent to be used during sync, instead of the default for the platform,
+            using SyncClient::setTransportAgent() (will call SyncManager::setTransportAgent).
+   - toccy: Unit test: * added test "testServerError506" (SyncManagerTest.cpp) to check for a loop in SyncManager::sync(), 
+                         because of a missing <Final> tag in case of Server error
+                       * added "http/TransportAgentReplacement" under test, to be used as a replacement of TransportAgent, 
+                         can be used to check and modify syncML messages (beffer between SyncManager and real TrnasportAgent)
+                       * added "integration/ManyItemsTestSyncSource", can be used as a simple SyncSource
+                         to generate N new items (vCard or vCal), for integration tests
    - toccy: added syncmodes: smart-one-way-from-client/server and incremental-smart-one-way-from-client/server (codes 250,251,252,253)
             used for Media items (pictures).
    - toccy: MediaSyncSource does not override the Slow-sync anymore: we now use a specific syncmode 

@@ -46,6 +46,7 @@
     #include "spds/constants.h"
     #include "spds/SyncReport.h"
 #include "base/globalsdef.h"
+#include "http/TransportAgent.h"
 
 BEGIN_NAMESPACE
 
@@ -110,6 +111,13 @@ BEGIN_NAMESPACE
          * Must be called after sync() method.
          */
         SyncReport* getSyncReport();
+
+        /**
+         * Sets a defined TransportAgent to be used during sync.
+         * Note: the passed pointer will be owned and deleted by the APIs, so 
+         * it MUST NOT be deleted by the caller.
+         */
+        void setTransportAgent(TransportAgent* t);
 
 
       protected:
@@ -189,9 +197,17 @@ BEGIN_NAMESPACE
             return ERR_NONE;
         }
 
-        // The report of the synchronization process.
-        // Sources reports are initializated during sync(sources**) call.
+        /// The report of the synchronization process.
+        /// Sources reports are initializated during sync(sources**) call.
         SyncReport syncReport;
+
+        /** 
+         * If not NULL, this TransportAgent will be used during sync.
+         * Clients can set thir own TransportAgent calling method setTransportAgent().
+         * Note: it's not owned by the SyncClient, if not NULL it will be deleted by
+         *       SyncManager at the end of the sync.
+         */
+        TransportAgent* transportAgent;
     };
 
 

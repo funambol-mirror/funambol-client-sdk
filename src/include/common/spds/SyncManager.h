@@ -138,6 +138,14 @@ class SyncManager {
          */
         void clearServerDevInf();
 
+
+        /**
+         * Sets a defined TransportAgent to be used during sync.
+         * Note: the passed pointer will be owned and deleted by SyncManager, so 
+         * it MUST NOT be deleted by the caller.
+         */
+        void setTransportAgent(TransportAgent* t);
+
     private:
 
         // SyncManager makes local key safe to use in SyncML by
@@ -171,6 +179,9 @@ class SyncManager {
         CredentialHandler credentialHandler;
         SyncMLBuilder syncMLBuilder;
         SyncMLProcessor syncMLProcessor;
+
+        /// The transportAgent used during sync.
+        /// It will ALWAYS be deleted in the destructor.
         TransportAgent* transportAgent;
 
         SyncManagerState currentState;
@@ -229,6 +240,16 @@ class SyncManager {
         Status *processSyncItem(Item* item, const CommandInfo &cmdInfo, SyncMLBuilder &syncMLBuilder);
         bool checkForServerChanges(SyncML* syncml, ArrayList &statusList);
 
+        /**
+         * Ensure that the user agent string is valid.
+         * If property 'user agent' is empty, it is replaced by 'mod' and 'SwV'
+         * properties from AbstractDeviceConfig.
+         * If also 'mod' property is empty, return a default user agent.
+         *
+         * @param config: reference to the current AbstractSyncConfig
+         * @return      : user agent property as a new char*
+         *                (need to be freed by the caller)
+         */
         const char*  getUserAgent(AbstractSyncConfig& config);
         bool isToExit();
         void setSourceStateAndError(unsigned int index, SourceState  state,

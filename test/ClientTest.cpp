@@ -1645,6 +1645,9 @@ void SyncTests::addTests() {
     ADD_TEST(SyncTests, testMappings);
 
     ADD_TEST(SyncTests, testConfigSyncSource);
+
+    // test Server error 506 adding calendar items (caused loop before v8.5)
+    ADD_TEST(SyncTests, testServerError506);
 }
 
 /** compare databases of first and second client */

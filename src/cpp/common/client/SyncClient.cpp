@@ -41,11 +41,13 @@
 #include "syncml/core/CTCap.h"
 #include "syncml/core/CTPropParam.h"
 #include "base/globalsdef.h"
+#include "http/TransportAgentFactory.h"
 
 USE_NAMESPACE
 
 //--------------------------------------------------- Constructor & Destructor
 SyncClient::SyncClient() {
+    transportAgent = NULL;
 }
 
 SyncClient::~SyncClient() {
@@ -88,6 +90,11 @@ int SyncClient::sync(AbstractSyncConfig& config, SyncSource** sources) {
     }
 
     SyncManager syncManager(config, syncReport);
+
+    // If not NULL, this transportAgent will be used during sync.
+    if (transportAgent) {
+        syncManager.setTransportAgent(transportAgent);
+    }
 
     if ((ret = syncManager.prepareSync(sources))) {
         LOG.error("Error in preparing sync: %s", getLastErrorMsg());
@@ -236,3 +243,7 @@ SyncReport* SyncClient::getSyncReport() {
     return &syncReport;
 }
 
+
+void SyncClient::setTransportAgent(TransportAgent* t) {
+    transportAgent = t;
+}

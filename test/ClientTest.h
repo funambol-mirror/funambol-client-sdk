@@ -53,6 +53,8 @@
 #include "base/globalsdef.h"
 #include "MappingsTest.h"
 #include "ConfigSyncSourceTest.h"
+#include "SyncManagerTest.h"
+
 USE_NAMESPACE
 
 /**
@@ -787,6 +789,11 @@ protected:
     virtual void testConfigSyncSource() {
         ConfigSyncSourceTest css;
         css.runTests();        
+    }
+
+    virtual void testServerError506() {
+        SyncManagerTest test;
+        test.runTests();        
     }
 
     /**

@@ -115,20 +115,7 @@ public:
      */
     SyncItem* getNextUpdatedItem() { return NULL; }
 
-    /*
-     * Return the next SyncItem of updated one. It is used in case of fast sync
-     * and retrieve the new data source content.
-     */
 
-    SyncItem* getFirstItemKey() { return NULL; }
-
-    /*
-     * Return the key of the next SyncItem of all.
-     * It is used in case of refresh sync
-     * and retrieve all the keys of the data source.
-     */
-     
-    SyncItem* getNextItemKey() { return NULL; }
     /*
      * Return the first SyncItem of updated one. It is used in case of fast sync
      * and retrieve the new data source content.

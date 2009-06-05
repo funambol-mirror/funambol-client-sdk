@@ -330,6 +330,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\test\integration\ManyItemsTestSyncSource.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\test\integration\MappingsTest.cpp"
 					>
 				</File>
@@ -346,6 +350,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\test\integration\SyncManagerTest.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\cpp\common\client\TestFileSyncSource.cpp"
 					>
 				</File>
@@ -359,6 +367,14 @@
 				</File>
 				<File
 					RelativePath="..\..\test\common\push\FThreadTest.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="http"
+				>
+				<File
+					RelativePath="..\..\test\common\http\TransportAgentReplacement.cpp"
 					>
 				</File>
 			</Filter>
