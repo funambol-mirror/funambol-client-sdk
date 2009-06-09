@@ -35,10 +35,6 @@
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
-# include <cppunit/extensions/TestFactoryRegistry.h>
-# include <cppunit/extensions/HelperMacros.h>
-
-#include "base/fscapi.h"
 #include "client/DMTClientConfig.h"
 #include "client/SyncClient.h"
 #include "base/messages.h"
@@ -48,7 +44,6 @@
 #include "base/globalsdef.h"
 
 #include "common/http/TransportAgentReplacement.h"
-
 
 BEGIN_NAMESPACE
 
