@@ -33,15 +33,16 @@
  * the words "Powered by Funambol".
  */
 
-#ifdef ENABLE_INTEGRATION_TESTS
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
+#ifdef ENABLE_INTEGRATION_TESTS
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "base/fscapi.h"
 #include "base/Log.h"
-#include "base/util/StringBuffer.h"
-#include "base/globalsdef.h"
 #include "base/adapter/PlatformAdapter.h"
 #include "base/util/XMLProcessor.h"
 #include "syncml/core/TagNames.h"
@@ -58,7 +59,7 @@ USE_NAMESPACE
 /**
  * Parses a syncML message, and returns its Message ID (integer value).
  */
-int getMsgID(const StringBuffer& syncMLmsg) {
+static int getMsgID(const StringBuffer& syncMLmsg) {
 
     char* value = XMLProcessor::copyElementContent(syncMLmsg.c_str(), MSG_ID, NULL);
     CPPUNIT_ASSERT(value);
@@ -73,7 +74,7 @@ int getMsgID(const StringBuffer& syncMLmsg) {
 /**
  * Generates and returns a default configuration, with ssources contacts and calendar
  */
-SyncManagerConfig* getConfiguration(const char* name) {
+static SyncManagerConfig* getConfiguration(const char* name) {
     
     PlatformAdapter::init(name, true);
     SyncManagerConfig* config = new SyncManagerConfig();
@@ -110,7 +111,6 @@ SyncManagerConfig* getConfiguration(const char* name) {
 
     return config;
 }
-
 
 void SyncManagerTest::testServerError506() {
 
