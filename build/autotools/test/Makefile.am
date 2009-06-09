@@ -9,7 +9,7 @@ TESTDIR = $(srcdir)/../../../test
 LDADD = ../src/libfunambol.la 
 AM_LDFLAGS = @CURL_LDFLAGS@ @CPPUNIT_LDFLAGS@
 AM_CXXFLAGS = @CURL_CFLAGS@ @CPPUNIT_CXXFLAGS@
-AM_CPPFLAGS = -I$(INCDIR)/posix -I$(INCDIR)/common -I$(TESTDIR)/integration -DFUNAMBOL_BUILD_API
+AM_CPPFLAGS = -I$(INCDIR)/posix -I$(INCDIR)/common -I$(TESTDIR)/ -I$(TESTDIR)/integration -DFUNAMBOL_BUILD_API
 
 vpath %.cpp	$(TESTDIR) \
 		$(TESTDIR)/common/base/util \
