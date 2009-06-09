@@ -117,7 +117,7 @@ MappingsTest::MappingsTest() {
 }
         
 
-DMTClientConfig* getConfiguration(const char* name) {
+static DMTClientConfig* getConfiguration(const char* name) {
     
     const char *serverUrl = getenv("CLIENT_TEST_SERVER_URL");
     const char *username = getenv("CLIENT_TEST_USERNAME");
