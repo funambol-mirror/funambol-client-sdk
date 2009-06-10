@@ -1,0 +1,9 @@
+base
+http
+spdm
+spds
+common
+posix
+Makefile
+Makefile.in
+*~
