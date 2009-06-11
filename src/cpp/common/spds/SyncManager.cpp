@@ -2515,7 +2515,7 @@ void SyncManager::clearServerDevInf() {
     config.setServerDevType   ("");
     config.setServerLoSupport (false);
     config.setServerNocSupport(false);
-    config.setServerSmartSlowSync(false);
+    config.setServerSmartSlowSync(0);
     config.setServerLastSyncURL("");
 }
 

@@ -1,3 +1,9 @@
+2009-06-11
+   - magi: * in SyncMLProcessor in the server capabilities the ServerSmartSlowSync is set to 0 and 
+             the value is 1 if smart slow sync is true, 0 otherwise
+           * in SyncMLBuilder fixed the bug [ sync4j-Bugs-313113 ] Funambol C++ client library replies incorrectly to the server                                   
+           * in SyncManager fixed setServerSmartSlowSync(0); instead of setServerSmartSlowSync(false);
+           
 2009-06-05
    - toccy: merged from v8 branch - fixed possible loop in SyncManager::sync(), because of a missing <Final> tag in case of Server error
    - toccy: Clients can set a defined TransportAgent to be used during sync, instead of the default for the platform,

@@ -323,6 +323,7 @@ bool SyncMLProcessor::processServerDevInf(AbstractCommand* cmd, AbstractSyncConf
             config.setServerLoSupport (devInf->getSupportLargeObjs());
             config.setServerNocSupport(devInf->getSupportNumberOfChanges());
             
+            config.setServerSmartSlowSync(0);
             // Process devInf Extension properties
             ArrayList* ext = devInf->getExt();
             if (ext) {
@@ -331,10 +332,10 @@ bool SyncMLProcessor::processServerDevInf(AbstractCommand* cmd, AbstractSyncConf
                     if (element) {
                         StringBuffer xName = element->getXNam();
 
-                        // The only extension expected
-                        if (xName == "X-funambol-smartslow") {
-                            config.setServerSmartSlowSync(true);
-                        }
+                        // The only extension expected.
+                        if (xName == "X-funambol-smartslow") {                                                        
+                            config.setServerSmartSlowSync(1);
+                        } 
                     }
                 }
             }
