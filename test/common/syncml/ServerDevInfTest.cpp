@@ -271,7 +271,7 @@ private:
         bVal  = config.getServerUtc();           CPPUNIT_ASSERT(bVal  == true);
         bVal  = config.getServerLoSupport();     CPPUNIT_ASSERT(bVal  == true);
         bVal  = config.getServerNocSupport();    CPPUNIT_ASSERT(bVal  == true);
-        iVal  = config.getServerSmartSlowSync(); CPPUNIT_ASSERT(iVal  == 2);
+        iVal  = config.getServerSmartSlowSync(); CPPUNIT_ASSERT(iVal  == 0);
     }
 
 
