@@ -146,6 +146,7 @@ void SyncManagerTest::testServerError506() {
     StringBuffer report("");
     client.getSyncReport()->toString(report);
     LOG.info("\n%s", report.c_str());
+    delete config;
 }
 
 
