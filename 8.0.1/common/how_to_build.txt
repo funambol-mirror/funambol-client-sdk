@@ -1,0 +1,40 @@
+Component Building HOW-TO:
+--------------------------
+This file contains the instructions to build the source code provided with the zip package funambol-j2me-common-X.Y.Z.zip, where X.Y.Z is the release version number of the downloaded component.
+
+1. System Requirements:
+    - Download and install Apache Ant: http://ant.apache.org/
+    - Download and install Sun Java Wireless Toolkit: http://java.sun.com/products/sjwtoolkit/
+    - Download and install Apache Antenna: http://antenna.sourceforge.net/
+    - Download and install Blackberry JDE: http://na.blackberry.com/eng/developers/ (if building BlackBerry version)
+    - Download and install JavaCC 4.0: https://javacc.dev.java.net/ (note that 4.1 does not work with J2ME)
+
+2. Funambol component required:
+    - common/pim-parsers (https://core.forge.funambol.org/svn/core/trunk/funambol/common/pim-parsers/)
+      Source code is needed as it needs to be recompiled.
+
+3. Pre-Build process configuration:
+3.1 Unzip the package into your working directory (<common-dir>)
+3.2 Open the <common-dir>/build/build.properties file in your editor
+3.2 Set the right path for:
+    - WTK home on your environment
+      wtk.home=<wtk-home>
+      Example: wtk.home=C:/wtk2.5.2
+    - J2MEunit Test jar library (provided with the wtk lib)
+      lib.junit=<wtk-home>/lib/j2meunit.jar
+      Example: wtk.home=C:/wtk2.5.2/lib/j2meunit.jar
+    - The tinyline gzip jar library is a third party compression utility provided with the client and it can be retireved into the zip package under:
+      lib.gzip=lib/tinyline-gzip.jar (leave this value unchanged)
+    - The Blackeberry JDE home dir is required to build the API for BlackBerry; they are compliant with the API provided by RIM:
+      bb.jdehome=<BB jde home dir>
+      Example: bb.jdehome=C:/tools/Research In Motion/Blackberry JDE 4.1.0
+
+4. Building the source:
+4.1 Open a command prompt and go to the directory <common-dir>/build
+4.2 Type "ant usage" and press the ENTER key
+4.3 The "ant usage" menu will appear. Build your package simply typing "ant" and hitting enter. For any other commands follow the "ant usage" instructions.
+4.4 The build process generates the required jar file for the built component into the directory <common-dir>/output
+
+In case of any problems with the build process, access the Funambol Community Forge Project  following this link: https://core.forge.funambol.org and contact Funambol for support.
+
+The Funambol Team
