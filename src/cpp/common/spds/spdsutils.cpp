@@ -215,6 +215,36 @@ static const char *getLine(const char *msg, char **line) {
     return next;
 }
 
+char* b64EncodeWithSpaces(const char *msg, int len) {
+    int i, step=54, dlen=0;
+    
+    char* res = new char[len*3]; // b64 is 4/3, but we have also the newlines....
+    memset(res, 0, len*3);
+    res[0] = ' ';
+    res[1] = ' ';
+    res[2] = ' ';
+    res[3] = ' ';
+    char* ret = &res[4];
+    for(i=0; i<len; i+=step) {
+        if(len-i < step) {
+            step = len-i;
+        }
+        dlen += b64_encode(ret+dlen, (void *)(msg+i), step);
+        ret[dlen++]='\r';
+        ret[dlen++]='\n';
+        ret[dlen++]=' ';
+        ret[dlen++]=' ';
+        ret[dlen++]=' ';
+        ret[dlen++]=' ';
+    }
+    
+    // Terminate the string
+    ret[dlen]=0;
+    int ll = strlen(res);
+    return res;
+}
+
+
 // This functions works for standard encoded files with new line every
 // 72 characters. It does not work if the line length is not multiple of 4.
 int uudecode(const char *msg, char **binmsg, size_t *binlen)

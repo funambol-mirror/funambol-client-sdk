@@ -96,6 +96,16 @@ int uudecode(const char *msg, char **binmsg, size_t *binlen);
 char *uuencode(const char *msg, int len);
 
 /**
+ * Encode the message in base64, splitting the result in lines of 72 columns
+ * each.
+ *
+ * @param msg the const char* to encode
+ * @param len the lenght of the const char* to encode
+ * @return  a new allocated char* buffer
+ */
+char* b64EncodeWithSpaces(const char *msg, int len);
+
+/**
 * It converts the content using the encoding specified. If all
 * is correct it saves the converted content into a file.
 * @param filename the file name in which the converted data is saved

@@ -15,11 +15,9 @@
 		7C3BEC840DB7350300119850 /* client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C3BEB2A0DB732B400119850 /* client.cpp */; };
 		7C7649360DB385DC00786883 /* KeyValueStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C7649350DB385DC00786883 /* KeyValueStore.h */; };
 		7C8B0C500DB73C2E005113A8 /* SQLiteKeyValueStore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8B0C4F0DB73C2E005113A8 /* SQLiteKeyValueStore.cpp */; };
-		7C8B0D630DB74DFD005113A8 /* libsqlite3.0.8.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C8B0D620DB74DFD005113A8 /* libsqlite3.0.8.6.dylib */; };
 		7C8B0D9A0DB7517C005113A8 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C8B0D990DB7517C005113A8 /* CoreServices.framework */; };
 		7C8B0E690DB752D4005113A8 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C8B0D990DB7517C005113A8 /* CoreServices.framework */; };
 		7C8B0ED20DB758AB005113A8 /* libfunambol.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2AAC046055464E500DB518D /* libfunambol.a */; };
-		7C8B0ED40DB758B3005113A8 /* libsqlite3.0.8.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C8B0ED30DB758B3005113A8 /* libsqlite3.0.8.6.dylib */; };
 		7C8B0ED60DB758C1005113A8 /* SQLiteKVSTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8B0EBD0DB756A4005113A8 /* SQLiteKVSTest.cpp */; };
 		7C9F52ED0DAF4CB1007E0091 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F520E0DAF4CB1007E0091 /* base64.cpp */; };
 		7C9F52EE0DAF4CB1007E0091 /* error.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C9F520F0DAF4CB1007E0091 /* error.cpp */; };
@@ -407,6 +405,7 @@
 		7C9F58B90DAF62AE007E0091 /* CacheSyncSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C9F58B80DAF62AE007E0091 /* CacheSyncSource.h */; };
 		7CB0367A0DB4EC8A003F4E5F /* SQLKeyValueStore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CB036780DB4EC8A003F4E5F /* SQLKeyValueStore.cpp */; };
 		7CB0367E0DB4EC9A003F4E5F /* SQLKeyValueStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CB0367C0DB4EC9A003F4E5F /* SQLKeyValueStore.h */; };
+		AB1A741E0FF2739800A40D7C /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AB1A741D0FF2739800A40D7C /* libsqlite3.0.dylib */; };
 		AB3E85FA0E07F8CC00581A6C /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB3E85F90E07F8CB00581A6C /* SystemConfiguration.framework */; };
 		AB40DF830F695B2F00E4CD39 /* SyncItemListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB40DF820F695B2F00E4CD39 /* SyncItemListener.cpp */; };
 		AB43F7350EDACE1100183D6B /* StringMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB43F7340EDACE1100183D6B /* StringMap.cpp */; };
@@ -457,11 +456,9 @@
 		7C3BEC790DB734E600119850 /* examples-client */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = "examples-client"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C7649350DB385DC00786883 /* KeyValueStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyValueStore.h; sourceTree = "<group>"; };
 		7C8B0C4F0DB73C2E005113A8 /* SQLiteKeyValueStore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLiteKeyValueStore.cpp; sourceTree = "<group>"; };
-		7C8B0D620DB74DFD005113A8 /* libsqlite3.0.8.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.8.6.dylib; path = usr/lib/libsqlite3.0.8.6.dylib; sourceTree = SDKROOT; };
 		7C8B0D990DB7517C005113A8 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		7C8B0EBD0DB756A4005113A8 /* SQLiteKVSTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLiteKVSTest.cpp; sourceTree = "<group>"; };
 		7C8B0EC70DB758A3005113A8 /* examples-sqlitekvstest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = "examples-sqlitekvstest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7C8B0ED30DB758B3005113A8 /* libsqlite3.0.8.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.8.6.dylib; path = usr/lib/libsqlite3.0.8.6.dylib; sourceTree = SDKROOT; };
 		7C9F520E0DAF4CB1007E0091 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
 		7C9F520F0DAF4CB1007E0091 /* error.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = error.cpp; sourceTree = "<group>"; };
 		7C9F52120DAF4CB1007E0091 /* md5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = md5.cpp; sourceTree = "<group>"; };
@@ -851,6 +848,7 @@
 		7C9F58CE0DAF639E007E0091 /* globalsdef.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = globalsdef.h; sourceTree = "<group>"; };
 		7CB036780DB4EC8A003F4E5F /* SQLKeyValueStore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLKeyValueStore.cpp; sourceTree = "<group>"; };
 		7CB0367C0DB4EC9A003F4E5F /* SQLKeyValueStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLKeyValueStore.h; sourceTree = "<group>"; };
+		AB1A741D0FF2739800A40D7C /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
 		AB3E85F90E07F8CB00581A6C /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		AB40DF820F695B2F00E4CD39 /* SyncItemListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SyncItemListener.cpp; sourceTree = "<group>"; };
 		AB43F7340EDACE1100183D6B /* StringMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringMap.cpp; sourceTree = "<group>"; };
@@ -878,7 +876,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				7C8B0ED20DB758AB005113A8 /* libfunambol.a in Frameworks */,
-				7C8B0ED40DB758B3005113A8 /* libsqlite3.0.8.6.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -886,10 +883,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7C8B0D630DB74DFD005113A8 /* libsqlite3.0.8.6.dylib in Frameworks */,
 				7C8B0D9A0DB7517C005113A8 /* CoreServices.framework in Frameworks */,
 				AB3E85FA0E07F8CC00581A6C /* SystemConfiguration.framework in Frameworks */,
 				ABFBD5D80EC4586100FA542B /* Foundation.framework in Frameworks */,
+				AB1A741E0FF2739800A40D7C /* libsqlite3.0.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -899,12 +896,11 @@
 		08FB7794FE84155DC02AAC07 /* mac */ = {
 			isa = PBXGroup;
 			children = (
+				AB1A741D0FF2739800A40D7C /* libsqlite3.0.dylib */,
 				7C8B0C130DB73AAD005113A8 /* Frameworks */,
 				7C9F520B0DAF4C9B007E0091 /* Source */,
 				C6A0FF2B0290797F04C91782 /* Documentation */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
-				7C8B0D620DB74DFD005113A8 /* libsqlite3.0.8.6.dylib */,
-				7C8B0ED30DB758B3005113A8 /* libsqlite3.0.8.6.dylib */,
 			);
 			name = mac;
 			sourceTree = "<group>";
