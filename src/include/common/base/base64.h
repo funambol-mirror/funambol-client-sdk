@@ -42,7 +42,7 @@
 
 BEGIN_NAMESPACE
 
-int b64_encode(char *dest, void *src, int len);
+int b64_encode(char *dest, const void *src, int len);
 int b64_decode(void *dest, const char *src);
 
 class StringBuffer;
@@ -54,7 +54,7 @@ class StringBuffer;
  * @param src      binary data
  * @len            number of bytes
  */
-void b64_encode(StringBuffer &dest, void *src, int len);
+void b64_encode(StringBuffer &dest, const void *src, int len);
 
 /**
  * Decode b64 encoded, nul-terminated string into the original

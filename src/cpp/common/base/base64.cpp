@@ -79,7 +79,7 @@ input[], int n)
  * @param len src length
  *
  */
-int b64_encode(char *dest, void *src, int len)
+int b64_encode(char *dest, const void *src, int len)
 {
         int outsz = 0;
 
@@ -95,7 +95,7 @@ int b64_encode(char *dest, void *src, int len)
         return outsz;
 }
 
-void b64_encode(StringBuffer &dest, void *src, int len)
+void b64_encode(StringBuffer &dest, const void *src, int len)
 {
     // "magic" formular copied from B64Encoder::transform()
     char *buffer = new char[((len/3+1)<<2) + 32];
