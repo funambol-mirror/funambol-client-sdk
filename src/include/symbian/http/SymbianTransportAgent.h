@@ -38,11 +38,11 @@
 #include <coecntrl.h>
 
 #include "base/globalsdef.h"
-#include <http\mhttptransactioncallback.h>
-#include <http\mhttpdatasupplier.h>
+#include <http/mhttptransactioncallback.h>
+#include <http/mhttpdatasupplier.h>
 
-#include <http\rhttpsession.h>
-#include <http\rhttpheaders.h>
+#include <http/rhttpsession.h>
+#include <http/rhttpheaders.h>
 
 #include "http/URL.h"
 #include "http/Proxy.h"
