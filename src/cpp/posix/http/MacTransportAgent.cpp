@@ -40,17 +40,16 @@
 
 #include <Foundation/Foundation.h>
 #include <CoreFoundation/CoreFoundation.h>
-//#if defined(FUN_IPHONE)
+#if defined(FUN_IPHONE)
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <SystemConfiguration/SCNetworkReachability.h>
 //#if TARGET_IPHONE_SIMULATOR
 //#include <CoreServices/CoreServices.h>
 //#else
 #include <CFNetwork/CFNetwork.h>
-//#endif
-//#else
-//#include <CoreServices/CoreServices.h>
-//#endif
+#else
+#include <CoreServices/CoreServices.h>
+#endif
 
 #include "http/MacTransportAgent.h"
 #include "http/constants.h"
@@ -144,8 +143,8 @@ char* MacTransportAgent::sendMessage(const char* msg){
         }
         
         
-        CFDataRef bodyData;
-        bodyData = CFDataCreate(kCFAllocatorDefault, (const UInt8*)msg, strlen(msg));	
+        //CFDataRef bodyData;
+        CFDataRef bodyData = CFDataCreate(kCFAllocatorDefault, (const UInt8*)msg, strlen(msg));	
         if (!bodyData){
             LOG.error("MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
             setError(ERR_NETWORK_INIT, "MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
@@ -154,8 +153,8 @@ char* MacTransportAgent::sendMessage(const char* msg){
         CFHTTPMessageSetBody(httpRequest, bodyData);
         CFHTTPMessageSetHeaderFieldValue(httpRequest, headerFieldName, headerFieldValue);
         
-        CFReadStreamRef responseStream;
-        responseStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, httpRequest);
+        //CFReadStreamRef responseStream;
+        CFReadStreamRef responseStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, httpRequest);
         
         //bool setProperty;
         //if we are trying to sync on a https server we have to have a trusted certificate.
@@ -193,8 +192,8 @@ char* MacTransportAgent::sendMessage(const char* msg){
         }
         
        
-        CFHTTPMessageRef reply;
-        reply = (CFHTTPMessageRef) CFReadStreamCopyProperty( responseStream, kCFStreamPropertyHTTPResponseHeader);
+        //CFHTTPMessageRef reply;
+        CFHTTPMessageRef reply = (CFHTTPMessageRef) CFReadStreamCopyProperty( responseStream, kCFStreamPropertyHTTPResponseHeader);
         
         
         // Pull the status code from the headers
