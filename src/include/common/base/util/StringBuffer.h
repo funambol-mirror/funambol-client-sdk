@@ -203,14 +203,14 @@ class StringBuffer: public ArrayElement {
          */
         int replaceAll(const char *from, const char *to, size_t pos = 0);
 
+
         /**
-         * Splits string on each occurrence of any of the characters in
-         * delimiters.
+         * Splits string in tokens using the parameter separator
          *
          * @return - the position or StringBuffer::npos if not found.
          */
         ArrayList &split (ArrayList &tokens,
-                          const char *delimiters = " ") const;
+                         const char *separator = " ") const;
 
         /**
          * Joins all the tokens in the given ArrayList, using separator to
