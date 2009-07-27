@@ -691,8 +691,8 @@ int SyncManager::prepareSync(SyncSource** s) {
         list = syncMLProcessor.getCommands(syncml->getSyncBody(), GET);
         for (int i=0; i < list->size(); i++) {
             AbstractCommand* cmd = (AbstractCommand*)list->get(i);
-            ArrayList* responseCmd = NULL;
-            if (responseCmd = syncMLProcessor.processGetCommand(cmd, devInf)) {
+            ArrayList* responseCmd = syncMLProcessor.processGetCommand(cmd, devInf);
+            if (responseCmd) {
                 commands.add(responseCmd);
                 delete responseCmd;
             }
@@ -706,8 +706,8 @@ int SyncManager::prepareSync(SyncSource** s) {
         list = syncMLProcessor.getCommands(syncml->getSyncBody(), PUT);
         for (int i=0; i < list->size(); i++) {
             AbstractCommand* cmd = (AbstractCommand*)list->get(i);
-            ArrayList* responseCmd = NULL;
-            if (responseCmd = syncMLProcessor.processPutCommand(cmd, config)) {
+            ArrayList* responseCmd = syncMLProcessor.processPutCommand(cmd, config);
+            if (responseCmd) {
                 commands.add(responseCmd);
                 delete responseCmd;
             }
@@ -729,7 +729,6 @@ int SyncManager::prepareSync(SyncSource** s) {
         }
         delete list;
         list = NULL;
-
 
 
         //
