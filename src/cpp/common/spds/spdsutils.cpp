@@ -240,7 +240,6 @@ char* b64EncodeWithSpaces(const char *msg, int len) {
     
     // Terminate the string
     ret[dlen]=0;
-    int ll = strlen(res);
     return res;
 }
 
