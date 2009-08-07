@@ -378,6 +378,18 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="vocl"
+				>
+				<Filter
+					Name="winObjects"
+					>
+					<File
+						RelativePath="..\..\test\windows\vocl\WinContactTest.cpp"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -521,6 +533,18 @@
 						Outputs="$(TargetDir)$(InputFileName)"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\test\testcases\vcard4Wcontact21-2.vcf"
+				>
+			</File>
+			<File
+				RelativePath="..\..\test\testcases\vcard4WContact21.vcf"
+				>
+			</File>
+			<File
+				RelativePath="..\..\test\testcases\vcard4WContact30.vcf"
+				>
 			</File>
 			<Filter
 				Name="SyncML"
