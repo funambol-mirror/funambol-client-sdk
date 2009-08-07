@@ -539,6 +539,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\test\testcases\vcard4Wcontact21-3.vcf"
+				>
+			</File>
+			<File
 				RelativePath="..\..\test\testcases\vcard4WContact21.vcf"
 				>
 			</File>

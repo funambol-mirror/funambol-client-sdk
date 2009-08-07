@@ -57,6 +57,7 @@ class WinContactTest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(WinContactTest);
     CPPUNIT_TEST(testParse21);
     CPPUNIT_TEST(testParse212);
+    CPPUNIT_TEST(testParse213);
     CPPUNIT_TEST(testParse30);
     CPPUNIT_TEST_SUITE_END();
 
@@ -112,6 +113,10 @@ private:
 
     void testParse212(){
         testVcard("vcard4WContact21-2.vcf");
+    }
+
+    void testParse213(){
+        testVcard("vcard4WContact21-3.vcf");
     }
 
     void testParse21(){    
