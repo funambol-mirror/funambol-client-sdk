@@ -135,6 +135,9 @@ SOURCE       Calendar.cpp Event.cpp iCalConverter.cpp iCalProperty.cpp ToDo.cpp
 SOURCEPATH   ..\..\src\cpp\symbian\spds
 SOURCE       DESEncoder.cpp DESDecoder.cpp
 
+SOURCEPATH   ..\..\src\cpp\common\updater
+SOURCE       Updater.cpp UpdaterConfig.cpp
+
 
 SOURCEPATH ..\..\src\cpp\symbian\base\adapter
 SOURCE PlatformAdapter.cpp
