@@ -1,3 +1,6 @@
+2009-08-31
+   - toccy: updated trunk version to "8.2.0"
+
 2009-08-27
    - toccy: added 'updater' module (moved from Symbian Client), so it can be shared by all C++ clients
             The module can be used by Clients to check if a new version of a certain component is available on the Server.
