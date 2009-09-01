@@ -141,7 +141,7 @@ void SyncManagerTest::testServerError506() {
             
     SyncClient client;
     client.setTransportAgent(testTransportAgent);
-    int ret = client.sync(*config, sources);
+    client.sync(*config, sources);
 
     StringBuffer report("");
     client.getSyncReport()->toString(report);
