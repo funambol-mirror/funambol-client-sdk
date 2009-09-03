@@ -714,25 +714,58 @@ Sync* Parser::getSync(const char*xml) {
 
 void Parser::getCommonCommandList(ArrayList& commands, const char*xml, const char*except) {
 
-    //
-    //Delete
-    //
-    getAndAppendDels(commands, xml, except);
+    if (!xml) return;
 
     //
-    //Add
+    // Make sure these commands are processed exaclty in the same
+    // order sent by the Server. This is very important in general.
+    // For instance in case of a large-object, the chunk is sent
+    // as the first item, and MUST be processed for first.
     //
-    getAndAppendAdds(commands, xml, except);
+    bool processedAdd = false, processedReplace = false;
+    bool processedDel = false, processedCopy = false;
 
-    //
-    //Replace
-    //
-    getAndAppendReplaces(commands, xml, except);
+    int pos = 0, previous = 0;
+    const char* tag = NULL;
+    while ( (tag = XMLProcessor::getNextTag(xml+pos, &pos)) ) {
+        
+        if (!strcmp(tag, ADD) && !processedAdd) {
+            //
+            //Add
+            //
+            getAndAppendAdds(commands, xml, except);
+            processedAdd = true;
+        }
 
-    //
-    //Copy
-    //
-    getAndAppendCopies(commands, xml, except);
+        else if (!strcmp(tag, REPLACE) && !processedReplace) {
+            //
+            //Replace
+            //
+            getAndAppendReplaces(commands, xml, except);
+            processedReplace = true;
+        }
+
+        else if (!strcmp(tag, DEL) && !processedDel) {
+            //
+            //Delete
+            //
+            getAndAppendDels(commands, xml, except);
+            processedDel = true;
+        }
+
+        else if (!strcmp(tag, COPY) && !processedCopy) {
+            //
+            //Copy
+            //
+            getAndAppendCopies(commands, xml, except);
+            processedCopy = true;
+        }
+
+        pos += previous;
+        previous = pos;
+        delete tag;
+    }
+
 }
 
 Copy* Parser::getCopy(const char*xml) {

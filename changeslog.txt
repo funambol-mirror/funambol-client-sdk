@@ -1,3 +1,8 @@
+2009-09-03
+   - toccy: fixed bug #7794: sync fails when server sends multipart item + another item in one message
+            Fixed the SyncML parser (Parser::getCommonCommandList) in order to process commands from the Server 
+            in the same order the Server sent them.
+
 2009-08-31
    - toccy: updated trunk version to "8.2.0"
 
