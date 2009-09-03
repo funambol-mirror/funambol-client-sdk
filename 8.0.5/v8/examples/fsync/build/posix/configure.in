@@ -1,0 +1,16 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.59)
+
+AC_INIT([fsync], [1.0], [help@funambol.com])
+
+AM_INIT_AUTOMAKE([1.9 foreign])
+
+AC_ARG_WITH(libfunambol, AS_HELP_STRING([--with-libfunambol=PATH], [set funambol library path]), 
+	FUNAMBOL_LIB_PATH="$withval")
+
+AC_PROG_CXX
+
+AC_SUBST(FUNAMBOL_LIB_PATH)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
