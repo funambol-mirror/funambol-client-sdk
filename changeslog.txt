@@ -4,6 +4,9 @@
             PlatformAdapter::init(). This way, to avoid spam, the config will be stored under the 
             "Funambol/client-test/<test name>" context.
             Added getNewSyncManagerConfig() and getNewDMTClientConfig() functions to easily retrieve a default config.
+   - toccy: [unit test] added 'testLargeObject2': tests Large object issue (bug #7794) with a Replace command split in 2 msg, 
+            and also a Delete command in the second msg. If fails, the Server commands
+            are not parsed in the correct order by Client APIs (fixed in v8SP1).
 
 2009-09-03
    - toccy: fixed bug #7794: sync fails when server sends multipart item + another item in one message

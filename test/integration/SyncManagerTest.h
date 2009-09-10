@@ -43,6 +43,7 @@
 #include "base/util/StringBuffer.h"
 #include "base/globalsdef.h"
 
+#include "integration/TestSyncSource.h"
 #include "common/http/TransportAgentReplacement.h"
 
 BEGIN_NAMESPACE
@@ -60,11 +61,10 @@ public:
 
     SyncManagerTest() {}
 
-    void runTests() {
+    void runAllTests() {
         testServerError506();
+        testLargeObject2();
     }
-
-private:
 
     /**
      * Checks for a loop in SyncManager::sync(), because of a missing <Final> 
@@ -78,6 +78,13 @@ private:
      * Test passes if the sync does not loop infinite.
      */
     void testServerError506();
+
+    /**
+     * Test Large object issue (bug #7794) with a Replace command split in 2 msg, 
+     * and also a Delete command in the second msg. If fails, the Server commands
+     * are not parsed in the correct order by Client APIs (fixed in v8SP1).
+     */
+    void testLargeObject2();
 };
 
 
@@ -113,6 +120,50 @@ public:
                               unsigned int maxmsgsize = DEFAULT_MAX_MSG_SIZE) 
                               : TransportAgentReplacement(url, proxy, responseTimeout, maxmsgsize) {}
 
+};
+
+
+/**
+ * Used by testLargeObject2 test: It's reimplemented in order to simulate a Server 
+ * communication: the syncML responses are read from xml files under testcases/testLargeObject2 dir.
+ */
+class TransportAgentTestLargeObject2 : public TransportAgentReplacement {
+
+protected:
+
+    // nothing to do, just return
+    void beforeSendingMessage  (StringBuffer& msgToSend)   { return; }
+    void afterReceivingResponse(StringBuffer& msgReceived) { return; }
+
+public:
+
+    TransportAgentTestLargeObject2(URL& url, 
+                              Proxy& proxy, 
+                              unsigned int responseTimeout = DEFAULT_MAX_TIMEOUT,
+                              unsigned int maxmsgsize = DEFAULT_MAX_MSG_SIZE) 
+                              : TransportAgentReplacement(url, proxy, responseTimeout, maxmsgsize) {}
+
+    /**
+     * The main method, to send/receive messages.
+     * It's reimplemented in order to simulate a Server communication: the syncML responses
+     * are read from xml files under testcases/testLargeObject2 dir.
+     */
+    char* sendMessage(const char* msg);
+};
+
+
+/**
+ * Used by testLargeObject2 test: extends TestSyncSource, redefines the updateItem
+ * method in order to check the items are correctly joined by SyncManager.
+ */
+class  SyncSourceTestLargeObject2 : public TestSyncSource {
+
+public:
+
+    SyncSourceTestLargeObject2(const WCHAR* name, SyncSourceConfig *sc, int numItems = 10) : TestSyncSource(name, sc, numItems) {}
+
+    /// Checks if the vCard received can be correctly parsed
+    int updateItem(SyncItem& item);
 };
 
 

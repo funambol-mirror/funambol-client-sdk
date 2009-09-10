@@ -47,8 +47,10 @@
 #include "base/util/XMLProcessor.h"
 #include "syncml/core/TagNames.h"
 
+#include "testUtils.h"
 #include "SyncManagerTest.h"
-#include "ManyItemsTestSyncSource.h"
+#include "TestSyncSource.h"
+#include "vocl/VConverter.h"
 
 USE_NAMESPACE
 
@@ -75,13 +77,13 @@ static int getMsgID(const StringBuffer& syncMLmsg) {
  * Generates and returns a default configuration, with ssources contacts and calendar
  */
 static SyncManagerConfig* getConfiguration(const char* name) {
-    
-    PlatformAdapter::init(name, true);
-    SyncManagerConfig* config = new SyncManagerConfig();
-    
-    config->setClientDefaults();
-    config->setSourceDefaults("contact");
-    config->setSourceDefaults("calendar");
+
+    StringBuffer sourceName;
+    ArrayList sourceList;
+    sourceName = "contact";    sourceList.add(sourceName);
+    sourceName = "calendar";   sourceList.add(sourceName);
+
+    SyncManagerConfig* config = getNewSyncManagerConfig(name, true, &sourceList);
 
     // Can be removed once vCal is the default format...
     SyncSourceConfig* ssc = config->getSyncSourceConfig("calendar");
@@ -90,27 +92,11 @@ static SyncManagerConfig* getConfiguration(const char* name) {
     ssc->setVersion("1.0");
     ssc->setURI("event");
 
-    //set custom configuration
-    StringBuffer devID("sc-pim-");
-    devID += name;
-    config->getDeviceConfig().setDevID(devID.c_str());
-
-    const char *serverUrl = getenv("CLIENT_TEST_SERVER_URL");
-    const char *username = getenv("CLIENT_TEST_USERNAME");
-    const char *password = getenv("CLIENT_TEST_PASSWORD");
-
-    if(serverUrl) {
-        config->getAccessConfig().setSyncURL(serverUrl);
-    }
-    if(username) {
-        config->getAccessConfig().setUsername(username);
-    }
-    if(password) {
-        config->getAccessConfig().setPassword(password);
-    }
-
     return config;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void SyncManagerTest::testServerError506() {
 
@@ -121,10 +107,10 @@ void SyncManagerTest::testServerError506() {
     // so that the last source has to send items in multimessage, first 
     // won't have the Final tag.
     SyncSourceConfig* ssc = config->getSyncSourceConfig("contact");
-    ManyItemsTestSyncSource ssContact(TEXT("contact"), ssc, 0);
+    TestSyncSource ssContact(TEXT("contact"), ssc, 0);
 
     ssc = config->getSyncSourceConfig("calendar");
-    ManyItemsTestSyncSource ssCalendar(TEXT("calendar"), ssc, NUM_CALENDAR_ITEMS);
+    TestSyncSource ssCalendar(TEXT("calendar"), ssc, NUM_CALENDAR_ITEMS);
     ssc->setSync("refresh-from-client");    // optional
 
     SyncSource* sources[3];
@@ -201,6 +187,114 @@ void TransportAgentTestError506::afterReceivingResponse(StringBuffer& msgReceive
         previous = pos;
         XMLProcessor::copyElementContent(status, &msg[pos], STATUS, &pos);
     }
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+void SyncManagerTest::testLargeObject2() {
+
+    LOG.setLevel(LOG_LEVEL_DEBUG);
+    SyncManagerConfig* config = getConfiguration("testLargeObject2");
+
+    // To force multimessage
+    config->getDeviceConfig().setMaxObjSize(100000);
+    config->getAccessConfig().setMaxMsgSize(MIN_SYNCML_MSG_SIZE);
+
+    // Just sync the contacts, with no items locally changed
+    config->getSyncSourceConfig("calendar")->setIsEnabled(false);
+    SyncSourceConfig* ssc = config->getSyncSourceConfig("contact");
+    SyncSourceTestLargeObject2 ssContact(TEXT("contact"), ssc, 0);
+
+    SyncSource* sources[2];
+    sources[0] = &ssContact;
+    sources[1] = NULL;
+
+    // Use a test transportAgent, to simulate ALL the messages from the Server.
+    // Set a low msg size, so that the Replace item is split at least in 2 syncML msg.
+    // Note: the TransportAgent will be destroyed by the SyncManager.
+    URL url(config->getSyncURL());
+    Proxy proxy;
+    TransportAgentTestLargeObject2* testTA = new TransportAgentTestLargeObject2(url, proxy, config->getResponseTimeout(), MIN_SYNCML_MSG_SIZE);
+      
+    // ------------------------------------
+    SyncClient client;
+    client.setTransportAgent(testTA);
+    int ret = client.sync(*config, sources);
+    // ------------------------------------
+
+    StringBuffer report("");
+    client.getSyncReport()->toString(report);
+    LOG.info("\n%s", report.c_str());
+
+    CPPUNIT_ASSERT_MESSAGE("Sync failed", !ret);
+    
+
+    // Check the results
+    SyncSourceReport* ssr = ssContact.getReport();
+    CPPUNIT_ASSERT(ssr);
+    if (ssr) {
+        int mod = ssr->getItemReportSuccessfulCount(CLIENT, COMMAND_REPLACE);
+        CPPUNIT_ASSERT_EQUAL(1, mod);
+
+        int del = ssr->getItemReportSuccessfulCount(CLIENT, COMMAND_DELETE);
+        CPPUNIT_ASSERT_EQUAL(1, del);
+    }
+
+    delete config;
+}
+
+
+char* loadSyncMLFromFile(const int index) {
+
+    // Only 5 syncML messages are expected
+    if (index <= 0 || index > 5) {
+        return NULL;
+    }
+
+    StringBuffer fileName;
+    fileName.sprintf("syncML%d.xml", index);
+
+    return loadTestFile("testLargeObject2", fileName.c_str());
+}
+
+
+char* TransportAgentTestLargeObject2::sendMessage(const char* msg) {
+
+    if (!msg) {
+        return NULL;
+    }
+    int msgID = getMsgID(msg); 
+
+    char* ret = loadSyncMLFromFile(msgID);
+    CPPUNIT_ASSERT(ret);
+
+    LOG.debug("FAKE TRANSPORT AGENT - msg to send:\n%s", msg);
+    LOG.debug("FAKE TRANSPORT AGENT - msg received:\n%s", ret);
+
+    return ret;
+}
+
+
+int SyncSourceTestLargeObject2::updateItem(SyncItem& item) {
+
+    int ret = STC_COMMAND_FAILED;
+    CPPUNIT_ASSERT(item.getDataSize());
+
+    char* charData = (char*)item.getData();
+    CPPUNIT_ASSERT(charData);
+
+    // Expected a vCard
+    const WCHAR* wdata = toWideChar(charData);
+    VObject* vo = VConverter::parse(wdata);
+
+    // If null, the vCard was not correct
+    CPPUNIT_ASSERT_MESSAGE("updateItem has a wrong vCard data", vo);
+    if (vo) ret = STC_OK;
+
+    delete vo;
+    delete [] wdata;
+    return ret;
 }
 
 

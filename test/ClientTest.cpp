@@ -1648,6 +1648,10 @@ void SyncTests::addTests() {
 
     // test Server error 506 adding calendar items (caused loop before v8.5)
     ADD_TEST(SyncTests, testServerError506);
+
+    // test Large object issue (bug #7794) with a Replace command split in 2 msg, 
+    // and also a Delete command in the second msg
+    ADD_TEST(SyncTests, testLargeObject2);
 }
 
 /** compare databases of first and second client */

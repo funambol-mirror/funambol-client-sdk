@@ -793,7 +793,12 @@ protected:
 
     virtual void testServerError506() {
         SyncManagerTest test;
-        test.runTests();        
+        test.testServerError506();        
+    }
+
+    virtual void testLargeObject2() {
+        SyncManagerTest test;
+        test.testLargeObject2();        
     }
 
     /**
