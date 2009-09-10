@@ -33,7 +33,7 @@
  * the words "Powered by Funambol".
  */
 
-#include "ManyItemsTestSyncSource.h"
+#include "TestSyncSource.h"
 #include "base/util/utils.h"
 #include "base/Log.h"
 #include "base/util/StringBuffer.h"
@@ -45,13 +45,13 @@ USE_NAMESPACE
 
 
 
-ManyItemsTestSyncSource::ManyItemsTestSyncSource(const WCHAR* name, SyncSourceConfig *sc, int numItems) 
+TestSyncSource::TestSyncSource(const WCHAR* name, SyncSourceConfig *sc, int numItems) 
                                                       : SyncSource(name, sc), count(0), numNewItems(numItems) {
 
 }
 
 
-SyncItem* ManyItemsTestSyncSource::getNextNewItem() {
+SyncItem* TestSyncSource::getNextNewItem() {
 
     if (numNewItems == 0) {
         return NULL;
@@ -81,11 +81,11 @@ SyncItem* ManyItemsTestSyncSource::getNextNewItem() {
     return item;
 }
 
-void ManyItemsTestSyncSource::setItemStatus(const WCHAR* key, int status) {
-    LOG.debug("ManyItemsTestSyncSource - key: %ls, status: %i", key, status);
+void TestSyncSource::setItemStatus(const WCHAR* key, int status) {
+    LOG.debug("TestSyncSource - key: %ls, status: %i", key, status);
 }
 
-int ManyItemsTestSyncSource::addItem(SyncItem& item) {
+int TestSyncSource::addItem(SyncItem& item) {
 
     WCHAR luid[128];
     wsprintf(luid, TEXT("%s-luid"), item.getKey());
@@ -94,18 +94,18 @@ int ManyItemsTestSyncSource::addItem(SyncItem& item) {
 }
 
 
-int ManyItemsTestSyncSource::beginSync() {
-    LOG.debug("Begin sync ManyItemsTestSyncSource");
+int TestSyncSource::beginSync() {
+    LOG.debug("Begin sync TestSyncSource");
     return 0;
 }
-int ManyItemsTestSyncSource::endSync() {
-    LOG.debug("End sync ManyItemsTestSyncSource");
+int TestSyncSource::endSync() {
+    LOG.debug("End sync TestSyncSource");
     return 0;
 }
 
 
 
-StringBuffer ManyItemsTestSyncSource::getNewCard() {
+StringBuffer TestSyncSource::getNewCard() {
     
     StringBuffer name(toMultibyte(getName()));
     name.append(count);    
@@ -123,7 +123,7 @@ StringBuffer ManyItemsTestSyncSource::getNewCard() {
     return card;
 }
 
-StringBuffer ManyItemsTestSyncSource::getNewCal() {
+StringBuffer TestSyncSource::getNewCal() {
     
     StringBuffer name(toMultibyte(getName()));
     name.append(count);

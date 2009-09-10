@@ -33,8 +33,8 @@
  * the words "Powered by Funambol".
  */
 
-#ifndef INCL_MANY_ITEMS_TEST_SYNC_SOURCE
-#define INCL_MANY_ITEMS_TEST_SYNC_SOURCE
+#ifndef INCL_TEST_SYNC_SOURCE
+#define INCL_TEST_SYNC_SOURCE
 /** @cond DEV */
 
 #include "base/fscapi.h"
@@ -51,10 +51,10 @@ BEGIN_NAMESPACE
 
 /**
  * Simple SyncSource to generate N new items (vCard or vCal), for integration tests.
- * The number of new items to generate can be passed in constructor (default = 100).
+ * The number of new items to generate can be passed in constructor (default = 10).
  * The new items are generated both in case of slow-sync and two-way-sync.
  */
-class  ManyItemsTestSyncSource : public SyncSource {
+class  TestSyncSource : public SyncSource {
 
 private:
     
@@ -78,11 +78,11 @@ public:
      *
      * @param name - the name of the SyncSource
      * @param sc   - the SyncSourceConfig
-     * @param numItems - the number of new items created during sync, default = 100
+     * @param numItems - the number of new items created during sync, default = 10
      */
-    ManyItemsTestSyncSource(const WCHAR* name, SyncSourceConfig *sc, int numItems = 100);
+    TestSyncSource(const WCHAR* name, SyncSourceConfig *sc, int numItems = 10);
 
-    ~ManyItemsTestSyncSource() {}
+    ~TestSyncSource() {}
 
 
     SyncItem* getFirstItem()        { return getNextItem(); }
