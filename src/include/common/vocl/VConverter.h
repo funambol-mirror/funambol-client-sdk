@@ -46,6 +46,10 @@ BEGIN_NAMESPACE
 class VConverter{
 
 public:
+
+    /**
+     * Parses the passed string 'buffer', returns a NEW ALLOCATED VObject*.
+     */
     static VObject* parse(const WCHAR* buffer);
 
 private:
