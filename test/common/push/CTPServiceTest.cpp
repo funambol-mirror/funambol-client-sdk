@@ -41,7 +41,7 @@
 #include "push/CTPService.h"
 #include "push/FThread.h"
 #include "push/FSocket.h"
-
+#include "testUtils.h"
 #include "cppunit/extensions/TestFactoryRegistry.h"
 #include "cppunit/extensions/HelperMacros.h"
 
@@ -327,7 +327,7 @@ public:
     /* Initialize the CTP test configuration */
     void initConfig() {
         // Forcing PlatformAdapter initialization
-        PlatformAdapter::init(CTP_TEST_APPLICATION_URI, true);
+        initAdapter(CTP_TEST_APPLICATION_URI);
 
         // Set up a default test configuration
         DMTClientConfig config;

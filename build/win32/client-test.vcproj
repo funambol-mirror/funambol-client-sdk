@@ -190,10 +190,6 @@
 				RelativePath="..\..\test\TestFileSource.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\test\TestFileSource.h"
-				>
-			</File>
 			<Filter
 				Name="spds"
 				>
@@ -330,10 +326,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\test\integration\ManyItemsTestSyncSource.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\test\integration\MappingsTest.cpp"
 					>
 				</File>
@@ -355,6 +347,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\cpp\common\client\TestFileSyncSource.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\test\integration\TestSyncSource.cpp"
 					>
 				</File>
 			</Filter>
@@ -401,7 +397,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\test\TestFileSource.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\include\common\client\TestFileSyncSource.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\test\integration\TestSyncSource.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\test\testUtils.cpp"
 				>
 			</File>
 		</Filter>

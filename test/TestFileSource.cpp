@@ -38,6 +38,7 @@
 /** @{ */
 
 #include "TestFileSource.h"
+#include "testUtils.h"
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
@@ -79,7 +80,7 @@ TestFileSource::TestFileSource(const std::string &id) :
         LOG.setLevel(LOG_LEVEL_DEBUG);
         std::string root = std::string("client-test/") + server + "_" + clientID;
     
-        PlatformAdapter::init(root.c_str(), true);
+        initAdapter(root.c_str());
         config.reset(new DMTClientConfig());
         //config.reset(new DMTClientConfig(root.c_str()));
         config->read();

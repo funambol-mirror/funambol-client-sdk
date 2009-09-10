@@ -42,6 +42,7 @@
 #include "spdm/ManagementNode.h"
 #include "spdm/DMTree.h"
 
+#include "testUtils.h"
 #include "base/adapter/PlatformAdapter.h"
 #include "client/DMTClientConfig.h"
 
@@ -63,8 +64,7 @@ public:
 
 
     void setUp() {
-        PlatformAdapter::init(APPLICATIONURI, true);
-        config = new DMTClientConfig();
+        config = getNewDMTClientConfig(APPLICATIONURI, false);
         config->read();
         s = config->getSyncSourceConfig("config");
     }

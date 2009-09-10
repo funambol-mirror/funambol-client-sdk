@@ -1,3 +1,10 @@
+2009-09-10
+   - toccy: [unit test] added "testUtils" to collect utils fuctions shared by different tests.
+            All tests should always call "initAdapter" fuction to initialize the PlatformAdapter instead of 
+            PlatformAdapter::init(). This way, to avoid spam, the config will be stored under the 
+            "Funambol/client-test/<test name>" context.
+            Added getNewSyncManagerConfig() and getNewDMTClientConfig() functions to easily retrieve a default config.
+
 2009-09-03
    - toccy: fixed bug #7794: sync fails when server sends multipart item + another item in one message
             Fixed the SyncML parser (Parser::getCommonCommandList) in order to process commands from the Server 

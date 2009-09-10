@@ -60,7 +60,7 @@
 #include "ConfigSyncSourceTest.h"
     
 #include "client/ConfigSyncSource.h"
-
+#include "testUtils.h"
 #include "spdm/DMTree.h"
 #include "spdm/ManagementNode.h"
 
@@ -77,67 +77,18 @@ ConfigSyncSourceTest::ConfigSyncSourceTest() {
         
 
 DMTClientConfig* getConf(const char* name) {
+
+    DMTClientConfig* config = getNewDMTClientConfig(name, true);
     
-    const char *serverUrl = getenv("CLIENT_TEST_SERVER_URL");
-    const char *username =  getenv("CLIENT_TEST_USERNAME");
-    const char *password = getenv("CLIENT_TEST_PASSWORD");
-    
-    PlatformAdapter::init(name, true);
-    DMTClientConfig* config = new DMTClientConfig();
-    
-	if (config->read() == false) {
-    	AccessConfig* ac = DefaultConfigFactory::getAccessConfig();
-    	config->setAccessConfig(*ac);
+	SyncSourceConfig* sc = DefaultConfigFactory::getSyncSourceConfig(SOURCE_CONFIG_NAME);
+	sc->setEncoding ("bin");
+	sc->setType     ("text/plain");
+	sc->setURI      ("configuration");
+	config->setSyncSourceConfig(*sc);
+	delete sc;
 
-		//set custom configuration
-    	if(serverUrl) {
-        	config->getAccessConfig().setSyncURL(serverUrl);
-    	}
-    	if(username) {
-        	config->getAccessConfig().setUsername(username);
-    	}
-    	if(password) {
-        	config->getAccessConfig().setPassword(password);
-    	}
+	config->save();
 
-    	delete ac;
-
-    	DeviceConfig* dc = DefaultConfigFactory::getDeviceConfig();
-    	StringBuffer devid("sc-pim-"); devid += name;
-    	dc->setDevID(devid);
-    	config->setDeviceConfig(*dc);
-    	delete dc;
-
-    	SyncSourceConfig* sc = DefaultConfigFactory::getSyncSourceConfig(SOURCE_CONFIG_NAME);
-    	sc->setEncoding ("bin");
-    	sc->setType     ("text/plain");
-    	sc->setURI      ("configuration");
-    	config->setSyncSourceConfig(*sc);
-    	delete sc;
-
-    
-		config->save();
-	}
-
-/*
-	//DeviceConfig &dc(config->getDeviceConfig());
-    if (!strlen(dc.getDevID())) {            
-    	LOG.info("PIPPO=================================================================================================");
-	    config->setClientDefaults();
-        config->setSourceDefaults(SOURCE_CONFIG_NAME); 
-        StringBuffer devid("sc-pim-"); devid += name;
-        dc.setDevID(devid);
-        SyncSourceConfig* s = config->getSyncSourceConfig(SOURCE_CONFIG_NAME);
-        //SyncSourceConfig* s = new SyncSourceConfig();
-        if(!s){
-		LOG.error("Syncsourceconfig null");
-	}
-	s->setEncoding("bin");
-        s->setURI("configuration");
-        s->setType("text/plain");
-	//config->setSyncSourceConfig(*s);
-    }
-  */  
     
     return config;
 }
