@@ -65,7 +65,7 @@ TESTS_SPDS = \
     FolderExtTest.cpp \
     MailAccountTest.cpp \
     MappingTestSyncSource.cpp \
-    ManyItemsTestSyncSource.cpp \
+    TestSyncSource.cpp \
     SyncManagerTest.cpp
 
 TESTS_PUSH = \
