@@ -25,7 +25,7 @@ vpath %.cpp	$(TESTDIR) \
         $(TESTDIR)/common/http
 
 # Test runner sources
-SOURCES = client-test-main.cpp ClientTest.cpp TestFileSource.cpp
+SOURCES = client-test-main.cpp ClientTest.cpp TestFileSource.cpp testUtils.cpp
 
 # Testcase sources
 TESTS_BASE = \
