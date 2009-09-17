@@ -1,0 +1,8 @@
+Funambol J2ME PIM API Changes Log
+------------------------------------
+2009-05-21 (V. 8.0.0)
+	- Creation of this document
+  	- Fixed bug #7193 (Categories data disappears while syncing with BB)
+  	- Fixed bug #7268 (Categories Business and Personal created in Outlook do not sync to BB)
+  	- Fixed bug #7275 (null category synced on BlackBerry)
+
