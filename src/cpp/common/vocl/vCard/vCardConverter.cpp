@@ -414,7 +414,7 @@ bool vCardConverter::validateProperty30(VProperty* prop, WString& errorDescripti
     return true;
 }
 
-bool vCardConverter::checkType(WCHAR* types, WCHAR* typesList) {
+bool vCardConverter::checkType(const WCHAR* types, const WCHAR* typesList) {
 
     if (!types)
         return true;

@@ -174,7 +174,7 @@ void VProperty::addParameter (const WCHAR* paramName, const WCHAR* paramValue) {
     }
 }
 
-void VProperty::removeParameter(WCHAR* paramName) {
+void VProperty::removeParameter(const WCHAR* paramName) {
 
     if (parameters != NULL) {
         for (int i=0; i<parameters->size(); i++){
@@ -187,7 +187,7 @@ void VProperty::removeParameter(WCHAR* paramName) {
         }
     }
 }
-bool VProperty::containsParameter(WCHAR* paramName) {
+bool VProperty::containsParameter(const WCHAR* paramName) {
 
     if (parameters != NULL) {
         for (int i=0; i<parameters->size(); i++){
@@ -201,7 +201,7 @@ bool VProperty::containsParameter(WCHAR* paramName) {
 
     return false;
 }
-WCHAR* VProperty::getParameterValue(WCHAR* paramName) {
+WCHAR* VProperty::getParameterValue(const WCHAR* paramName) {
 
     if (parameters != NULL) {
         for (int i=0; i<parameters->size(); i++) {
@@ -473,7 +473,7 @@ WCHAR* VProperty::getParameter(int index){
     return (WCHAR *)parameter->getKey();
 }
 
-bool VProperty::equalsEncoding(WCHAR* encoding) {
+bool VProperty::equalsEncoding(const WCHAR* encoding) {
 
     if ((encoding != NULL) && ((containsParameter(TEXT("ENCODING")) &&
         !wcscmp(getParameterValue(TEXT("ENCODING")),encoding)) ||
@@ -484,7 +484,7 @@ bool VProperty::equalsEncoding(WCHAR* encoding) {
 
 
 
-bool VProperty::isType(WCHAR* type) {
+bool VProperty::isType(const WCHAR* type) {
     if(containsParameter(type))
         return true;
     if(containsParameter(TEXT("TYPE")) && getParameterValue(TEXT("TYPE"))) {

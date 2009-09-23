@@ -893,7 +893,7 @@ iCalProperty* Event::getiCalPropertyFromVProperty(VProperty* vp) {
         return NULL;
 
 }
-VProperty* Event::getVPropertyFromiCalProperty(WCHAR* name, iCalProperty* prop) {
+VProperty* Event::getVPropertyFromiCalProperty(const WCHAR* name, iCalProperty* prop) {
     if(name && prop) {
         VProperty *vprop = new VProperty(name, prop->getValue());
 

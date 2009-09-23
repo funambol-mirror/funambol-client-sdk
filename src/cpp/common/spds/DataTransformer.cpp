@@ -45,7 +45,7 @@ DataTransformer::DataTransformer() : name(NULL) {
 
 }
 
-DataTransformer::DataTransformer(char* n) {
+DataTransformer::DataTransformer(const char* n) {
     name = stringdup(n);
 }
 

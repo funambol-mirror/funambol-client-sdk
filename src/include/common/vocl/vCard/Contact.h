@@ -80,7 +80,7 @@ class Contact : public VObject {
          */
         void set(WCHAR** p, WCHAR* v);
         vCardProperty* getPropertyFromVProperty(VProperty* vp);
-        VProperty* getVPropertyFromProperty(WCHAR* name, vCardProperty* prop);
+        VProperty* getVPropertyFromProperty(const WCHAR* name, vCardProperty* prop);
         VProperty* composeVAddress(Address* adr);
         Address* composeAddress(VProperty* vp, int type);
         Address* addLabelAddress(VProperty* vp, int type);

@@ -80,7 +80,7 @@ WCHAR* TypedProperty::getType(WCHAR* buf, int size) {
     return buf;
 }
 
-void TypedProperty::setType(WCHAR* type) {
+void TypedProperty::setType(const WCHAR* type) {
     if (t) delete [] t;
     t = wstrdup(type);
 }

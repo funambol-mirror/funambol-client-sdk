@@ -100,19 +100,19 @@ private:
     WCHAR* getPropComponent(int i);
 
     void addParameter(const WCHAR* paramName, const WCHAR* paramValue);
-    void removeParameter(WCHAR* paramName);
-    bool containsParameter(WCHAR* paramName);
+    void removeParameter(const WCHAR* paramName);
+    bool containsParameter(const WCHAR* paramName);
     // Warning: the name does not always uniquely identify
     // the parameter, some of them may occur multiple times.
     // Use getParameterValue(int index) to get the value which
     // corresponds to a specific parameter.
-    WCHAR* getParameterValue(WCHAR* paramName);
+    WCHAR* getParameterValue(const WCHAR* paramName);
     WCHAR* getParameterValue(int index);
     WCHAR* getParameter(int index);
     int parameterCount();
-    bool equalsEncoding(WCHAR* encoding);
+    bool equalsEncoding(const WCHAR* encoding);
     //WCHAR* getPropComponent(int i);
-    bool isType(WCHAR* type);
+    bool isType(const WCHAR* type);
     WCHAR* toString(WCHAR* version = NULL);
 
  };

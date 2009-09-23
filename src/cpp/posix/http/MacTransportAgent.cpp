@@ -48,7 +48,8 @@
 //#else
 #include <CFNetwork/CFNetwork.h>
 #else
-#include <CoreServices/CoreServices.h>
+//#include <CoreServices/CoreServices.h>
+#include <CFNetwork/CFNetwork.h>
 #endif
 
 #include "http/MacTransportAgent.h"
@@ -75,7 +76,8 @@ MacTransportAgent::~MacTransportAgent() {}
 MacTransportAgent::MacTransportAgent(URL& newURL, Proxy& newProxy, unsigned int maxResponseTimeout)
 : TransportAgent(newURL, newProxy, maxResponseTimeout)
 {}
-    
+
+
 
 /*
  * Sends the given SyncML message to the server specified
@@ -91,7 +93,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
         setError(ERR_NETWORK_INIT, "MacTransportAgent::sendMessage error: NULL message.");
         return NULL;
     }
-   
+    
     bool gotflags = true;
     bool isReachable = true;
     bool noConnectionRequired = true; 
@@ -99,7 +101,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
     StringBuffer result;
     CFIndex bytesRead = 1;
     int statusCode = -1;
-
+    
 #if defined(FUN_IPHONE)    
     SCNetworkReachabilityFlags        flags;
     SCNetworkReachabilityRef scnReachRef = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, url.host);
@@ -113,10 +115,9 @@ char* MacTransportAgent::sendMessage(const char* msg){
     CFRelease(scnReachRef);
 #endif
     
-
+    
     if ( gotflags && isReachable && noConnectionRequired ){
         char* ret=0;
-        // size_t size = strlen(msg);
         LOG.debug("Requesting resource %s at %s:%d", url.resource, url.host, url.port);
         
         LOG.debug("Sending HTTP Request: %s", msg);
@@ -139,46 +140,40 @@ char* MacTransportAgent::sendMessage(const char* msg){
             LOG.error("MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
             setError(ERR_NETWORK_INIT, "MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
             
-            goto finally;
+            CFRelease(headerFieldName);
+            CFRelease(headerFieldValue);
+            CFRelease(CFurl);
+            CFRelease(myURL);
+            CFRelease(httpRequest);
+            CFRelease(requestMethod);
+            CFRelease(useragent);
+            return ret;
         }
         
-        
-        //CFDataRef bodyData;
         CFDataRef bodyData = CFDataCreate(kCFAllocatorDefault, (const UInt8*)msg, strlen(msg));	
         if (!bodyData){
             LOG.error("MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
             setError(ERR_NETWORK_INIT, "MacTransportAgent::sendMessage error: CFHTTPMessageCreateRequest Error.");
-            goto finally;
+            CFRelease(headerFieldName);
+            CFRelease(headerFieldValue);
+            CFRelease(CFurl);
+            CFRelease(myURL);
+            CFRelease(httpRequest);
+            CFRelease(bodyData);
+            CFRelease(requestMethod);
+            CFRelease(useragent);
+            return ret;
         }        
         CFHTTPMessageSetBody(httpRequest, bodyData);
         CFHTTPMessageSetHeaderFieldValue(httpRequest, headerFieldName, headerFieldValue);
         
-        //CFReadStreamRef responseStream;
         CFReadStreamRef responseStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, httpRequest);
-        
-        //bool setProperty;
-        //if we are trying to sync on a https server we have to have a trusted certificate.
-        //no self signed certificates are accepted
-        /*if(strcmp(url.protocol, "https")==0){
-            NSDictionary *sslProperties;
-            sslProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                               (NSString *)kCFStreamSocketSecurityLevelNegotiatedSSL, kCFStreamSSLLevel,
-                                               kCFBooleanFalse, kCFStreamSSLAllowsAnyRoot,
-                                               kCFBooleanTrue, kCFStreamSSLValidatesCertificateChain,
-                                               kCFNull, kCFStreamSSLPeerName,
-                                               nil];
-
-            setProperty = CFReadStreamSetProperty( responseStream, 
-                                                  kCFStreamPropertySSLSettings, 
-                                                  sslProperties );
-            [sslProperties release];
-        }*/
         
         if (!CFReadStreamOpen(responseStream)) {//Sends request
             LOG.error("Failed to send HTTP request...");
         }
         
-
+        
         
 #define READ_SIZE 1000
         
@@ -191,8 +186,6 @@ char* MacTransportAgent::sendMessage(const char* msg){
             result.append((const char*)buffer);
         }
         
-       
-        //CFHTTPMessageRef reply;
         CFHTTPMessageRef reply = (CFHTTPMessageRef) CFReadStreamCopyProperty( responseStream, kCFStreamPropertyHTTPResponseHeader);
         
         
@@ -206,7 +199,6 @@ char* MacTransportAgent::sendMessage(const char* msg){
         LOG.debug("Status Code: %d", statusCode);
         LOG.debug("Result: %s", result.c_str());
         
-
         
         switch (statusCode) {
             case 0: {
@@ -226,8 +218,7 @@ char* MacTransportAgent::sendMessage(const char* msg){
                 ret = stringdup(result.c_str());
                 
                 break;
-            }
-            case -1: {                    // no connection (TODO: implement retry)
+            }        case -1: {                    // no connection (TODO: implement retry)
                 setErrorF(ERR_SERVER_ERROR, "Network error in server receiving data. ");
                 LOG.error("%s", getLastErrorMsg());
                 
@@ -261,17 +252,15 @@ char* MacTransportAgent::sendMessage(const char* msg){
             }
         }
         
-    finally:
-        CFRelease(headerFieldName);
-        CFRelease(headerFieldValue);
-        CFRelease(CFurl);
-        CFRelease(myURL);
-        CFRelease(httpRequest);
-        CFRelease(bodyData);
-        CFRelease(responseStream);
-        CFRelease(requestMethod);
-        CFRelease(useragent);
-
+            CFRelease(headerFieldName);
+            CFRelease(headerFieldValue);
+            CFRelease(CFurl);
+            CFRelease(myURL);
+            CFRelease(httpRequest);
+            CFRelease(bodyData);
+            CFRelease(responseStream);
+            CFRelease(requestMethod);
+            CFRelease(useragent);
         LOG.debug("MacTransportAgent::sendMessage end");    
         return ret;
     }else{

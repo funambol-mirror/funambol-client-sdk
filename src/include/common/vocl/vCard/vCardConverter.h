@@ -79,7 +79,7 @@ private:
     Contact* contact;
     bool validateTZ(WCHAR* timeZone);
     bool validateGeo(WCHAR* geo);
-    bool checkType(WCHAR* types, WCHAR* typesList);
+    bool checkType(const WCHAR* types, const WCHAR* typesList);
     bool validateProperty21(VProperty* prop, WString& errorDescription, long* errorCode);
     bool validateProperty30(VProperty* prop, WString& errorDescription, long* errorCode);
 

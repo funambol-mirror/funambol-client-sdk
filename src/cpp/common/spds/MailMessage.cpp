@@ -475,7 +475,7 @@ static bool getBodyPart(StringBuffer &rfcBody, StringBuffer &boundary,
             delete [] decoded;
         }
         else if (ret.getEncoding() && strcmp(ret.getEncoding(), "base64") == 0 ) {
-            char *decoded = "";
+            char *decoded = NULL;
             size_t len = 0;
             if( uudecode( part.substr(hdrlen), &decoded, &len ) ) {
                 LOG.error("Error decoding content");

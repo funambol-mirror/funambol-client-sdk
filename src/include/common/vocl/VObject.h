@@ -129,8 +129,8 @@ public:
     void addFirstProperty(VProperty* property);
     void insertProperty(VProperty* property);
     bool removeProperty(int index);
-    void removeProperty(WCHAR* propName);
-    void removeAllProperies(WCHAR* propName);
+    void removeProperty(const WCHAR* propName);
+    void removeAllProperies(const WCHAR* propName);
     //removes all properties having name - propName;
     bool containsProperty(const WCHAR* propName);
     int propertiesCount();

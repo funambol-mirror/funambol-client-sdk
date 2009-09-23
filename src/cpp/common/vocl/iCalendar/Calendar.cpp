@@ -281,7 +281,7 @@ iCalProperty* Calendar::getiCalPropertyFromVProperty(VProperty* vp) {
         return NULL;
 
 }
-VProperty* Calendar::getVPropertyFromiCalProperty(WCHAR* name, iCalProperty* prop) {
+VProperty* Calendar::getVPropertyFromiCalProperty(const WCHAR* name, iCalProperty* prop) {
     if(name && prop) {
         VProperty *vprop = new VProperty(name, prop->getValue());
 

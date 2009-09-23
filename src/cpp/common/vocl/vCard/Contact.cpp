@@ -956,7 +956,7 @@ vCardProperty* Contact::getPropertyFromVProperty(VProperty* vp) {
     return NULL;
 }
 
-VProperty* Contact::getVPropertyFromProperty(WCHAR*name, vCardProperty* prop) {
+VProperty* Contact::getVPropertyFromProperty(const WCHAR*name, vCardProperty* prop) {
     if(prop && name) {
         VProperty *vprop = new VProperty(name, prop->getValue());
         if(prop->getCharset())

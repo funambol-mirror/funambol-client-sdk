@@ -95,7 +95,7 @@ class TypedProperty : public ArrayElement {
          *
          * @param type the property type
          */
-        void setType(WCHAR* type);
+        void setType(const WCHAR* type);
 
         /**
          * Creates a new instance of TypedProperty from the content of this

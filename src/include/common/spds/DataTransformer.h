@@ -85,7 +85,7 @@ BEGIN_NAMESPACE
          */
         DataTransformer();
 
-        DataTransformer(char*  name);
+        DataTransformer(const char*  name);
 
         virtual ~DataTransformer();
 

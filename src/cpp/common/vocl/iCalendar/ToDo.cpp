@@ -907,7 +907,7 @@ iCalProperty* ToDo::getiCalPropertyFromVProperty(VProperty* vp) {
         return NULL;
 
 }
-VProperty* ToDo::getVPropertyFromiCalProperty(WCHAR* name, iCalProperty* prop) {
+VProperty* ToDo::getVPropertyFromiCalProperty(const WCHAR* name, iCalProperty* prop) {
     if(name && prop) {
         VProperty *vprop = new VProperty(name, prop->getValue());
 

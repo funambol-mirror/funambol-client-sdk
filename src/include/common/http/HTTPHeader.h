@@ -37,6 +37,7 @@
 // This class represents an HTTP header as read from a buffer or stream
 //
 #include "base/fscapi.h"
+#include "base/util/StringBuffer.h"
 
 #ifndef INCL_HTTP_HEADER
     #define INCL_HTTP_HEADER
@@ -52,7 +53,7 @@ BEGIN_NAMESPACE
     private:
         char* version;
         unsigned int status;
-        char* statusMessage;
+        StringBuffer statusMessage;
         char* content;
         unsigned int headersCount;
         char* headers[DIM_HEADERS][2]; // up to DIM_HEADERS headers

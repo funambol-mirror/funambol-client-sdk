@@ -72,7 +72,7 @@ class vCardProperty {
          *                 allocated memory
          * @param v the value to set into the property
          */
-        void set(WCHAR** property, WCHAR* v);
+        void set(WCHAR** property, const WCHAR* v);
 
     // -------------------------------------------- Constructors and Destructors
     public:
@@ -130,7 +130,7 @@ class vCardProperty {
          *
          * @param encoding the encoding to set
          */
-        void setEncoding (WCHAR* encoding);
+        void setEncoding (const WCHAR* encoding);
 
         /**
          * Sets the language parameter of this property

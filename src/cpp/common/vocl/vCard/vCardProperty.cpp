@@ -131,7 +131,7 @@ WCHAR* vCardProperty::getCharset (WCHAR* buf, int size) {
     return buf;
 }
 
-void vCardProperty::setEncoding (WCHAR* e) {
+void vCardProperty::setEncoding (const WCHAR* e) {
     set(&encoding, e);
 }
 
@@ -148,7 +148,7 @@ void vCardProperty::setCharset (WCHAR* c) {
 }
 
 
-void vCardProperty::set(WCHAR** property, WCHAR* v) {
+void vCardProperty::set(WCHAR** property, const WCHAR* v) {
     if (*property) {
         delete [] *property;
     }

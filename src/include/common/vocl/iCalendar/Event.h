@@ -82,7 +82,7 @@ private:
     ArrayList* xProp;
     void set(iCalProperty** oldProperty, iCalProperty& newProperty);
     iCalProperty* getiCalPropertyFromVProperty(VProperty* vp);
-    VProperty* getVPropertyFromiCalProperty(WCHAR* name, iCalProperty* prop);
+    VProperty* getVPropertyFromiCalProperty(const WCHAR* name, iCalProperty* prop);
 
 public:
 

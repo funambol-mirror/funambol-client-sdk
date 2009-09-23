@@ -166,7 +166,7 @@ class SyncMLBuilder {
          */
         ArrayList* prepareItem(SyncItem* syncItem,
                                long &syncItemOffset, long maxBytes, long &sentBytes,
-                               const char*  type, char*  COMMAND);
+                               const char*  type, const char*  COMMAND);
 
         /*
         * Add the MapItem to the Map command.
@@ -188,7 +188,7 @@ class SyncMLBuilder {
         */
         long addItem(ModificationCommand* &modificationCommand,
                      long &syncItemOffset, long maxBytes,
-                     char*  COMMAND, SyncItem* syncItem,
+                     const char*  COMMAND, SyncItem* syncItem,
                      const char*  defaultType);
 
         /*

@@ -525,7 +525,7 @@ AbstractCommand *SyncMLBuilder::prepareServerDevInf()
     /*
     <Get>
         <CmdID>3</CmdID>
-        <Meta><Type xmlns=’syncml:metinf’>application/vnd.syncml-devinf+xml</Type></Meta>
+        <Meta><Type xmlns=Ã­syncml:metinfÃ­>application/vnd.syncml-devinf+xml</Type></Meta>
         <Item>
             <Target><LocURI>./devinf12</LocURI></Target>
         </Item>
@@ -805,7 +805,7 @@ ComplexData* SyncMLBuilder::getComplexData(SyncItem* syncItem,
 ArrayList* SyncMLBuilder::prepareItem(SyncItem* syncItem,
                                       long &syncItemOffset, long maxBytes,
                                       long &sentBytes,
-                                      const char* /* type */, char* COMMAND) {
+                                      const char* /* type */, const char* COMMAND) {
     ArrayList* list = new ArrayList();
 
     Source* sou = new Source(_wcc(syncItem->getKey()));
@@ -847,7 +847,7 @@ ArrayList* SyncMLBuilder::prepareItem(SyncItem* syncItem,
 
 long SyncMLBuilder::addItem(ModificationCommand* &modificationCommand,
                             long &syncItemOffset, long maxBytes,
-                            char* COMMAND, SyncItem* syncItem, const char* defaultType) {
+                            const char* COMMAND, SyncItem* syncItem, const char* defaultType) {
     if (syncItem == NULL) {
          return 0;
     }
