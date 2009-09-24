@@ -452,12 +452,12 @@
 		7C3BEB350DB732B400119850 /* TestSyncSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSyncSource.cpp; sourceTree = "<group>"; };
 		7C3BEB360DB732B400119850 /* TestSyncSource2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSyncSource2.cpp; sourceTree = "<group>"; };
 		7C3BEB370DB732B400119850 /* vcardconverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vcardconverter.cpp; sourceTree = "<group>"; };
-		7C3BEC790DB734E600119850 /* examples-client */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = "examples-client"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7C3BEC790DB734E600119850 /* examples-client */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "examples-client"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C7649350DB385DC00786883 /* KeyValueStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyValueStore.h; sourceTree = "<group>"; };
 		7C8B0C4F0DB73C2E005113A8 /* SQLiteKeyValueStore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLiteKeyValueStore.cpp; sourceTree = "<group>"; };
 		7C8B0D990DB7517C005113A8 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		7C8B0EBD0DB756A4005113A8 /* SQLiteKVSTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLiteKVSTest.cpp; sourceTree = "<group>"; };
-		7C8B0EC70DB758A3005113A8 /* examples-sqlitekvstest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = "examples-sqlitekvstest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7C8B0EC70DB758A3005113A8 /* examples-sqlitekvstest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "examples-sqlitekvstest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C9F520E0DAF4CB1007E0091 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
 		7C9F520F0DAF4CB1007E0091 /* error.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = error.cpp; sourceTree = "<group>"; };
 		7C9F52120DAF4CB1007E0091 /* md5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = md5.cpp; sourceTree = "<group>"; };
@@ -2556,6 +2556,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					ENABLE_NAMESPACE,
 					FUNAMBOL_BUILD_API,
+					FUN_IPHONE,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_THUMB_SUPPORT = YES;
@@ -2566,10 +2567,7 @@
 					"../../src/include/common/**",
 				);
 				ONLY_ACTIVE_ARCH = NO;
-				"OTHER_LDFLAGS[arch=armv6]" = (
-					"-framework",
-					CFNetwork,
-				);
+				"OTHER_LDFLAGS[arch=armv6]" = "";
 				PREBINDING = NO;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = iphoneos3.0;

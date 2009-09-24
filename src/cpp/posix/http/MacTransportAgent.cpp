@@ -48,8 +48,8 @@
 //#else
 #include <CFNetwork/CFNetwork.h>
 #else
-//#include <CoreServices/CoreServices.h>
-#include <CFNetwork/CFNetwork.h>
+#include <CoreServices/CoreServices.h>
+//#include <CFNetwork/CFNetwork.h>
 #endif
 
 #include "http/MacTransportAgent.h"
