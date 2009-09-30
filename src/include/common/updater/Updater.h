@@ -47,6 +47,26 @@
 #include "updater/UpdaterConfig.h"
 #include "updater/UpdaterUI.h"
 
+#define UP_URL_COMPONENT    "component="
+#define UP_URL_VERSION      "version="
+#define UP_URL_FORMAT       "format="
+
+#define UP_TYPE             "type="
+#define UP_ACTIVATION_DATE  "activation-date="
+#define UP_SIZE             "size="
+#define UP_VERSION          "version="
+#define UP_URL_UPDATE       "url="
+#define UP_URL_COMMENT      "url_description="
+
+// To get data in the properties format (otherwise "JSON" is default)
+#define UP_PROPERTIES       "properties"
+
+// Update types:
+#define UP_TYPE_OPTIONAL    "optional"
+#define UP_TYPE_RECOMMENDED "recommended"     // This is the default
+#define UP_TYPE_MANDATORY   "mandatory"
+
+
 BEGIN_NAMESPACE
 
 /**

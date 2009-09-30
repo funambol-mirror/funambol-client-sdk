@@ -44,7 +44,7 @@ BEGIN_NAMESPACE
 class UpdaterUI {
 public:
     virtual ~UpdaterUI() {}
-    virtual int32_t askConfirmationForMandatoryUpgrade(const UpdaterConfig& config) = 0;
+    virtual int32_t askConfirmationForRecommendedUpgrade(const UpdaterConfig& config) = 0;
     virtual int32_t askConfirmationForUpgrade(const UpdaterConfig& config) = 0;
     virtual void    startUpgrade(const UpdaterConfig& config) = 0;
 };

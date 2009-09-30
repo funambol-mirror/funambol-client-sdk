@@ -44,16 +44,6 @@
 #include "updater/UpdaterConfig.h"
 #include "updater/UpdaterUI.h"
 
-#define UP_URL_RESOURCE     "/updateserver/update" // "/funambol/update"
-#define UP_URL_COMPONENT    "component="
-#define UP_URL_VERSION      "version="
-
-#define UP_MANDATORY        "type="
-#define UP_RELEASE_DATE     "delivery_date="
-#define UP_SIZE             "size="
-#define UP_VERSION          "version="
-#define UP_URL_UPDATE       "url="
-#define UP_URL_COMMENT      "url_description="
 
 USE_NAMESPACE
 
@@ -66,7 +56,7 @@ Updater::Updater(const StringBuffer& component, const StringBuffer& version, Upd
 {
     bool readOk = config.read();
 
-    if (!readOk || config.getMandatory().empty()) {
+    if (!readOk || config.getRecommended().empty()) {
         // Config not found or corrupted -> generate and save it
         config.createDefaultConfig();
         config.save();
@@ -166,12 +156,17 @@ int32_t Updater::requestUpdate() {
     }
     
     // add the component and version to the url
-    s += "?";
+    s += "&";
     s += UP_URL_COMPONENT;
     s += component;
+    
     s += "&";
     s += UP_URL_VERSION;
     s += version;
+    
+    s += "&";
+    s += UP_URL_FORMAT;
+    s += UP_PROPERTIES;     // To get data in the properties format (JSON is default)
 
     LOG.debug("Update url: %s", s.c_str());
 
@@ -217,8 +212,8 @@ int32_t Updater::requestUpdate() {
         res = -1;
     } 
 
-    if (config.getMandatory() != "0") {
-        config.setMandatory(config.getVersion());
+    if (config.getRecommended() != "0") {
+        config.setRecommended(config.getVersion());
         config.setSkipped("0");
     }
     config.save();
@@ -279,19 +274,17 @@ int32_t Updater::parseMessage(StringBuffer message) {
     StringBuffer* it = (StringBuffer*)allString.front();
     while (it) {
         line = *it;
-        if (line.find(UP_MANDATORY) == 0) {  
-            StringBuffer mand = line.substr(strlen(UP_MANDATORY));        
-            if (mand == "mandatory") {
-                config.setMandatory("1");
+        if (line.find(UP_TYPE) == 0) {  
+            StringBuffer mand = line.substr(strlen(UP_TYPE));        
+            if (mand == UP_TYPE_OPTIONAL) {
+                config.setRecommended("0");
             } else {
-                // if the current update is not mandatory but the previous was, 
-                // the parameter is not overwritten
-                if (config.getMandatory() == "0") {
-                    config.setMandatory("0");
-                }
+                // Default is "recommended". 
+                // TODO: fix here when "mandatory" will be implemented (now mandatory = recommended)
+                config.setRecommended("1");
             }
-        } else if (line.find(UP_RELEASE_DATE) == 0) {         
-            config.setReleaseDate(line.substr(strlen(UP_RELEASE_DATE)));
+        } else if (line.find(UP_ACTIVATION_DATE) == 0) {         
+            config.setReleaseDate(line.substr(strlen(UP_ACTIVATION_DATE)));
         } else if (line.find(UP_SIZE) == 0) {
             StringBuffer size = line.substr(strlen(UP_SIZE));
             uint32_t s = atoi(size.c_str());
@@ -374,19 +367,19 @@ void Updater::newVersionAvailable() {
     // 1)  the user postpones the upgrade (later)
     // 2)  the user skips the upgrade (skip)
     int32_t conf = -1;
-    if (config.getMandatory() == "0") {
+    if (config.getRecommended() == "0") {
         if (config.getVersion() == config.getSkipped()) {
             LOG.debug("The version required is the same just skipped");
         } else {
-            LOG.debug("Ask the user if he wants update (not mandatory)");
+            LOG.debug("Ask the user if he wants update (optional)");
             if (ui) {
                 conf = ui->askConfirmationForUpgrade(config);
             }
         }
     } else {
-        LOG.debug("Ask the user if he wants update (mandatory)");
+        LOG.debug("Ask the user if he wants update (recommended)");
         if (ui) {
-            conf = ui->askConfirmationForMandatoryUpgrade(config);
+            conf = ui->askConfirmationForRecommendedUpgrade(config);
         }
     }
 

@@ -1,3 +1,9 @@
+2009-09-29 
+  - toccy: fixed auto-update feature
+            * new url is: "/sapi/profile/client?action=get-update-info"
+            * "mandatory" type is replaced by "recommended"
+            * added format parameter = properties
+
 2009-09-10
    - toccy: [unit test] added "testUtils" to collect utils fuctions shared by different tests.
             All tests should always call "initAdapter" fuction to initialize the PlatformAdapter instead of 

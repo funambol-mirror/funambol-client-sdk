@@ -59,8 +59,8 @@ private:
 
     StringBuffer    version;         //  = "-1";    
     StringBuffer    currentVersion;  //  = "-1";
-    StringBuffer    mandatory;       // = "0"       Note: this string MUST be set
-    StringBuffer    releaseDate;     // = "0";
+    StringBuffer    recommended;     // = "0"       Note: this string MUST be set
+    StringBuffer    activationDate;     // = "0";
     StringBuffer    urlUpdate;       // = "";
     StringBuffer    urlComment;      // = "";
     StringBuffer    urlCheck;        // = "";
@@ -76,8 +76,8 @@ private:
     StringBuffer applicationUri;
 
     static StringBuffer versionPropertyName;
-    static StringBuffer mandatoryPropertyName;
-    static StringBuffer releaseDatePropertyName;
+    static StringBuffer recommendedPropertyName;
+    static StringBuffer activationDatePropertyName;
     static StringBuffer urlCheckPropertyName;
     static StringBuffer urlUpdatePropertyName;
     static StringBuffer urlCommentPropertyName;
@@ -132,8 +132,8 @@ public:
     void  setCurrentVersion(const StringBuffer& v);
     const StringBuffer& getCurrentVersion() const;
 
-    void  setMandatory(const StringBuffer& mandatory);
-    const StringBuffer& getMandatory() const;
+    void  setRecommended(const StringBuffer& recommended);
+    const StringBuffer& getRecommended() const;
 
     void  setUrlCheck(const StringBuffer& urlCheck);
     const StringBuffer& getUrlCheck() const;

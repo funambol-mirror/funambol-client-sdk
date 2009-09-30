@@ -47,8 +47,8 @@
 USE_NAMESPACE
 
 StringBuffer UpdaterConfig::versionPropertyName("version");
-StringBuffer UpdaterConfig::mandatoryPropertyName("mandatory");
-StringBuffer UpdaterConfig::releaseDatePropertyName("release-date");
+StringBuffer UpdaterConfig::recommendedPropertyName("recommended");
+StringBuffer UpdaterConfig::activationDatePropertyName("activation-date");
 StringBuffer UpdaterConfig::urlCheckPropertyName("url-check");
 StringBuffer UpdaterConfig::urlUpdatePropertyName("url");
 StringBuffer UpdaterConfig::urlCommentPropertyName("comment");
@@ -94,14 +94,14 @@ bool UpdaterConfig::read()
     }
     LOG.debug("version=%s", version.c_str());
 
-    tmp       = mainNode->readPropertyValue(mandatoryPropertyName.c_str());
-    mandatory = tmp;
+    tmp       = mainNode->readPropertyValue(recommendedPropertyName.c_str());
+    recommended = tmp;
     delete tmp;
-    LOG.debug("mandatory=%s", mandatory.c_str());
+    LOG.debug("recommended=%s", recommended.c_str());
 
-    tmp         = mainNode->readPropertyValue(releaseDatePropertyName.c_str());
-    LOG.debug("release=%s", tmp);
-    releaseDate = tmp;
+    tmp         = mainNode->readPropertyValue(activationDatePropertyName.c_str());
+    LOG.debug("activation=%s", tmp);
+    activationDate = tmp;
     delete tmp;
 
     tmp         = mainNode->readPropertyValue(urlUpdatePropertyName.c_str());
@@ -182,8 +182,8 @@ void UpdaterConfig::save()
     }
 
     mainNode->setPropertyValue(versionPropertyName.c_str(), version.c_str());
-    mainNode->setPropertyValue(mandatoryPropertyName.c_str(), mandatory.c_str());
-    mainNode->setPropertyValue(releaseDatePropertyName.c_str(), releaseDate.c_str());
+    mainNode->setPropertyValue(recommendedPropertyName.c_str(), recommended.c_str());
+    mainNode->setPropertyValue(activationDatePropertyName.c_str(), activationDate.c_str());
     mainNode->setPropertyValue(urlUpdatePropertyName.c_str(), urlUpdate.c_str());
     mainNode->setPropertyValue(urlCommentPropertyName.c_str(), urlComment.c_str());
     mainNode->setPropertyValue(urlCheckPropertyName.c_str(), urlCheck.c_str());
@@ -214,8 +214,8 @@ void UpdaterConfig::createDefaultConfig()
     LOG.debug("Generating default config for Updater...");
     
     version                 = "0";    
-    mandatory               = "0";	      // must be set
-    releaseDate             = "";
+    recommended             = "0";	      // must be set
+    activationDate          = "";
     urlUpdate               = "";
     urlComment              = "";
     urlCheck                = "";         // Will be set from "UpdateManager::setURLCheck()"
@@ -262,12 +262,12 @@ const StringBuffer& UpdaterConfig::getCurrentVersion() const {
     return currentVersion;
 }
 
-void  UpdaterConfig::setMandatory(const StringBuffer& mandatory) {
-    this->mandatory = mandatory;
+void  UpdaterConfig::setRecommended(const StringBuffer& recommended) {
+    this->recommended = recommended;
 }
 
-const StringBuffer& UpdaterConfig::getMandatory() const {
-    return mandatory;
+const StringBuffer& UpdaterConfig::getRecommended() const {
+    return recommended;
 }
 
 void  UpdaterConfig::setUrlCheck(const StringBuffer& urlCheck) {
@@ -301,8 +301,8 @@ const StringBuffer& UpdaterConfig::getNow() const {
     return now;
 }
 
-void UpdaterConfig::setReleaseDate(const StringBuffer& releaseDate) {
-    this->releaseDate = releaseDate;
+void UpdaterConfig::setReleaseDate(const StringBuffer& activationDate) {
+    this->activationDate = activationDate;
 }
 
 void UpdaterConfig::setSize(uint32_t size) {
