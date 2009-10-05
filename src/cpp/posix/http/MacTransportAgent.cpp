@@ -169,32 +169,61 @@ char* MacTransportAgent::sendMessage(const char* msg){
         
         CFReadStreamRef responseStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, httpRequest);
         
-        if (!CFReadStreamOpen(responseStream)) {//Sends request
-            LOG.error("Failed to send HTTP request...");
-        }
+        
+        //
+        // Try MAX_RETRIES times to send http request, in case of network errors
+        //
+        int numretries;
+        for (numretries=0; numretries < MAX_RETRIES; numretries++) {
+            
+        
+            if (!CFReadStreamOpen(responseStream)) {//Sends request
+                LOG.error("Failed to send HTTP request...");
+            }
         
         
         
 #define READ_SIZE 1000
         
-        UInt8   buffer[READ_SIZE];
-        while ( (bytesRead = CFReadStreamRead(responseStream, buffer, READ_SIZE-1)) > 0)
-        {
-            //   Convert what was read to a C-string
-            buffer[bytesRead] = 0;
-            //   Append it to the reply string
-            result.append((const char*)buffer);
+            UInt8   buffer[READ_SIZE];
+            while ( (bytesRead = CFReadStreamRead(responseStream, buffer, READ_SIZE-1)) > 0)
+            {
+                //   Convert what was read to a C-string
+                buffer[bytesRead] = 0;
+                //   Append it to the reply string
+                result.append((const char*)buffer);
+            }
+        
+            CFHTTPMessageRef reply = (CFHTTPMessageRef) CFReadStreamCopyProperty( responseStream, kCFStreamPropertyHTTPResponseHeader);
+        
+        
+            // Pull the status code from the headers
+            if (reply) {
+                statusCode = CFHTTPMessageGetResponseStatusCode(reply);
+                CFRelease(reply);
+            }
+        
+            //
+   
+            if (statusCode == -1) {                     //  -> retry
+                LOG.debug("Offline mode detected: go-online and retry...");
+                LOG.debug("Network error: let's wait 5 seconds before retry");
+                resetError();
+                sleep(5);
+            }else if (statusCode == 400) {
+                LOG.debug("Network error: let's wait 1 second before retry");
+                sleep(1);
+            }else if(statusCode == 401 || statusCode == 402 || statusCode == 403 ||
+                     statusCode == 407 || statusCode >= 500 || (statusCode >= 200 && statusCode < 300)) { //don't retry in these cases 500, 401, 402, 403, 407
+                goto exit;
+            }
+            
+            // Other network error: retry.
+            LOG.info("Network error writing data from client: retry %i time... for statuscode %i", numretries + 1, statusCode);
+            continue;
         }
-        
-        CFHTTPMessageRef reply = (CFHTTPMessageRef) CFReadStreamCopyProperty( responseStream, kCFStreamPropertyHTTPResponseHeader);
-        
-        
-        // Pull the status code from the headers
-        if (reply) {
-            statusCode = CFHTTPMessageGetResponseStatusCode(reply);
-            CFRelease(reply);
-        }
-        
+
+    exit:
         
         LOG.debug("Status Code: %d", statusCode);
         LOG.debug("Result: %s", result.c_str());

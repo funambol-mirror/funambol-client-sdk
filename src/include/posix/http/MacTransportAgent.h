@@ -51,6 +51,11 @@
 #define ERR_HTTP_DEFLATE                ERR_TRANSPORT_BASE+71
 
 
+
+/** Max number of attempts sending http requests. */
+#define MAX_RETRIES                     3                       // Max number of attempts sending http requests.
+
+
 BEGIN_NAMESPACE
 
 class MacTransportAgent : public TransportAgent {
