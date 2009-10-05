@@ -55,14 +55,12 @@
  * --enable-unit-tests switches enable the testing. "make check"
  * automatically executes the unit tests.
  *
- * On Windows the Visual Studio project file build/win32/cppunit.sln
- * was prepared to build the "client-test" executable. Because it uses
- * the standard win32.vcproj, some changes are necessary to enable
- * unit tests:
- * - replace DISABLE_UNIT_TESTS with ENABLE_UNIT_TESTS in the preprocessor settings
- * - put cppunit-1.12.0 into the same directory as the 3x directory that contains
- *   the client-api/native directory (other layouts are of course possible,
- *   just change the include and library search paths)
+ * On Windows the Visual Studio solution file build/win32/client-test.sln
+ * was prepared to build the "client-test" executable. The cppunit project
+ * is required when loading the client-test solution, so you need to 
+ * retrieve it and put it under the "tools/cppunit" directory.
+ * The cppunit project can be checkout from: 
+ * https://core.forge.funambol.org/svn/core/trunk/tools/cppunit
  *
  * Unit tests are only found if they are pulled into the
  * executable. On Linux this is done by searching for variables with a
