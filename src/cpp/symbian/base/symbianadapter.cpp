@@ -1,34 +1,34 @@
 /*
- * Funambol is a mobile platform developed by Funambol, Inc. 
+ * Funambol is a mobile platform developed by Funambol, Inc.
  * Copyright (C) 2003 - 2007 Funambol, Inc.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
- * the Free Software Foundation with the addition of the following permission 
+ * the Free Software Foundation with the addition of the following permission
  * added to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED
- * WORK IN WHICH THE COPYRIGHT IS OWNED BY FUNAMBOL, FUNAMBOL DISCLAIMS THE 
+ * WORK IN WHICH THE COPYRIGHT IS OWNED BY FUNAMBOL, FUNAMBOL DISCLAIMS THE
  * WARRANTY OF NON INFRINGEMENT  OF THIRD PARTY RIGHTS.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
- * 
- * You should have received a copy of the GNU Affero General Public License 
+ *
+ * You should have received a copy of the GNU Affero General Public License
  * along with this program; if not, see http://www.gnu.org/licenses or write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301 USA.
- * 
- * You can contact Funambol, Inc. headquarters at 643 Bair Island Road, Suite 
+ *
+ * You can contact Funambol, Inc. headquarters at 643 Bair Island Road, Suite
  * 305, Redwood City, CA 94063, USA, or at email address info@funambol.com.
- * 
+ *
  * The interactive user interfaces in modified source and object code versions
  * of this program must display Appropriate Legal Notices, as required under
  * Section 5 of the GNU Affero General Public License version 3.
- * 
+ *
  * In accordance with Section 7(b) of the GNU Affero General Public License
  * version 3, these Appropriate Legal Notices must retain the display of the
- * "Powered by Funambol" logo. If the display of the logo is not reasonably 
+ * "Powered by Funambol" logo. If the display of the logo is not reasonably
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol".
  */
@@ -38,7 +38,7 @@
 #include <e32des8.h>
 #include <e32def.h>
 #include <e32std.h>
-#include <f32file.h> 
+#include <f32file.h>
 #include <bautils.h>
 #include <unistd.h>
 
@@ -356,7 +356,7 @@ bool saveFile(const char *filename, const char *buffer, size_t len, bool binary)
         return false;
 
     fwrite(buffer, sizeof(char) * len, 1, f);
-    
+
     if (ferror(f)) {
         fclose(f);
         return false;
@@ -436,7 +436,7 @@ WCHAR *wcschr(const WCHAR *ws, WCHAR wc) {
     return NULL;
 }
 
-WCHAR *wcsstr(WCHAR *ws1, const WCHAR *ws2) {
+WCHAR *wcsstr(const WCHAR *ws1, const WCHAR *ws2) {
     LOG.error("***** wcsstr not implemented *****");
     return NULL;
 }
@@ -490,28 +490,28 @@ bool removeFileInDir(const char* d, const char* fname) {
     if (fname) {
         sprintf(toFind, "%s/%s", d, fname);
         path = contextToPath(toFind);
-        
+
         if (remove(path.c_str()) != 0) {
-            LOG.error("Error deleting the %s file", path.c_str()); 
+            LOG.error("Error deleting the %s file", path.c_str());
         } else {
             LOG.debug("File %s deleted succesfully", path.c_str());
             ret = true;
         }
     }
-    else {        
+    else {
         totalFiles = readDir((char*)d, &numFiles, false);
         if (totalFiles && numFiles > 0) {
             for (int i = 0; i < numFiles; i++) {
                 sprintf(toFind, "%s/%s", d, totalFiles[i]);
                 path = contextToPath(toFind);
-                remove(path.c_str());            
+                remove(path.c_str());
             }
         }
         ret = true;
     }
     if (totalFiles) {
         for (int i = 0; i < numFiles; i++) {
-            delete [] totalFiles[i]; 
+            delete [] totalFiles[i];
         }
         delete [] totalFiles; totalFiles = NULL;
     }
@@ -569,12 +569,12 @@ int createFolder(const char *aPath) {
     err = fileSession.MkDirAll(pathDes);
 
     // if folder already existed don't return error
-    if (err == KErrAlreadyExists) {    
+    if (err == KErrAlreadyExists) {
         err = KErrNone;
     }
     pathDes.Close();
     CleanupStack::PopAndDestroy(&fileSession);
-        
+
     return err;
 }
 
@@ -609,9 +609,9 @@ char** readDir(const char* name, int *count, bool onlyCount) {
                 entry = readdir(dir);
             }
         } else {
-            *count = total;    
+            *count = total;
         }
-        
+
         closedir(dir);
     }
 
@@ -629,7 +629,7 @@ bool removeDir(const char *aDirPath)
     if (chars[strlen(chars)-1] != '\\') {
         path += "\\";
     }
-    
+
     // Connect to the file server
     RFs fileSession;
     err = fileSession.Connect();
@@ -640,7 +640,7 @@ bool removeDir(const char *aDirPath)
     CleanupClosePushL(fileSession);
 
     // delete the dir
-    RBuf pathDes;    
+    RBuf pathDes;
     pathDes.Assign(stringBufferToNewBuf(path));
     err = fileSession.RmDir(pathDes);
     pathDes.Close();

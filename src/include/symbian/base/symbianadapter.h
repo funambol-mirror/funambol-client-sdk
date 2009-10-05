@@ -78,7 +78,7 @@ int towupper(int c);
 size_t vsnprintf(char* s, size_t size, const char* format, PLATFORM_VA_LIST aq);
 size_t snwprintf(WCHAR *v, size_t size, const WCHAR* format, unsigned long value);
 WCHAR *wcschr(const WCHAR *ws, WCHAR wc);
-WCHAR *wcsstr(WCHAR *ws1, const WCHAR *ws2);
+WCHAR *wcsstr(const WCHAR *ws1, const WCHAR *ws2);
 WCHAR *wcstok(WCHAR *ws1, const WCHAR *ws2);
 WCHAR *wcsncat(WCHAR *ws1, const WCHAR *ws2, size_t n);
 double wcstod(const WCHAR *nptr, WCHAR ** endptr);	
