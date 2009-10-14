@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SyncML>
+<SyncHdr><VerDTD>1.1</VerDTD>
+<VerProto>SyncML/1.1</VerProto>
+<SessionID>1194978121</SessionID>
+<MsgID>2</MsgID>
+<Target><LocURI>http://my.funambol.com/sync</LocURI>
+</Target>
+<Source><LocURI>fwm-50F0063006B000000</LocURI>
+</Source>
+</SyncHdr>
+<SyncBody><Status><CmdID>1</CmdID>
+<MsgRef>1</MsgRef>
+<CmdRef>0</CmdRef>
+<Cmd>SyncHdr</Cmd>
+<TargetRef>http://my.funambol.com/sync</TargetRef>
+<SourceRef>fwm-50F0063006B000000</SourceRef>
+<Data>200</Data>
+</Status>
+<Status><CmdID>2</CmdID>
+<MsgRef>1</MsgRef>
+<CmdRef>3</CmdRef>
+<Cmd>Alert</Cmd>
+<TargetRef>scard</TargetRef>
+<SourceRef>contact</SourceRef>
+<Data>200</Data>
+<Item><Data><Anchor xmlns="syncml:metinf"><Next>1194945668971</Next>
+</Anchor>
+</Data>
+</Item>
+</Status>
+<Sync><CmdID>3</CmdID>
+<Target><LocURI>scard</LocURI>
+</Target>
+<Source><LocURI>contact</LocURI>
+</Source>
+<Add><CmdID>4</CmdID>
+<Meta><Type xmlns="syncml:metinf">text/x-s4j-sifc</Type>
+</Meta>
+<Item><Source><LocURI>-2147483646</LocURI>
+</Source>
+<Meta><Format xmlns="syncml:metinf">b64</Format>
+</Meta>
+<Data><![CDATA[PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGNvbnRhY3Q+CjxBbm5pdmVyc2FyeS8+CjxBc3Npc3RhbnROYW1lLz4KPEFzc2lzdGFudFRlbGVwaG9uZU51bWJlci8+CjxCaXJ0aGRheS8+CjxCb2R5Lz4KPEJ1c2luZXNzMlRlbGVwaG9uZU51bWJlci8+CjxCdXNpbmVzc0FkZHJlc3NDaXR5Lz4KPEJ1c2luZXNzQWRkcmVzc0NvdW50cnkvPgo8QnVzaW5lc3NBZGRyZXNzUG9zdGFsQ29kZS8+CjxCdXNpbmVzc0FkZHJlc3NTdGF0ZS8+CjxCdXNpbmVzc0FkZHJlc3NTdHJlZXQvPgo8QnVzaW5lc3NGYXhOdW1iZXIvPgo8QnVzaW5lc3NUZWxlcGhvbmVOdW1iZXIvPgo8Q2FyVGVsZXBob25lTnVtYmVyLz4KPENhdGVnb3JpZXMvPgo8Q2hpbGRyZW4vPgo8Q29tcGFueU1haW5UZWxlcGhvbmVOdW1iZXIvPgo8Q29tcGFueU5hbWUvPgo8Q3VzdG9tZXJJRC8+CjxEZXBhcnRtZW50Lz4KPEVtYWlsMUFkZHJlc3M+bWVAbWF0dGVvdml0b2xvLmNvbTwvRW1haWwxQWRkcmVzcz4KPEVtYWlsMkFkZHJlc3MvPgo8RW1haWwzQWRkcmVzcy8+CjxGaWxlQXM+Vml0b2xvLCBNYXR0ZW88L0ZpbGVBcz4KPEZpcnN0TmFtZT5NYXR0ZW88L0ZpcnN0TmFtZT4KPEdvdmVybm1lbnRJRE51bWJlci8+CjxIb21lMlRlbGVwaG9uZU51bWJlci8+CjxIb21lQWRkcmVzc0NpdHkvPgo8SG9tZUFkZHJlc3NDb3VudHJ5Lz4KPEhvbWVBZGRyZXNzUG9zdGFsQ29kZS8+CjxIb21lQWRkcmVzc1N0YXRlLz4KPEhvbWVBZGRyZXNzU3RyZWV0Lz4KPEhvbWVGYXhOdW1iZXIvPgo8SG9tZVRlbGVwaG9uZU51bWJlci8+CjxJTTJBZGRyZXNzLz4KPElNM0FkZHJlc3MvPgo8SU1BZGRyZXNzLz4KPEpvYlRpdGxlLz4KPExhc3ROYW1lPlZpdG9sbzwvTGFzdE5hbWU+CjxNYW5hZ2VyTmFtZS8+CjxNaWRkbGVOYW1lLz4KPE1vYmlsZVRlbGVwaG9uZU51bWJlci8+CjxOaWNrTmFtZS8+CjxPZmZpY2VMb2NhdGlvbi8+CjxPdGhlckFkZHJlc3NDaXR5Lz4KPE90aGVyQWRkcmVzc0NvdW50cnkvPgo8T3RoZXJBZGRyZXNzUG9zdGFsQ29kZS8+CjxPdGhlckFkZHJlc3NTdGF0ZS8+CjxPdGhlckFkZHJlc3NTdHJlZXQvPgo8UGFnZXJOdW1iZXIvPgo8UGhvdG8vPgo8UmFkaW9UZWxlcGhvbmVOdW1iZXIvPgo8U3BvdXNlLz4KPFN1ZmZpeC8+CjxUaXRsZS8+CjxXZWJQYWdlLz4KPFlvbWlDb21wYW55TmFtZS8+CjxZb21pRmlyc3ROYW1lLz4KPFlvbWlMYXN0TmFtZS8+CjwvY29udGFjdD4=]]></Data>
+</Item>
+</Add>
+</Sync>
+<Final/></SyncBody>
+</SyncML>
