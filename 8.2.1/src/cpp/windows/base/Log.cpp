@@ -139,7 +139,7 @@ void winLog::setLogName(const char* configLogName) {
 
     if (configLogName != NULL) {
         logName = configLogName;
-        wsprintf(mutexName, TEXT("%S"), logName);
+        wsprintf(mutexName, TEXT("%S"), logName.c_str());
     }
     else {
         logName = LOG_NAME;
