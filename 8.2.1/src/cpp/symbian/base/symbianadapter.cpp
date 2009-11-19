@@ -284,6 +284,9 @@ finally:
 // TODO: convert to the specified encoding, assuming wc is UTF-8
 char* toMultibyte(const WCHAR *wc, const char *encoding)
 {
+    if (!wc) {
+        return NULL;
+    }
 #ifdef USE_WCHAR
     size_t length = wcstombs(NULL, wc, 0) + 1;
     if(length == (size_t)-1) {
