@@ -1,3 +1,7 @@
+2009-11-19
+  - toccy: fixed bug #7973 for Windows Clients (vCal property PRIORITY for events/tasks has a wrong mapping)
+  - toccy: fixed "Status" <-> vCal STATUS property mappings, for tasks (windows branch, under vocl/winObjects)
+
 2009-09-29 
   - toccy: fixed auto-update feature
             * new url is: "/sapi/profile/client?action=get-update-info"

@@ -58,6 +58,18 @@ enum WinSensitivity
 
 /**
  * This is defined in MS Outlook and Pocket Outlook libraries.
+ * Following are the possible values for WinEvent/WinTask property "Importance".
+ */
+enum WinImportance 
+{
+    winImportanceLow    = 0,
+    winImportanceNormal = 1,
+    winImportanceHigh   = 2
+};
+
+
+/**
+ * This is defined in MS Outlook and Pocket Outlook libraries.
  * Recurring property "DaysOfWeekMask" is one or a combination of following values.
  */
 enum WinDaysOfWeek
@@ -98,6 +110,20 @@ enum WinNoteColor
     winYellow = 3,
     winWhite  = 4,
     NUM_NOTE_COLOR
+};
+
+
+/**
+ * This is defined in MS Outlook and Pocket Outlook libraries.
+ * Following are the possible values for WinTask property "Status".
+ */
+enum WinTaskStatus
+{
+    winTaskNotStarted = 0,
+    winTaskInProgress = 1,
+    winTaskComplete   = 2,
+    winTaskWaiting    = 3,
+    winTaskDeferred   = 4
 };
 
 

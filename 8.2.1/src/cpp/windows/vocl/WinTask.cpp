@@ -76,6 +76,7 @@ wstring& WinTask::toString() {
     VObject* vo = new VObject();
     VProperty* vp  = NULL;
     wstring element;
+    bool statusIsSet = false;
 
 
     vp = new VProperty(TEXT("BEGIN"), TEXT("VCALENDAR"));
@@ -149,16 +150,57 @@ wstring& WinTask::toString() {
         vo->addProperty(vp);
         delete vp; vp = NULL;
     }
+
+    //
+    // STATUS: if "Complete" is set, we set it to COMPLETED and ignore the Status value (that should be = 2 = winTaskComplete)
+    // 
     if (getProperty(L"Complete", element)) {
         bool isCompleted = (element != TEXT("0"));
         if (isCompleted) { 
+            statusIsSet = true;
             vp = new VProperty(TEXT("STATUS"), TEXT("COMPLETED"));
             vo->addProperty(vp);
             delete vp; vp = NULL;
         }
     }
+    if (!statusIsSet && getProperty(L"Status", element)) {
+        // Map the status field (Client -> Server)
+        // 
+        // Outlook    | SIF |  vCalendar     
+        // -------------------------------------------------
+        // NotStarted |  0  |  ACCEPTED     (vCal 1.0 & 2.0)  
+        // InProgress |  1  |  IN-PROCESS   (vCal 2.0)
+        // Complete   |  2  |  COMPLETED    (vCal 1.0 & 2.0)
+        // Waiting    |  3  |  NEEDS-ACTION (vCal 1.0 & 2.0)
+        // Deferred   |  4  |  DECLINED     (vCal 1.0 & 2.0)
+        // 
+        int status = _wtoi(element.c_str());
+        vp = new VProperty(TEXT("STATUS"));
+
+        if      (status == winTaskNotStarted) vp->addValue(TEXT("ACCEPTED"));
+        else if (status == winTaskInProgress) vp->addValue(TEXT("IN-PROCESS"));
+        else if (status == winTaskComplete)   vp->addValue(TEXT("COMPLETED"));
+        else if (status == winTaskWaiting)    vp->addValue(TEXT("NEEDS-ACTION"));
+        else if (status == winTaskDeferred)   vp->addValue(TEXT("DECLINED"));
+
+        vo->addProperty(vp);
+        delete vp; vp = NULL;
+    }
+
+
     if (getProperty(L"Importance", element)) {
-        vp = new VProperty(TEXT("PRIORITY"), element.c_str());
+        // PRIORITY:1 in vCal = High, subsequent numbers specify a decreasing ordinal priority.
+        // We set: 1=High, 2=normal, 3=low
+        int importance = _wtoi(element.c_str());
+        vp = new VProperty(TEXT("PRIORITY"));
+        if (importance == winImportanceHigh) {
+            vp->addValue(TEXT("1"));
+        } else if (importance == winImportanceLow) {
+            vp->addValue(TEXT("3"));
+        } else {  
+            // default value 
+            vp->addValue(TEXT("2"));
+        }
         vo->addProperty(vp);
         delete vp; vp = NULL;
     }
@@ -184,7 +226,6 @@ wstring& WinTask::toString() {
     }
 
     //
-    // **** "Status"?   mapping is missing! ****
     // **** "TeamTask"? mapping is missing! ****
     //
 
@@ -380,19 +421,62 @@ int WinTask::parse(const wstring dataString) {
         setProperty(L"PercentComplete", element);
     }
     if (element = getVObjectPropertyValue(vo, L"PRIORITY")) {
-        setProperty(L"Importance", element);
+        // PRIORITY:1 in vCal = High, subsequent numbers specify a decreasing ordinal priority.
+        int priority = _wtoi(element);
+
+        int importance;
+        if (priority >= 3) {
+            importance = winImportanceLow;
+        } else if (priority == 1) {
+            importance = winImportanceHigh;
+        } else {  
+            // default value 
+            importance = winImportanceNormal;
+        }
+        setIntProperty(L"Importance", importance);
     }
     if (element = getVObjectPropertyValue(vo, L"STATUS")) {
-        if(!wcscmp(element, TEXT("COMPLETED"))) {
+        // Map the status field.
+        // 
+        // vCalendar                        | SIF |  Outlook      
+        // ------------------------------------------------------    
+        // ACCEPTED      (vCal 1.0 & 2.0)   |  0  |  NotStarted  
+        // SENT          (vCal 1.0)         |  0  |  NotStarted        
+        // TENTATIVE     (vCal 1.0 & 2.0)   |  0  |  NotStarted     
+        // IN-PROCESS    (vCal 2.0)         |  1  |  InProgress        
+        // CONFIRMED     (vCal 1.0)         |  1  |  InProgress        
+        // COMPLETED     (vCal 1.0 & 2.0)   |  2  |  Complete          
+        // NEEDS-ACTION  (vCal 1.0 & 2.0)   |  3  |  Waiting       
+        // DELEGATED     (vCal 1.0 & 2.0)   |  3  |  Waiting        
+        // DECLINED      (vCal 1.0 & 2.0)   |  4  |  Deferred  
+        //
+		WinTaskStatus status;
+        if ( !wcscmp(element, TEXT("COMPLETED")) ) {
             setProperty(L"Complete", TEXT("1"));
+            status = winTaskComplete;
         }
+        else if ( !wcscmp(element, TEXT("ACCEPTED")) || 
+			      !wcscmp(element, TEXT("SENT"))     ||
+				  !wcscmp(element, TEXT("TENTATIVE")) ) {
+			status = winTaskNotStarted;
+		}
+        else if ( !wcscmp(element, TEXT("IN-PROCESS")) ||
+			      !wcscmp(element, TEXT("CONFIRMED")) ) {
+			status = winTaskInProgress;
+		}
+		else if ( !wcscmp(element, TEXT("NEEDS-ACTION")) ||
+			      !wcscmp(element, TEXT("DELEGATED")) ) {
+			status = winTaskWaiting;
+		}
+		else if (!wcscmp(element, TEXT("DECLINED"))) {
+			status = winTaskDeferred;
+		}
+		setIntProperty(L"Status", status);
     }
 
     //
-    // **** "Status"?   mapping is missing! ****
     // **** "TeamTask"? mapping is missing! ****
     //
-
 
     //
     // AALARM
