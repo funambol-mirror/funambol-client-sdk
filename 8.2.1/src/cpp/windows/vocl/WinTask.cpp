@@ -171,7 +171,7 @@ wstring& WinTask::toString() {
         // NotStarted |  0  |  ACCEPTED     (vCal 1.0 & 2.0)  
         // InProgress |  1  |  IN-PROCESS   (vCal 2.0)
         // Complete   |  2  |  COMPLETED    (vCal 1.0 & 2.0)
-        // Waiting    |  3  |  NEEDS-ACTION (vCal 1.0 & 2.0)
+        // Waiting    |  3  |  NEEDS ACTION (vCal 1.0)
         // Deferred   |  4  |  DECLINED     (vCal 1.0 & 2.0)
         // 
         int status = _wtoi(element.c_str());
@@ -180,7 +180,7 @@ wstring& WinTask::toString() {
         if      (status == winTaskNotStarted) vp->addValue(TEXT("ACCEPTED"));
         else if (status == winTaskInProgress) vp->addValue(TEXT("IN-PROCESS"));
         else if (status == winTaskComplete)   vp->addValue(TEXT("COMPLETED"));
-        else if (status == winTaskWaiting)    vp->addValue(TEXT("NEEDS-ACTION"));
+        else if (status == winTaskWaiting)    vp->addValue(TEXT("NEEDS ACTION"));
         else if (status == winTaskDeferred)   vp->addValue(TEXT("DECLINED"));
 
         vo->addProperty(vp);
@@ -446,11 +446,12 @@ int WinTask::parse(const wstring dataString) {
         // IN-PROCESS    (vCal 2.0)         |  1  |  InProgress        
         // CONFIRMED     (vCal 1.0)         |  1  |  InProgress        
         // COMPLETED     (vCal 1.0 & 2.0)   |  2  |  Complete          
-        // NEEDS-ACTION  (vCal 1.0 & 2.0)   |  3  |  Waiting       
+        // NEEDS-ACTION  (vCal 2.0)         |  3  |  Waiting
+        // NEEDS ACTION  (vCal 1.0)         |  3  |  Waiting          
         // DELEGATED     (vCal 1.0 & 2.0)   |  3  |  Waiting        
         // DECLINED      (vCal 1.0 & 2.0)   |  4  |  Deferred  
         //
-		WinTaskStatus status;
+		WinTaskStatus status = winTaskNotStarted;
         if ( !wcscmp(element, TEXT("COMPLETED")) ) {
             setProperty(L"Complete", TEXT("1"));
             status = winTaskComplete;
@@ -465,6 +466,7 @@ int WinTask::parse(const wstring dataString) {
 			status = winTaskInProgress;
 		}
 		else if ( !wcscmp(element, TEXT("NEEDS-ACTION")) ||
+		          !wcscmp(element, TEXT("NEEDS ACTION")) ||
 			      !wcscmp(element, TEXT("DELEGATED")) ) {
 			status = winTaskWaiting;
 		}
