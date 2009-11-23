@@ -25,7 +25,7 @@
     <dependency>
       <groupId>funambol</groupId>
       <artifactId>pim-framework</artifactId>
-      <version>8.2.5-SNAPSHOT</version>
+      <version>8.2.7-SNAPSHOT</version>
     </dependency>
 
     <dependency>
