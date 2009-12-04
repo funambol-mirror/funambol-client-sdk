@@ -4,7 +4,7 @@
   
   <groupId>funambol</groupId>
   <artifactId>jse-sdk</artifactId>
-  <version>8.2.3-SNAPSHOT</version>
+  <version>8.2.3</version>
   
   <packaging>jar</packaging>
   
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>funambol</groupId>
       <artifactId>pim-framework</artifactId>
-      <version>8.2.8-SNAPSHOT</version>
+      <version>8.2.8</version>
     </dependency>
 
     <dependency>
@@ -37,7 +37,7 @@
     <dependency>
       <groupId>funambol</groupId>
       <artifactId>core-framework</artifactId>
-      <version>8.2.3-SNAPSHOT</version>
+      <version>8.2.2</version>
     </dependency>
 
     <!-- 
@@ -61,9 +61,9 @@
   </dependencies>
 
   <scm>
-    <connection>scm:svn:https://guest@client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</connection>
-    <developerConnection>scm:svn:https://developername@client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</developerConnection>
-    <url>https://client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</url>
+    <connection>scm:svn:https://guest@client-sdk.forge.funambol.org/svn/client-sdk/tags/jse-sdk-8.2.3</connection>
+    <developerConnection>scm:svn:https://developername@client-sdk.forge.funambol.org/svn/client-sdk/tags/jse-sdk-8.2.3</developerConnection>
+    <url>https://client-sdk.forge.funambol.org/svn/client-sdk/tags/jse-sdk-8.2.3</url>
   </scm>
 
 </project>
