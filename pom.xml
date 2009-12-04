@@ -25,7 +25,7 @@
     <dependency>
       <groupId>funambol</groupId>
       <artifactId>pim-framework</artifactId>
-      <version>8.2.8-SNAPSHOT</version>
+      <version>8.2.8</version>
     </dependency>
 
     <dependency>
@@ -37,7 +37,7 @@
     <dependency>
       <groupId>funambol</groupId>
       <artifactId>core-framework</artifactId>
-      <version>8.2.3-SNAPSHOT</version>
+      <version>8.2.2</version>
     </dependency>
 
     <!-- 
