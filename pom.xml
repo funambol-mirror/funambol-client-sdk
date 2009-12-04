@@ -4,7 +4,7 @@
   
   <groupId>funambol</groupId>
   <artifactId>jse-sdk</artifactId>
-  <version>8.2.2-SNAPSHOT</version>
+  <version>8.2.2</version>
   
   <packaging>jar</packaging>
   
@@ -61,9 +61,9 @@
   </dependencies>
 
   <scm>
-    <connection>scm:svn:https://guest@client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</connection>
-    <developerConnection>scm:svn:https://developername@client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</developerConnection>
-    <url>https://client-sdk.forge.funambol.org/svn/client-sdk/trunk/jse-sdk</url>
+    <connection>scm:svn:https://guest@client-sdk.forge.funambol.org/svn/client-sdk/tags/jse-sdk-8.2.2</connection>
+    <developerConnection>scm:svn:https://developername@client-sdk.forge.funambol.org/svn/client-sdk/tags/jse-sdk-8.2.2</developerConnection>
+    <url>https://client-sdk.forge.funambol.org/svn/client-sdk/tags/jse-sdk-8.2.2</url>
   </scm>
 
 </project>
