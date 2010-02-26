@@ -1,0 +1,9 @@
+com/funambol/platform/FileAdapterTest.java
+com/funambol/util/HttpTransportAgentTest.java
+com/funambol/util/MailDateFormatterTest.java
+com/funambol/util/MD5Test.java
+com/funambol/util/StringUtilTest.java
+com/funambol/util/ThreadPoolTest.java
+com/funambol/util/XmlUtilTest.java
+com/funambol/util/DateUtilTest.java
+com/funambol/updater/*

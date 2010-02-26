@@ -1,0 +1,5 @@
+com/funambol/common/pim/Utils.java
+com/funambol/common/pim/vcard/ParseException.java
+com/funambol/common/pim/icalendar/ParseException.java
+com/funambol/common/pim/icalendar/ICalendar.java
+
