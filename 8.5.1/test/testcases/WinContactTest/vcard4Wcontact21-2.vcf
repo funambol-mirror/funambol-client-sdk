@@ -1,0 +1,30 @@
+BEGIN:VCARD
+VERSION:2.1
+N:Presley;Elvis;;;
+BDAY:1935-01-08
+NOTE:
+TEL;WORK;FAX:
+TEL;VOICE;WORK:+39 0000 00000
+URL;WORK:www.elvis.com
+TEL;CAR;VOICE:
+TEL;WORK;PREF:
+EMAIL;INTERNET:theking@elvispresley.com
+EMAIL;INTERNET;HOME:theonlyking@elvis.com
+EMAIL;INTERNET;WORK:Iam@thepelvis.com
+TITLE:
+TEL;VOICE;HOME:+39 0382 34291
+TEL;HOME;FAX:
+URL;HOME:www.therealking.com
+TEL;CELL:+39 1111 1111
+NICKNAME:The Pelvis
+TEL;FAX:
+TEL;VOICE:
+TEL;PAGER:
+TEL;PREF;VOICE:
+URL:www.iamthepelvis.com
+ORG:Funambol;;
+ADR;HOME:;;somewhere;tupelo;MS;909090;
+ADR:;;;;;;
+ADR;WORK:;;;;;;
+PHOTO:
+END:VCARD
