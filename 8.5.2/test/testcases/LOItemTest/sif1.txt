@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contact>
+<SIFVersion>1.1</SIFVersion>
+<Anniversary>2009-04-30</Anniversary>
+<AssistantName/>
+<AssistantTelephoneNumber/>
+<BillingInformation/>
+<Birthday>2009-04-15</Birthday>
+<Body>
+The ASCII codes before SPACE (= 32 = 20H) are not intended as displayable characters, but instead as control characters. They are used for a diversity of interpreted meanings, for example the code NULL (= 0, sometimes denoted Ctrl-@) is used as string end markers in the programming language C and successors. Most troublesome of these are the codes LF (= LINE FEED = 10 = 0AH) and CR (= CARRIAGE RETURN = 13 = 0DH). Windows and OS/2 require the sequence CR,LF to represent a newline, while Unix and relatives use just the LF, and Classic Mac OS (but not Mac OS X) uses just the code CR. This was once a slight problem when transferring files between Windows and Unices, but today most computer programs treat this seamlessly.</Body>
+<Business2TelephoneNumber>333333333333333333</Business2TelephoneNumber>
+<BusinessAddressCity>Castel san giovanni</BusinessAddressCity>
+<BusinessAddressCountry>Italy</BusinessAddressCountry>
+<BusinessAddressExtended/>
+<BusinessAddressPostOfficeBox>1</BusinessAddressPostOfficeBox>
+<BusinessAddressPostalCode>29015</BusinessAddressPostalCode>
+<BusinessAddressState>pc</BusinessAddressState>
+<BusinessAddressStreet>via business 12</BusinessAddressStreet>
+<BusinessFaxNumber>4444444444444444</BusinessFaxNumber>
+<BusinessTelephoneNumber>22222222222222</BusinessTelephoneNumber>
+<CallbackTelephoneNumber/>
+<CarTelephoneNumber>66666666666666</CarTelephoneNumber>
+<Categories/>
+<Children>children</Children>
+<Companies/>
+<CompanyMainTelephoneNumber>777777777777777777</CompanyMainTelephoneNumber>
+<CompanyName>Funambol</CompanyName>
+<Department>department</Department>
+<Email1Address>palla1@funambol.com</Email1Address>
+<Email1AddressType>SMTP</Email1AddressType>
+<Email2Address>palla2@funambol.com</Email2Address>
+<Email2AddressType>SMTP</Email2AddressType>
+<Email3Address>palla3@funambol.com</Email3Address>
+<Email3AddressType>SMTP</Email3AddressType>
+<FileAs>Palladini, Antonio Jhon</FileAs>
+<FirstName>Anonio</FirstName>
+<Folder>DEFAULT_FOLDER</Folder>
+<Gender>0</Gender>
+<Hobby/>
+<Home2TelephoneNumber>99999999999999999</Home2TelephoneNumber>
+<HomeAddressCity>Castel san giovanni</HomeAddressCity>
+<HomeAddressCountry>Italy</HomeAddressCountry>
+<HomeAddressExtended/>
+<HomeAddressPostOfficeBox>2</HomeAddressPostOfficeBox>
+<HomeAddressPostalCode>29015</HomeAddressPostalCode>
+<HomeAddressState>pc</HomeAddressState>
+<HomeAddressStreet>Via casa 9</HomeAddressStreet>
+<HomeFaxNumber>00000000000000000</HomeFaxNumber>
+<HomeTelephoneNumber>888888888888888888</HomeTelephoneNumber>
+<HomeWebPage/>
+<IMAddress/>
+<Importance>1</Importance>
+<Initials>M.J.M.</Initials>
+<JobTitle>Ingegnere</JobTitle>
+<Language/>
+<LastName>Palladini</LastName>
+<ManagerName>Nome Manager</ManagerName>
+<MiddleName>Jhon</MiddleName>
+<Mileage/>
+<MobileTelephoneNumber>200000000000</MobileTelephoneNumber>
+<NickName>nickname</NickName>
+<OfficeLocation/>
+<OrganizationalIDNumber/>
+<OtherAddressCity>castel san giovanni</OtherAddressCity>
+<OtherAddressCountry>Italy</OtherAddressCountry>
+<OtherAddressExtended/>
+<OtherAddressPostOfficeBox>3</OtherAddressPostOfficeBox>
+<OtherAddressPostalCode>29015</OtherAddressPostalCode>
+<OtherAddressState>pc</OtherAddressState>
+<OtherAddressStreet>via other 33</OtherAddressStreet>
+<OtherFaxNumber/>
+<OtherTelephoneNumber/>
+<PagerNumber>500000000000</PagerNumber>
+<Photo TYPE="JPEG">/9j/4AAQSkZJRgABAQEAeAB4AAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQY
+    GBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYa
+    KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAAR
+    CABEAFoDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAA
+    AgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkK
+    FhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWG
+    h4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl
+    5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREA
+    AgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYk
+    NOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOE
+    hYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk
+    5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5YeR3VFdiQg2qD2Gc/wBabXaWXw81vUb2
+    QRW6WtuWO152x8vbgZP6V3Gl/CbS7NUk1m/kuWP8Cfu1z6ep/SsJYinHqFjqPgLCYfA6SAf6
+    +eR/rjC/+y16ydNA0uXUNSka2sY13GTbnj1rkPDVrb6RaR2FlCsNtGPkQdsnJ/U1Z8VanqFl
+    4Y1H+zrmWF2j/gbH1P5VjHEwbu1oTHDupNRva7M648TeEobgDfqN2pPLxhUXHtnmtDS9Q0LW
+    bgR6LPNbXPAjWdhiQ4Jx6g8dema8FVp5jPulk8w/M3ysxY+vFZAuZ95Mc0mfUMap4hP7J7ku
+    H+VfxU/69T6l33ds4jvIWRu2R1qwJM8186eCtZ8RR67ZG3vLmSMTLujldnRhnkFe4xXvBuZt
+    xZ3UuxydqhV/AdqyqVVE8nEYJ0Zct7moSahmJxRpiXd+7Jb25kK8sVOAPzqW/t57MKbiMqG7
+    9vpQvfjzLY4pRcXZmVcDrmqBHJ4q9PJ1qmW9qzsSc1NNdWZSG3E17cuAT+6CpEM/xNkZPsK0
+    rK2IYS3crzTehUBR9B/9erGznHU09E9xXK6nZHoKJbiycNnnPFZ3iq+t7aKEXd59ngbIYbNx
+    bPTHpjrWhGcV578XJn+zwReWrhmGBjrz0rSk1J2ZrGCe5yHihLODWPKihdo2Ys15HI+cEenI
+    x36d65y2mu7WZpLWWQWoYjCscMvrg9q9fuDPbaXZ2nh2K3bzonkKCFA20MvykuMDhj3JwBXI
+    XPh29nvTd/Ztu9iAou7dct6ADjr2rsjFvbb1NvaJJc39a/qb3w8v2llkWWcyIEBG4cqc8j6V
+    6J4Z1XQ73V30+91FbJlbbifgOfRW6fnivN/DMS6fdanBcRo8qOI1MjAYIHOMcdc1z8eg63ru
+    vTRi3eG2EpZ5H4G0nsar920vadDlqxtJ8p9kwWtvaWqQ2SKsQHb+L3J71Q1Pi3fMayqeCp6Y
+    rj/C2qJo+l29lLJMREoUSbtwwOnyn+ldMmqRTpvXZMndojkj6r1r0KVWnUVoM4JxcJXkrnLX
+    FhZzSsdrWwP/ADyOQPwP9MVB/YMfbUoMe6//AF66Wa30++l3nY7d1JP6r/8AWpghiUALYR7R
+    wPlUVm8NBvYqrWpytypo8M0zxpa3VwI7iJoN3ActkZ9662FjJgocg9CK8QuQYJWiljMbodrA
+    9jXReFfFc2lERzq0toeCpPKe4/wrzq+CVr0/uOuFTueqk7MYOTXC/E+Yw2kVySqmFt4OMkkc
+    10v9tW32X7YCPswTeGPGT6V5B8SfEbamrLGcR/dArDDU3fU6Xors6nTNQutVuQLi4ERlilw+
+    CdmVUgEdegH50f8ACPPutYWuYo7eGQFiquxwD7JnOc1jaZrs1npNrepcRm/DNLmVMBsjBGB3
+    5/SrjeMrm/SdNS1N7aMR5RbOPBkJHTcc4rRU6Si3JX5X0O2PPUUXS29HuvKxYZiNe1AjlVuy
+    ELd+lejRXkKAKmF+leN6behp4pB5hLOCwZt3PcnPvzXWjUiRwazlT55XOGo3GTTO+a5yuQc1
+    Ct1LC4eKRkcfxKcVyNlqkiNwSR6GtmC+WbGeDScHHUxdmdLD4gmLKLuNZgP4x8rj8RWiNdtc
+    D/S7ke23pXINIAOKrGcZ71rDGVY6XuYSoRbPItcvP7W8VOLNl2uu5yTwCO9OspLJNQgh1G7j
+    t4S2Hc5IA/DNZ95aWukxl4JS5P3jg8+n1rlbmZpXLMTkmvSg76jaseyeLdRgnsY4rCaN7IAB
+    GiYMpx7ivPL+2+0oPmEYDZ3t0rBsb6azY+WxMbfeQ9DW1dXL6kYY4gRGFAVa55w5GnE6IT5t
+    zsda0S1g07S5Yb8yJjDmNfMxnrjse30xXPajbS22oT2IkxcIA6vxjBxwQB97npmrMWl6nbac
+    VtLhzGfmaIjIPuBVO1a4UjY5jdTnIUdfyrFSsnY3p16kNOZ2NTSle2tQJyGkJPz7cZ5/+tWv
+    b3G4gViW8NxNLumkaRzxk10um6aygE8mo5rLUwleTbNKxUccVrwLtGarWttsFW8YqJSJsSed
+    tGDUfnL71Uu5BGrMzYUDJNedXHj4rPIscO5AxCnPUZ4qI05VH7onpucv4lkZbzyFwIkGQB6n
+    vWNRRXq0vgRE/iYV1GhKF1CBAPl4FFFRX2HA9RtI1Cpx2qWSwtmbeYl3HqcUUVwM2RIllAq5
+    CDpVqCJFJwKKKTGWQoA4qGViOlFFZsTOO8fXUsHh+5MTbSxCE+xPNeQ0UV34P4H6mM9z/9k=
+</Photo>
+<PrimaryTelephoneNumber/>
+<Profession/>
+<RadioTelephoneNumber>7000000000</RadioTelephoneNumber>
+<Sensitivity>0</Sensitivity>
+<Spouse>spouse</Spouse>
+<Subject>Antonio Jhon Palladini II</Subject>
+<Suffix>II</Suffix>
+<TelexNumber/>
+<Title>Mr.</Title>
+<WebPage>www.funambol.com</WebPage>
+<YomiCompanyName/>
+<YomiFirstName/>
+<YomiLastName/>
+</contact>

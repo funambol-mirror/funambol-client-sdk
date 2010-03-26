@@ -1,0 +1,62 @@
+#
+# 
+#
+
+EXIT_SUCCESS=0
+EXIT_FAILURE=1
+
+SYNC_LOG_FILE=synclog.txt
+ITEM_CACHE_FILE=$HOME/.config/Funambol/fsync/item_cache/briefcase.dat
+EXT_CONFIG_FILE=$HOME/.config/Funambol/fsync/spds/syncml/Ext/config.ini 
+
+function log_message()
+{
+    msg="$@"
+
+    if [ -n "$msg" ]; then
+            echo $msg
+    fi
+}
+
+
+function log_error()
+{
+        err_msg="$@"
+
+        if [ -n "$err_msg" ]; then
+                echo >&2 "$err_msg"                
+        fi
+}
+
+function setMaxMessageSize()
+{
+    msgSize=$1
+
+    if [ -z "$msgSize" ]; then
+        return $EXIT_FAILURE
+    fi
+
+    perl -i -pe "s/(maxMsgSize *= *)([0-9]+)/\1 $msgSize/g" $EXT_CONFIG_FILE >/dev/null 2>&1
+
+        if [ $? != 0 ]; then
+                return $EXIT_FAILURE
+        fi 
+    
+    return $EXIT_SUCCESS
+}
+
+function checkItemCacheSize()
+{
+    checkSize=$1 
+
+    if [ -z "$checkSize" ]; then
+        return $EXIT_FAILURE
+    fi
+
+    cache_items=$(wc -l $ITEM_CACHE_FILE| cut -d ' ' -f 1)
+    if [ $cache_items != $checkSize  ]; then
+        return $EXIT_FAILURE
+    fi
+
+    return $EXIT_SUCCESS
+}
