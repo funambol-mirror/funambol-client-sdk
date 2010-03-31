@@ -1,0 +1,8 @@
+com/funambol/mail/AddressTest.java
+com/funambol/mail/FolderTest.java
+com/funambol/mail/LazyMessageTest.java
+com/funambol/mail/MessageFlagsTest.java
+com/funambol/mail/MessageTest.java
+com/funambol/mail/MIMEFormatterTest.java
+com/funambol/mail/MIMEProcessorTest.java
+com/funambol/mail/SampleMessage.java
