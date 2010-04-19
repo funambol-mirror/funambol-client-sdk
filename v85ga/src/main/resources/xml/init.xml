@@ -1,0 +1,28 @@
+<SyncML>
+    <SyncHdr>
+        <VerDTD>1.1</VerDTD>
+        <VerProto>SyncML/1.1</VerProto>
+        <SessionID>{0}</SessionID>
+        <MsgID>1</MsgID>
+        <Target>
+            <LocURI>{1}</LocURI>
+        </Target>
+        <Source>
+            <LocURI>{2}</LocURI>
+        </Source>
+        <Cred>
+            <Meta>
+                <Type xmlns="syncml:metinf">syncml:{3}</Type>
+            </Meta>
+            <Data>{4}</Data>
+        </Cred>
+	<Meta>
+            <MaxMsgSize>{5}</MaxMsgSize>
+            <MaxObjSize>{6}</MaxObjSize>
+        </Meta>
+    </SyncHdr>
+    <SyncBody>
+    {7}
+        <Final/>
+    </SyncBody>
+</SyncML>
