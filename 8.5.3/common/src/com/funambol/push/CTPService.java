@@ -259,7 +259,8 @@ public class CTPService extends Thread {
             if (terminated == false) {
                 // The operation did not terminate
                 // We force an exception to wake up the thread
-                Log.error(TAG_LOG, "An IO operation did not complete before" + " maximum allowed time. Restart the CTPService");
+                Log.debug(TAG_LOG, "An IO operation did not complete before" +
+                        " maximum allowed time. Restart the CTPService");
                 disconnect();
             }
         }
@@ -337,7 +338,6 @@ public class CTPService extends Thread {
             } catch (IOException ioe) {
                 Log.error(TAG_LOG, "HeartBeatGenerator error sending the heartbeat", ioe);
                 disconnect();
-
             } finally {
                 Log.debug(TAG_LOG, "HeartBeatGenerator exiting heartbeat generator");
                 isRunning = false;
@@ -600,7 +600,6 @@ public class CTPService extends Thread {
         } catch (Exception e) {
             Log.error(TAG_LOG, "Exception thrown while restarting CTP service: ", e);
         }
-        
     }
 
     /**
@@ -808,7 +807,7 @@ public class CTPService extends Thread {
                 // If we are done, then this is not a real error, just forced
                 // the connection to go down
                 if (!done) {
-                    Log.error(TAG_LOG, "Exception reading stream: ", e);
+                    Log.debug(TAG_LOG, "Exception reading stream: " + e.toString());
                 } else {
                     Log.debug(TAG_LOG, "Forced Disconnection , disconnecting");
                 }
@@ -1301,7 +1300,7 @@ public class CTPService extends Thread {
                 message = receiveMessage();
                 Log.debug(TAG_LOG, "Message received");
             } catch (IOException ioe) {
-                Log.error(TAG_LOG, "Exception while reading server message:" + ioe);
+                Log.debug(TAG_LOG, "Exception while reading server message:" + ioe);
                 throw ioe;
             }
             int status = message.getCommand();
@@ -1340,12 +1339,12 @@ public class CTPService extends Thread {
                     break;
 
                 case ST_ERROR:
-                    Log.error(TAG_LOG, "ERROR message received");
+                    Log.debug(TAG_LOG, "ERROR message received");
                     disconnect();
                     return;
                 default:
                     // Error from server -> exit thread (will try restoring the socket from scratch)
-                    Log.error(TAG_LOG, "Bad status received " + status);
+                    Log.debug(TAG_LOG, "Bad status received " + status);
                     disconnect();
                     return;
             }
