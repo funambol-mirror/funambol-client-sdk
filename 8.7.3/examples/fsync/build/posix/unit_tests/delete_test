@@ -1,0 +1,128 @@
+TEST_NAME=delete_test
+DELETE_TEST_PROG_FOLDER=./briefcase
+DELETE_TEST_PROG_NAME=./fsync
+DELETE_TEST_PROG_USER=
+DELETE_TEST_PROG_PASS=
+DELETE_TEST_SERVER=
+
+DELETE_TEST_PROG_OPTS="-u $DELETE_TEST_PROG_USER -p $DELETE_TEST_PROG_PASS -s $DELETE_TEST_SERVER -d $DELETE_TEST_PROG_FOLDER -v"
+DELETE_TEST_CMD="$DELETE_TEST_PROG_NAME $DELETE_TEST_PROG_OPTS"
+DELETE_TEST_OUTPUT=$TEST_NAME-$(date +%Y%m%d-%H%M%S).log
+
+# minimum syncml message size
+MIN_MESSAGE_SIZE=6000
+FILE_ITEMS_NUM=300
+
+# source in common 
+source ut_common
+
+# test fixture
+function setup_delete_test() 
+{
+    if [ -z "$DELETE_TEST_PROG_FOLDER"  \
+         -o -z "$DELETE_TEST_PROG_NAME" \
+         -o -z "$DELETE_TEST_SERVER"    \
+         -o -z "$DELETE_TEST_PROG_USER" \
+         -o -z "$DELETE_TEST_PROG_PASS" ]; then
+
+        log_message "$TEST_NAME: test isn't configured correctly: please check that all the test variable are correctly setup"
+        
+        return $EXIT_FAILURE
+    fi
+
+    log_message "$TEST_NAME: redirecting test commands output to $DELETE_TEST_OUTPUT"
+
+    {
+        # remove synclog
+        rm -f $SYNC_LOG_FILE
+        # cleanup item cache before test start
+        rm -f $ITEM_CACHE_FILE
+        # cleanup briefcase folder
+                rm -f $DELETE_TEST_PROG_FOLDER/* && 
+                (cd $DELETE_TEST_PROG_FOLDER/ && 
+                for i in $(seq 1 $FILE_ITEMS_NUM); do 
+                        echo "delete test file" > delete-test-file-$i; 
+                done)
+     } >> $DELETE_TEST_OUTPUT
+
+     return $?
+}
+
+function cleanup_delete_test()
+{
+    rm -f $DELETE_TEST_PROG_FOLDER/*
+
+    return $? 
+}
+
+function delete_test()
+{
+    # sync files 
+    $DELETE_TEST_CMD >> $DELETE_TEST_OUTPUT
+
+    cmd_ret_val=$?
+
+    if [ $cmd_ret_val != 0 ]; then
+        return $cmd_ret_val
+    fi
+
+    # check for add of items in log
+    added_items=$(grep "new file sent" $DELETE_TEST_OUTPUT 2>/dev/null | wc -l)
+    if [ $added_items != $FILE_ITEMS_NUM ]; then
+        log_error "$TEST_NAME: wrong number of added items in cache (found $added_items, should be $FILE_ITEMS_NUM)"
+    
+        return $EXIT_FAILURE
+    fi
+
+    # check item cache: should have $FILE_ITEMS_NUM entries
+    checkItemCacheSize $FILE_ITEMS_NUM
+    if [ $? != 0 ]; then
+        log_error "$TEST_NAME: wrong number of added items sent (should be $FILE_ITEMS_NUM)"
+    
+        return $EXIT_FAILURE
+    fi
+
+    # remove synced files 
+    rm -f $DELETE_TEST_PROG_FOLDER/*
+    
+    if [ $? != 0 ]; then
+        log_error "$TEST_NAME: error removing items in $DELETE_TEST_PROG_FOLDER"
+
+        return $EXIT_FAILURE
+    fi 
+    
+    # set message size to the lowest possible value
+    setMaxMessageSize $MIN_MESSAGE_SIZE        
+
+    if [ $? != 0 ]; then
+        log_error "$TEST_NAME: error resetting max message size in file $EXT_CONFIG_FILE"
+    fi
+
+    # send up deletes
+    $DELETE_TEST_CMD >> $DELETE_TEST_OUTPUT 2>&1
+
+    cmd_ret_val=$?
+
+    if [ $cmd_ret_val != 0 ]; then
+        return $cmd_ret_val
+    fi
+
+    # check item cache: should have 0 entries
+    checkItemCacheSize 0
+
+    if [ $? != 0 ]; then
+        log_error "$TEST_NAME: wrong number of items in cache (expected 0)"
+    
+        return $EXIT_FAILURE
+    fi
+
+    # check for delete of items in log
+    removed_items=$(grep "deleted file sent" $DELETE_TEST_OUTPUT 2>/dev/null | wc -l)
+    if [ $removed_items != $FILE_ITEMS_NUM ]; then
+        log_error "$TEST_NAME: wrong number of deleted items sent (found $removed_items, expected $FILE_ITEMS_NUM)"
+    
+        return $EXIT_FAILURE
+    fi
+    
+    return $?
+}
