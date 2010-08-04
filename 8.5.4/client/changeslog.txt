@@ -1,0 +1,26 @@
+Funambol Java Client API Changes Log
+------------------------------------
+2010-04-21
+    - Added support for MD5 authentication
+
+2010-03-25
+  - Hide picture sync source when syncing against servers which do not have a
+    config sync source
+
+2010-03-03
+  - The dialog Controller first sync alert is no more prompted only if the user
+    press "Sync now" or "Try later". If the user close the popup with a command
+    that is not related to the two options he will see the alert ont he next 
+    sync time for the related item. The alert will beprompted when the user 
+    press sync. 
+
+2010-02-03
+  - The DialogController interface now support the resume of alert dialogs. New
+    Methods were added.  
+
+2010-01-30
+  - Enanched the dialog management logic. Display manager and Dialog controller
+    public interface changed accordingly.
+  
+2009-06-30
+  - First version including the IPC module
