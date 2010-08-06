@@ -1,0 +1,290 @@
+
+-----------------------
+Funambol J2SE API 8.7.0
+-----------------------
+2010-07-12
+- maria: Updated dependencies
+
+-----------------------
+Funambol J2SE API 8.5.0
+-----------------------
+2010-03-23
+- maria: Updated dependencies
+
+-----------------------
+Funambol J2SE API 8.2.3
+-----------------------
+2009-12-04
+- maria: Updated dependencies
+
+-----------------------
+Funambol J2SE API 8.2.2
+-----------------------
+2009-12-04
+- maria: Updated dependencies
+
+-----------------------
+Funambol J2SE API 8.2.1
+-----------------------
+2009-11-13
+- maria: Updated dependencies
+
+-----------------------
+Funambol J2SE API 8.2.0
+-----------------------
+2009-11-02
+- maria: Updated dependencies
+
+-----------------------
+Funambol J2SE API 7.1.0
+-----------------------
+2009-01-18
+- nichele: Added a new configuration property 'ignore-server-in-respuri' that can be
+           set to 'true' if the server in the RespURI must be replaced by the
+           server configured in the syncml-url property (this can be usefull if the
+           API are used as testing tool in an environment with a proxy)
+           
+2008-12-31
+- nichele: Made the url configurable using runtimeProperties
+
+2008-09-23
+- nichele: Updated dependencies
+
+-----------------------
+Funambol J2SE API 7.0.5
+-----------------------
+2008-07-26
+- nichele: Updated to pim-framewrok 7.0.6
+
+-----------------------
+Funambol J2SE API 7.0.4
+-----------------------
+2008-07-18
+- nichele: Updated to pim-framewrok 7.0.5
+
+-----------------------
+Funambol J2SE API 7.0.3
+-----------------------
+2008-07-15
+- nichele: Updated to pim-framewrok 7.0.4
+
+-----------------------
+Funambol J2SE API 7.0.2
+-----------------------
+2008-05-15
+- ste: Checking in exchangeModifications if the message returned by the server is an error message
+
+-----------------------
+Funambol J2SE API 7.0.1
+-----------------------
+2008-05-10
+- ste: releasing 7.0.1 without the snapshot, since no many changes are planned for the next
+       release
+
+2008-03-31
+- gibi: updated dependencies (pim-framework 6.5.6)
+
+2008-03-12
+- stefano_fornari: added the xml resources
+- stefano_fornari: upgraded to funambol:core-framewor:6.5.4
+
+2008-01-02
+- nichele: Split DeviceTools.createDeviceID method in order to make it testable
+
+2007-12-22
+- nichele: Mavenized.
+           Deprecated class Test. Use com.funambol.syncclient.cl.Main in funambol:cl-plugin
+
+
+------------------------
+Funambol J2SE API 6.5.6
+------------------------
+
+2007-11-28
+- nichele: Changed license to AGPLv3.
+
+
+------------------------
+Funambol J2SE API 6.5.5
+------------------------
+
+2007-11-14
+- nichele: Upgraded to funambol:ext:6.5.2
+
+
+------------------------
+Funambol J2SE API 6.5.4
+------------------------
+
+2007-10-09
+- marco: fixed support for refresh from client/server.
+
+
+------------------------
+Funambol J2SE API 6.5.3
+------------------------
+
+2007-09-24
+- nichele: Upgraded to:
+           - funambol:core-framework:6.5.3
+           - funambol:pim-framework:6.5.2
+
+
+------------------------
+Funambol J2SE API 6.5.2
+------------------------
+
+2007-09-13
+- lulu: Fixed an issue handling Meta/Format for Add and Replce commands when
+        this property is null.
+
+
+------------------------
+Funambol J2SE API 6.5.1
+------------------------
+
+2007-08-14
+- ste: Added handling of incoming Meta/Format for Add and Replace commands. Note that it was not 
+       possible to do the same with Meta/Type as it would require some changes to the 
+       sync4j-clientframework package.
+
+
+------------------------
+Funambol J2SE API 6.5.0
+------------------------
+
+2007-07-05
+- lulu: Moved the initialization of SyncSources into sync() method from
+        SyncManager constructor
+
+2007-07-04
+- lulu: Fixed NullPointerException when there is no classpath property defined
+        in spds/syncml.properties
+
+2007-06-18
+- lulu: Updated Funambol copyright
+
+
+------------------------
+Funambol J2SE API 6.0.3
+------------------------
+
+2007-04-23
+- lulu: Upgraded to Funambol Common PIM 6.0.3
+
+
+------------------------
+Funambol J2SE API 6.0.2
+------------------------
+
+2007-04-11
+- lulu: Fixed typo in the log
+
+
+------------------------
+Funambol J2SE API 6.0.1
+------------------------
+
+2007-03-04
+- nichele: Added DeviceTools class that contains a method to create a device-id
+           based on host name, host address and user name
+
+2007-03-02
+- nichele: Made max-msg-size and max-obj-size configurable
+
+2007-02-27
+- lulu: Added user-agent into header of Http Request
+
+
+------------------------
+Funambol J2SE API 6.0.0
+------------------------
+
+2007-01-05
+- lulu: Made compliant with new foundation connector using new common.pim
+        library
+
+2006-11-03
+- harrie: moved the message files into the jar file.
+          That way all clients based on j2se do not need the seperate files.
+- harrie: Initial support for multi-message.
+          Implemented as max. items per message, not the max. message length.
+
+2006-09-13
+- lulu: Fixed issue about new files. Using the lastModified of the file, 
+        the sync of it can be wrong.
+
+- harrie: Seperated the SyncML messages from the SyncManager class.
+          Seperated the configuration from the SyncManager class.
+          Made the message number flexible/dynamic.
+
+2006-09-11
+- lulu: Added 'error' log level
+
+
+------------------------
+Funambol J2SE API 3.0.6
+------------------------
+
+2006-09-07
+- nichele: Changed the license to GPL.
+
+
+------------------------
+Funambol J2SE API 3.0.5
+------------------------
+
+2006-08-10
+- nichele: Changed the setSyncItem methods in order to create a new file when an
+           Add command is received
+
+2006-08-08
+- nichele: Changed the license to HPL.
+
+
+------------------------
+Funambol J2SE API 3.0.4
+------------------------
+
+2006-07-13
+- lulu: The property target-local-uri is not more used
+
+
+------------------------
+Funambol J2SE API 3.0.3
+------------------------
+
+2006-06-13
+- Lorenzo Boiocchi: Improved error handling
+
+2006-05-18
+- Lorenzo Boiocchi: Fixed bug 305302 The file system is not correctly recognised
+
+
+------------------------
+Funambol J2SE API 3.0.2
+------------------------
+2006-04-03
+- nichele: Review the time handled in order to support FAT32 and EXT3
+
+2006-02-15
+- Mircea Bodog: Fixed bug 304660 The java gui sends the items without the format  
+
+2006-02-09
+- Mircea Bodog: Fixed bug 304262 During a sync, not all server messages are logged
+
+
+------------------------
+Funambol J2SE API 3.0.1
+------------------------
+
+2006-02-01
+- lulu: Made compliant with Funambol DS Server 5.0.1
+- lulu: Made compliant with Foundation 3.0.1
+
+
+------------------------
+Funambol J2SE API 3.0.0
+------------------------
+
+New Major Release
