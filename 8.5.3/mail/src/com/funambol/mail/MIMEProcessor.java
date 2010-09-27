@@ -57,6 +57,8 @@ import com.funambol.util.ChunkedString;
  */
 public class MIMEProcessor {
 
+    private static final String TAG_LOG = "MIMEProcessor";
+
     // -------------------------------------------------------------- Constants
 
     /** RFC 2822 */
@@ -183,14 +185,14 @@ public class MIMEProcessor {
          * Building the native Message object to be returned
          */
         mailmessage = new Message();
-        String subject = decodeHeader((String)headers.get(SUBJECT));
+        String subject = decodeString((String)headers.get(SUBJECT));
         mailmessage.setSubject("".equals(subject) ? "(no subject)" : subject);
        
         /* Use StringUtil.removeBackslashes() method 
          * for headers FROM - TO - REPLYTO - CC -BCC
          * to fix visible names coming from Web mailers like
          * libero.it in the form
-  	 *     name\.surname\@libero\.it
+         *     name\.surname\@libero\.it
          */
         parseRecipients(mailmessage, Address.FROM, StringUtil.removeBackslashes((String)headers.get(FROM)));
         
@@ -203,7 +205,7 @@ public class MIMEProcessor {
                         Address.REPLYTO,
                         StringUtil.removeBackslashes((String)headers.get(REPLY_TO)));
         }catch (MailException mex){
-             Log.error(this,"error parsing replyto header");
+             Log.error(TAG_LOG,"error parsing replyto header");
              mex.printStackTrace();
         }
         
@@ -237,7 +239,7 @@ public class MIMEProcessor {
         if( pos1 != -1 && pos2 != -1) {
             // remove the '<>'
             msgId = msgId.substring(pos1+1, pos2);
-            Log.debug("Message-Id: "+msgId);
+            Log.debug(TAG_LOG, "Message-Id: "+msgId);
         }
         mailmessage.setMessageId(msgId);
 
@@ -246,13 +248,13 @@ public class MIMEProcessor {
         //    mailmessage.setHeader(UA, userAgent);
         //}
 
-        String content_type = (String)contentTypeParameters.get(CONTENT_TYPE);
+        String contentType = (String)contentTypeParameters.get(CONTENT_TYPE);
 
         // If not set, the default is text plain (set by Part constructor).
-        if (content_type != null) {
+        if (contentType != null) {
             // The mime type arrives uppercase from server 6.0, convert it to
             // lowercase.
-            mailmessage.setContentType(content_type.toLowerCase());
+            mailmessage.setContentType(contentType.toLowerCase());
         }
 
         if (mailmessage.isText()) {// non multi-part message
@@ -285,8 +287,7 @@ public class MIMEProcessor {
                     try {
                         content = new String(bytes, 0, len, charset);
                     } catch (UnsupportedEncodingException e) {
-                        Log.error("MIMEProcessor: "+ charset +
-                                  " not supported. " + e.toString());
+                        Log.error(TAG_LOG, "MIMEProcessor: "+ charset + " not supported. ", e);
                         content = new String(bytes);
                     }
                     bytes = null;
@@ -300,8 +301,8 @@ public class MIMEProcessor {
             mailmessage.setHeader(Message.CONTENT_TRANSFER_ENCODING, encoding);
             mailmessage.setContent(content);
             content = null;
-        }
-        else if (mailmessage.isMultipart()) {// multi-part message
+        } else if (mailmessage.isMultipart()) {// multi-part message
+            Log.debug(TAG_LOG, "Building multipart");
             Multipart multipart=buildMultipart(msgbuf, contentTypeParameters);
             mailmessage.setContent(multipart);
             mailmessage.setLaziness(Message.LAZY_CONTENT);
@@ -315,6 +316,79 @@ public class MIMEProcessor {
         return mailmessage;
     }
 
+    /**
+     * Helper method used to check if the content of a header attribute is
+     * Quoted Printable or Base64 encoded. <p>
+     * 
+     * A signal for this is if the string starts with "Q?". In this case the
+     * content is decoded
+     * 
+     * @param iso
+     *            The string representing the content of the header attribute
+     * @return The decoded string if the content was encoded, the start string
+     *         otherwise
+     */
+    public String decodeString(String iso) {
+        int start = 0;
+        int end = 0;
+
+        if (iso == null || iso.equals("")) {
+            return "";
+        }
+
+        StringBuffer ret = new StringBuffer();
+
+        while ( ( start=iso.indexOf("=?", start) ) != -1) {
+            Log.debug(TAG_LOG, "start: "+start);
+            // Skip the '=?'
+            start += 2;
+
+            // Find the first '?'
+            int firstMark = iso.indexOf("?", start);
+            if (firstMark == -1) {
+                Log.error(TAG_LOG, "Invalid encoded header");
+                return iso;
+            }
+            // Find the second '?'
+            int secondMark = iso.indexOf("?", firstMark+1);
+            if (secondMark == -1) {
+                Log.error(TAG_LOG, "Invalid encoded header");
+                return iso;
+            }
+            // Find the final '?='
+            end = iso.indexOf("?=", secondMark+1);
+            if (end == -1) {
+                Log.error(TAG_LOG, "Invalid encoded header");
+                return iso;
+            }
+            
+            String charset = iso.substring(start, firstMark);
+            String encoding = iso.substring(firstMark+1, secondMark);
+            String text = iso.substring(secondMark+1, end);
+            
+            // Add the initial part if not encoded
+            if (start >= 2 &&  ret.length() == 0) {
+                ret.append(iso.substring(0, start - 2));
+            }
+            if (StringUtil.equalsIgnoreCase(encoding, "Q")) {
+                // quoted-printable
+                String enc = text.replace('_', ' ');
+                ret.append(QuotedPrintable.decode(enc.getBytes(), charset));
+            }
+            else if (StringUtil.equalsIgnoreCase(encoding, "B")){
+                // base64
+                ret.append(Base64.decode(text, charset));
+            }
+
+            start = end;
+            end+=2;
+        }
+        // Append the last part
+        if(end < iso.length()){
+            ret.append(iso.substring(end));
+        }
+        return ret.toString();
+    }
 
     // --------------------------------------------------------- Helper methods
 
@@ -329,7 +403,7 @@ public class MIMEProcessor {
     private void parseRecipients(Message msg, int type, String header)
     throws MailException {
         if(header != null) {
-            Address[] recipients = Address.parse(type, decodeHeader(header));
+            Address[] recipients = Address.parse(type, decodeString(header));
             msg.addRecipients(recipients);
         }
     }
@@ -398,13 +472,10 @@ public class MIMEProcessor {
         int partNumber = 1;
 
         while (!partbuf.isEmpty()) {
+            Log.debug(TAG_LOG, "Building body part");
             part = buildBodyPart(partbuf, partNumber++);
-            
             multipart.addBodyPart(part);
-           
             partbuf = content.getNextChunk(boundary+EOL);
-            
-
         }
 
         return multipart;
@@ -435,10 +506,11 @@ public class MIMEProcessor {
         ret.setDisposition(cd != null ? cd : BodyPart.CD_INLINE);
         
         String fn = (String)contdispparams.get(FILENAME);
+
+        // the filename can be encoded, we need to decode it, first
+        fn = decodeString(fn);
         
         ret.setFileName(fn != null ? fn : "Part1."+partNum);
-        
-        
 
         Object body = null;
 
@@ -477,79 +549,6 @@ public class MIMEProcessor {
         return ret;
     }
 
-    /**
-     * Helper method used to check if the content of a header attribute is
-     * Quoted Printable encoded. <p>
-     * 
-     * A signal for this is if the string starts with "Q?". In this case the
-     * content is decoded
-     * 
-     * @param iso
-     *            The string representing the content of the header attribute
-     * @return The decoded string if the content was encoded, the start string
-     *         otherwise
-     */
-    private String decodeHeader(String iso) {
-        int start = 0;
-        int end = 0;
-
-        if (iso == null || iso.equals("")) {
-            return "";
-        }
-
-        StringBuffer ret = new StringBuffer();
-
-        while ( ( start=iso.indexOf("=?", start) ) != -1) {
-            Log.debug("start: "+start);
-            // Skip the '=?'
-            start += 2;
-
-            // Find the first '?'
-            int firstMark = iso.indexOf("?", start);
-            if (firstMark == -1) {
-                Log.error("Invalid encoded header");
-                return iso;
-            }
-            // Find the second '?'
-            int secondMark = iso.indexOf("?", firstMark+1);
-            if (secondMark == -1) {
-                Log.error("Invalid encoded header");
-                return iso;
-            }
-            // Find the final '?='
-            end = iso.indexOf("?=", secondMark+1);
-            if (end == -1) {
-                Log.error("Invalid encoded header");
-                return iso;
-            }
-            
-            String charset = iso.substring(start, firstMark);
-            String encoding = iso.substring(firstMark+1, secondMark);
-            String text = iso.substring(secondMark+1, end);
-            
-            // Add the initial part if not encoded
-            if (start >= 2 &&  ret.length() == 0) {
-                ret.append(iso.substring(0, start - 2));
-            }
-            if (StringUtil.equalsIgnoreCase(encoding, "Q")) {
-                // quoted-printable
-                String enc = text.replace('_', ' ');
-                ret.append(QuotedPrintable.decode(enc.getBytes(), charset));
-            }
-            else if (StringUtil.equalsIgnoreCase(encoding, "B")){
-                // base64
-                ret.append(Base64.decode(text, charset));
-            }
-
-            start = end;
-            end+=2;
-        }
-        // Append the last part
-        if(end < iso.length()){
-            ret.append(iso.substring(end));
-        }
-        return ret.toString();
-    }
     
     /**
      * Extracts all parameters from the string containing the value of the
@@ -694,7 +693,7 @@ public class MIMEProcessor {
                     if (received == null) {
                         int start = value.lastIndexOf(';');// date is after the last ";"
                         if (start == -1) {
-                            Log.info("Invalid Received:");
+                            Log.info(TAG_LOG, "Invalid Received:");
                             continue;
                         }
 

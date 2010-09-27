@@ -76,7 +76,7 @@ public class MIMEFormatter {
 
     private static final String DATE = "Date: ";
 
-    private static final String FILENAME = "filename=";
+    private static final String FILENAME = "filename";
     
     private static final String FROM = "From: ";
     
@@ -250,22 +250,7 @@ public class MIMEFormatter {
             print(os, BCC + StringUtil.fold(bcc));
         }
 
-        String qpSubject;
-
-        try {
-            qpSubject = QuotedPrintable.encode(subject, "UTF-8");
-            // If the string got quoted printable we must mark the word as
-            // encoded per MIME spec
-            if (qpSubject.length() != subject.length()) {
-                StringBuffer newSubject = new StringBuffer();
-                newSubject.append("=?").append(UTF8).append("?Q?")
-                    .append(qpSubject).append("?=");
-                qpSubject = newSubject.toString();
-            }
-        } catch (Exception e) {
-            Log.error(TAG_LOG, "Cannot encode subject");
-            qpSubject = "";
-        }
+        String qpSubject = encodeQP(subject);
 
         // Recompute the content transfer encoding for non multipart messages
         if (!mailmessage.isMultipart()) {
@@ -376,13 +361,14 @@ public class MIMEFormatter {
                     }
                 }
 
-                partString.append(CRLF).append(
-                        CONTENT_TRANSFER_ENCODING 
-                        + cte + CRLF)
-                    .append(CONTENT_DISPOSITION + cd+';');
+                partString.append(CRLF)
+                          .append(CONTENT_TRANSFER_ENCODING).append(cte).append(CRLF)
+                          .append(CONTENT_DISPOSITION).append(cd).append(';');
 
                 if (fn != null) {
-                    partString.append(" "+FILENAME + fn);
+                    String encodedFn = encodeQP(fn);
+                    partString.append(" ").append(FILENAME).append("=")
+                              .append("\"").append(encodedFn).append("\"");
                 }
 
                 partString.append(CRLF + CRLF);
@@ -460,6 +446,49 @@ public class MIMEFormatter {
             is.close();
         }
     }
+
+    private String encodeQP(String value) {
+        String res = value;
+        try {
+            String qp = QuotedPrintable.encode(value, "UTF-8");
+            // If the string got quoted printable we must mark the word as
+            // encoded per MIME spec
+            if (qp.length() != value.length()) {
+                StringBuffer newValue = new StringBuffer();
+
+                // QP does not encode question marks, but they are used as
+                // separators here, so we need to encode them here
+                qp = quotedPrintableEncodeQuestionMarks(qp);
+
+                newValue.append("=?").append(UTF8).append("?Q?")
+                          .append(qp).append("?=");
+                res = newValue.toString();
+            }
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot encode string " + value, e);
+        }
+        return res;
+    }
+
+
+    /**
+     * Performs an additional step of quoted printable encoding to encode also
+     * question marks as they are special chars in MIME
+     */
+    private String quotedPrintableEncodeQuestionMarks(String qpSubject) {
+        StringBuffer res = new StringBuffer();
+
+        for(int i=0;i<qpSubject.length();++i) {
+            char ch = qpSubject.charAt(i);
+            if (ch == '?') {
+                res.append("=3F");
+            } else {
+                res.append(ch);
+            }
+        }
+        return res.toString();
+    }
+
 
     /**
      * Creates a unique boundary as described in the RFC 2046
