@@ -98,6 +98,8 @@ public class ConnectionConfig {
     private static final String COUNTRY_IT = "IT";
     /**DE country selector*/
     private static final String COUNTRY_DE = "DE";
+    /** Arab Emirates */
+    private static final String COUNTRY_AE = "AE";
     /**BlackberryConfiguration array*/
     private static BlackberryConfiguration[] configurations =  null;
     /**Hashtable used to store the APN list*/
@@ -378,6 +380,16 @@ public class ConnectionConfig {
         WapGateway vodafoneDe = new WapGateway("wap.vodafone.de", null, null,
                                                "139.7.29.1", COUNTRY_DE);
         apnTable.put("wap.vodafone.de", vodafoneDe);
+
+        //-------------------------
+        // ----  Arab Emirates OPERATORS ---- //
+        //-------------------------
+
+        //-------------------------
+        // DU
+        //-------------------------
+        WapGateway du = new WapGateway("du", null, null, COUNTRY_AE);
+        apnTable.put("du", du);
 
         Log.debug("[ConnectionConfig] apntable created");
     }
