@@ -44,6 +44,8 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
+import com.funambol.util.Log;
+
 /**
  * This class is a proxy to javax.microedition.io.file.FileConnection to
  * provide a common access to a file resource on all mobile platforms.
@@ -65,6 +67,8 @@ import javax.microedition.io.file.FileConnection;
  */
 public class FileAdapter {
 
+    private static final String TAG_LOG = "FileAdapter";
+
     /** The underlying FileConnection */
     private FileConnection file;
     
@@ -84,6 +88,7 @@ public class FileAdapter {
      * @param readOnly true if file shall be opened in read only mode
      */
     public FileAdapter(String path, boolean readOnly) throws IOException {
+        path = escapeFileURI(path);
         if (readOnly) {
             file = (FileConnection) Connector.open(path, Connector.READ);
         } else {
@@ -285,5 +290,29 @@ public class FileAdapter {
     public void setLastModified(long date) throws IOException {
         throw new IOException("setLastModified not supported");
     }
+
+    /**
+     * Escape the file URI as it may contain %. These must be escaped to avoid
+     * confusion with URI encoding. See for example:
+     *
+     * http://www.blackberry.com/developers/docs/5.0.0api//javax/microedition/io/file/package-summary.html
+     *
+     */
+    private String escapeFileURI(String s) {
+        if (s != null) {
+            StringBuffer tmp = new StringBuffer();
+            for(int i=0;i<s.length();++i) {
+                char ch = s.charAt(i);
+                if (ch == '%') {
+                    tmp.append("%25");
+                } else {
+                    tmp.append(ch);
+                }
+            }
+            return tmp.toString();
+        }
+        return null;
+    }
+
 }
 
