@@ -1,0 +1,35 @@
+Funambol Java Client API Changes Log
+------------------------------------
+2010-10-29
+  - Release 8.7.7
+
+2010-10-19
+  - Added support for improved main screen UI in case of single source active
+    (US6260)
+
+2010-07-12
+  - Release 8.7.1
+
+2010-06-10
+  - Added time capability to the DisplayManager.showMessage method: 
+    now every message can be displayed for a given amount of milliseconds
+
+2010-06-7
+  - Test framework modified not to block the entire suite at the first exception.
+    If an error occurs it is reported into a report and shown only at the end 
+    of all the test.
+
+2010-03-25
+  - Hide picture sync source when syncing against servers which do not have a
+    config sync source
+
+2010-02-03
+  - The DialogController interface now support the resume of alert dialogs. New
+    Methods were added.  
+
+2010-01-30
+  - Enanched the dialog management logic. Display manager and Dialog controller
+    public interface changed accordingly.
+  
+2009-06-30
+  - First version including the IPC module
