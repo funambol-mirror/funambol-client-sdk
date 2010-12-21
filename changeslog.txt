@@ -1,3 +1,8 @@
+-----------------------
+Funambol J2SE API 9.0.0
+-----------------------
+2010-12-21
+- maria: Updated dependencies
 
 -----------------------
 Funambol J2SE API 8.7.0
