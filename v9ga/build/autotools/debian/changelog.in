@@ -1,0 +1,5 @@
+libfunambol (@LIBFUNAMBOL_RELEASE_VERSION@) stable; urgency=low
+
+  * first debianization of libfunambol
+
+ -- dave <dave@funambol.com>  Tue, 06 Jul 2010 22:30:24 +0200

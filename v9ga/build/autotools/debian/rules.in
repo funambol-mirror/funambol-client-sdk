@@ -1,0 +1,70 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE=1
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	# commands to configure the package.
+	./autogen.sh
+	./configure --prefix=/usr
+	touch configure-stamp
+
+
+build: build-stamp
+build-stamp: configure-stamp 
+	dh_testdir
+
+	# compile the package.
+	$(MAKE)
+
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+
+	# clean up after the build process.
+	-$(MAKE) clean
+
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+			
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
+	dh_install -plibfunambol-@LIBFUNAMBOL_RELEASE_VERSION@ -plibfunambol-@LIBFUNAMBOL_RELEASE_VERSION@-dev --sourcedir=debian/tmp
+		 
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+#	dh_installdocs
+#	dh_installchangelogs CHANGES
+	dh_installexamples
+	dh_fixperms
+	dh_makeshlibs -plibfunambol-@LIBFUNAMBOL_RELEASE_VERSION@ -V 
+	dh_installdeb
+	dh_strip
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

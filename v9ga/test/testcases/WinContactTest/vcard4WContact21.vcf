@@ -1,0 +1,16 @@
+BEGIN:VCARD
+VERSION:2.1
+N:Doe;John;;;
+BDAY:2006-01-08
+NOTE:This is a test case which uses almost all Evolution fields.
+CATEGORIES:TEST
+FN:John Doe
+EMAIL;INTERNET:john.doe@yet.another.world
+TITLE:Senior Tester
+NICKNAME:user1
+TEL;VOICE:pager 6
+ROLE:professional test case
+URL:http://john.doe.com
+ORG:Test Inc.;Testing;test#1
+ADR:Test Box #3;;Test Drive 3;Test Megacity;Test County;12347;New Testonia
+END:VCARD

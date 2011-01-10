@@ -1,0 +1,13 @@
+This package was debianized by dave <dave@funambol.com> on
+Fri Jul  2 14:36:26 CEST 2010
+
+It was downloaded from https://client-sdk.forge.funambol.org/svn/client-sdk
+
+Upstream Author: Funambol C++ client team <cpp-team@funambol.com>
+
+Copyright: Copyright (C) 2003 - 2007 Funambol, Inc.
+           
+License: GNU AFFERO GENERAL PUBLIC LICENSE v3
+
+The Debian packaging is (C) 2010, Funambol, Inc. and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SyncML>
+<SyncHdr>
+<VerDTD>1.2</VerDTD>
+<VerProto>SyncML/1.2</VerProto>
+<SessionID>1252507376</SessionID>
+<MsgID>4</MsgID>
+<Target>
+<LocURI>sc-pim-testLargeObjectSplit</LocURI>
+</Target>
+<Source>
+<LocURI>http://my.funambol.com/sync</LocURI>
+</Source>
+<RespURI>http://my.funambol.com/sync;jsessionid=465BB46E305E65F83777898A78C67540</RespURI>
+</SyncHdr>
+<SyncBody>
+<Status>
+<CmdID>1</CmdID>
+<MsgRef>4</MsgRef>
+<CmdRef>0</CmdRef>
+<Cmd>SyncHdr</Cmd>
+<TargetRef>http://my.funambol.com/sync</TargetRef>
+<SourceRef>sc-pim-testLargeObjectSplit</SourceRef>
+<Data>200</Data>
+</Status>
+<Status>
+<CmdID>2</CmdID>
+<MsgRef>4</MsgRef>
+<CmdRef>4</CmdRef>
+<Cmd>Alert</Cmd>
+<TargetRef>card</TargetRef>
+<SourceRef>contact</SourceRef>
+<Data>200</Data>
+<Item>
+<Target>
+<LocURI>card</LocURI>
+</Target>
+<Source>
+<LocURI>contact</LocURI>
+</Source>
+</Item>
+</Status>
+<Sync>
+<CmdID>3</CmdID>
+<Target>
+<LocURI>contact</LocURI>
+</Target>
+<Source>
+<LocURI>card</LocURI>
+</Source>
+<Replace>
+<CmdID>4</CmdID>
+<Meta>
+<Type xmlns='syncml:metinf'>text/x-vcard</Type>
+</Meta>
+<Item>
+<Target>
+<LocURI>000000004A618EC57CB7CC48861B0D41D5048FB3A41B2000</LocURI>
+</Target>
+<Data>rrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0Aarrrrrrrrrrrrrrrrrrrrrrrrrrrr=0AFINE.......!
+
+CATEGORIES:
+
+PHOTO;ENCODING=BASE64;TYPE=JPEG:
+
+ /9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBc
+
+ UFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKC
+
+ goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCABIAEgDA
+
+ SIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUF
+
+ BAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo
+
+ 0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmq
+
+ KjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/
+
+ 8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAEC
+
+ AxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkN
+
+ ERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqK
+
+ mqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRA
+
+ xEAPwD6Vcbsk8LULSqnIOBTp5CTgDlug9q84+LXjD/hGdEKWcoXUbk+TBxkqT1b8B+uKANLxf4/
+
+ j0qRrOxVZ77vn7kX19T7V5tqV9eapK0mpXckztz8zfKPovQVixRLDGjTSkZGWZzyx7kmtawhgu1
+
+ DQzxsR1G4CgClcQx9fLXA74qGa+urVN9rdTQn0jkK/wAq2Ws3kIUrjHPJ4rmPEepaVpreVPexea
+
+ R9xPmP6UAdx4F+Idwl9Hp2v3W6J+IbmXqp/usfT3r1pyCDkjI618i317Z6jAYra4G9uBkd62fhx
+
+ 8UNR0xo9FvbkPAsvyzTNkxr0K5Pb0oA+htbtPtERCcOcY9OtFC3a3VjDPC29JUDqw7iigDSt7oN
+
+ oDXbzCPbEcyMM4xXyH4u8R3vibxbbPczJKIXVIggIXGcmvpHzZL/AMEajp8LFZldowQegc4H8zX
+
+ y/o2nTaf40toNSQxPDcKHQ85oA63xDaw31wJtXu3jtUXbFCjbR7k1zVpaaZHd+ZpvnOEOA6u3B7
+
+ dq77WdLa61KOcblaJi0ZHY561hDQ47GGSK2lkCyNvdFfjPrx/KgDdj1eaXQxK8rZ2lTz2ri0ul0
+
+ 4S6iun5hVwryDHU9M5+ldc1gI9EWJT2yx+tZFto0WwvLEsiE7ScZz7GgDPla11qRQYHtb7YJkYj
+
+ Bx26VxOv27WWrSBlxvAb869Xh0iBMTRKA4HBHGK4Tx9F5moRbAzMqc4HvQB718JdZl1L4b20svz
+
+ SWbmHjjK54P4ZFFZHwptJdJ+Hyx3GBJezq6DvtGCf8+9FAHTaZfiyvZhKpaCQkOB7Hg15X8TNOm
+
+ i8TSapArGFwZlIwOf69K9Fm/10n+8f51ynxHgmn8OlYcgB+SO3FADNB1iPW7dQTtGBk9ycVZvRb
+
+ xymyt3jgB+ZpWPOfQV5X4C1Y2d/9mdtrMCAc8E1keI7m91PxDdQuZAiyFVTOBgUAe5SxqbN2Zo+
+
+ owdw6dzWBo+rWdrqLWhuoLhG+YBXB2815/b6Vq7aebdb1YbbaR5ZkJB/+tWXqGiSWAV4pCZRjG3
+
+ ufUGgD2jXgtjZSSRkCMruDDp+NeSjUDf66+5Q6MVGO+M9q07vxNLJ4ThSeRxM2U57471zfhMpN4
+
+ gtmkfCbwWA+tAH0Zo6mOw06I5xHGoAJ9Tn+tFWViMNwkZH3WUD6dqKAGzf66T/AHj/ADrK8T2Iv
+
+ tBnQMQyfN047dc1qXDBZJWYgKCSSe1Voby2nhdobiGSPBDFXDDHfNAHzfqqSWt68ytljypFW9K1
+
+ cSXM9xejecAkgdPTFWPih9jbxHLLp06yROAfkPyg9wK5WwvWt3bbyrjBHYigDu18a2lugWK0Zz3
+
+ wQKrDX4tUmlRbd4gykluuPeuWxEilWAZmXjHGPekVpIUm8uT51GCF7jpQA69vHkH2c42xudtdd8
+
+ HtMi1DxnaC5wYUO4g9z2FcCpUA55x/OvU/gapl8VQKDt4JDZx05xQB9D+K7JYbuyuIxhZAEYe6/
+
+ wD1qK1vFERk0mFu8ciNn9DRQB4V4i8VJqVnc6fBZy+dc7ozlx8mTXN2mgto+nyXBuPMlnUqiL91
+
+ fU+/pRRQB5lrjbbuSJDlUYrn196p2XyylieRwO9FFAEkkmZxu6dz1qcHaH+bBwGAHGaKKAKoxuI
+
+ Azg17P+zjEH8RyH+6gJB+uKKKAPpvVYPN06WNeSBx745/pRRRQB//2Q==
+
+
+
+X-FUNAMBOL-FOLDER:DEFAULT_FOLDER
+
+X-FUNAMBOL-LANGUAGES:
+
+X-FUNAMBOL-MILEAGE:
+
+X-FUNAMBOL-SUBJECT:Bin Laden
+
+END:VCARD
+
+</Data>
+</Item>
+</Replace>
+<Delete>
+<CmdID>5</CmdID>
+<Item>
+<Target>
+<LocURI>000000004A618EC57CB7CC48861B0D41D5048FB3E41C2000</LocURI>
+</Target>
+</Item>
+</Delete>
+</Sync>
+<Final/>
+</SyncBody>
+</SyncML>
