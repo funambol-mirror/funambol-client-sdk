@@ -330,7 +330,7 @@ public class SyncStatus {
         while(keys.hasMoreElements()) {
             String luid = (String)keys.nextElement();
             ReceivedItemStatus status = (ReceivedItemStatus)receivedItems.get(luid);
-            if (!status.getMapSent()) {
+            if (!status.getMapSent() && SyncML.TAG_ADD.equals(status.getCmd())) {
                 res.put(luid, status.getGuid());
             }
         }
@@ -338,7 +338,7 @@ public class SyncStatus {
         while(keys.hasMoreElements()) {
             String luid = (String)keys.nextElement();
             ReceivedItemStatus status = (ReceivedItemStatus)pendingReceivedItems.get(luid);
-            if (!status.getMapSent()) {
+            if (!status.getMapSent() && SyncML.TAG_ADD.equals(status.getCmd())) {
                 res.put(luid, status.getGuid());
             }
         }
@@ -783,7 +783,6 @@ public class SyncStatus {
     private class ReceivedItemStatus extends ItemStatus {
         private String  guid;
         private boolean mapSent;
-        private String cmd;
         private int status;
 
         public ReceivedItemStatus(String guid, String cmd) {

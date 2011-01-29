@@ -454,7 +454,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
            .append("</Source>\n");
 
         for(int i=0;i<20;++i) {
-            res.append("<Replace>\n")
+            res.append("<Add>\n")
                .append("<CmdID>").append(cmdId++).append("</CmdID>\n")
                .append("<Item>\n")
                .append("<Source>\n")
@@ -465,7 +465,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
                .append("</Meta>\n")
                .append("<Data>This is just a test for performance evaluation</Data>\n")
                .append("</Item>\n")
-               .append("</Replace>\n");
+               .append("</Add>\n");
         }
  
         res.append("</Sync>\n");
