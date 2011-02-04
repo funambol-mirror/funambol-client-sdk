@@ -39,9 +39,15 @@ import java.util.Date;
 import java.util.Vector;
 import java.util.Hashtable;
 
+import com.funambol.sync.SyncException;
+
 import com.funambol.storage.StringKeyValueMemoryStore;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueStoreFactory;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SourceConfig;
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.Sync;
 import com.funambol.syncml.protocol.SyncBody;
@@ -71,6 +77,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
 
     private SyncManager  sm = null;
     private SyncConfig   sc = null;
+    private DeviceConfig dc = null;
     private SourceConfig ssc = null;
     private SuspendResumeSource tss = null;
 
@@ -99,11 +106,11 @@ public class SyncManagerSuspendResumeTest extends TestCase {
         sc.syncUrl = TEST_SERVER_URL;
         sc.userName = TEST_USERNAME;
         sc.password = TEST_PASSWORD;
-        sc.deviceConfig = new DeviceConfig();
+        dc = new DeviceConfig();
 
-        ssc = new SourceConfig();
+        ssc = new SourceConfig("briefcase", SourceConfig.BRIEFCASE_TYPE, "briefcase");
         
-        sm = new SyncManager(sc);
+        sm = new SyncManager(sc, dc);
 
         tss = new SuspendResumeSource(ssc);
 
@@ -296,7 +303,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                "<Data>212</Data>\n" +
                "</Status>";
     }
@@ -309,7 +316,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
                "<SessionID>1266917419910</SessionID>\n" +
                "<MsgID>1</MsgID>\n" +
                "<Target>\n" +
-               "<LocURI>" + sc.deviceConfig.devID + "</LocURI>\n" +
+               "<LocURI>" + dc.getDevID() + "</LocURI>\n" +
                "</Target>\n" +
                "<Source>\n" +
                "<LocURI>" + sc.syncUrl + "</LocURI>\n" +
@@ -373,7 +380,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
            .append("<SessionID>1266917419910</SessionID>\n")
            .append("<MsgID>1</MsgID>\n")
            .append("<Target>\n")
-           .append("<LocURI>").append(sc.deviceConfig.devID).append("</LocURI>\n")
+           .append("<LocURI>").append(dc.getDevID()).append("</LocURI>\n")
            .append("</Target>\n")
            .append("<Source>\n")
            .append("<LocURI>" + sc.syncUrl + "</LocURI>\n")
@@ -390,7 +397,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
            .append("<CmdRef>0</CmdRef>\n")
            .append("<Cmd>SyncHdr</Cmd>\n")
            .append("<TargetRef>").append(sc.syncUrl).append("</TargetRef>\n")
-           .append("<SourceRef>").append(sc.deviceConfig.devID).append("</SourceRef>\n")
+           .append("<SourceRef>").append(dc.getDevID()).append("</SourceRef>\n")
            .append("<Data>200</Data>\n")
            .append("</Status>");
 
@@ -423,7 +430,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
            .append("<SessionID>1266917419910</SessionID>\n")
            .append("<MsgID>1</MsgID>\n")
            .append("<Target>\n")
-           .append("<LocURI>").append(sc.deviceConfig.devID).append("</LocURI>\n")
+           .append("<LocURI>").append(dc.getDevID()).append("</LocURI>\n")
            .append("</Target>\n")
            .append("<Source>\n")
            .append("<LocURI>" + sc.syncUrl + "</LocURI>\n")
@@ -440,7 +447,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
            .append("<CmdRef>0</CmdRef>\n")
            .append("<Cmd>SyncHdr</Cmd>\n")
            .append("<TargetRef>").append(sc.syncUrl).append("</TargetRef>\n")
-           .append("<SourceRef>").append(sc.deviceConfig.devID).append("</SourceRef>\n")
+           .append("<SourceRef>").append(dc.getDevID()).append("</SourceRef>\n")
            .append("<Data>200</Data>\n")
            .append("</Status>");
 

@@ -1,6 +1,6 @@
 /*
  * Funambol is a mobile platform developed by Funambol, Inc. 
- * Copyright (C) 2008 Funambol, Inc.
+ * Copyright (C) 2011 Funambol, Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
@@ -33,44 +33,52 @@
  * the words "Powered by Funambol". 
  */
 
-package com.funambol.syncml.client;
+package com.funambol.syncml.spds;
 
+import com.funambol.sync.SyncAnchor;
+import com.funambol.util.StringUtil;
 
-import com.funambol.sync.SyncItem;
-import com.funambol.sync.SourceConfig;
-import com.funambol.sync.SyncException;
-import com.funambol.sync.SourceConfig;
+public class SyncMLAnchor implements SyncAnchor {
 
-import com.funambol.util.Log;
-import com.funambol.storage.StringKeyValueStore;
-import com.funambol.storage.StringKeyValueFileStore;
-import com.funambol.util.ConsoleAppender;
+    private long last;
+    private long next;
 
-import junit.framework.*;
-
-public class CacheTrackerTest extends ChangesTrackerTest {
-
-    public CacheTrackerTest(String name) {
-        super(name);
+    public SyncMLAnchor() {
     }
 
-    public ChangesTracker createTracker() {
-        StringKeyValueStore store = new TestKeyValueStore();
-        //StringKeyValueStore store = new StringKeyValueFileStore("file:///root1/Readme");
-        return new CacheTracker(store);
+    public String format() {
+        StringBuffer buf = new StringBuffer();
+        buf.append(last).append(",").append(next);
+        return buf.toString();
     }
-    
-    public void testSimpleFasts() throws Exception {
-        super.testSimpleFasts();
+
+    public void parse(String str) {
+        if (str == null) {
+            throw new IllegalArgumentException("Anchor is null");
+        }
+        String values[] = StringUtil.split(str, ",");
+        if (values.length != 2) {
+            throw new IllegalArgumentException("Invalid anchor format");
+        }
+        last = Long.parseLong(values[0]);
+        next = Long.parseLong(values[1]);
     }
-        
-    public void testSlowSync1() throws Exception {
-        super.testSlowSync1();
+
+    public void setNext(long next) {
+        this.next = next;
     }
-    
-    public void testChangesDuringSync1() throws Exception {
-        super.testChangesDuringSync1();
+
+    public void setLast(long last) {
+        this.last = last;
     }
-    
+
+    public long getNext() {
+        return next;
+    }
+
+    public long getLast() {
+        return last;
+    }
+
 }
 

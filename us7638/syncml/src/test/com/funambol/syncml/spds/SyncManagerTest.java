@@ -38,6 +38,10 @@ import java.util.Vector;
 import java.util.Hashtable;
 import junit.framework.*;
 
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncSource;
+
 import com.funambol.syncml.protocol.Item;
 import com.funambol.syncml.protocol.Target;
 import com.funambol.syncml.protocol.SyncMLCommand;
@@ -63,8 +67,9 @@ public class SyncManagerTest extends TestCase {
         SourceConfig sourceConfig = new SourceConfig("test", "application/*", "test");
         src = new TestSyncSource(sourceConfig);
         SyncConfig sc = new SyncConfig();
+        DeviceConfig dc = new DeviceConfig();
 
-        sm = new SyncManager(sc);
+        sm = new SyncManager(sc, dc);
 
         SyncSourceLOHandler handler = new SyncSourceLOHandler(src, 65536, false);
         sm.sourceLOHandler = handler;

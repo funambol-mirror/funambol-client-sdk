@@ -42,6 +42,11 @@ import java.util.Hashtable;
 import java.util.Vector;
 import junit.framework.*;
 
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncSource;
+
 import com.funambol.syncml.protocol.CTCap;
 import com.funambol.syncml.protocol.CTInfo;
 import com.funambol.syncml.protocol.DataStore;
@@ -70,8 +75,8 @@ public class DevInfExchangeTest extends TestCase {
      * Set up all of the tests
      */
     public void setUp() {
-        tss = new TestSyncSource(new SourceConfig());
-        tss.setConfig(new SourceConfig(tss.getName(), tss.getType(),
+        tss = new TestSyncSource(new SourceConfig("briefcase", SourceConfig.BRIEFCASE_TYPE, "briefcase"));
+        tss.setConfig(new SyncMLSourceConfig(tss.getName(), tss.getType(),
                 tss.getSourceUri(),
                 createTestDataStore("contacts", "test/x-vcard", "2.1")));
         
@@ -79,28 +84,27 @@ public class DevInfExchangeTest extends TestCase {
         formatter = new SyncMLFormatter(false);
 
         DeviceConfig dc = new DeviceConfig();
-        dc.man = "test manufacturer";
-        dc.mod = "test model";
-        dc.swv = "1.0";
-        dc.fwv = "1.0";
-        dc.hwv = "1.0";
-        dc.devID = "test-device-id";
+        dc.setMan("test manufacturer");
+        dc.setMod("test model");
+        dc.setSwV("1.0");
+        dc.setFwV("1.0");
+        dc.setHwV("1.0");
+        dc.setDevID("test-device-id");
         dc.setMaxMsgSize(64 * 1024);
-        dc.loSupport = true;
-        dc.utc = true;
-        dc.nocSupport = true;
+        dc.setLoSupport(true);
+        dc.setUtc(true);
+        dc.setNocSupport(true);
 
         SyncConfig sc = new SyncConfig();
         sc.syncUrl = "http://my.funambol.com/sync";
         sc.lastServerUrl = "http://my.funambol.com/sync";
         sc.userName = "test";
         sc.password = "test";
-        sc.preferredAuthType = SyncML.AUTH_TYPE_BASIC;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_BASIC;
         sc.userAgent = "Test UA";
-        sc.deviceConfig = dc;
         sc.forceCookies = false;
 
-        sm = new TestSyncManager(sc);
+        sm = new TestSyncManager(sc, dc);
     }
 
     /**
@@ -231,8 +235,8 @@ public class DevInfExchangeTest extends TestCase {
 
     private class TestSyncManager extends SyncManager {
 
-        public TestSyncManager(SyncConfig sc) {
-            super(sc);
+        public TestSyncManager(SyncConfig sc, DeviceConfig dc) {
+            super(sc, dc);
 
             source = tss;
 

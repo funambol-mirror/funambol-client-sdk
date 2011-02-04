@@ -288,8 +288,5 @@ public class DeviceConfig {
     public void setVerDTD(String verDTD) {
         this.verDTD = verDTD;
     }
-
-
-
 }
 

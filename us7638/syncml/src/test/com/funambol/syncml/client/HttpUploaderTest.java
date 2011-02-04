@@ -43,17 +43,18 @@ import java.io.ByteArrayInputStream;
 import java.util.Vector;
 import java.util.Hashtable;
 
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncException;
+
 import com.funambol.platform.FileAdapter;
 import com.funambol.platform.HttpConnectionAdapter;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueFileStore;
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncConfig;
 import com.funambol.syncml.spds.DeviceConfig;
-import com.funambol.syncml.spds.SyncListener;
-import com.funambol.syncml.spds.SyncException;
 import com.funambol.syncml.protocol.SyncMLStatus;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.ConnectionManager;
@@ -88,10 +89,6 @@ public class HttpUploaderTest extends TestCase {
         config.setSyncUrl("http://my.funambol.com:9090/sync");
         config.setUserName("test");
         config.setPassword("test");
-
-        DeviceConfig dc = new DeviceConfig();
-        dc.devID = "test-device-id";
-        config.deviceConfig = dc;
 
         TestHttpUploader uploader = new TestHttpUploader(config, "sapi/media", "picture", null);
         TestConnectionManager testConnectionManager = new TestConnectionManager();
@@ -140,10 +137,6 @@ public class HttpUploaderTest extends TestCase {
         config.setSyncUrl("http://my.funambol.com:9090/sync");
         config.setUserName("test");
         config.setPassword("test");
-
-        DeviceConfig dc = new DeviceConfig();
-        dc.devID = "test-device-id";
-        config.deviceConfig = dc;
 
         TestHttpUploader uploader = new TestHttpUploader(config, "sapi/media", "picture", null);
         TestConnectionManager testConnectionManager = new TestConnectionManager();

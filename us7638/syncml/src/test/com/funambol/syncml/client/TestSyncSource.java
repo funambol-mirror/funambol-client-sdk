@@ -38,9 +38,9 @@ package com.funambol.syncml.client;
 import java.util.Hashtable;
 
 import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SyncException;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncException;
 
 import com.funambol.util.Log;
 

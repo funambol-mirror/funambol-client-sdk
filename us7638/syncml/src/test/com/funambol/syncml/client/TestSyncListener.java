@@ -36,9 +36,9 @@
 package com.funambol.syncml.client;
 
 import com.funambol.util.Log;
-import com.funambol.syncml.spds.SyncListener;
-import com.funambol.syncml.spds.BasicSyncListener;
-import com.funambol.syncml.spds.SyncItem;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.BasicSyncListener;
+import com.funambol.sync.SyncItem;
 
 /**
  * Check the interface method for documentation

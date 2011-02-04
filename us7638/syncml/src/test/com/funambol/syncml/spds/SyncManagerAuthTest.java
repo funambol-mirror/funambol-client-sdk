@@ -39,6 +39,10 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncConfig;
+
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.Sync;
 import com.funambol.syncml.protocol.Cred;
@@ -70,6 +74,7 @@ public class SyncManagerAuthTest extends TestCase {
     
     private SyncManager  sm = null;
     private SyncConfig   sc = null;
+    private DeviceConfig dc = null;
     private SourceConfig ssc = null;
     private TestSyncSource tss = null;
 
@@ -88,11 +93,11 @@ public class SyncManagerAuthTest extends TestCase {
         sc.syncUrl = TEST_SERVER_URL;
         sc.userName = TEST_USERNAME;
         sc.password = TEST_PASSWORD;
-        sc.deviceConfig = new DeviceConfig();
+        dc = new DeviceConfig();
 
-        ssc = new SourceConfig();
+        ssc = new SourceConfig("briefcase", SourceConfig.BRIEFCASE_TYPE, "briefcase");
         
-        sm = new SyncManager(sc);
+        sm = new SyncManager(sc, dc);
 
         tss = new TestSyncSource(ssc);
         tss.ITEMS_NUMBER = 0;
@@ -118,7 +123,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_BASIC_OK started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_BASIC;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_BASIC;
         
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
             
@@ -168,7 +173,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_BASIC_KO started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_BASIC;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_BASIC;
         
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
 
@@ -216,7 +221,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_BASIC_KO_TO_MD5 started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_BASIC;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_BASIC;
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
 
@@ -276,7 +281,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_BASIC_KO_TO_MD5_KO started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_BASIC;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_BASIC;
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
 
@@ -332,8 +337,8 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_BASIC_KO_TO_MD5_NOT_ALLOWED started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_BASIC;
-        sc.supportedAuthTypes = new String[] {SyncML.AUTH_TYPE_BASIC};
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_BASIC;
+        sc.supportedAuthTypes = new int[] {SyncConfig.AUTH_TYPE_BASIC};
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
 
@@ -381,7 +386,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_MD5_OK started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_MD5;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_MD5;
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
 
@@ -433,7 +438,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_BASIC_KO started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_MD5;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_MD5;
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
 
@@ -481,7 +486,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_MD5_KO_NEW_NONCE started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_MD5;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_MD5;
         sc.clientNonce = TEST_NONCE_1;
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
@@ -542,7 +547,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_MD5_KO_TO_BASIC started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_MD5;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_MD5;
         sc.clientNonce = TEST_NONCE_1;
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
@@ -600,7 +605,7 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_MD5_KO_TO_BASIC_KO started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_MD5;
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_MD5;
         sc.clientNonce = TEST_NONCE_1;
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
@@ -656,8 +661,8 @@ public class SyncManagerAuthTest extends TestCase {
             Log.info(TAG_LOG, "testAuthentication_MD5_KO_TO_BASIC_NOT_ALLOWED started");
         }
 
-        sc.preferredAuthType = SyncML.AUTH_TYPE_MD5;
-        sc.supportedAuthTypes = new String[] {SyncML.AUTH_TYPE_MD5};
+        sc.preferredAuthType = SyncConfig.AUTH_TYPE_MD5;
+        sc.supportedAuthTypes = new int[] {SyncConfig.AUTH_TYPE_MD5};
         sc.clientNonce = TEST_NONCE_1;
 
         sm.setTransportAgent(new TestTransportAgent(new TestMessageHandler() {
@@ -765,7 +770,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                "<Data>212</Data>\n" +
                "</Status>";
     }
@@ -777,7 +782,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                "<Data>401</Data>\n" +
                "</Status>";
     }
@@ -789,7 +794,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                getChallenge(TEST_NONCE_1, SyncML.AUTH_TYPE_MD5) +
                "<Data>212</Data>\n" +
                "</Status>";
@@ -802,7 +807,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                getChallenge(TEST_NONCE_2, SyncML.AUTH_TYPE_MD5) +
                "<Data>212</Data>\n" +
                "</Status>";
@@ -815,7 +820,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                "<Data>401</Data>\n" +
                "</Status>";
     }
@@ -827,7 +832,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + JSESSION_ID  + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                getChallenge(TEST_NONCE_1, SyncML.AUTH_TYPE_MD5) +
                "<Data>401</Data>\n" +
                "</Status>";
@@ -840,7 +845,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                getChallenge(TEST_NONCE_2, SyncML.AUTH_TYPE_MD5) +
                "<Data>401</Data>\n" +
                "</Status>";
@@ -853,7 +858,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<CmdRef>0</CmdRef>\n" +
                "<Cmd>SyncHdr</Cmd>\n" +
                "<TargetRef>" + sc.syncUrl + "</TargetRef>\n" +
-               "<SourceRef>" + sc.deviceConfig.devID + "</SourceRef>\n" +
+               "<SourceRef>" + dc.getDevID() + "</SourceRef>\n" +
                getChallenge(null, SyncML.AUTH_TYPE_BASIC) +
                "<Data>401</Data>\n" +
                "</Status>";
@@ -879,7 +884,7 @@ public class SyncManagerAuthTest extends TestCase {
                "<SessionID>1266917419910</SessionID>\n" +
                "<MsgID>1</MsgID>\n" +
                "<Target>\n" +
-               "<LocURI>" + sc.deviceConfig.devID + "</LocURI>\n" +
+               "<LocURI>" + dc.getDevID() + "</LocURI>\n" +
                "</Target>\n" +
                "<Source>\n" +
                "<LocURI>" + sc.syncUrl + "</LocURI>\n" +

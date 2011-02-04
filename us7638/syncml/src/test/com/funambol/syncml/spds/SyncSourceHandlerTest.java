@@ -42,6 +42,13 @@ import com.funambol.util.Log;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Base64;
 import com.funambol.util.ConsoleAppender;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.BasicSyncListener;
+import com.funambol.sync.SyncSource;
+
 import com.funambol.syncml.protocol.SyncMLStatus;
 import com.funambol.syncml.protocol.SyncMLCommand;
 import com.funambol.syncml.protocol.Item;
@@ -1355,109 +1362,6 @@ public class SyncSourceHandlerTest extends TestCase {
         assertTrue(listener.getReplaceSent() == 3);
     }
 
-
-    public void testGetNextCommandWithItemsLimit4() throws Throwable {
-        SourceConfig config = new SourceConfig("Test", "application/*", "briefcase");
-        // Simulate a max number of items per sync of 1
-        config.setBreakMsgOnLastChunk(true);
-        config.setEncoding(SyncSource.ENCODING_NONE);
-        TestSyncSource ss = new TestSyncSource(config);
-
-        SyncSourceLOHandler handler = new SyncSourceLOHandler(ss, 512, false);
-        Vector items = new Vector();
-        SyncItem item0 = new SyncItem("0", null, SyncItem.STATE_UPDATED, null);
-        byte content0[] = new byte[600];
-        fillContent(content0, 'A');
-        item0.setContent(content0);
-
-        SyncItem item1 = new SyncItem("1", null, SyncItem.STATE_UPDATED, null);
-        byte content1[] = new byte[16];
-        fillContent(content1, 'A');
-        item1.setContent(content1);
-
-        items.addElement(item0);
-        items.addElement(item1);
-
-        ss.setNextItems(items);
-
-        TestSyncListener listener = new TestSyncListener();
-        CmdId cmdId = new CmdId(0);
-
-        // The first message shall contain only the first item chunk
-        SyncStatus syncStatus = new SyncStatus("test");
-        int msgStatus[] = new int[1];
-        SyncMLCommand command = handler.getNextCommand(0, listener, cmdId, syncStatus, msgStatus);
-        int done = msgStatus[0];
-
-        assertTrue(done == SyncSourceLOHandler.MORE);
-        assertTrue(cmdId.getValue() == 1);
-        assertTrue(listener.getReplaceSent() == 0);
-
-        // The second message shall contain the last chunk and nothing else
-        command = handler.getNextCommand(0, listener, cmdId, syncStatus, msgStatus);
-        done = msgStatus[0];
-        assertTrue(done == SyncSourceLOHandler.FLUSH);
-        assertTrue(cmdId.getValue() == 2);
-        assertTrue(listener.getReplaceSent() == 1);
-
-        // The third message shall contain the last item
-        command = handler.getNextCommand(0, listener, cmdId, syncStatus, msgStatus);
-        done = msgStatus[0];
-        assertTrue(done == SyncSourceLOHandler.DONE);
-        assertTrue(cmdId.getValue() == 3);
-        assertTrue(listener.getReplaceSent() == 2);
-    }
-
-
-    public void testGetNextCommandWithItemsLimit5() throws Throwable {
-        SourceConfig config = new SourceConfig("Test", "application/*", "briefcase");
-        // Simulate a max number of items per sync of 1
-        config.setBreakMsgOnLastChunk(true);
-        config.setEncoding(SyncSource.ENCODING_NONE);
-        TestSyncSource ss = new TestSyncSource(config);
-
-        SyncSourceLOHandler handler = new SyncSourceLOHandler(ss, 512, false);
-        Vector newItems = new Vector();
-        Vector updItems = new Vector();
-        SyncItem item0 = new SyncItem("0", null, SyncItem.STATE_NEW, null);
-        byte content0[] = new byte[600];
-        fillContent(content0, 'A');
-        item0.setContent(content0);
-
-        SyncItem item1 = new SyncItem("1", null, SyncItem.STATE_UPDATED, null);
-        byte content1[] = new byte[16];
-        fillContent(content1, 'A');
-        item1.setContent(content1);
-
-        newItems.addElement(item0);
-        updItems.addElement(item1);
-
-        ss.setNextNewItems(newItems);
-        ss.setNextUpdItems(updItems);
-
-        TestSyncListener listener = new TestSyncListener();
-        SyncMLCommand command = SyncMLCommand.newInstance("");
-        CmdId cmdId = new CmdId(0);
-
-        // The first message shall contain only the first item chunk
-        SyncStatus syncStatus = new SyncStatus(ss.getName());
-        int done = handler.getAddCommand(0, listener, command, cmdId, syncStatus);
-        assertTrue(done == SyncSourceLOHandler.MORE);
-        assertTrue(cmdId.getValue() == 1);
-        assertTrue(listener.getAddSent() == 0);
-
-        // The second message shall contain the last chunk and nothing else
-        done = handler.getAddCommand(0, listener, command, cmdId, syncStatus);
-        assertTrue(done == SyncSourceLOHandler.FLUSH);
-        assertTrue(cmdId.getValue() == 2);
-        assertTrue(listener.getAddSent() == 1);
-
-        // The third message shall contain the last item
-        done = handler.getReplaceCommand(0, listener, command, cmdId);
-        assertTrue(done == SyncSourceLOHandler.DONE);
-        assertTrue(cmdId.getValue() == 3);
-        assertTrue(listener.getReplaceSent() == 1);
-    }
 
     private void simpleSyncItemTest (String expectedKey, String expectedParent,
                                      Hashtable hierarchy) throws Throwable {
