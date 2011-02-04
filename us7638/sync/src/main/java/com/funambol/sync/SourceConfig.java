@@ -98,7 +98,7 @@ public class SourceConfig {
     /**
      * Sync Mode for this source (it is the initial alert code).
      */
-    private SyncMode syncMode;
+    private int syncMode;
 
     /** The remote URI on the SyncML server */
     private String remoteUri;
@@ -165,12 +165,12 @@ public class SourceConfig {
     }
 
     /** Return the sync mode of this source */
-    public SyncSource.SyncMode getSyncMode() {
+    public int getSyncMode() {
         return syncMode;
     }
 
     /** Set the sync mode of this source */
-    public void setSyncMode(SyncSource.SyncMode syncMode) {
+    public void setSyncMode(int syncMode) {
         this.syncMode = syncMode;
     }
     

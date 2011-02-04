@@ -95,10 +95,6 @@ public interface SyncSource {
     public static final int INCREMENTAL_UPLOAD = 4;
     public static final int INCREMENTAL_DOWNLOAD = 5;
 
-    public enum SyncMode = { FULL_SYNC, FULL_UPLOAD, FULL_DOWNLOAD,
-                             INCREMENTAL_SYNC, INCREMENTAL_UPLOAD, INCREMENTAL_DOWNLOAD };
-
-
     //--------------------------------------------------------------- Methods
 
     /**
@@ -137,7 +133,7 @@ public interface SyncSource {
      *
      * @return the preferred sync mode for this source
      */
-    public SyncMode getSyncMode() ;
+    public int getSyncMode() ;
 
     /**
      * Return the current filter for this SyncSource
