@@ -550,8 +550,8 @@ public abstract class BaseSyncSource implements SyncSource {
 
         // Init lists
         switch(syncMode) {
-            case SyncML.ALERT_CODE_SLOW:
-            case SyncML.ALERT_CODE_REFRESH_FROM_CLIENT:
+            case FULL_SYNC:
+            case FULL_UPLOAD:
                 // A refresh from client is like a slow here
                 initAllItems();
                 allIndex = 0;
@@ -564,9 +564,8 @@ public abstract class BaseSyncSource implements SyncSource {
                 clientDeleteItemsNumber =
                                     (delItems != null) ? delItems.length : 0 ;
                 break;
-            case SyncML.ALERT_CODE_FAST:
-            case SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT:
-            case SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW: 
+            case INCREMENTAL_SYNC:
+            case INCREMENTAL_UPLOAD:
                 // A one way from client is like a fast here
                 initNewItems();
                 initUpdItems();
@@ -584,7 +583,7 @@ public abstract class BaseSyncSource implements SyncSource {
                                     clientReplaceItemsNumber +
                                     clientDeleteItemsNumber;
                 break;
-            case SyncML.ALERT_CODE_ONE_WAY_FROM_SERVER:
+            case INCREMENTAL_DOWNLOAD:
                 // No modifications to send (it's not
                 // strictly necessary to reset the lists,
                 // because the engine will not ask items to
@@ -599,7 +598,7 @@ public abstract class BaseSyncSource implements SyncSource {
                 clientReplaceItemsNumber = 0;
                 clientDeleteItemsNumber = 0;
                 break;
-            case SyncML.ALERT_CODE_REFRESH_FROM_SERVER:
+            case FULL_DOWNLOAD:
                 // In this case, the SyncSource should
                 // delete all the items in the database
                 // (possibly asking the user before that)

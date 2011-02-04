@@ -48,7 +48,6 @@ import com.funambol.sync.SyncAnchor;
 
 import com.funambol.syncml.spds.ItemStatus;
 import com.funambol.syncml.protocol.SyncMLStatus;
-import com.funambol.syncml.protocol.SyncML;
 
 import com.funambol.util.Log;
 
@@ -194,8 +193,8 @@ public abstract class TrackableSyncSource implements SyncSource {
 
         // Init lists
         switch(syncMode) {
-            case SyncML.ALERT_CODE_SLOW:
-            case SyncML.ALERT_CODE_REFRESH_FROM_CLIENT:
+            case FULL_SYNC:
+            case FULL_UPLOAD:
                 // A refresh from client is like a slow here
                 allItems = getAllItemsKeys();
                 // We guarantee that the getAllItemsCount is invoked after the
@@ -205,9 +204,8 @@ public abstract class TrackableSyncSource implements SyncSource {
                 clientReplaceItemsNumber = 0;
                 clientDeleteItemsNumber = 0;
                 break;
-            case SyncML.ALERT_CODE_FAST:
-            case SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT:
-            case SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW: 
+            case INCREMENTAL_SYNC:
+            case INCREMENTAL_UPLOAD:
                 // A one way from client is like a fast here
                 newItems = tracker.getNewItems();
                 updItems = tracker.getUpdatedItems();
@@ -222,7 +220,7 @@ public abstract class TrackableSyncSource implements SyncSource {
                                     clientReplaceItemsNumber +
                                     clientDeleteItemsNumber;
                 break;
-            case SyncML.ALERT_CODE_ONE_WAY_FROM_SERVER:
+            case INCREMENTAL_DOWNLOAD:
                 // No modifications to send (it's not
                 // strictly necessary to reset the lists,
                 // because the engine will not ask items to
@@ -236,7 +234,7 @@ public abstract class TrackableSyncSource implements SyncSource {
                 clientReplaceItemsNumber = 0;
                 clientDeleteItemsNumber = 0;
                 break;
-            case SyncML.ALERT_CODE_REFRESH_FROM_SERVER:
+            case FULL_DOWNLOAD:
                 // In this case, the SyncSource should
                 // delete all the items in the database
                 // (possibly asking the user before that)
