@@ -95,6 +95,12 @@ public interface SyncSource {
     public static final int INCREMENTAL_UPLOAD = 4;
     public static final int INCREMENTAL_DOWNLOAD = 5;
 
+    // These are the status that sync source operations can return
+    public static final int SUCCESS_STATUS           = 0;
+    public static final int ERROR_STATUS             = 1;
+    public static final int DEVICE_FULL_ERROR_STATUS = 2;
+    public static final int CHUNK_SUCCESS_STATUS     = 3;
+
     //--------------------------------------------------------------- Methods
 
     /**

@@ -33,7 +33,7 @@
  * the words "Powered by Funambol". 
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -50,8 +50,6 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
-import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.protocol.SyncMLStatus;
 
 import junit.framework.*;
 
@@ -76,13 +74,13 @@ public abstract class ChangesTrackerTest extends TestCase {
         public int addItem(SyncItem item) throws SyncException {
             items.put(item.getKey(), item.getContent());
             tracker.removeItem(item);
-            return SyncMLStatus.SUCCESS;
+            return SyncSource.SUCCESS_STATUS;
         }
 
         public int updateItem(SyncItem item) throws SyncException {
             items.put(item.getKey(), item.getContent());
             tracker.removeItem(item);
-            return SyncMLStatus.SUCCESS;
+            return SyncSource.SUCCESS_STATUS;
         }
 
         public int deleteItem(String key) throws SyncException {
@@ -90,7 +88,7 @@ public abstract class ChangesTrackerTest extends TestCase {
             SyncItem tempItem = new SyncItem(key);
             tempItem.setState(SyncItem.STATE_DELETED);
             tracker.removeItem(tempItem);
-            return SyncMLStatus.SUCCESS;
+            return SyncSource.SUCCESS_STATUS;
         }
 
         protected Enumeration getAllItemsKeys() throws SyncException {
@@ -282,7 +280,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         assertTrue(source.getNextNewItem() == null);
         assertTrue(source.getNextUpdatedItem() == null);
         assertTrue(source.getNextDeletedItem() == null);
-        source.setItemStatus(key, SyncMLStatus.SUCCESS);
+        source.setItemStatus(key, SyncSource.SUCCESS_STATUS);
         source.endSync();
     }
 
@@ -303,7 +301,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         assertTrue(source.getNextNewItem() == null);
         assertTrue(source.getNextUpdatedItem() == null);
         assertTrue(source.getNextDeletedItem() == null);
-        source.setItemStatus(key, SyncMLStatus.SUCCESS);
+        source.setItemStatus(key, SyncSource.SUCCESS_STATUS);
         source.endSync();
     }
 
@@ -323,7 +321,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         assertTrue(source.getNextNewItem() == null);
         assertTrue(source.getNextUpdatedItem() == null);
         assertTrue(source.getNextDeletedItem() == null);
-        source.setItemStatus(key, SyncMLStatus.SUCCESS);
+        source.setItemStatus(key, SyncSource.SUCCESS_STATUS);
         source.endSync();
     }
 
@@ -453,7 +451,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         for(int i=0;i<6;++i) {
             SyncItem nextItem = source.getNextItem();
             assertTrue(nextItem != null);
-            source.setItemStatus(nextItem.getKey(), SyncMLStatus.SUCCESS);
+            source.setItemStatus(nextItem.getKey(), SyncSource.SUCCESS_STATUS);
         }
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace("Simulate user changes in the middle of the sync");

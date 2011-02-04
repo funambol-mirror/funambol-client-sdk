@@ -194,6 +194,16 @@ class SyncSourceLOHandler {
             incomingLoStream = null;
         }
         source.applyChanges(syncItems);
+
+        // Convert the status codes from SyncSource neutral to SyncML
+        for(int i=0;i<syncItems.size();++i) {
+            SyncItem item = (SyncItem)syncItems.elementAt(i);
+
+            System.out.println("MARCO: converting status from: " + item.getSyncStatus() + " to " + getSyncMLStatusCode(item.getSyncStatus()));
+
+            item.setSyncStatus(getSyncMLStatusCode(item.getSyncStatus()));
+        }
+
         return syncItems;
     }
 
@@ -1348,5 +1358,26 @@ class SyncSourceLOHandler {
 
         return itemSize;
     }
+
+    private int getSyncMLStatusCode(int syncMLStatusCode) {
+
+        int ret;
+
+        switch (syncMLStatusCode) {
+            case SyncSource.SUCCESS_STATUS:
+                ret = SyncMLStatus.SUCCESS;
+                break;
+            case SyncSource.CHUNK_SUCCESS_STATUS:
+                ret = SyncMLStatus.CHUNKED_ITEM_ACCEPTED;
+                break;
+            case SyncSource.DEVICE_FULL_ERROR_STATUS:
+                ret = SyncMLStatus.DEVICE_FULL;
+                break;
+            default:
+                ret = SyncMLStatus.GENERIC_ERROR;
+        }
+        return ret;
+    }
+
 }
 

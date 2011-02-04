@@ -78,6 +78,7 @@ public class SyncItem {
     /** The output stream */
     protected ByteArrayOutputStream os;
 
+    /** The item status (specify SUCCESS or FAILURE) */
     protected int itemStatus;
     
     //------------------------------------------------------------- Constructors

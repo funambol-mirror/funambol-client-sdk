@@ -33,7 +33,7 @@
  * the words "Powered by Funambol". 
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.util.Enumeration;
 import java.util.Vector;
@@ -45,8 +45,7 @@ import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncFilter;
-
-import com.funambol.syncml.protocol.SyncMLStatus;
+import com.funambol.sync.SyncSource;
 
 import com.funambol.storage.StringKeyValueStore;
 
@@ -111,7 +110,7 @@ public class ConfigSyncSource extends TrackableSyncSource {
         String key = item.getKey();
         String value = new String(item.getContent());
         store.add(key, value);
-        return SyncMLStatus.SUCCESS;
+        return SyncSource.SUCCESS_STATUS;
     }
 
     public int updateItem(SyncItem item) throws SyncException {
@@ -120,7 +119,7 @@ public class ConfigSyncSource extends TrackableSyncSource {
     
     public int deleteItem(String key) throws SyncException {
         store.remove(key);
-        return SyncMLStatus.SUCCESS;
+        return SyncSource.SUCCESS_STATUS;
     }
 
     protected SyncItem getItemContent(final SyncItem item) throws SyncException {

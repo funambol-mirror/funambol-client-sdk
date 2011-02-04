@@ -1,6 +1,6 @@
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
- * Copyright (C) 2006-2007 Funambol, Inc.
+ * Copyright (C) 2011 Funambol, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
@@ -32,33 +32,34 @@
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol".
  */
-
-package com.funambol.syncml.client;
-
-import com.funambol.syncml.protocol.SyncMLCommand;
-
-import junit.framework.*;
-
+package com.funambol.sync;
 
 /**
- * Test the methods related to the SyncML Commands
+ * This class represents a status for an individual item to be processed by a SyncSource
  */
-public class SyncMLCommandTest extends TestCase {
+public class ItemStatus {
 
-    public SyncMLCommandTest(String name) {
-        super(name);
-    }
-    
-    /**
-     * Set up all of the tests
-     */
-    public void setUp() {
+    private String key;
+    private int    status;
+
+    public ItemStatus(String key, int status) {
+        this.key = key;
+        this.status = status;
     }
 
-    /**
-     * Tear Down all of the tests
-     */
-    public void tearDown() {
+    public String getKey() {
+        return key;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 }
-

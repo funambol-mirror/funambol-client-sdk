@@ -33,14 +33,14 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.util.Hashtable;
 
-import com.funambol.syncml.protocol.SyncML;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncSource;
 
 import com.funambol.util.Log;
 
@@ -93,7 +93,7 @@ public class TestSyncSource extends BaseSyncSource {
         // Create a fake LUID and set it in the item
         String luid = item.getKey() + "_luid";
         item.setKey(luid);
-        return 200;
+        return SyncSource.SUCCESS_STATUS;
     }
     
     /** Update a given SyncItem stored on the source backend */
@@ -102,14 +102,12 @@ public class TestSyncSource extends BaseSyncSource {
             Log.info("Updated item " + item.getKey() + " from server.");
         }
 
-        if(syncMode == SyncML.ALERT_CODE_REFRESH_FROM_CLIENT ||
-           syncMode == SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT ) {
+        if(syncMode == SyncSource.FULL_UPLOAD || syncMode == SyncSource.INCREMENTAL_UPLOAD) {
             Log.error("Server is trying to update items for a one way sync! "+
                       "(syncMode: "+syncMode+")");
-            return 500;
+            return SyncSource.ERROR_STATUS;
         }
-
-        return 200;
+        return SyncSource.SUCCESS_STATUS;
     }
     
     /** Delete a SyncItem stored on the related Items list */
@@ -118,15 +116,12 @@ public class TestSyncSource extends BaseSyncSource {
             Log.info("Delete from server for item " + key);
         }
         
-        if(syncMode == SyncML.ALERT_CODE_REFRESH_FROM_CLIENT ||
-           syncMode == SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT ) {
+        if(syncMode == SyncSource.FULL_UPLOAD || syncMode == SyncSource.INCREMENTAL_UPLOAD) {
             Log.error("Server is trying to delete items for a one way sync! "+
                       "(syncMode: "+syncMode+")");
-            return 500;
+            return SyncSource.ERROR_STATUS;
         }
-
-
-        return 200;
+        return SyncSource.SUCCESS_STATUS;
     }
     
     /**

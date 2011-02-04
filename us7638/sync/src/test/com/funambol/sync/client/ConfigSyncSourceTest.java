@@ -33,7 +33,7 @@
  * the words "Powered by Funambol". 
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,8 +50,6 @@ import com.funambol.sync.SyncSource;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueFileStore;
 import com.funambol.storage.StringKeyValuePair;
-import com.funambol.syncml.client.ConfigSyncSource;
-import com.funambol.syncml.protocol.SyncML;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Log;
 

@@ -33,7 +33,7 @@
  * the words "Powered by Funambol". 
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -49,7 +49,6 @@ import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
-import com.funambol.syncml.protocol.SyncML;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Base64;
 import com.funambol.util.Log;
@@ -57,9 +56,9 @@ import com.funambol.util.StringUtil;
 
 import junit.framework.*;
 
-public class FileSyncSourceTest extends TestCase {
+public class RawFileSyncSourceTest extends TestCase {
     private StringKeyValueStore store;
-    private FileSyncSource      source;
+    private RawFileSyncSource   source;
     private TestTracker         tracker;
     private String              directory;
     private SourceConfig        config;
@@ -145,7 +144,7 @@ public class FileSyncSourceTest extends TestCase {
         }
     }
 
-    public FileSyncSourceTest(String name) {
+    public RawFileSyncSourceTest(String name) {
         super(name);
 
         Log.initLog(new ConsoleAppender());
@@ -189,7 +188,7 @@ public class FileSyncSourceTest extends TestCase {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug("directory = " + directory);
         }
-        source = new FileSyncSource(config, tracker, directory);
+        source = new RawFileSyncSource(config, tracker, directory);
     }
 
     public void testSlowSyncSimple() throws Throwable {
@@ -215,35 +214,18 @@ public class FileSyncSourceTest extends TestCase {
         }
         String itemContent = bos.toString();
 
-        String expectedContent = new String(Base64.encode(content.getBytes()));
-
-        String expectedItem = "<FILE>\n" +
-                              "<NAME>test-0.txt</NAME>\n" +
-                              "<MODIFIED>20090518T092027Z</MODIFIED>\n" +
-                              "<ATTRIBUTES>\n" +
-                              "<H>FALSE</H>\n" +
-                              "<S>FALSE</S>\n" +
-                              "<A>FALSE</A>\n" +
-                              "<D>FALSE</D>\n" +
-                              "<W>FALSE</W>\n" +
-                              "<R>FALSE</R>\n" +
-                              "<X>FALSE</X>\n" +
-                              "</ATTRIBUTES>\n" +
-                              "<BODY enc=\"base64\">" + expectedContent + "</BODY>\n" +
-                              "</FILE>";
-
         // The date formatted depends on the current date, so we do not consider
         // it in the comparison
-        String item1 = stripModified(expectedItem);
-        String item2 = stripModified(itemContent);
-        assertTrue(StringUtil.equalsIgnoreCase(item1, item2));
+        String item1 = content;
+        String item2 = itemContent;
+        assertTrue(content.equals(itemContent));
         source.endSync();
     }
 
     public void testRound1() throws Throwable {
 
         if (Log.isLoggable(Log.INFO)) {
-            Log.info("################# FileSyncSourceTest.testRound1");
+            Log.info("################# RawFileSyncSourceTest.testRound1");
         }
         prepareTestDirectory(directory, "test0");
         // Populate the directory with one file
@@ -277,7 +259,7 @@ public class FileSyncSourceTest extends TestCase {
         }
         
         source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
-        SyncItem sitem = source.createSyncItem("key0", SourceConfig.FILE_OBJECT_TYPE,
+        SyncItem sitem = source.createSyncItem("test-0.txt", SourceConfig.BRIEFCASE_TYPE,
                                               SyncItem.STATE_NEW,
                                               "", 0);
         OutputStream os = sitem.getOutputStream();
@@ -311,19 +293,5 @@ public class FileSyncSourceTest extends TestCase {
         os.close();
         fa.close();
     }
-
-    private String stripModified(String item) {
-        String loItem = item.toLowerCase();
-
-        int beginModified = loItem.indexOf("<modified>");
-        int endModified   = loItem.indexOf("</modified>");
-
-        String prologue = item.substring(0, beginModified + "<modified>".length());
-        String epilogue = item.substring(endModified);
-
-        return prologue + epilogue;
-    }
-
-
 }
 

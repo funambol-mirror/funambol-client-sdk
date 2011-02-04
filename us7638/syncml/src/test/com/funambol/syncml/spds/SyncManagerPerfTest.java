@@ -43,7 +43,7 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncConfig;
-import com.funambol.syncml.client.BaseSyncSource;
+import com.funambol.sync.client.BaseSyncSource;
 
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.Sync;

@@ -53,6 +53,7 @@ import com.funambol.sync.BasicSyncListener;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SourceConfig;
+import com.funambol.sync.ItemStatus;
 
 import com.funambol.syncml.protocol.*;
 import com.funambol.util.HttpTransportAgent;
@@ -1868,14 +1869,14 @@ public class SyncManager {
                                 // The sync source is unware of chunks, it
                                 // is only interested at items
                                 if (code != SyncMLStatus.CHUNKED_ITEM_ACCEPTED) {
-                                    sourceStatusList.addElement(new ItemStatus(key, code));
+                                    sourceStatusList.addElement(new ItemStatus(key, getSourceStatusCode(code)));
                                     // Register the status for this item in
                                     // the current sync
                                     syncStatus.addSentItem(key, cmd);
                                     syncStatus.receivedItemStatus(key, code);
                                 }
                             } else {
-                                sourceStatusList.addElement(new ItemStatus(key, code));
+                                sourceStatusList.addElement(new ItemStatus(key, getSourceStatusCode(code)));
                             }
                         } else {
                             Log.error(TAG_LOG, "Cannot set item status for unknwon item");
@@ -1908,14 +1909,14 @@ public class SyncManager {
                             SyncML.TAG_DELETE.equals(cmd))
                         {
                             if (code != SyncMLStatus.CHUNKED_ITEM_ACCEPTED) {
-                                sourceStatusList.addElement(new ItemStatus(ref, code));
+                                sourceStatusList.addElement(new ItemStatus(ref, getSourceStatusCode(code)));
                                 // Register the status for this item in
                                 // the current sync
                                 syncStatus.addSentItem(ref, status.getCmd());
                                 syncStatus.receivedItemStatus(ref, code);
                             }
                         } else {
-                            sourceStatusList.addElement(new ItemStatus(ref, code));
+                            sourceStatusList.addElement(new ItemStatus(ref, getSourceStatusCode(code)));
                         }
                     }
                 }
@@ -1925,7 +1926,6 @@ public class SyncManager {
         // Apply all the statuses in one shot
         source.applyItemsStatus(sourceStatusList);
 
-        //source.setItemStatus(key, code);
         // Allow the GC to pick this memory
         sourceStatusList = null;
         statusToProcess = null;
@@ -3020,6 +3020,22 @@ public class SyncManager {
                 Log.error(TAG_LOG, "Unexpected syncml sync mode " + syncMLSyncMode);
         }
         return ret;
+    }
+
+    private int getSourceStatusCode(int syncMLStatusCode) {
+        if (SyncMLStatus.isSuccess(syncMLStatusCode)) {
+            if (syncMLStatusCode == SyncMLStatus.CHUNKED_ITEM_ACCEPTED) {
+                return SyncSource.CHUNK_SUCCESS_STATUS;
+            } else {
+                return SyncSource.SUCCESS_STATUS;
+            }
+        } else {
+            if (syncMLStatusCode == SyncMLStatus.DEVICE_FULL) {
+                return SyncSource.DEVICE_FULL_ERROR_STATUS;
+            } else {
+                return SyncSource.ERROR_STATUS;
+            }
+        }
     }
 
 }

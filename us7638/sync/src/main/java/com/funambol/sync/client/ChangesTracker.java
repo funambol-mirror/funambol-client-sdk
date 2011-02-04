@@ -33,7 +33,7 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.util.Enumeration;
 import java.util.Vector;

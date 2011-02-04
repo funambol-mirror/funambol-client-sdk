@@ -32,8 +32,7 @@
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol". 
  */
-
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.util.Enumeration;
 import java.util.Vector;
@@ -45,9 +44,7 @@ import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncFilter;
 import com.funambol.sync.SyncAnchor;
-
-import com.funambol.syncml.spds.ItemStatus;
-import com.funambol.syncml.protocol.SyncMLStatus;
+import com.funambol.sync.ItemStatus;
 
 import com.funambol.util.Log;
 
@@ -160,7 +157,7 @@ public abstract class TrackableSyncSource implements SyncSource {
                     status = deleteItem(item.getKey());
                 }
             } catch (Exception e) {
-                status = SyncMLStatus.GENERIC_ERROR;
+                status = ERROR_STATUS;
             }
             item.setSyncStatus(status);
         }
@@ -337,13 +334,13 @@ public abstract class TrackableSyncSource implements SyncSource {
      *
      * @param item is the item being added
      *
-     * @return SUCCESS if the tracker was successfully updated, GENERIC_ERROR
+     * @return SUCCESS if the tracker was successfully updated, ERROR
      * otherwise
      */
     protected int addItem(SyncItem item) throws SyncException {
         // a new item was added during the sync. we must notify our tracker
         boolean done = tracker.removeItem(item);
-        return done ? SyncMLStatus.SUCCESS : SyncMLStatus.GENERIC_ERROR;
+        return done ? SUCCESS_STATUS : ERROR_STATUS;
     }
     
     /**
@@ -354,13 +351,13 @@ public abstract class TrackableSyncSource implements SyncSource {
      *
      * @param item is the item being updated
      *
-     * @return SUCCESS if the tracker was successfully updated, GENERIC_ERROR
+     * @return SUCCESS if the tracker was successfully updated, ERROR
      * otherwise
      */
     protected int updateItem(SyncItem item) throws SyncException {
         // a new item was replaced during the sync. we must notify our tracker
         boolean done = tracker.removeItem(item);
-        return done ? SyncMLStatus.SUCCESS : SyncMLStatus.GENERIC_ERROR;
+        return done ? SUCCESS_STATUS : ERROR_STATUS;
     }
     
     /**
@@ -371,14 +368,14 @@ public abstract class TrackableSyncSource implements SyncSource {
      *
      * @param key is the key of the item being deleted
      *
-     * @return SUCCESS if the tracker was successfully updated, GENERIC_ERROR
+     * @return SUCCESS if the tracker was successfully updated, ERROR
      * otherwise
      */
     protected int deleteItem(String key) throws SyncException {
         // a new item was replaced during the sync. we must notify our tracker
         SyncItem item = new SyncItem(key,getType(),SyncItem.STATE_DELETED,null);
         boolean done = tracker.removeItem(item);
-        return done ? SyncMLStatus.SUCCESS : SyncMLStatus.GENERIC_ERROR;
+        return done ? SUCCESS_STATUS : ERROR_STATUS;
     }
 
     /**

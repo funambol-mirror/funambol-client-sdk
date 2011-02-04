@@ -33,7 +33,7 @@
  * the words "Powered by Funambol". 
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.util.Vector;
 
@@ -43,12 +43,9 @@ import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncFilter;
 import com.funambol.sync.SyncAnchor;
-
-import com.funambol.syncml.spds.ItemStatus;
-import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.protocol.SyncMLStatus;
-
 import com.funambol.sync.SyncItem;
+import com.funambol.sync.ItemStatus;
+
 import com.funambol.util.Log;
 
 /**
@@ -277,7 +274,7 @@ public abstract class BaseSyncSource implements SyncSource {
                     status = deleteItem(item.getKey());
                 }
             } catch (Exception e) {
-                status = SyncMLStatus.GENERIC_ERROR;
+                status = ERROR_STATUS;
             }
             item.setSyncStatus(status);
         }

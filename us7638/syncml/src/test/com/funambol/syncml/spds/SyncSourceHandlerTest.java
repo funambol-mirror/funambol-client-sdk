@@ -48,6 +48,7 @@ import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.BasicSyncListener;
 import com.funambol.sync.SyncSource;
+import com.funambol.sync.client.BaseSyncSource;
 
 import com.funambol.syncml.protocol.SyncMLStatus;
 import com.funambol.syncml.protocol.SyncMLCommand;
@@ -60,7 +61,6 @@ import com.funambol.syncml.protocol.SourceParent;
 import com.funambol.syncml.protocol.TargetParent;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueFileStore;
-import com.funambol.syncml.client.BaseSyncSource;
 
 import junit.framework.*;
 

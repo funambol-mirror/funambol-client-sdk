@@ -33,7 +33,7 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -48,10 +48,7 @@ import com.funambol.storage.StringKeyValueStore;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncException;
-
-import com.funambol.syncml.spds.ItemStatus;
-import com.funambol.syncml.protocol.SyncMLStatus;
-import com.funambol.syncml.protocol.SyncML;
+import com.funambol.sync.ItemStatus;
 
 /**
  * This class implements a ChangesTracker and it is based on comparison
@@ -361,7 +358,7 @@ public class CacheTracker implements ChangesTracker {
             } else {
                 status.add(key, computeFingerprint(item));
             }
-        } else if (isSuccess(itemStatus) && itemStatus != SyncMLStatus.CHUNKED_ITEM_ACCEPTED) {
+        } else if (isSuccess(itemStatus) && itemStatus != SyncSource.CHUNK_SUCCESS_STATUS) {
             // We must update the fingerprint store with the value of the
             // fingerprint at the last sync
             if (newItems.get(key) != null) {
@@ -485,7 +482,7 @@ public class CacheTracker implements ChangesTracker {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "isSuccess " + status);
         }
-        return SyncMLStatus.isSuccess(status);
+        return status == SyncSource.SUCCESS_STATUS || status == SyncSource.CHUNK_SUCCESS_STATUS;
     }
 
     public boolean removeItem(SyncItem item) throws TrackerException {

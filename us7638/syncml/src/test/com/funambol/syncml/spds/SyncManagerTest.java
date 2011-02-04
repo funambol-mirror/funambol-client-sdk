@@ -41,8 +41,8 @@ import junit.framework.*;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncSource;
-
 import com.funambol.syncml.protocol.Item;
+import com.funambol.syncml.client.TestSyncSource;
 import com.funambol.syncml.protocol.Target;
 import com.funambol.syncml.protocol.SyncMLCommand;
 import com.funambol.syncml.protocol.Data;
@@ -50,7 +50,6 @@ import com.funambol.syncml.protocol.Status;
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.SyncHdr;
 import com.funambol.syncml.protocol.Sync;
-import com.funambol.syncml.client.TestSyncSource;
 
 import com.funambol.util.Log;
 
@@ -143,7 +142,6 @@ public class SyncManagerTest extends TestCase {
         Vector statusCommands = new Vector();
         sm.prepareStatus(statusCommands);
 
-        System.out.println("MARCO:" + statusCommands.size());
         assertTrue(statusCommands.size() == 1);
         Status status = (Status)statusCommands.elementAt(0);
         assertTrue(status != null);

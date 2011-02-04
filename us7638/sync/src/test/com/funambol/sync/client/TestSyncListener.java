@@ -1,7 +1,7 @@
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
- * Copyright (C) 2008 Funambol, Inc.
- * 
+ * Copyright (C) 2007 Funambol, Inc.
+ *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
  * the Free Software Foundation with the addition of the following permission
@@ -18,7 +18,7 @@
  * along with this program; if not, see http://www.gnu.org/licenses or write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301 USA.
- * 
+ *
  * You can contact Funambol, Inc. headquarters at 643 Bair Island Road, Suite
  * 305, Redwood City, CA 94063, USA, or at email address info@funambol.com.
  *
@@ -33,17 +33,38 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
-public class TrackerException extends RuntimeException {
+import com.funambol.util.Log;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.BasicSyncListener;
+import com.funambol.sync.SyncItem;
 
-    String msg;
-
-    public TrackerException(String msg) {
-        this.msg = msg;
+/**
+ * Check the interface method for documentation
+ */
+public class TestSyncListener extends BasicSyncListener {
+    public static boolean run;
+    public static int result;
+    public static int counter;
+    
+    /** Creates a new instance of TestSyncListener */
+    public TestSyncListener() {
     }
-
-    public String toString() {
-        return msg;
+    
+    public void startSession() {
+        run = true;
+    }
+    
+    public void endSession(int i) {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info("######Listener###### END SESSION WITH STATUS: " + i);
+        }
+        result = i;
+        run = false;
+    }
+    
+    public boolean startSyncing(int i) {
+        return true;
     }
 }

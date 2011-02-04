@@ -42,13 +42,13 @@ import java.util.Vector;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncConfig;
+import com.funambol.syncml.client.TestSyncSource;
 
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.Sync;
 import com.funambol.syncml.protocol.Cred;
 import com.funambol.syncml.protocol.Meta;
 import com.funambol.syncml.protocol.Target;
-import com.funambol.syncml.client.TestSyncSource;
 import com.funambol.util.CodedException;
 import com.funambol.util.Log;
 import com.funambol.util.TransportAgent;

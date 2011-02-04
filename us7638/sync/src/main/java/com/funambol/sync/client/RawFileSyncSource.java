@@ -33,7 +33,7 @@
  * the words "Powered by Funambol". 
  */
 
-package com.funambol.syncml.client;
+package com.funambol.sync.client;
 
 import java.util.Enumeration;
 import java.util.Vector;
@@ -46,57 +46,38 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncAnchor;
+import com.funambol.sync.SyncSource;
 
-import com.funambol.syncml.protocol.SyncMLStatus;
 import com.funambol.platform.FileAdapter;
 import com.funambol.util.Log;
 import com.funambol.util.Base64;
 
 /**
  * An implementation of TrackableSyncSource, providing
- * the ability to sync briefcases (files). The source can handle both raw files
- * and OMA files (file objects). By default the source formats items according
- * to the OMA file object spec, but it is capable of receiving also raw files,
- * if their MIME type is not OMA file objects.
+ * the ability to sync briefcases (files).
  */
-public class FileSyncSource extends TrackableSyncSource {
+public class RawFileSyncSource extends TrackableSyncSource {
 
-    private static final String TAG_LOG = "FileSyncSource";
+    private static final String TAG_LOG = "RawFileSyncSource";
 
-    protected class FileSyncItem extends SyncItem {
+    protected class RawFileSyncItem extends SyncItem {
 
-        private String fileName;
-        private OutputStream os = null;
-        private String prologue;
-        private String epilogue;
+        protected String       fileName;
+        protected OutputStream os = null;
+        protected Date         lastModified;
 
-        public FileSyncItem(String fileName, String key) throws IOException {
+        public RawFileSyncItem(String fileName, String key) throws IOException {
             this(fileName, key, null, SyncItem.STATE_NEW, null);
         }
 
-        public FileSyncItem(String fileName, String key, String type, char state,
+        public RawFileSyncItem(String fileName, String key, String type, char state,
                             String parent) throws IOException {
 
             super(key, type, state, parent);
             this.fileName = fileName;
             FileAdapter file = new FileAdapter(fileName);
-
-            if (SourceConfig.FILE_OBJECT_TYPE.equals(getType())) {
-                // Initialize the prologue
-                FileObject fo = new FileObject();
-                fo.setName(file.getName());
-                fo.setModified(new Date(file.lastModified()));
-                prologue = fo.formatPrologue();
-                // Initialize the epilogue
-                epilogue = fo.formatEpilogue();
-                // Compute the size of the FileObject
-                int bodySize = Base64.computeEncodedSize((int)file.getSize());
-                // Set the size
-                setObjectSize(prologue.length() + bodySize + epilogue.length());
-            } else {
-                // The size is the raw file size
-                setObjectSize(file.getSize());
-            }
+            // The size is the raw file size
+            setObjectSize(file.getSize());
             // Release the file object
             file.close();
         }
@@ -114,12 +95,6 @@ public class FileSyncSource extends TrackableSyncSource {
                 FileAdapter file = new FileAdapter(fileName);
                 os = file.openOutputStream();
                 file.close();
-                // If this item is a file object, we shall use the
-                // FileObjectOutputStream
-                if (SourceConfig.FILE_OBJECT_TYPE.equals(getType())) {
-                    FileObject fo = new FileObject();
-                    os = new FileObjectOutputStream(fo, os);
-                }
             }
             return os;
         }
@@ -132,18 +107,16 @@ public class FileSyncSource extends TrackableSyncSource {
         public InputStream getInputStream() throws IOException {
             FileAdapter file = new FileAdapter(fileName);
             InputStream is = file.openInputStream();
-            // If this item is a file object, we shall use the
-            // FileObjectOutputStream
-            if (SourceConfig.FILE_OBJECT_TYPE.equals(getType())) {
-                is = new FileObjectInputStream(prologue, is, epilogue,
-                                               (int)file.getSize());
-            }
             file.close();
             return is;
         }
 
         public String getFileName() {
             return fileName;
+        }
+
+        public Date getLastModified() {
+            return lastModified;
         }
 
         // If we do not reimplement the getContent, it will return a null
@@ -159,7 +132,7 @@ public class FileSyncSource extends TrackableSyncSource {
     /**
      * FileSyncSource constructor: initialize source config
      */
-    public FileSyncSource(SourceConfig config, ChangesTracker tracker, String directory) {
+    public RawFileSyncSource(SourceConfig config, ChangesTracker tracker, String directory) {
 
         super(config, tracker);
         this.directory = directory;
@@ -213,30 +186,19 @@ public class FileSyncSource extends TrackableSyncSource {
 
         // The stream has already been written, but we may need to rename the
         // underlying file, according to the FileObject metadata
-        if (item instanceof FileSyncItem) {
-            FileSyncItem fsi = (FileSyncItem)item;
+        if (item instanceof RawFileSyncItem) {
+            // The RawFileSyncItem has a name and other properties
+            // we shall apply them here
+            RawFileSyncItem fsi = (RawFileSyncItem)item;
             try {
-                OutputStream os = item.getOutputStream();
-                if (os instanceof FileObjectOutputStream) {
-                    FileObjectOutputStream foos = (FileObjectOutputStream)os;
-                    applyFileObjectProperties(fsi, foos);
-                    // The key for this item must be updated with the real
-                    // file name
-                    FileObject fo = foos.getFileObject();
-                    String newName = fo.getName();
-                    // The name is mandatory, but we try to be more robust here
-                    // and deal with items with no name
-                    if (newName != null) {
-                        item.setKey(directory + newName);
-                    }
-                }
-                ret = SyncMLStatus.SUCCESS;
+                applyFileProperties(fsi);
+                ret = SyncSource.SUCCESS_STATUS;
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Failed at applying file object properties", e);
-                ret = SyncMLStatus.GENERIC_ERROR;
+                ret = SyncSource.ERROR_STATUS;
             }
         } else {
-            ret = SyncMLStatus.GENERIC_ERROR;
+            ret = SyncSource.ERROR_STATUS;
         }
 
         // Invoke the super method to update the tracker. We don't want this new
@@ -244,7 +206,7 @@ public class FileSyncSource extends TrackableSyncSource {
         // the status of this operation. This method must be invoked after the
         // LUID has been defined
         try {
-            SyncItem newItem = new FileSyncItem(item.getKey(), item.getKey(),
+            SyncItem newItem = new RawFileSyncItem(item.getKey(), item.getKey(),
                     item.getType(), item.getState(),
                     item.getParent());
             super.addItem(newItem);
@@ -275,26 +237,22 @@ public class FileSyncSource extends TrackableSyncSource {
         }
 
         int ret;
-        FileSyncItem fsi;
+        RawFileSyncItem fsi;
 
         // The stream has already been written, but we may need to rename the
         // underlying file, according to the FileObject metadata
-        if (item instanceof FileSyncItem) {
-            fsi = (FileSyncItem)item;
+        if (item instanceof RawFileSyncItem) {
+            fsi = (RawFileSyncItem)item;
             try {
-                OutputStream os = item.getOutputStream();
-                if (os instanceof FileObjectOutputStream) {
-                    FileObjectOutputStream foos = (FileObjectOutputStream)os;
-                    applyFileObjectProperties(fsi, foos);
-                }
-                ret = SyncMLStatus.SUCCESS;
+                applyFileProperties(fsi);
+                ret = SyncSource.SUCCESS_STATUS;
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Failed at applying file object properties", e);
-                ret = SyncMLStatus.GENERIC_ERROR;
+                ret = SyncSource.ERROR_STATUS;
             }
         } else {
             fsi = null;
-            ret = SyncMLStatus.GENERIC_ERROR;
+            ret = SyncSource.ERROR_STATUS;
         }
 
         // Invoke the super method to update the tracker. We don't want this new
@@ -320,10 +278,10 @@ public class FileSyncSource extends TrackableSyncSource {
             FileAdapter file = new FileAdapter(fileName);
             file.delete();
             file.close();
-            ret = SyncMLStatus.SUCCESS;
+            ret = SyncSource.SUCCESS_STATUS;
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "deleteItem, cannot delete item " + fileName, ioe);
-            ret = SyncMLStatus.GENERIC_ERROR;
+            ret = SyncSource.ERROR_STATUS;
         }
 
         // Invoke the super method to update the tracker. We don't want this new
@@ -346,12 +304,12 @@ public class FileSyncSource extends TrackableSyncSource {
         // We send the item with the type of the SS
         String fileName = item.getKey();
         try {
-            FileSyncItem fsi = new FileSyncItem(fileName, item.getKey(), type, item.getState(),
-                                                item.getParent());
+            RawFileSyncItem fsi = new RawFileSyncItem(fileName, item.getKey(), type, item.getState(),
+                                                      item.getParent());
             return fsi;
         } catch (IOException ioe) {
             throw new SyncException(SyncException.CLIENT_ERROR,
-                                    "Cannot create FileSyncItem: " + ioe.toString());
+                                    "Cannot create RawFileSyncItem: " + ioe.toString());
         }
     }
 
@@ -377,19 +335,16 @@ public class FileSyncSource extends TrackableSyncSource {
         }
 
         try {
-            FileSyncItem item = new FileSyncItem(fileName, key, type, state, parent);
+            RawFileSyncItem item = new RawFileSyncItem(fileName, key, type, state, parent);
             return item;
         } catch (IOException ioe) {
             throw new SyncException(SyncException.CLIENT_ERROR,
-                                    "Cannot create FileSyncItem: " + ioe.toString());
+                                    "Cannot create RawFileSyncItem: " + ioe.toString());
         }
     }
 
-    protected void applyFileObjectProperties(FileSyncItem fsi,
-                                             FileObjectOutputStream foos) throws IOException
-    {
-        FileObject fo = foos.getFileObject();
-        String newName = fo.getName();
+    protected void applyFileProperties(RawFileSyncItem fsi) throws IOException {
+        String newName = fsi.getFileName();
         FileAdapter file = new FileAdapter(fsi.getFileName());
         if (newName != null) {
             // Rename the file
@@ -401,7 +356,7 @@ public class FileSyncSource extends TrackableSyncSource {
         // Apply the modified date if present
         FileAdapter newFile = new FileAdapter(directory + newName);
         if (newFile != null) {
-            Date lastModified = fo.getModified();
+            Date lastModified = fsi.getLastModified();
             if (newFile.isSetLastModifiedSupported() && lastModified != null) {
                 newFile.setLastModified(lastModified.getTime());
             }
