@@ -36,5 +36,53 @@
 package com.funambol.sync;
 
 public class SyncFilter {
+
+    /**
+     * Items whose date is more recent than a given threshold
+     */
+    public static final int DATE_RECENT_TYPE = 0;
+
+    /**
+     * Max number of items (without a particular order)
+     */ 
+    public static final int ITEMS_COUNT_TYPE = 1;
+
+    /**
+     * All the items that fall into the window
+     */
+    public static final int DATE_WINDOW_TYPE = 2;
+    
+    /**
+     * Max number of items starting from the most recent ones
+     */
+    public static final int COUNT_RECENT_TYPE = 3;
+
+    private int type;
+
+    private int count;
+    private long date;
+
+    public SyncFilter(int type) {
+        this(type, -1, -1);
+    }
+
+    public SyncFilter(int type, long date, int count) {
+        this.type = type;
+        this.date = date;
+        this.count = count;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
 }
     
