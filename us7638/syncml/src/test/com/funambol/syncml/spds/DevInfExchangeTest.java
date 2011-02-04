@@ -79,6 +79,8 @@ public class DevInfExchangeTest extends TestCase {
         tss.setConfig(new SyncMLSourceConfig(tss.getName(), tss.getType(),
                 tss.getSourceUri(),
                 createTestDataStore("contacts", "test/x-vcard", "2.1")));
+        SyncMLAnchor anchor = new SyncMLAnchor();
+        tss.setSyncAnchor(anchor);
         
         parser = new SyncMLParser(false);
         formatter = new SyncMLFormatter(false);

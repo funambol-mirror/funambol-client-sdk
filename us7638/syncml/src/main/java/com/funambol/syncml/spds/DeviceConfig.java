@@ -50,8 +50,8 @@ public class DeviceConfig {
     //-------------------------------------------------------------- Attributes
     /**
      * Specifies the major and minor version identifier of the Device
-     * Information DTD used in the representation of the Device Information. The
-     * value MUST be "1.1". This property is mandatory.
+     * Information DTD used in the representation of the Device Information.
+     * This property is mandatory.
      */
     private String verDTD;
 
@@ -151,7 +151,7 @@ public class DeviceConfig {
      * TODO: get the values from the device configuration (e.g. IMEI)
      */
     public DeviceConfig() {
-        verDTD = "1.1";
+        verDTD = "1.2";
         man = null;
         mod = null;
         oem = null;

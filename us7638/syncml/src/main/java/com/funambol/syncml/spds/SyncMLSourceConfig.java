@@ -75,7 +75,7 @@ public class SyncMLSourceConfig extends SourceConfig {
      */
     public SyncMLSourceConfig(String name, String type, String remoteUri, DataStore dataStore) {
         super(name, type, remoteUri);
-        dataStore = dataStore;
+        this.dataStore = dataStore;
     }
     
     /**

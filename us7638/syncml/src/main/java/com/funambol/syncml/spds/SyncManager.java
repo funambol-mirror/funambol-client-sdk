@@ -246,6 +246,7 @@ public class SyncManager {
      */
     public SyncManager(SyncConfig conf, DeviceConfig deviceConfig) {
         this.config = conf;
+        this.deviceConfig = deviceConfig;
         this.source = null;
 
         // Cache device info
@@ -441,6 +442,7 @@ public class SyncManager {
             //Set NEXT Anchor referring to current timestamp
             long syncStartTime = System.currentTimeMillis();
             SyncMLAnchor anchor = (SyncMLAnchor)this.source.getSyncAnchor();
+
             anchor.setNext(syncStartTime);
             syncStatus.setStartTime(syncStartTime);
 
@@ -1630,6 +1632,7 @@ public class SyncManager {
         // The source can also provide Ext
         SourceConfig srcConfig = source.getConfig();
         DataStore ds = null;
+
         if (srcConfig instanceof SyncMLSourceConfig) {
             SyncMLSourceConfig syncMLSrcConfig = (SyncMLSourceConfig)srcConfig;
             Vector devInfExts = syncMLSrcConfig.getDevInfExts();

@@ -118,9 +118,9 @@ public class HttpUploaderTest extends TestCase {
         String filesize  = (String)headers.get("x-funambol-file-size");
         l = Integer.parseInt(filesize);
         assertTrue(l == contentArr.length);
-        
-        String devId = (String)headers.get("x-funambol-syncdeviceid");
-        assertTrue("test-device-id".equals(devId));
+       
+        //String devId = (String)headers.get("x-funambol-syncdeviceid");
+        //assertTrue("test-device-id".equals(devId));
         
         String luid = (String)headers.get("x-funambol-luid");
         assertTrue("Pic0.jpg".equals(luid));

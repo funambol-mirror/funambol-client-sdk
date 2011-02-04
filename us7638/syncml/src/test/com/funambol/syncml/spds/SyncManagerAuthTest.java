@@ -96,6 +96,8 @@ public class SyncManagerAuthTest extends TestCase {
         dc = new DeviceConfig();
 
         ssc = new SourceConfig("briefcase", SourceConfig.BRIEFCASE_TYPE, "briefcase");
+        SyncMLAnchor anchor = new SyncMLAnchor();
+        ssc.setSyncAnchor(anchor);
         
         sm = new SyncManager(sc, dc);
 
