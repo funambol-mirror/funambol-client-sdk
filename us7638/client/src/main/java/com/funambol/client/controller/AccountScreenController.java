@@ -46,7 +46,7 @@ import com.funambol.client.ui.AccountScreen;
 import com.funambol.client.ui.DisplayManager;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
-import com.funambol.syncml.spds.SyncException;
+import com.funambol.sync.SyncException;
 
 /**
  * This class is the controller (in the MVC model) for the AccountScreen.

@@ -39,9 +39,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import com.funambol.syncml.spds.SyncManager;
-import com.funambol.syncml.spds.SyncConfig;
 import com.funambol.syncml.spds.DeviceConfig;
 import com.funambol.syncml.protocol.SyncML;
+import com.funambol.sync.SyncConfig;
 import com.funambol.util.Log;
 
 
@@ -78,13 +78,13 @@ public class CheckSyncClient extends SyncMonitor {
 
     public class CheckDeviceConfig extends DeviceConfig {
         public CheckDeviceConfig() {
-            man = "Funambol";
-            devID = "fnb-check-sync-client";
-            utc = true;
-            loSupport = true;
-            nocSupport = false;
+            setMan("Funambol");
+            setDevID("fnb-check-sync-client");
+            setUtc(true);
+            setLoSupport(true);
+            setNocSupport(false);
             setMaxMsgSize(64*1024);
-            maxObjSize=1024*1024;
+            setMaxObjSize(1024*1024);
         }
     }
 
@@ -158,10 +158,10 @@ public class CheckSyncClient extends SyncMonitor {
         sc.syncUrl  = this.syncUrl;
         sc.userName = this.userName;
         sc.password = this.password;
-        sc.deviceConfig = new CheckDeviceConfig();
+        DeviceConfig deviceConfig = new CheckDeviceConfig();
 
         // Init SyncManager
-        sManager = new SyncManager(sc);
+        sManager = new SyncManager(sc, deviceConfig);
         sManager.setTransportAgent(BasicScriptRunner.createTestTransportAgent(sc));
     }
 }

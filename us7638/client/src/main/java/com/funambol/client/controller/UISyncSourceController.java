@@ -45,10 +45,10 @@ import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.Bitmap;
 import com.funambol.client.localization.Localization;
 import com.funambol.util.Log;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SyncSource;
-import com.funambol.syncml.spds.SyncListener;
-import com.funambol.syncml.spds.SyncStatus;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncReport;
 import com.funambol.syncml.protocol.DevInf;
 
 
@@ -76,7 +76,7 @@ public class UISyncSourceController implements SyncListener {
     private Bitmap           errorIcon = null;
 
     private SyncingAnimation animation = null;
-    private SyncStatus       lastSyncReport = null;
+    private SyncReport       lastSyncReport = null;
 
     private boolean          cancelling = false;
     private boolean          syncing    = false;
@@ -178,9 +178,9 @@ public class UISyncSourceController implements SyncListener {
 
     /*
      * (non-Javadoc)
-     * @see com.funambol.util.SyncListener#endMapping()
+     * @see com.funambol.util.SyncListener#endFinalizing()
      */
-    public void endMapping() {
+    public void endFinalizing() {
         if (uiSource != null) {
             if (!cancelling) {
                 uiSource.setStatusString(localization.getLanguage("status_mapping_done"));
@@ -245,9 +245,9 @@ public class UISyncSourceController implements SyncListener {
 
     /*
      * (non-Javadoc)
-     * @see com.funambol.util.SyncListener#endSession(int)
+     * @see com.funambol.util.SyncListener#endSession(SyncReport)
      */
-    public void endSession(SyncStatus report) {
+    public void endSession(SyncReport report) {
 
         if (!syncing) {
             return;
@@ -442,9 +442,9 @@ public class UISyncSourceController implements SyncListener {
 
     /*
      * (non-Javadoc)
-     * @see com.funambol.util.SyncListener#startMapping()
+     * @see com.funambol.util.SyncListener#startFinalizing()
      */
-    public void startMapping() {
+    public void startFinalizing() {
         if (uiSource != null) {
             if (!cancelling) {
                 uiSource.setStatusString(localization.getLanguage("status_mapping"));
@@ -509,9 +509,9 @@ public class UISyncSourceController implements SyncListener {
 
     /*
      * (non-Javadoc)
-     * @see com.funambol.util.SyncListener#startSyncing(int, DevInf)
+     * @see com.funambol.util.SyncListener#startSyncing(int, Object)
      */
-    public boolean startSyncing(int mode, DevInf devInf) {
+    public boolean startSyncing(int mode, Object devInf) {
         if (mode == com.funambol.syncml.protocol.SyncML.ALERT_CODE_SLOW) {
             if (customization.confirmSlowSync()) {
                 String text = localization.getLanguage("status_confirm_slow");
@@ -532,7 +532,9 @@ public class UISyncSourceController implements SyncListener {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Server sent its capabilities");
             }
-            controller.reapplyServerCaps(devInf);
+            if (devInf instanceof DevInf) {
+                controller.reapplyServerCaps((DevInf)devInf);
+            }
         }
 
         return true;
@@ -584,7 +586,7 @@ public class UISyncSourceController implements SyncListener {
         return controller;
     }
 
-    public SyncStatus getLastSyncReport() {
+    public SyncReport getLastSyncReport() {
         return lastSyncReport;
     }
 
@@ -733,7 +735,7 @@ public class UISyncSourceController implements SyncListener {
         return sourceNames.toString();
     }
 
-    private String getLastSyncStatus(int status, SyncStatus report) {
+    private String getLastSyncStatus(int status, SyncReport report) {
 
         String res;
         switch (status) {

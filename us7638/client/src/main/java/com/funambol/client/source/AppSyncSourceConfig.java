@@ -43,9 +43,9 @@ import java.io.DataInputStream;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.customization.Customization;
 import com.funambol.client.source.AppSyncSource;
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncSource;
-import com.funambol.syncml.spds.SyncListener;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncListener;
 import com.funambol.syncml.protocol.SyncML;
 
 import com.funambol.util.Log;
@@ -495,7 +495,8 @@ public class AppSyncSourceConfig {
             // configuration. We shall read the value stored in the last anchor
             // and copy it over
             if (config != null) {
-                lastSyncTimestamp = config.getLastAnchor();
+                // TODO: handle the upgrade here?
+                //lastSyncTimestamp = config.getLastAnchor();
             }
 
             // In v9 we removed 1way syncs from the product, so it is safe to
@@ -548,8 +549,7 @@ public class AppSyncSourceConfig {
             setEnabled(false);
             // Resets the anchors in order to force a slow sync at the next sync
             if (config != null) {
-                config.setLastAnchor(0);
-                config.setNextAnchor(0);
+                config.getSyncAnchor().reset();
             }
             // Revert to the default sync mode
             syncType = customization.getDefaultSourceSyncMode(appSource.getId());

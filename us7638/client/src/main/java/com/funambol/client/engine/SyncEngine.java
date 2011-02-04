@@ -47,11 +47,11 @@ import com.funambol.client.push.SyncSchedulerListener;
 
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.spds.CompressedSyncException;
-import com.funambol.syncml.spds.SyncConfig;
 import com.funambol.syncml.spds.DeviceConfig;
-import com.funambol.syncml.spds.SyncException;
 import com.funambol.syncml.spds.SyncManager;
-import com.funambol.syncml.spds.SyncSource;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncConfig;
 import com.funambol.syncml.protocol.DevInf;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.util.TransportAgent;
@@ -279,8 +279,8 @@ public class SyncEngine implements SyncSchedulerListener {
 
 
     // TODO FIXME: call/reimplement this (for BB)
-    protected SyncManager createManager(AppSyncSource source, SyncConfig config) {
-        SyncManager sm = new SyncManager(config);
+    protected SyncManager createManager(AppSyncSource source, SyncConfig config, DeviceConfig dc) {
+        SyncManager sm = new SyncManager(config, dc);
         if(customTransportAgent != null) {
             sm.setTransportAgent(customTransportAgent);
         }
@@ -295,6 +295,7 @@ public class SyncEngine implements SyncSchedulerListener {
         private final   Vector appSources;
         private boolean compressionRetry;
         private SyncConfig   syncConfig;
+        private DeviceConfig   deviceConfig;
         private SyncManager manager;
 
         public SyncThread(Vector sources) {
@@ -326,6 +327,7 @@ public class SyncEngine implements SyncSchedulerListener {
             }
 
             syncConfig = configuration.getSyncConfig();
+            deviceConfig = configuration.getDeviceConfig();
             if (compressionRetry) {
                 // We are trying without compression, make sure compression is
                 // really disabled
@@ -398,10 +400,10 @@ public class SyncEngine implements SyncSchedulerListener {
 
                 // We apply some logic to decide some of the synchronization configuration properties.
                 DevInf serverDevInf = configuration.getServerDevInf();
-                adaptSyncConfig(syncConfig, serverDevInf);
+                adaptSyncConfig(syncConfig, deviceConfig, serverDevInf);
 
                 // We need to create one manager for each source
-                manager = createManager(appSource, syncConfig);
+                manager = createManager(appSource, syncConfig, deviceConfig);
 
                 if (listener != null) {
                     listener.sourceStarted(appSource);
@@ -503,9 +505,7 @@ public class SyncEngine implements SyncSchedulerListener {
     /**
      * TODO FIXME: this method shall be based on a compatibility table of some kind
      */
-    protected void adaptSyncConfig(SyncConfig syncConfig, DevInf serverDevInf) {
-
-        DeviceConfig dc = syncConfig.getDeviceConfig();
+    protected void adaptSyncConfig(SyncConfig syncConfig, DeviceConfig deviceConfig, DevInf serverDevInf) {
 
         // If the customization forces the usage of WBXML, then we always use it
         // otherwise we use it only for servers that we know are compatible with
@@ -514,7 +514,7 @@ public class SyncEngine implements SyncSchedulerListener {
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "WBXML usage is forced by Customization");
             }
-            dc.setWBXML(true);
+            deviceConfig.setWBXML(true);
         } else {
             if (serverDevInf != null) {
                 String man = serverDevInf.getMan();
@@ -522,7 +522,7 @@ public class SyncEngine implements SyncSchedulerListener {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "WBXML enabled");
                     }
-                    dc.setWBXML(true);
+                    deviceConfig.setWBXML(true);
                 }
             } else {
                 // We don't know yet who we are talking to, for this reason we try to use the most conservative
@@ -530,7 +530,7 @@ public class SyncEngine implements SyncSchedulerListener {
                 if (Log.isLoggable(Log.TRACE)) {
                     Log.trace(TAG_LOG, "WBXML disabled");
                 }
-                dc.setWBXML(false);
+                deviceConfig.setWBXML(false);
             }
         }
     }

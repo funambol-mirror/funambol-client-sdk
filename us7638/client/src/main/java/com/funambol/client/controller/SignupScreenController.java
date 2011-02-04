@@ -35,6 +35,15 @@
 
 package com.funambol.client.controller;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Vector;
+
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+
 import com.funambol.client.customization.Customization;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.source.AppSyncSourceManager;
@@ -45,19 +54,10 @@ import com.funambol.client.ui.SignupScreen;
 import com.funambol.platform.HttpConnectionAdapter;
 import com.funambol.platform.DeviceInfoInterface;
 
-import com.funambol.syncml.spds.SyncException;
+import com.funambol.sync.SyncException;
 import com.funambol.util.ConnectionManager;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Vector;
-
-import org.json.me.JSONException;
-import org.json.me.JSONObject;
 
 /**
  * This class is the controller (in the MVC model) for the SignupScreen.

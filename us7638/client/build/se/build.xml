@@ -34,6 +34,7 @@ Build file for Funambol Java SyncML
         <property name="dir.html"         value="${dir.output}/html"         />
         <property name="lib.funambol.common" value="${basedir}/../common/output/se/funambol-se-common.jar"/>
         <property name="lib.funambol.syncml" value="${basedir}/../syncml/output/se/funambol-se-syncml.jar"/>
+        <property name="lib.funambol.sync"   value="${basedir}/../sync/output/se/funambol-se-sync.jar"/>
     </target>
    
     <target name="compile" depends="init">
@@ -44,6 +45,7 @@ Build file for Funambol Java SyncML
                <classpath>
                    <pathelement location="${lib.funambol.common}"/>
                    <pathelement location="${lib.funambol.syncml}"/>
+                   <pathelement location="${lib.funambol.sync}"/>
                </classpath>
         </javac>
     </target>

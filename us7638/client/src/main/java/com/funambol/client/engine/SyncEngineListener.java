@@ -39,8 +39,8 @@ import java.util.Vector;
 import java.util.Enumeration;
 
 import com.funambol.client.source.AppSyncSource;
-import com.funambol.syncml.spds.SyncConfig;
-import com.funambol.syncml.spds.SyncException;
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SyncException;
 
 /**
  * This interface is a listener for the SyncEngine which generates several

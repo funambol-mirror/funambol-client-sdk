@@ -46,6 +46,7 @@ public interface SyncAnchor {
 
     public String format();
     public void parse(String str);
+    public void reset();
 }
 
 

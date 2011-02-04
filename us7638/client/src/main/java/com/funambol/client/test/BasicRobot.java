@@ -38,10 +38,10 @@ package com.funambol.client.test;
 import java.util.Vector;
 
 import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.spds.SyncItem;
 import com.funambol.syncml.spds.SyncStatus;
-import com.funambol.syncml.spds.ItemStatus;
-import com.funambol.syncml.spds.SyncSource;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.ItemStatus;
+import com.funambol.sync.SyncSource;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
@@ -148,8 +148,7 @@ public abstract class BasicRobot extends Robot {
         }
 
         SyncSource source = getSyncSource(sourceName);
-        source.getConfig().setLastAnchor(0);
-        source.getConfig().setNextAnchor(0);
+        source.getSyncAnchor().reset();
         saveSourceConfig(source);
     }
 

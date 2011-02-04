@@ -36,9 +36,9 @@
 package com.funambol.client.test;
 
 import com.funambol.syncml.spds.SyncStatus;
-import com.funambol.syncml.spds.SyncListener;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.BasicSyncListener;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.BasicSyncListener;
 import com.funambol.syncml.protocol.DevInf;
 
 import com.funambol.util.Log;
@@ -174,14 +174,14 @@ public class SyncMonitorListener extends BasicSyncListener {
     }
 
     public void startMapping() {
-        lis.startMapping();
+        lis.startFinalizing();
     }
 
     public void endMapping() {
-        lis.endMapping();
+        lis.endFinalizing();
     }
 
-    public boolean startSyncing(int alertCode, DevInf devInf) {
+    public boolean startSyncing(int alertCode, Object devInf) {
         return lis.startSyncing(alertCode, devInf);
     }
 

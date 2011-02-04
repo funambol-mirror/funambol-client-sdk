@@ -43,8 +43,8 @@ import com.funambol.client.controller.Controller;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.AppSyncSourceConfig;
+import com.funambol.sync.SyncConfig;
 import com.funambol.syncml.spds.DeviceConfig;
-import com.funambol.syncml.spds.SyncConfig;
 import com.funambol.syncml.spds.DevInfSerializer;
 import com.funambol.syncml.protocol.DevInf;
 import com.funambol.platform.net.ProxyConfig;
@@ -748,11 +748,11 @@ public abstract class Configuration {
         
         // Remember to update the blackberry synclet pattern (server side) when changing the user agent
         syncConfig.userAgent = getUserAgent();
-        syncConfig.deviceConfig = getDeviceConfig();
         syncConfig.forceCookies = false;
 
         return syncConfig;
     }
+
 
     public void setTempLogLevel(int tempLogLevel) {
         origLogLevel = logLevel;
@@ -859,9 +859,9 @@ public abstract class Configuration {
     public abstract void    saveByteArrayKey(String key, byte[] value);
     public abstract byte[]  loadByteArrayKey(String key, byte[] defaultValue);
     public abstract boolean commit();
+    public abstract DeviceConfig getDeviceConfig();
 
     protected abstract String  loadKey(String key);
     protected abstract void    saveKey(String key, String value);
-    protected abstract DeviceConfig getDeviceConfig();
     protected abstract String  getUserAgent();
 }

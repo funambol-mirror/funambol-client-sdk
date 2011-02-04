@@ -44,8 +44,8 @@ import com.funambol.client.test.*;
 
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SyncSource;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncSource;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 

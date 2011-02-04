@@ -39,9 +39,8 @@ import java.util.Vector;
 
 import com.funambol.syncml.spds.SyncStatus;
 import com.funambol.syncml.spds.SyncManager;
-import com.funambol.syncml.spds.SyncListener;
-import com.funambol.syncml.spds.BasicSyncListener;
-import com.funambol.syncml.protocol.DevInf;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.BasicSyncListener;
 
 /**
  * Collects usefull methods to monitor the synchronization state.

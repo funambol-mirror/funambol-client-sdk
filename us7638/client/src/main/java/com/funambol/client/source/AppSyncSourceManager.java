@@ -43,14 +43,10 @@ import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 
 import com.funambol.client.customization.Customization;
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncSource;
-import com.funambol.syncml.client.ConfigSyncSource;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncSource;
 import com.funambol.util.Log;
 import com.funambol.storage.StringKeyValueFileStore;
-import com.funambol.syncml.client.CacheTracker;
-import com.funambol.syncml.client.FileSyncSource;
-import com.funambol.syncml.protocol.SyncML;
 
 /**
  * This class is responsible for handling all the sources at the application

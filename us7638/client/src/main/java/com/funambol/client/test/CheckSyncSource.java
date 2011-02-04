@@ -39,13 +39,12 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import com.funambol.syncml.client.TrackableSyncSource;
-import com.funambol.syncml.client.CacheTracker;
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SyncSource;
-import com.funambol.syncml.protocol.SyncMLStatus;
-import com.funambol.syncml.spds.SyncException;
+import com.funambol.sync.client.TrackableSyncSource;
+import com.funambol.sync.client.CacheTracker;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncException;
 import com.funambol.storage.StringKeyValueMemoryStore;
 import com.funambol.util.Log;
 

@@ -80,4 +80,9 @@ public class SapiSyncAnchor implements SyncAnchor {
         return download;
     }
 
+    public void reset() {
+        upload = 0;
+        download = 0;
+    }
+
 }

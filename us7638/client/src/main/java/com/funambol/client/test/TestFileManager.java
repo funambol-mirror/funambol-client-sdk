@@ -36,7 +36,7 @@
 package com.funambol.client.test;
 
 import com.funambol.platform.FileAdapter;
-import com.funambol.syncml.spds.SyncConfig;
+import com.funambol.sync.SyncConfig;
 import com.funambol.util.CodedException;
 import com.funambol.util.HttpTransportAgent;
 import com.funambol.util.Log;

@@ -131,7 +131,7 @@ public interface Customization {
     // Misc customization properties
     public boolean  getUseWbxml();
     public boolean  getContactsImportEnabled();
-    public String   getDefaultAuthType();
+    public int      getDefaultAuthType();
     public boolean  checkForUpdates();
     public boolean  enableUpdaterManager();
     public long     getCheckUpdtIntervalDefault();

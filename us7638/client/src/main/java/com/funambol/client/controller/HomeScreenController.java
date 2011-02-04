@@ -45,10 +45,10 @@ import com.funambol.client.ui.HomeScreen;
 import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.Bitmap;
 import com.funambol.client.ui.DisplayManager;
-import com.funambol.syncml.spds.SyncSource;
-import com.funambol.syncml.spds.SyncListener;
 import com.funambol.syncml.spds.SyncStatus;
-import com.funambol.syncml.spds.SyncException;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncSource;
 import com.funambol.util.Log;
 import com.funambol.platform.NetworkStatus;
 

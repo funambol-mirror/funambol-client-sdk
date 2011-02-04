@@ -43,8 +43,8 @@ import com.funambol.client.ui.SettingsUISyncSource;
 import com.funambol.client.ui.DevSettingsUISyncSource;
 import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.Screen;
-import com.funambol.syncml.spds.SyncListener;
-import com.funambol.syncml.spds.SyncSource;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncSource;
 import com.funambol.syncml.protocol.SyncML;
 
 import com.funambol.util.Log;

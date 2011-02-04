@@ -80,5 +80,10 @@ public class SyncMLAnchor implements SyncAnchor {
         return last;
     }
 
+    public void reset() {
+        last = 0;
+        next = 0;
+    }
+
 }
 
