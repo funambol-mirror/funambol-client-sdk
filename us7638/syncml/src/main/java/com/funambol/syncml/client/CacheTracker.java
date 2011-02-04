@@ -46,6 +46,7 @@ import com.funambol.util.Base64;
 import com.funambol.util.Log;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncException;
 
 import com.funambol.syncml.spds.ItemStatus;
@@ -167,9 +168,8 @@ public class CacheTracker implements ChangesTracker {
             }
         }
 
-        if(syncMode == SyncML.ALERT_CODE_FAST ||
-           syncMode == SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT ||
-           syncMode == SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW) {
+        if(syncMode == SyncSource.INCREMENTAL_SYNC ||
+           syncMode == SyncSource.INCREMENTAL_UPLOAD) {
 
             // Now compute the three lists
             Enumeration snapshotKeys = snapshot.keys();
@@ -204,9 +204,9 @@ public class CacheTracker implements ChangesTracker {
                     deletedItems.put(oldKey, (String)status.get(oldKey));
                 }
             }
-        } else if(syncMode == SyncML.ALERT_CODE_SLOW ||
-                  syncMode == SyncML.ALERT_CODE_REFRESH_FROM_CLIENT ||
-                  syncMode == SyncML.ALERT_CODE_REFRESH_FROM_SERVER) {
+        } else if(syncMode == SyncSource.FULL_SYNC ||
+                  syncMode == SyncSource.FULL_UPLOAD ||
+                  syncMode == SyncSource.FULL_DOWNLOAD) {
             // Reset the status when performing a slow sync
             try {
                 status.reset();
@@ -348,8 +348,8 @@ public class CacheTracker implements ChangesTracker {
             Log.trace(TAG_LOG, "setItemStatus " + key + "," + itemStatus);
         }
 
-        if(syncMode == SyncML.ALERT_CODE_SLOW ||
-           syncMode == SyncML.ALERT_CODE_REFRESH_FROM_CLIENT) {
+        if(syncMode == SyncSource.FULL_SYNC ||
+           syncMode == SyncSource.FULL_UPLOAD) {
             SyncItem item = new SyncItem(key);
             try {
                 item = getItemContent(item);

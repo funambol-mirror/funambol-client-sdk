@@ -45,6 +45,7 @@ import java.util.Hashtable;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncSource;
 
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueFileStore;
@@ -240,7 +241,7 @@ public class ConfigSyncSourceTest extends TestCase {
         SourceConfig config = new SourceConfig("config", "application/*", "config");
         source = new ConfigSyncSource(config, tracker, store);
 
-        source.beginSync(SyncML.ALERT_CODE_SLOW, false);
+        source.beginSync(SyncSource.FULL_SYNC, false);
 
         SyncItem item = source.getNextItem();
         assertTrue(item != null);
@@ -292,7 +293,7 @@ public class ConfigSyncSourceTest extends TestCase {
         SourceConfig config = new SourceConfig("config", "application/*", "config");
         source = new ConfigSyncSource(config, tracker, store);
 
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
 
         SyncItem item = source.getNextNewItem();
         assertTrue(item != null);

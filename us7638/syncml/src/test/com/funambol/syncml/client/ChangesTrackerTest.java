@@ -49,6 +49,7 @@ import com.funambol.util.ConsoleAppender;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncSource;
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.SyncMLStatus;
 
@@ -255,7 +256,7 @@ public abstract class ChangesTrackerTest extends TestCase {
             Log.trace("testReceivedNewItems");
         }
         // Begin a new sync
-        source.beginSync(SyncML.ALERT_CODE_SLOW, false);
+        source.beginSync(SyncSource.FULL_SYNC, false);
         // Add a new item
         SyncItem item = new SyncItem("unique-" + id++);
         item.setContent("Content".getBytes());
@@ -273,7 +274,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         item.setContent("Content".getBytes());
         source.addItemFromOutside(item);
         // Begin a new sync
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
         // Now check that there is one new item reported
         SyncItem newItem = source.getNextNewItem();
         assertTrue(newItem != null);
@@ -293,7 +294,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         String key = "unique-0";
         source.updateItemFromOutside(key, "NewContent".getBytes());
         // Begin a new sync
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
         // Now check that there are is one updated item
         SyncItem updItem = source.getNextUpdatedItem();
         assertTrue(updItem != null);
@@ -314,7 +315,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         String key = "unique-0";
         source.deleteItemFromOutside(key);
         // Begin a new sync
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
         // Now check that there are is one deleted item
         SyncItem delItem = source.getNextDeletedItem();
         assertTrue(delItem != null);
@@ -331,7 +332,7 @@ public abstract class ChangesTrackerTest extends TestCase {
             Log.trace("testAddCommand");
         }
         // Begin a new sync
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
         // Now receives an add command
         SyncItem newItem = new SyncItem("unique-" + id++);
         newItem.setContent("Content".getBytes());
@@ -348,7 +349,7 @@ public abstract class ChangesTrackerTest extends TestCase {
             Log.trace("testReplaceCommand");
         }
         // Begin a new sync
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
         // Now receives a replace command
         String key = "unique-1";
         SyncItem item = new SyncItem(key);
@@ -366,7 +367,7 @@ public abstract class ChangesTrackerTest extends TestCase {
             Log.trace("testDeleteCommand");
         }
         // Begin a new sync
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
         // Now receives a delete command
         String key = "unique-1";
         source.deleteItem(key);
@@ -401,7 +402,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         }
 
         // Begin the sync and exchange all items
-        source.beginSync(SyncML.ALERT_CODE_SLOW, false);
+        source.beginSync(SyncSource.FULL_SYNC, false);
         for(int i=0;i<3;++i) {
             assertTrue(source.getNextItem() != null);
         }
@@ -445,7 +446,7 @@ public abstract class ChangesTrackerTest extends TestCase {
             Log.trace("Perform slow sync");
         }
         // Begin the sync and exchange all items
-        source.beginSync(SyncML.ALERT_CODE_SLOW, false);
+        source.beginSync(SyncSource.FULL_SYNC, false);
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace("Send items to the server");
         }
@@ -481,7 +482,7 @@ public abstract class ChangesTrackerTest extends TestCase {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace("Perform fast sync");
         }
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace("Check new items");
         }

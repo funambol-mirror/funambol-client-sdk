@@ -295,8 +295,10 @@ public class SyncManager {
      *
      */
     public void sync(SyncSource source) throws SyncException {
-        sync(source, source.getSyncMode(), false);
+        int syncMode = getSyncMLSyncMode(source.getSyncMode());
+        sync(source, syncMode, false);
     }
+
 
     /**
      * Synchronizes synchronization source, using the preferred sync
@@ -312,7 +314,8 @@ public class SyncManager {
      *
      */
     public void sync(SyncSource source, boolean askServerDevInf) throws SyncException {
-        sync(source, source.getSyncMode(), askServerDevInf);
+        int syncMode = getSyncMLSyncMode(source.getSyncMode());
+        sync(source, syncMode, askServerDevInf);
     }
 
     /**
@@ -528,10 +531,10 @@ public class SyncManager {
                 // In case of resume, the alert code is the alert code of the
                 // interrupted sync
                 actualSyncMode = syncStatus.getAlertedSyncMode();
-                source.beginSync(actualSyncMode, true);
+                source.beginSync(getSourceSyncMode(actualSyncMode), true);
             } else {
                 actualSyncMode = alertCode;
-                source.beginSync(alertCode, false);
+                source.beginSync(getSourceSyncMode(alertCode), false);
             }
             getSyncListenerFromSource(src).syncStarted(alertCode);
 
@@ -2964,5 +2967,60 @@ public class SyncManager {
             }
         }
     }
+
+    private int getSyncMLSyncMode(int sourceSyncMode) {
+        int ret = SyncML.ALERT_CODE_FAST;
+        switch (sourceSyncMode) {
+            case SyncSource.FULL_SYNC:
+                ret = SyncML.ALERT_CODE_SLOW;
+                break;
+            case SyncSource.FULL_UPLOAD:
+                ret = SyncML.ALERT_CODE_REFRESH_FROM_CLIENT;
+                break;
+            case SyncSource.FULL_DOWNLOAD:
+                ret = SyncML.ALERT_CODE_REFRESH_FROM_SERVER;
+                break;
+            case SyncSource.INCREMENTAL_SYNC:
+                ret = SyncML.ALERT_CODE_FAST;
+                break;
+            case SyncSource.INCREMENTAL_UPLOAD:
+                ret = SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT;
+                break;
+            case SyncSource.INCREMENTAL_DOWNLOAD:
+                ret = SyncML.ALERT_CODE_ONE_WAY_FROM_SERVER;
+                break;
+            default:
+                Log.error(TAG_LOG, "Unexpected source sync mode " + sourceSyncMode);
+        }
+        return ret;
+    }
+
+    private int getSourceSyncMode(int syncMLSyncMode) {
+        int ret = SyncSource.INCREMENTAL_SYNC;
+        switch (syncMLSyncMode) {
+            case SyncML.ALERT_CODE_SLOW:
+                ret = SyncSource.FULL_SYNC;
+                break;
+            case SyncML.ALERT_CODE_REFRESH_FROM_CLIENT:
+                ret = SyncSource.FULL_UPLOAD;
+                break;
+            case SyncML.ALERT_CODE_REFRESH_FROM_SERVER:
+                ret = SyncSource.FULL_DOWNLOAD;
+                break;
+            case SyncML.ALERT_CODE_FAST:
+                ret = SyncSource.INCREMENTAL_SYNC;
+                break;
+            case SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT:
+                ret = SyncSource.INCREMENTAL_UPLOAD;
+                break;
+            case SyncML.ALERT_CODE_ONE_WAY_FROM_SERVER:
+                ret = SyncSource.INCREMENTAL_DOWNLOAD;
+                break;
+            default:
+                Log.error(TAG_LOG, "Unexpected syncml sync mode " + syncMLSyncMode);
+        }
+        return ret;
+    }
+
 }
 

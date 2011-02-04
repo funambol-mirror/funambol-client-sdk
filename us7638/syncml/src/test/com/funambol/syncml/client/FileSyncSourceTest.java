@@ -48,6 +48,7 @@ import com.funambol.storage.StringKeyValueFileStore;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncSource;
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Base64;
@@ -199,7 +200,7 @@ public class FileSyncSourceTest extends TestCase {
         createFile("test-0.txt", content);
         tracker.addItem(new SyncItem("test-0.txt"));
 
-        source.beginSync(SyncML.ALERT_CODE_SLOW, false);
+        source.beginSync(SyncSource.FULL_SYNC, false);
         SyncItem item = source.getNextItem();
         assertTrue(item != null);
         assertTrue(source.getNextItem() == null);
@@ -250,7 +251,7 @@ public class FileSyncSourceTest extends TestCase {
         createFile("test-0.txt", content);
         tracker.addItem(new SyncItem("test-0.txt"));
 
-        source.beginSync(SyncML.ALERT_CODE_SLOW, false);
+        source.beginSync(SyncSource.FULL_SYNC, false);
         SyncItem item = source.getNextItem();
         assertTrue(item != null);
         assertTrue(source.getNextItem() == null);
@@ -275,7 +276,7 @@ public class FileSyncSourceTest extends TestCase {
             Log.error("Exception while deleting: " + directory+"test-0.txt" + " -- " + e.toString());
         }
         
-        source.beginSync(SyncML.ALERT_CODE_FAST, false);
+        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
         SyncItem sitem = source.createSyncItem("key0", SourceConfig.FILE_OBJECT_TYPE,
                                               SyncItem.STATE_NEW,
                                               "", 0);
@@ -296,7 +297,7 @@ public class FileSyncSourceTest extends TestCase {
         createFile("test-0.txt", fileContent);
         tracker.addItem(new SyncItem("test-0.txt"));
 
-        source.beginSync(SyncML.ALERT_CODE_SLOW, false);
+        source.beginSync(SyncSource.FULL_SYNC, false);
         SyncItem chunk1 = source.getNextItem();
         assertTrue(chunk1 != null);
         assertTrue(source.getNextItem() == null);

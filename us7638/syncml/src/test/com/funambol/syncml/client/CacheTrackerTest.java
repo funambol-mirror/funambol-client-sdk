@@ -40,6 +40,7 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncSource;
 
 import com.funambol.util.Log;
 import com.funambol.storage.StringKeyValueStore;
