@@ -53,45 +53,45 @@ public class DeviceConfig {
      * Information DTD used in the representation of the Device Information. The
      * value MUST be "1.1". This property is mandatory.
      */
-    public String verDTD;
+    private String verDTD;
 
     /**
      * Specifies the name of the manufacturer of the device. Mandatory
      */
-    public String man;
+    private String man;
     
     /**
      * Specifies the model name or model number of the device. Mandatory
      */
-    public String mod;
+    private String mod;
 
     /**
      * Specifies the OEM (Original Equipment Manufacturer) of the device. 
      * This property is optional.
      */
-    public String oem;
+    private String oem;
 
     /**
      * Specifies the firmware version of the device. Mandatory
      */
-    public String fwv;
+    private String fwv;
 
     /**
      * Specifies the software version of the device. Mandatory
      */
-    public String swv;
+    private String swv;
 
     /**
      * Specifies the hardware version of the device. This property is optional.
      */
-    public String hwv;
+    private String hwv;
 
     /**
      * Specifies the identifier of the source synchronization device. 
      * The content information MUST specify a theoretically, globally unique
      * identifier. This property is mandatory.
      */
-    public String devID;
+    private String devID;
 
     /**
      * Specifies the type of the source synchronization device. 
@@ -99,31 +99,31 @@ public class DeviceConfig {
      * "pda", "phone", "smartphone", "server", "workstation". 
      * Other values can also be specified. This property is mandatory.
      */
-    public String devType;
+    private String devType;
 
     /**
      * Specifies the implemented DS version. This property is optional.           
      */
-    public String dsV;
+    private String dsV;
 
     /**
      * Specifies that the device supports UTC based time. 
      * If utc = TRUE, the server SHOULD send time in UTC format, else MUST
      * send in local time. Default value = TRUE.
      */
-    public boolean utc;
+    private boolean utc;
 
     /**
      * Specifies that the device supports handling of large objects. 
      * Default value = FALSE.
      */
-    public boolean loSupport;
+    private boolean loSupport;
 
     /**
      * Specifies that the device supports number of changes. 
      * Default value = FALSE.
      */
-    public boolean nocSupport;
+    private boolean nocSupport;
 
     /**
      * Specifies the maximum message size allowed by the device.
@@ -134,7 +134,7 @@ public class DeviceConfig {
      * Specifies the maximum object size allowed by the device.
      * Default value = 0 (no maxObjSize set).
      */
-    public int maxObjSize;
+    private int maxObjSize;
 
     /**
      * Specifies if the synchronization shall be in XML or WBXML
@@ -184,6 +184,112 @@ public class DeviceConfig {
     public void setWBXML(boolean wbxml) {
         this.wbxml = wbxml;
     }
+
+    public String getMan() {
+        return man;
+    }
+
+    public void setMan(String man) {
+        this.man = man;
+    }
+
+    public String getMod() {
+        return mod;
+    }
+
+    public void setMod(String mod) {
+        this.mod = mod;
+    }
+
+    public String getOEM() {
+        return oem;
+    }
+
+    public void setOEM(String oem) {
+        this.oem = oem;
+    }
+
+    public String getFwV() {
+        return fwv;
+    }
+
+    public void setFwV(String fwv) {
+        this.fwv = fwv;
+    }
+
+    public String getSwV() {
+        return swv;
+    }
+
+    public void setSwV(String swv) {
+        this.swv = swv;
+    }
+
+    public String getHwV() {
+        return hwv;
+    }
+
+    public void setHwV(String hwv) {
+        this.hwv = hwv;
+    }
+
+    public String getDevID() {
+        return devID;
+    }
+
+    public void setDevID(String devID) {
+        this.devID = devID;
+    }
+
+    public String getDevType() {
+        return devType;
+    }
+
+    public void setDevType(String devType) {
+        this.devType = devType;
+    }
+
+    public int getMaxObjSize() {
+        return maxObjSize;
+    }
+
+    public void setMaxObjSize(int maxObjSize) {
+        this.maxObjSize = maxObjSize;
+    }
+
+    public boolean getNocSupport() {
+        return nocSupport;
+    }
+
+    public void setNocSupport(boolean nocSupport) {
+        this.nocSupport = nocSupport;
+    }
+
+    public boolean getLoSupport() {
+        return loSupport;
+    }
+
+    public void setLoSupport(boolean loSupport) {
+        this.loSupport = loSupport;
+    }
+
+    public boolean getUtc() {
+        return utc;
+    }
+
+    public void setUtc(boolean utc) {
+        this.utc = utc;
+    }
+
+    public String getVerDTD() {
+        return verDTD;
+    }
+
+    public void setVerDTD(String verDTD) {
+        this.verDTD = verDTD;
+    }
+
+
 
 }
 

@@ -36,6 +36,7 @@
 package com.funambol.syncml.spds;
 
 import com.funambol.util.CodedException;
+import com.funambol.sync.SyncException;
 
 /**
  * This exception represents the base exception for synchronization

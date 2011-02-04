@@ -38,15 +38,16 @@ package com.funambol.syncml.client;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SyncSource;
-import com.funambol.syncml.spds.SyncException;
-import com.funambol.syncml.spds.SyncListener;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncFilter;
+import com.funambol.sync.SyncAnchor;
+
 import com.funambol.syncml.spds.ItemStatus;
 import com.funambol.syncml.protocol.SyncMLStatus;
-
-import com.funambol.syncml.protocol.SyncFilter;
 import com.funambol.syncml.protocol.SyncML;
 
 import com.funambol.util.Log;
@@ -591,33 +592,19 @@ public abstract class TrackableSyncSource implements SyncSource {
     }
 
     /** 
-     * Return the Last Anchor for this source
+     * Return the sync Anchor for this source
      */
-    public long getLastAnchor() {
-        return config.getLastAnchor();
+    public SyncAnchor getSyncAnchor() {
+        return config.getSyncAnchor();
     }
     
     /** 
      * Set the value of the Last Anchor for this source
      */
-    public void setLastAnchor(long time) {
-        config.setLastAnchor(time);
+    public void setSyncAnchor(SyncAnchor syncAnchor) {
+        config.setSyncAnchor(syncAnchor);
     }
     
-    /** 
-     * Return the Next Anchor for this source
-     */
-    public long getNextAnchor() {
-        return config.getNextAnchor();
-    }
-    
-    /** 
-     * Set the value of the Next Anchor for this source
-     */
-    public void setNextAnchor(long time) {
-        config.setNextAnchor(time);
-    }
-
     /**
      * Indicates if the source supports resuming. If it does, then the methods
      * <i>exists</i> and <i>hasChangedSinceLastSync</i> must be properly

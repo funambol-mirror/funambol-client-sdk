@@ -34,9 +34,9 @@
  *
  *
  */
-
-
 package com.funambol.syncml.spds;
+
+import com.funambol.sync.SyncException;
 
 /**
  * Manages the Transport agent read errors when sync'ing

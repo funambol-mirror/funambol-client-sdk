@@ -37,17 +37,18 @@ package com.funambol.syncml.client;
 
 import java.util.Vector;
 
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SyncSource;
-import com.funambol.syncml.spds.SyncException;
-import com.funambol.syncml.spds.SyncListener;
-import com.funambol.syncml.spds.ItemStatus;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncFilter;
+import com.funambol.sync.SyncAnchor;
 
-import com.funambol.syncml.protocol.SyncFilter;
+import com.funambol.syncml.spds.ItemStatus;
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.SyncMLStatus;
 
+import com.funambol.sync.SyncItem;
 import com.funambol.util.Log;
 
 /**
@@ -518,44 +519,20 @@ public abstract class BaseSyncSource implements SyncSource {
         serverItemsNumber = number;
     }
 
-    /**
-     * Default implementation for
-     */
-    public void dataReceived(String date, int size) {
-        if (Log.isLoggable(Log.INFO)) {
-            Log.info(TAG_LOG, "Received " + size + "bytes.");
-        }
-    }
-
-
     /** 
      * Return the Last Anchor for this source
      */
-    public long getLastAnchor() {
-        return config.getLastAnchor();
+    public SyncAnchor getSyncAnchor() {
+        return config.getSyncAnchor();
     }
     
     /** 
      * Set the value of the Last Anchor for this source
      */
-    public void setLastAnchor(long time) {
-        config.setLastAnchor(time);
+    public void setSyncAnchor(SyncAnchor anchor) {
+        config.setSyncAnchor(anchor);
     }
     
-    /** 
-     * Return the Next Anchor for this source
-     */
-    public long getNextAnchor() {
-        return config.getNextAnchor();
-    }
-    
-    /** 
-     * Set the value of the Next Anchor for this source
-     */
-    public void setNextAnchor(long time) {
-        config.setNextAnchor(time);
-    }
-
     /**
      * Called after SyncManager preparation and initialization just before start
      * the synchronization of the SyncSource.

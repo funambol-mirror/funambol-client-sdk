@@ -32,6 +32,7 @@ Build file for Funambol Java SyncML
         <property name="dir.classes"      value="${dir.output}/classes"      />
         <property name="dir.tools"        value="${basedir}/../tools"        />
         <property name="lib.funambol.common" value="${basedir}/../common/output/se/funambol-se-common.jar"/>
+        <property name="lib.funambol.sync" value="${basedir}/../sync/output/se/funambol-se-sync.jar"/>
         <property name="lib.kxml"            value="${basedir}/lib/kxml2-2.3.0.jar"/> 
         <property name="dir.html"         value="${dir.output}/html"         />
     </target>
@@ -53,6 +54,7 @@ Build file for Funambol Java SyncML
               listfiles="yes">
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>
+                <pathelement location="${lib.funambol.sync}"/>
                 <pathelement location="${lib.kxml}"/>
             </classpath>
         </javac>
@@ -122,6 +124,7 @@ Build file for Funambol Java SyncML
                <classpath>
                    <pathelement location="${lib.junit}"/>
                    <pathelement location="${lib.funambol.common}"/>
+                   <pathelement location="${lib.funambol.sync}"/>
                    <pathelement location="${lib.kxml}"/>
                </classpath>
         </javac>
@@ -134,6 +137,7 @@ Build file for Funambol Java SyncML
                 <pathelement location="${lib.junit}"/>
                 <pathelement path="${dir.classes}"/>
                 <pathelement location="${lib.funambol.common}"/>
+                <pathelement location="${lib.funambol.sync}"/>
                <pathelement location="${lib.kxml}"/>
             </classpath>
 
@@ -157,6 +161,7 @@ Build file for Funambol Java SyncML
                 <pathelement location="${lib.junit}"/>
                 <pathelement path="${dir.classes}"/>
                 <pathelement location="${lib.funambol.common}"/>
+                <pathelement location="${lib.funambol.sync}"/>
                <pathelement location="${lib.kxml}"/>
             </classpath>
 

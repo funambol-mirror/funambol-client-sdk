@@ -45,11 +45,12 @@ import com.funambol.util.MD5;
 import com.funambol.util.Base64;
 import com.funambol.util.Log;
 import com.funambol.storage.StringKeyValueStore;
-import com.funambol.syncml.spds.SyncItem;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncException;
+
 import com.funambol.syncml.spds.ItemStatus;
 import com.funambol.syncml.protocol.SyncMLStatus;
 import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.spds.SyncException;
 
 /**
  * This class implements a ChangesTracker and it is based on comparison

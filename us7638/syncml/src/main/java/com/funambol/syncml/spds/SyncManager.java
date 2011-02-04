@@ -46,6 +46,14 @@ import com.funambol.util.Base64;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.BasicSyncListener;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SourceConfig;
+
 import com.funambol.syncml.protocol.*;
 import com.funambol.util.HttpTransportAgent;
 import com.funambol.util.TransportAgent;
@@ -91,6 +99,7 @@ public class SyncManager {
 
     /* SyncManager configuration*/
     private SyncConfig config;
+    private DeviceConfig deviceConfig;
     /* SyncSource to sync*/
     protected SyncSource source;
     /* Device ID taken from DeviceConfig*/
@@ -235,13 +244,13 @@ public class SyncManager {
      * @param conf is the configuration data filled by the client
      *
      */
-    public SyncManager(SyncConfig conf) {
+    public SyncManager(SyncConfig conf, DeviceConfig deviceConfig) {
         this.config = conf;
         this.source = null;
 
         // Cache device info
-        this.deviceId = config.deviceConfig.devID;
-        this.maxMsgSize = config.deviceConfig.getMaxMsgSize();
+        this.deviceId = deviceConfig.getDevID();
+        this.maxMsgSize = deviceConfig.getMaxMsgSize();
 
         this.state = 0;
         this.serverAlerts = null;
@@ -260,7 +269,7 @@ public class SyncManager {
                 conf.forceCookies,
                 conf.proxyConfig);
 
-         wbxml  = config.deviceConfig.isWBXML();
+         wbxml  = deviceConfig.isWBXML();
          if (wbxml) {
              transportAgent.setRequestContentType("application/vnd.syncml+wbxml");
          }
@@ -431,7 +440,8 @@ public class SyncManager {
 
             //Set NEXT Anchor referring to current timestamp
             long syncStartTime = System.currentTimeMillis();
-            this.source.setNextAnchor(syncStartTime);
+            SyncMLAnchor anchor = (SyncMLAnchor)this.source.getSyncAnchor();
+            anchor.setNext(syncStartTime);
             syncStatus.setStartTime(syncStartTime);
 
             this.sessionID = String.valueOf(System.currentTimeMillis());
@@ -603,7 +613,7 @@ public class SyncManager {
                 cancelSync();
             }
 
-            getSyncListenerFromSource(src).startMapping();
+            getSyncListenerFromSource(src).startFinalizing();
             
             // Send the map message only if a mapping or a status has to be sent
             Hashtable mappings = syncStatus.getPendingMappings(); 
@@ -634,7 +644,8 @@ public class SyncManager {
                     // Release the memory pool
                     ObjectsPool.release();
                 } catch (ReadResponseException rre) {
-                    source.setLastAnchor(source.getNextAnchor());
+                    SyncMLAnchor syncMLAnchor = (SyncMLAnchor)source.getSyncAnchor();
+                    syncMLAnchor.setLast(syncMLAnchor.getNext());
                     //save last anchors if the mapping message has been sent but
                     //the response has not been received due to network problems
                     if (Log.isLoggable(Log.INFO)) {
@@ -673,13 +684,14 @@ public class SyncManager {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Notifying listener end mapping");
             }
-            getSyncListenerFromSource(src).endMapping();
+            getSyncListenerFromSource(src).endFinalizing();
 
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Changing anchors");
             }
             // Set the last anchor to the next timestamp for the source
-            source.setLastAnchor(source.getNextAnchor());
+            SyncMLAnchor syncMLAnchor = (SyncMLAnchor)source.getSyncAnchor();
+            syncMLAnchor.setLast(syncMLAnchor.getNext());
 
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Ending session (" + syncStatusCode + ")");
@@ -830,7 +842,7 @@ public class SyncManager {
         // Get ready to try the authentication more than once, because it can
         // fail for invalid nonce or invalid auth method and we must perform
         // different attempts
-        boolean md5 = SyncML.AUTH_TYPE_MD5.equals(config.preferredAuthType);
+        boolean md5 = SyncConfig.AUTH_TYPE_MD5 == config.preferredAuthType;
         int md5Attempts = 0;
         boolean retry;
 
@@ -1060,7 +1072,8 @@ public class SyncManager {
                     Item alertStatusItem = Item.newInstance();
                     Anchor nAnchor = new Anchor();
                     if (serverNextAnchor == null) {
-                        long nextAnchor = source.getNextAnchor();
+                        SyncMLAnchor anchor = (SyncMLAnchor)source.getSyncAnchor();
+                        long nextAnchor = anchor.getNext();
                         nAnchor.setNext(""+nextAnchor);
                     } else {
                         nAnchor.setNext(serverNextAnchor);
@@ -1462,8 +1475,9 @@ public class SyncManager {
             // Prepare the body 
             SyncBody syncBody = new SyncBody();
 
-            long nextAnchor = source.getNextAnchor();
-            long lastAnchor = source.getLastAnchor();
+            SyncMLAnchor syncMLAnchor = (SyncMLAnchor)source.getSyncAnchor();
+            long nextAnchor = syncMLAnchor.getNext();
+            long lastAnchor = syncMLAnchor.getLast();
             String sourceUri = source.getSourceUri();
             String sourceName = source.getName();
 
@@ -1516,15 +1530,15 @@ public class SyncManager {
                 if (wbxml && forceCapsInXml) {
                     // We always send caps in xml, even if the sync is in wbxml
                     putMeta.setType("application/vnd.syncml-devinf+xml");
-                    String xmlDevInf = createXmlDevInf(config.deviceConfig, source);
+                    String xmlDevInf = createXmlDevInf(deviceConfig, source);
                     putItem.setData(Data.newInstance(xmlDevInf));
                 } else if (!wbxml) {
                     putMeta.setType("application/vnd.syncml-devinf+xml");
-                    DevInf devInf = createDevInf(config.deviceConfig, source);
+                    DevInf devInf = createDevInf(deviceConfig, source);
                     putItem.setData(Data.newInstance(devInf));
                 } else {
                     putMeta.setType("application/vnd.syncml-devinf+wbxml");
-                    DevInf devInf = createDevInf(config.deviceConfig, source);
+                    DevInf devInf = createDevInf(deviceConfig, source);
                     putItem.setData(Data.newInstance(devInf));
                 }
 
@@ -1600,29 +1614,35 @@ public class SyncManager {
         String sourceType = source.getType();
 
         DevInf devInf = new DevInf();
-        devInf.setVerDTD(new VerDTD(deviceConfig.verDTD));
-        devInf.setMan(deviceConfig.man);
-        devInf.setMod(deviceConfig.mod);
-        devInf.setOEM(deviceConfig.oem);
-        devInf.setSwV(deviceConfig.swv);
-        devInf.setFwV(deviceConfig.fwv);
-        devInf.setHwV(deviceConfig.hwv);
-        devInf.setDevID(deviceConfig.devID);
-        devInf.setDevTyp(deviceConfig.devType);
-        devInf.setUTC(new Boolean(deviceConfig.utc));
-        devInf.setSupportLargeObjs(new Boolean(deviceConfig.loSupport));
-        devInf.setSupportNumberOfChanges(new Boolean(deviceConfig.nocSupport));
+        devInf.setVerDTD(new VerDTD(deviceConfig.getVerDTD()));
+        devInf.setMan(deviceConfig.getMan());
+        devInf.setMod(deviceConfig.getMod());
+        devInf.setOEM(deviceConfig.getOEM());
+        devInf.setSwV(deviceConfig.getSwV());
+        devInf.setFwV(deviceConfig.getFwV());
+        devInf.setHwV(deviceConfig.getHwV());
+        devInf.setDevID(deviceConfig.getDevID());
+        devInf.setDevTyp(deviceConfig.getDevType());
+        devInf.setUTC(new Boolean(deviceConfig.getUtc()));
+        devInf.setSupportLargeObjs(new Boolean(deviceConfig.getLoSupport()));
+        devInf.setSupportNumberOfChanges(new Boolean(deviceConfig.getNocSupport()));
 
         // The source can also provide Ext
-        Vector devInfExts = source.getConfig().getDevInfExts();
-        if (devInfExts != null) {
-            // We must append this extra info
-            devInf.addExts(devInfExts);
+        SourceConfig srcConfig = source.getConfig();
+        DataStore ds = null;
+        if (srcConfig instanceof SyncMLSourceConfig) {
+            SyncMLSourceConfig syncMLSrcConfig = (SyncMLSourceConfig)srcConfig;
+            Vector devInfExts = syncMLSrcConfig.getDevInfExts();
+            if (devInfExts != null) {
+                // We must append this extra info
+                devInf.addExts(devInfExts);
+            }
+
+            // A source can provide its own full device info, but for
+            // backward compatibility this is not strictly necessary
+            ds = syncMLSrcConfig.getDataStore();
         }
 
-        // A source can provide its own full device info, but for
-        // backward compatibility this is not strictly necessary
-        DataStore ds = source.getConfig().getDataStore();
         if (ds == null) {
             // Add one store for this source
             ds = new DataStore();
@@ -2253,7 +2273,7 @@ public class SyncManager {
                 src.setLocURI(SyncML.DEVINF12);
                 devInfItem.setSource(src);
 
-                DevInf devInf = createDevInf(config.deviceConfig, source);
+                DevInf devInf = createDevInf(deviceConfig, source);
                 Data data = Data.newInstance(devInf);
                 devInfItem.setData(data);
                 devInfRes.setItem(devInfItem);

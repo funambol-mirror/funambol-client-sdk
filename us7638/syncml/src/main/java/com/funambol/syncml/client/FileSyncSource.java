@@ -42,9 +42,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SyncException;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncAnchor;
+
 import com.funambol.syncml.protocol.SyncMLStatus;
 import com.funambol.platform.FileAdapter;
 import com.funambol.util.Log;

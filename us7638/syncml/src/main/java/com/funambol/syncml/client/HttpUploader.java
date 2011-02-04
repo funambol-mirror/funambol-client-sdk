@@ -41,11 +41,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.funambol.syncml.spds.SyncException;
-import com.funambol.syncml.spds.SyncListener;
-import com.funambol.syncml.spds.SyncConfig;
-import com.funambol.syncml.spds.DeviceConfig;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncConfig;
 
+import com.funambol.syncml.spds.DeviceConfig;
 import com.funambol.syncml.protocol.SyncMLStatus;
 
 import com.funambol.platform.FileAdapter;
@@ -210,11 +210,13 @@ public class HttpUploader {
                     Log.debug(TAG_LOG, "Authorization is specified via jsessionid");
                 }
             }
+            /** TODO FIXME
             DeviceConfig devConf = syncConfig.getDeviceConfig();
             if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Setting device id header to: " + devConf.devID);
+                Log.debug(TAG_LOG, "Setting device id header to: " + devConf.getDevID());
             }
-            conn.setRequestProperty(X_DEVID_HEADER, devConf.devID);
+            conn.setRequestProperty(X_DEVID_HEADER, devConf.getDevID());
+            */
 
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Setting luid to: " + key);

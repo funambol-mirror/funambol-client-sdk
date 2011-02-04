@@ -38,7 +38,7 @@ package com.funambol.syncml.client;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import com.funambol.syncml.spds.SyncItem;
+import com.funambol.sync.SyncItem;
 
 /**
  * This interface can be used by TrackableSyncSource to detect changes occourred

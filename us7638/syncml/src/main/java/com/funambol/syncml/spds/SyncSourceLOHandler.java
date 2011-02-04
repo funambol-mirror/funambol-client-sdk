@@ -42,6 +42,12 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
 
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncException;
+
 import com.funambol.syncml.protocol.*;
 
 import com.funambol.util.Base64;
@@ -353,7 +359,6 @@ class SyncSourceLOHandler {
 
         Vector items = new Vector();
         int ret = MORE;
-        boolean breakMsgOnLastChunk = source.getConfig().getBreakMsgOnLastChunk();
         do {
             items.addElement(item);
             // Notify the listener
@@ -362,15 +367,6 @@ class SyncSourceLOHandler {
             Chunk previousChunk = chunk;
             // Ask the source for next item
             chunk = getNextNewItem();
-
-            // If this is the last chunk of a LO, we may need to flush
-            if (breakMsgOnLastChunk && previousChunk.getLastChunkOfLO()) {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Last chunk of a LO, flusing SyncML message");
-                }
-                ret = FLUSH;
-                break;
-            }
 
             // Last new item found
             if (chunk == null) {
@@ -457,7 +453,6 @@ class SyncSourceLOHandler {
 
         Vector items = new Vector();
         int ret = MORE;
-        boolean breakMsgOnLastChunk = source.getConfig().getBreakMsgOnLastChunk();
         do {
             items.addElement(item);
             // Notify the listener
@@ -467,15 +462,6 @@ class SyncSourceLOHandler {
 
             // Ask the source for next item
             chunk = getNextUpdatedItem();
-
-            // If this is the last chunk of a LO, we may need to flush
-            if (breakMsgOnLastChunk && previousChunk.getLastChunkOfLO()) {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Last chunk of a LO, flusing SyncML message");
-                }
-                ret = FLUSH;
-                break;
-            }
 
             // Last item found
             if (chunk == null) {
@@ -699,8 +685,8 @@ class SyncSourceLOHandler {
 
         int ret = MORE;
         int itemsCounter = 1;
-        int maxItemsPerMessageInSlowSync = source.getConfig().getMaxItemsPerMessageInSlowSync();
-        boolean breakMsgOnLastChunk = source.getConfig().getBreakMsgOnLastChunk();
+        SourceConfig srcConfig = source.getConfig();
+        int maxItemsPerMessageInSlowSync = srcConfig.getMaxItemsPerMessageInSlowSync();
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "maxItemsPerMessageInSlowSync=" + maxItemsPerMessageInSlowSync);
         }
@@ -717,15 +703,6 @@ class SyncSourceLOHandler {
                 chunk = getNextItemWithResumeFilter(syncStatus);
             } else {
                 chunk = getNextItem();
-            }
-
-            // If this is the last chunk of a LO, we may need to flush
-            if (breakMsgOnLastChunk && previousChunk.getLastChunkOfLO()) {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Last chunk of a LO, flusing SyncML message");
-                }
-                ret = FLUSH;
-                break;
             }
 
             // Last item found

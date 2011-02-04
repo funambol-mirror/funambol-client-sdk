@@ -32,8 +32,9 @@
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol".
  */
-
 package com.funambol.syncml.spds;
+
+import com.funambol.sync.SyncException;
 
 /**
  * Exception related to the compressed sync error

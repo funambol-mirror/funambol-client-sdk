@@ -44,6 +44,7 @@ import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.SyncMLStatus;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueStoreFactory;
+import com.funambol.sync.SyncReport;
 import com.funambol.util.StringUtil;
 import com.funambol.util.DateUtil;
 import com.funambol.util.Log;
@@ -51,7 +52,7 @@ import com.funambol.util.Log;
 /**
  * A class that saves and retrieves the mapping information from the store
  */
-public class SyncStatus {
+public class SyncStatus implements SyncReport {
     
     private static final String TAG_LOG = "SyncStatus";
 
