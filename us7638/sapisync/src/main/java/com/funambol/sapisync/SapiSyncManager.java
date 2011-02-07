@@ -170,7 +170,8 @@ public class SapiSyncManager implements SyncManagerI {
                 return SyncSource.FULL_SYNC;
             }
         } else {
-            throw new IllegalArgumentException("Invalid source anchor format");
+            throw new SyncException(SyncException.ILLEGAL_ARGUMENT,
+                    "Invalid source anchor format");
         }
     }
 
@@ -184,7 +185,8 @@ public class SapiSyncManager implements SyncManagerI {
                 return SyncSource.FULL_DOWNLOAD;
             }
         } else {
-            throw new IllegalArgumentException("Invalid source anchor format");
+            throw new SyncException(SyncException.ILLEGAL_ARGUMENT,
+                    "Invalid source anchor format");
         }
     }
 
@@ -198,7 +200,8 @@ public class SapiSyncManager implements SyncManagerI {
                 return SyncSource.FULL_UPLOAD;
             }
         } else {
-            throw new IllegalArgumentException("Invalid source anchor format");
+            throw new SyncException(SyncException.ILLEGAL_ARGUMENT,
+                    "Invalid source anchor format");
         }
     }
 
