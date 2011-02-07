@@ -48,8 +48,8 @@ import com.funambol.client.customization.Customization;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.localization.Localization;
-import com.funambol.client.sapi.SapiHandler;
 import com.funambol.client.ui.SignupScreen;
+import com.funambol.sapisync.sapi.SapiHandler;
 
 import com.funambol.platform.HttpConnectionAdapter;
 import com.funambol.platform.DeviceInfoInterface;

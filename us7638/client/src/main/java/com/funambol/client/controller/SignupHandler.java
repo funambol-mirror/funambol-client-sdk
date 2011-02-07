@@ -35,15 +35,16 @@
 
 package com.funambol.client.controller;
 
+import java.io.IOException;
+import java.util.Vector;
+
 import com.funambol.client.customization.Customization;
 import com.funambol.client.localization.Localization;
-import com.funambol.client.sapi.SapiHandler;
 import com.funambol.client.ui.SignupScreen;
+import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.platform.DeviceInfoInterface;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
-import java.io.IOException;
-import java.util.Vector;
 
 import org.json.me.JSONArray;
 import org.json.me.JSONException;
