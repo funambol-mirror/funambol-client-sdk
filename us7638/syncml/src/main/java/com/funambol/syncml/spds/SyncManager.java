@@ -54,6 +54,7 @@ import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.ItemStatus;
+import com.funambol.sync.SyncManagerI;
 
 import com.funambol.syncml.protocol.*;
 import com.funambol.util.HttpTransportAgent;
@@ -72,7 +73,7 @@ import com.funambol.util.CodedException;
  * server, but the interface allows clients to specify their own transport
  * agent.
  */
-public class SyncManager {
+public class SyncManager implements SyncManagerI {
 
     //------------------------------------------------------------- Private data
     private static final String TAG_LOG = "SyncManager";

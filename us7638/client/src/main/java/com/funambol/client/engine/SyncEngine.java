@@ -52,7 +52,9 @@ import com.funambol.syncml.spds.SyncManager;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SyncManagerI;
 import com.funambol.syncml.protocol.DevInf;
+import com.funambol.sapisync.SapiSyncManager;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.util.TransportAgent;
 import com.funambol.util.StringUtil;
@@ -278,16 +280,31 @@ public class SyncEngine implements SyncSchedulerListener {
     }
 
 
-    // TODO FIXME: call/reimplement this (for BB)
-    protected SyncManager createManager(AppSyncSource source, SyncConfig config, DeviceConfig dc) {
-        SyncManager sm = new SyncManager(config, dc);
-        if(customTransportAgent != null) {
-            sm.setTransportAgent(customTransportAgent);
+    protected SyncManagerI createManager(AppSyncSource source, SyncConfig config, DeviceConfig dc) {
+
+        // We must create the proper sync manager instance, depending on the
+        // source type/properties
+        if (source.getIsMedia()) {
+            SapiSyncManager sm = new SapiSyncManager(config);
+            return sm;
+        } else {
+
+            // We apply some logic to decide some of the synchronization configuration properties.
+            DevInf serverDevInf = configuration.getServerDevInf();
+            adaptSyncConfig(config, dc, serverDevInf);
+
+            SyncManager sm = new SyncManager(config, dc);
+            if(customTransportAgent != null) {
+                sm.setTransportAgent(customTransportAgent);
+            }
+            if (customHeaders != null) {
+                sm.addTranportAgentHeaders(customHeaders);
+            }
+
+            // TODO not always necessary
+            sm.setFlagSendDevInf();
+            return sm;
         }
-        if (customHeaders != null) {
-            sm.addTranportAgentHeaders(customHeaders);
-        }
-        return sm;
     }
 
     private class SyncThread extends Thread {
@@ -296,7 +313,7 @@ public class SyncEngine implements SyncSchedulerListener {
         private boolean compressionRetry;
         private SyncConfig   syncConfig;
         private DeviceConfig   deviceConfig;
-        private SyncManager manager;
+        private SyncManagerI manager;
 
         public SyncThread(Vector sources) {
             this.appSources       = sources;
@@ -398,10 +415,6 @@ public class SyncEngine implements SyncSchedulerListener {
                 }
 
 
-                // We apply some logic to decide some of the synchronization configuration properties.
-                DevInf serverDevInf = configuration.getServerDevInf();
-                adaptSyncConfig(syncConfig, deviceConfig, serverDevInf);
-
                 // We need to create one manager for each source
                 manager = createManager(appSource, syncConfig, deviceConfig);
 
@@ -412,8 +425,6 @@ public class SyncEngine implements SyncSchedulerListener {
                 try {
                     // Set this source as the one currently synchronized
                     currentSource = appSource;
-                    // TODO not always necessary
-                    manager.setFlagSendDevInf();
                     
                     //This sync could have been cancelled when the client was
                     //deleting the device items during a refresh from server operation
@@ -498,7 +509,7 @@ public class SyncEngine implements SyncSchedulerListener {
         }
     }
 
-    protected void fireSync(SyncManager manager, SyncSource source, int syncMode, boolean askServerCaps) {
+    protected void fireSync(SyncManagerI manager, SyncSource source, int syncMode, boolean askServerCaps) {
         manager.sync(source, syncMode, askServerCaps);
     }
 

@@ -32,9 +32,10 @@ Build file for Funambol Java SyncML
         <property name="dir.tools"        value="${basedir}/../tools"        />
         <property name="dir.selected.src" value="${dir.output}/selected"     />
         <property name="dir.html"         value="${dir.output}/html"         />
-        <property name="lib.funambol.common" value="${basedir}/../common/output/se/funambol-se-common.jar"/>
-        <property name="lib.funambol.syncml" value="${basedir}/../syncml/output/se/funambol-se-syncml.jar"/>
-        <property name="lib.funambol.sync"   value="${basedir}/../sync/output/se/funambol-se-sync.jar"/>
+        <property name="lib.funambol.common"     value="${basedir}/../common/output/se/funambol-se-common.jar"/>
+        <property name="lib.funambol.syncml"     value="${basedir}/../syncml/output/se/funambol-se-syncml.jar"/>
+        <property name="lib.funambol.sync"       value="${basedir}/../sync/output/se/funambol-se-sync.jar"/>
+        <property name="lib.funambol.sapisync"   value="${basedir}/../sapisync/output/se/funambol-se-sapisync.jar"/>
     </target>
    
     <target name="compile" depends="init">
@@ -45,6 +46,7 @@ Build file for Funambol Java SyncML
                <classpath>
                    <pathelement location="${lib.funambol.common}"/>
                    <pathelement location="${lib.funambol.syncml}"/>
+                   <pathelement location="${lib.funambol.sapisync}"/>
                    <pathelement location="${lib.funambol.sync}"/>
                </classpath>
         </javac>

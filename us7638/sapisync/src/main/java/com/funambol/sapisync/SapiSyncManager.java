@@ -39,6 +39,7 @@ import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncManagerI;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
@@ -46,7 +47,7 @@ import com.funambol.util.StringUtil;
  * <code>SapiSyncManager</code> represents the synchronization engine performed
  * via SAPI.
  */
-public class SapiSyncManager {
+public class SapiSyncManager implements SyncManagerI {
 
     private static final String TAG_LOG = "SapiSyncManager";
 
@@ -71,7 +72,15 @@ public class SapiSyncManager {
      *
      */
     public void sync(SyncSource source) throws SyncException {
-        sync(source, source.getSyncMode());
+        sync(source, source.getSyncMode(), false);
+    }
+
+    public void sync(SyncSource source, boolean askServerDevInf) throws SyncException {
+        sync(source, source.getSyncMode(), askServerDevInf);
+    }
+
+    public void sync(SyncSource src, int syncMode) {
+        sync(src, syncMode, false);
     }
 
     /**
@@ -79,11 +88,12 @@ public class SapiSyncManager {
      *
      * @param source the SyncSource to synchronize
      * @param syncMode the sync mode
+     * @param askServerDevInf true if the engine shall ask for server caps
      *
      * @throws SyncException If an error occurs during synchronization
      */
-    public synchronized void sync(SyncSource src, int syncMode)
-            throws SyncException {
+    public synchronized void sync(SyncSource src, int syncMode, boolean askServerDevInf)
+    throws SyncException {
 
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "Starting sync");
@@ -107,6 +117,10 @@ public class SapiSyncManager {
         }
         
         performFinalizationPhase(src);
+    }
+
+    public void cancel() {
+        // TODO FIXME
     }
 
     private void performInitializationPhase(SyncSource src, int syncMode,
