@@ -3,8 +3,10 @@
 
     <property name="dir.src" value="src"/>
     <property name="dir.output" value="output"/>
-    <property name="lib.funambol.common" value="../../common/output/se/funambol-se-common.jar"/>
-    <property name="lib.funambol.syncml" value="../../syncml/output/se/funambol-se-syncml.jar"/>
+    <property name="lib.funambol.common"   value="../../common/output/se/funambol-se-common.jar"/>
+    <property name="lib.funambol.sync"     value="../../sync/output/se/funambol-se-sync.jar"/>
+    <property name="lib.funambol.syncml"   value="../../syncml/output/se/funambol-se-syncml.jar"/>
+    <property name="lib.funambol.sapisync" value="../../sapisync/output/se/funambol-se-sapisync.jar"/>
 
     <target name="clean" description="Delete all generated files">
         <delete dir="${dir.output}" failonerror="false"/>
@@ -16,14 +18,18 @@
         <javac srcdir="${dir.src}" destdir="${dir.output}" debug="true">
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>
+                <pathelement location="${lib.funambol.sync}"/>
                 <pathelement location="${lib.funambol.syncml}"/>
+                <pathelement location="${lib.funambol.sapisync}"/>
             </classpath>
         </javac>
     </target>
 
     <target name="jar" description="JARs the Task" depends="compile">
         <unjar src="${lib.funambol.common}" dest="${dir.output}"/>
+        <unjar src="${lib.funambol.sync}" dest="${dir.output}"/>
         <unjar src="${lib.funambol.syncml}" dest="${dir.output}"/>
+        <unjar src="${lib.funambol.sapisync}" dest="${dir.output}"/>
         <jar destfile="${ant.project.name}.jar" basedir="${dir.output}">
             <manifest>
                 <!-- Who is building this jar? -->

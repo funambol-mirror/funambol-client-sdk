@@ -51,7 +51,7 @@ public class StringKeyValueStoreFactory {
     }
 
     public StringKeyValueStore getStringKeyValueStore(String name) {
-        return new StringKeyValueMemoryStore();
+        return new StringKeyValueFileStore(name);
     }
 }
 

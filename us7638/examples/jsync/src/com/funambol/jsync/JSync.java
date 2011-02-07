@@ -47,15 +47,21 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SyncReport;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncAnchor;
+import com.funambol.sync.SyncManagerI;
+import com.funambol.sync.client.CacheTracker;
+import com.funambol.sync.client.RawFileSyncSource;
+import com.funambol.syncml.client.FileSyncSource;
+import com.funambol.syncml.spds.SyncMLAnchor;
 import com.funambol.syncml.spds.SyncManager;
-import com.funambol.syncml.spds.SyncConfig;
-import com.funambol.syncml.spds.SyncStatus;
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncSource;
 import com.funambol.syncml.spds.DeviceConfig;
 import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.client.CacheTracker;
-import com.funambol.syncml.client.FileSyncSource;
+import com.funambol.sapisync.SapiSyncManager;
+import com.funambol.sapisync.SapiSyncAnchor;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueMemoryStore;
 import com.funambol.storage.StringKeyValueFileStore;
@@ -73,7 +79,7 @@ public class JSync {
     private String password  = null;
     private String url       = null;
     private int    logLevel  = Log.DISABLED;
-    private int    syncMode  = SyncML.ALERT_CODE_FAST;
+    private int    syncMode  = SyncSource.INCREMENTAL_SYNC;
     private String remoteUri = "briefcase";
     private boolean raw      = false;
     private int customMsgSize = 16*1024;
@@ -82,6 +88,7 @@ public class JSync {
     private String sourceEncoding = null;
     private boolean md5 = false;
     private boolean wbxml = false;
+    private boolean mediaEngine = false;
     private String  dir;
 
     public JSync(String args[]) {
@@ -102,25 +109,30 @@ public class JSync {
         // Apply customized device config
         DeviceConfig dc = new DeviceConfig();
         if (customDeviceId != null) {
-            dc.devID = customDeviceId;
+            dc.setDevID(customDeviceId);
         }
         dc.setMaxMsgSize(customMsgSize);
         dc.setWBXML(wbxml);
-        config.deviceConfig = dc;
         // Set credentials
         config.syncUrl  = url;
         config.userName = username;
         config.password = password;
 
         if (md5) {
-            config.preferredAuthType = SyncML.AUTH_TYPE_MD5;
+            config.preferredAuthType = SyncConfig.AUTH_TYPE_MD5;
         }
 
         String serverName = StringUtil.extractAddressFromUrl(url, StringUtil.getProtocolFromUrl(url));
         String clientConfigDir = "config" + File.separator + serverName;
 
         config.compress = false;
-        SyncManager manager = new SyncManager(config);
+        SyncManagerI manager;
+        
+        if (mediaEngine) {
+            manager = new SapiSyncManager(config);
+        } else {
+            manager = new SyncManager(config, dc);
+        }
         JSyncSourceConfig sc = new JSyncSourceConfig(SourceConfig.BRIEFCASE, SourceConfig.FILE_OBJECT_TYPE, remoteUri);
 
         // Define the source config file
@@ -138,6 +150,15 @@ public class JSync {
             System.err.println("Cannot create configuration directory tree");
             System.exit(1);
         }
+
+        SyncAnchor anchor;
+        if (mediaEngine) {
+            anchor = new SapiSyncAnchor();
+        } else {
+            anchor = new SyncMLAnchor(); 
+        }
+        sc.setSyncAnchor(anchor);
+
 
         // If a configuration exists, then load it
         try {
@@ -179,16 +200,11 @@ public class JSync {
         sc.setSyncMode(syncMode);
         FileSyncSource fss = new FileSyncSource(sc, ct, dir);
 
+
         try {
             manager.sync(fss);
             // Save the configuration
             sc.save(sourceConfigFile);
-            if (Log.getLogLevel() > Log.INFO) {
-                SyncStatus ss = manager.getSyncStatus();
-                if (ss != null) {
-                    Log.debug(ss.toString());
-                }
-            }
         } catch (Exception e) {
             Log.error(TAG_LOG, "Exception while synchronizing", e);
         }
@@ -251,6 +267,7 @@ public class JSync {
                     System.exit(1);
                 }
             }
+            ++i;
         }
 
         // If we have a config file we shall load it now
@@ -390,6 +407,8 @@ public class JSync {
                     usage();
                     System.exit(1);
                 }
+            } else if (arg.equals("--media")) {
+                mediaEngine = true;
             } else {
                 System.err.println("Invalid option: " + arg);
                 usage();
@@ -435,7 +454,8 @@ public class JSync {
                .append("--md5 tries md5 authentication first\n")
                .append("--wbxml use WBXML encoding\n")
                .append("--dir <dirname> the directory to sync\n")
-               .append("--config <file> read configuration properties from file");
+               .append("--config <file> read configuration properties from file\n")
+               .append("--media use the sapi sync engine for media sources");
 
         System.out.println(options);
     }

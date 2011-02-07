@@ -80,6 +80,9 @@ public class SyncItem {
 
     /** The item status (specify SUCCESS or FAILURE) */
     protected int itemStatus;
+
+    /** Item guid (info is optional) */
+    protected String guid;
     
     //------------------------------------------------------------- Constructors
     
@@ -298,6 +301,14 @@ public class SyncItem {
 
     public void setSyncStatus(int status) {
         this.itemStatus = status;
+    }
+
+    public String getGuid() {
+        return guid;
+    }
+
+    public void setGuid(String guid) {
+        this.guid = guid;
     }
 }
 

@@ -35,10 +35,16 @@
 
 package com.funambol.sapisync;
 
+import java.util.Date;
+import java.io.OutputStream;
+import java.io.IOException;
+
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+import org.json.me.JSONArray;
+
 import com.funambol.sync.BasicSyncListener;
 import com.funambol.sync.ItemStatus;
-import java.util.Date;
-
 import com.funambol.sync.SyncAnchor;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
@@ -46,6 +52,8 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncManagerI;
+import com.funambol.storage.StringKeyValueStoreFactory;
+import com.funambol.storage.StringKeyValueStore;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
@@ -58,6 +66,8 @@ import java.util.Vector;
 public class SapiSyncManager implements SyncManagerI {
 
     private static final String TAG_LOG = "SapiSyncManager";
+
+    private static final int MAX_ITEMS_PER_BLOCK = 100;
 
     private SyncConfig syncConfig = null;
     private SapiSyncHandler sapiSyncHandler = null;
@@ -133,19 +143,26 @@ public class SapiSyncManager implements SyncManagerI {
         // TODO FIXME: check if resume is needed
         boolean resume = false;
 
-        // TODO FIXME: twin detection
-        
-        performInitializationPhase(src, getActualSyncMode(src, syncMode), resume);
+        try {
+            getSyncListenerFromSource(src).startSession();
 
-        if(isDownloadPhaseNeeded(syncMode)) {
-            performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
-        }
+            performInitializationPhase(src, getActualSyncMode(src, syncMode), resume);
 
-        if(isUploadPhaseNeeded(syncMode)) {
-            performUploadPhase(src, getActualUploadSyncMode(src), resume);
+            getSyncListenerFromSource(src).syncStarted(getActualSyncMode(src, syncMode));
+
+            if(isDownloadPhaseNeeded(syncMode)) {
+                performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
+            }
+
+            if(isUploadPhaseNeeded(syncMode)) {
+                performUploadPhase(src, getActualUploadSyncMode(src), resume);
+            }
+
+            performFinalizationPhase(src);
+        } finally {
+            // TODO: create a report
+            getSyncListenerFromSource(src).endSession(null);
         }
-        
-        performFinalizationPhase(src);
     }
 
     public void cancel() {
@@ -196,17 +213,163 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void performDownloadPhase(SyncSource src, int syncMode, boolean resume) {
+    private void performDownloadPhase(SyncSource src, int syncMode, boolean resume) throws SyncException {
+
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Starting download phase " + syncMode);
+        }
+        // TODO FIXME ////////////
+        if (syncMode == SyncSource.FULL_DOWNLOAD) {
+            syncMode = SyncSource.INCREMENTAL_DOWNLOAD;
+            Log.info(TAG_LOG, "Temporarly switched to incremental download");
+        }
+        /////////////////////////
+
+        StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
+        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore(src.getName() + "_mapping");
+        try {
+            mapping.load();
+        } catch (Exception e) {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "The mapping store does not exist, use an empty one");
+            }
+        }
 
         if (syncMode == SyncSource.FULL_DOWNLOAD) {
+
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
             SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
-            long anchor = sapiAnchor.getDownloadAnchor();
-            long now    = (new Date()).getTime();
+            Date anchor = new Date(sapiAnchor.getDownloadAnchor());
+            Date now    = (new Date());
 
+            try {
+                // TODO FIXME: use the remote uri
+                SapiSyncHandler.ChangesSet changesSet = sapiSyncHandler.getIncrementalChanges(anchor, "picture");
 
+                if (changesSet != null) {
+                    // We must pass all of the items to the sync source, but for each
+                    // item we need to retrieve the complete information
+                    if (changesSet.added != null) {
+                        applyNewUpdItems(src, changesSet.added, SyncItem.STATE_NEW, mapping);
+                    }
+
+                    if (changesSet.updated != null) {
+                        applyNewUpdItems(src, changesSet.updated, SyncItem.STATE_UPDATED, mapping);
+                    }
+
+                    if (changesSet.deleted != null) {
+                        applyDelItems(src, changesSet.deleted, mapping);
+                    }
+                }
+            } catch (JSONException je) {
+                Log.error(TAG_LOG, "Cannot apply changes", je);
+            }
         }
     }
+
+    private void applyNewUpdItems(SyncSource src, JSONArray added, char state, StringKeyValueStore mapping)
+    throws SyncException, JSONException {
+        // The JSONArray contains the "id" of the new items, we still need to
+        // download their complete meta information. We get the new items in
+        // pages to make sure we don't use too much memory. Each page of items
+        // is then passed to the sync source
+        int i = 0;
+        while(i < added.length()) {
+            // Fetch a single page of items
+            JSONArray itemsId = new JSONArray();
+            for(int j=0;j<MAX_ITEMS_PER_BLOCK && i < added.length();++j) {
+                int id = Integer.parseInt(added.getString(i++));
+                itemsId.put(id);
+            }
+            if (itemsId.length() > 0) {
+                // Ask for these items
+                JSONArray items = sapiSyncHandler.getItems("picture", itemsId);
+                // Apply these changes into the sync source
+                if (items != null) {
+                    Vector sourceItems = new Vector();
+                    for(int k=0;k<items.length();++k) {
+                        JSONObject item = items.getJSONObject(k);
+                        String     guid = item.getString("id");
+                        long       size = Long.parseLong(item.getString("size"));
+
+                        String luid;
+                        if (state == SyncItem.STATE_UPDATED) {
+                            luid = mapping.get(guid);
+                        } else {
+                            luid = guid;
+                        }
+
+                        SyncItem syncItem = src.createSyncItem(luid, src.getType(), state,  null, size);
+                        syncItem.setGuid(guid);
+                        OutputStream os = null;
+                        try {
+                            os = syncItem.getOutputStream();
+                            os.write(item.toString().getBytes());
+                            os.close();
+                        } catch (IOException ioe) {
+                            Log.error(TAG_LOG, "Cannot write into sync item stream", ioe);
+                            // Ignore this item and continue
+                        } finally {
+                            try {
+                                if (os != null) {
+                                    os.close();
+                                }
+                            } catch (IOException ioe) {
+                            }
+                        }
+
+
+                        if (state == SyncItem.STATE_UPDATED) {
+                            getSyncListenerFromSource(src).itemUpdated(syncItem);
+                        } else {
+                            getSyncListenerFromSource(src).itemReceived(syncItem);
+                        }
+
+                        sourceItems.addElement(syncItem);
+                    }
+                    // Apply the items in the sync source
+                    sourceItems = src.applyChanges(sourceItems);
+                    // The sourceItems returned by the call contains the LUID,
+                    // so we can create the luid/guid map here
+                    if (state == SyncItem.STATE_NEW) {
+                        try {
+                            for(int l=0;l<sourceItems.size();++l) {
+                                SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
+                                if (Log.isLoggable(Log.TRACE)) {
+                                    Log.trace(TAG_LOG, "Updating mapping info for: " + newItem.getGuid() + "," + newItem.getKey());
+                                }
+                                mapping.put(newItem.getGuid(), newItem.getKey());
+                                mapping.save();
+                            }
+                        } catch (Exception e) {
+                            Log.error(TAG_LOG, "Cannot save mappings", e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void applyDelItems(SyncSource src, JSONArray removed, StringKeyValueStore mapping)
+    throws SyncException, JSONException {
+
+        Vector delItems = new Vector();
+        for(int i=0;i < removed.length();++i) {
+            String guid = removed.getString(i++);
+            String luid = mapping.get(guid);
+            if (luid == null) {
+                luid = guid;
+            }
+            SyncItem delItem = new SyncItem(luid, src.getType(), SyncItem.STATE_DELETED, null);
+            delItems.addElement(delItem);
+            getSyncListenerFromSource(src).itemDeleted(delItem);
+        }
+
+        if (delItems.size() > 0) {
+            src.applyChanges(delItems);
+        }
+    }
+
 
     private void performFinalizationPhase(SyncSource src) {
         sapiSyncHandler.logout();
@@ -285,9 +448,10 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private boolean isDownloadPhaseNeeded(int syncMode) {
-        return (syncMode == SyncSource.FULL_SYNC) ||
-               (syncMode == SyncSource.INCREMENTAL_SYNC) ||
-               (syncMode == SyncSource.INCREMENTAL_DOWNLOAD);
+        return ((syncMode == SyncSource.FULL_DOWNLOAD) ||
+                (syncMode == SyncSource.FULL_SYNC) ||
+                (syncMode == SyncSource.INCREMENTAL_SYNC) ||
+                (syncMode == SyncSource.INCREMENTAL_DOWNLOAD));
     }
 
     private boolean isUploadPhaseNeeded(int syncMode) {

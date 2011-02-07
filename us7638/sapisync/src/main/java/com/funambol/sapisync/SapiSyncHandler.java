@@ -150,46 +150,80 @@ public class SapiSyncHandler {
         }
     }
 
-    public Vector incrementalDownload(Date from, Date to, String dataName) throws SyncException {
+    protected class ChangesSet {
+        public JSONArray added;
+        public JSONArray updated;
+        public JSONArray deleted;
+    }
 
-        JSONObject request = new JSONObject();
-        try {
-            request.put("from", DateUtil.formatDateTimeUTC(from));
-            request.put("to", DateUtil.formatDateTimeUTC(to));
-        } catch (JSONException je) {
-            // TODO FIXME
-        }
+    public ChangesSet getIncrementalChanges(Date from, String dataType) throws JSONException {
+
+        Vector params = new Vector();
+        params.add("from=" + DateUtil.formatDateTimeUTC(from));
+        params.add("type=" + dataType);
+
         JSONObject resp = null;
         boolean retry = true;
         int attempt = 0;
         do {
             try {
                 attempt++;
-                resp = sapiHandler.query("media/picture", "updatedata", null, null, request);
+                resp = sapiHandler.query("profile/changes", "get", params, null, null);
                 retry = false;
             } catch (IOException ioe) {
                 if (attempt >= MAX_RETRIES) {
                     retry = false;
                 }
-            } catch (JSONException je) {
-                retry = false;
             }
         } while(retry);
 
-        try {
-            JSONArray pics = resp.getJSONArray(dataName);
-            if (pics != null) {
-                for(int i=0;i<pics.length();++i) {
-                    JSONObject pic = pics.getJSONObject(i);
-                    //MediaSyncItem mediaItem = new MediaItem();
-                    if (Log.isLoggable(Log.DEBUG)) {
-                        Log.debug(TAG_LOG, "Server has picture: " + pic.getString("name"));
-                    }
+        ChangesSet res = new ChangesSet();
+
+        JSONObject data = resp.getJSONObject("data");
+        if (data != null) {
+            JSONObject items = data.getJSONObject(dataType);
+            if (items != null) {
+                res.added = items.getJSONArray("N");
+                res.updated = items.getJSONArray("U");
+                res.deleted = items.getJSONArray("D");
+            }
+        }
+
+        return res;
+    }
+
+    public JSONArray getItems(String remoteUri, JSONArray ids) throws JSONException {
+        JSONObject request = new JSONObject();
+        request.put("ids", ids);
+
+        Vector params = new Vector();
+        params.addElement(request.toString());
+        params.addElement("exif=none");
+
+        JSONObject resp = null;
+        boolean retry = true;
+        int attempt = 0;
+        do {
+            try {
+                attempt++;
+                resp = sapiHandler.query("media/" + remoteUri, "get", params, null, null);
+                retry = false;
+            } catch (IOException ioe) {
+                if (attempt >= MAX_RETRIES) {
+                    retry = false;
                 }
             }
-        } catch (JSONException je) {
-            // TODO FIXME
+        } while(retry);
+
+        if (resp != null) {
+            JSONObject data = resp.getJSONObject("data");
+            if (data != null) {
+                // TODO FIXME: use the right name
+                JSONArray items = data.getJSONArray("pictures");
+                return items;
+            }
         }
+
         return null;
     }
 

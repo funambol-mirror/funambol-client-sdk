@@ -47,7 +47,7 @@ Build file for Funambol Java SyncML
         <javac srcdir="${dir.src}" destdir="${dir.classes}"
               target="1.1" 
               source="1.2" 
-              debug="${wtk.debug}" 
+              debug="${debug}" 
               listfiles="yes">
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>

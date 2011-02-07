@@ -362,6 +362,14 @@ public class SapiHandler {
         // Prepare the URL
         StringBuffer url = new StringBuffer(StringUtil.extractAddressFromUrl(baseUrl));
         url.append("/").append("sapi/").append(name /* no need to encode the SAPI name */);
+
+        if (jsessionId != null && jsessionAuthEnabled) {
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Authorization is specified via jsessionid");
+            }
+            url.append(";jsessionid=" + jsessionId);
+        }
+
         // Append the Params
         url.append("?").append(ACTION_PARAM).append("=").append(encodeURLString(action));
         // Credentials in the query string

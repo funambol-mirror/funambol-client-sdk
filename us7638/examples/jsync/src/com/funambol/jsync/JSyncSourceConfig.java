@@ -43,26 +43,23 @@ import java.io.File;
 import java.io.IOException;
 
 import com.funambol.syncml.protocol.DataStore;
-import com.funambol.syncml.spds.SourceConfig;
+import com.funambol.syncml.spds.SyncMLSourceConfig;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncAnchor;
 
-public class JSyncSourceConfig extends SourceConfig {
+public class JSyncSourceConfig extends SyncMLSourceConfig {
 
     private static final String KEY_NAME = "name";
     private static final String KEY_TYPE = "type";
     private static final String KEY_ENCODING = "encoding";
     private static final String KEY_SYNC_MODE = "sync-mode";
     private static final String KEY_REMOTE_URI = "remote-uri";
-    private static final String KEY_LAST_ANCHOR = "last-anchor";
-    private static final String KEY_NEXT_ANCHOR = "next-anchor";
+    private static final String KEY_ANCHOR = "anchor";
     private static final String KEY_MAX_ITEMS_PER_MESSAGE = "max-items-per-message-in-slow-sync";
     private static final String KEY_BREAK_ON_LAST_CHUNK = "break-on-last-chunk";
 
     private static final String TRUE  = "true";
     private static final String FALSE = "false";
-
-    public JSyncSourceConfig() {
-        super();
-    }
 
     public JSyncSourceConfig(String name, String type, String remoteUri) {
         super(name, type, remoteUri);
@@ -93,17 +90,13 @@ public class JSyncSourceConfig extends SourceConfig {
         if (remoteUri != null) {
             props.put(KEY_REMOTE_URI, remoteUri);
         }
-        long lastAnchor = getLastAnchor();
-        props.put(KEY_LAST_ANCHOR, "" + lastAnchor);
 
-        long nextAnchor = getNextAnchor();
-        props.put(KEY_NEXT_ANCHOR, "" + nextAnchor);
+        SyncAnchor syncAnchor = getSyncAnchor();
+        String anchor = syncAnchor.format();
+        props.put(KEY_ANCHOR, anchor);
 
         int maxItemsPerMessageInSlowSync = getMaxItemsPerMessageInSlowSync();
         props.put(KEY_MAX_ITEMS_PER_MESSAGE, "" + maxItemsPerMessageInSlowSync);
-
-        boolean breakOnLastChunk = getBreakMsgOnLastChunk();
-        props.put(KEY_BREAK_ON_LAST_CHUNK, breakOnLastChunk ? TRUE : FALSE);
 
         FileOutputStream os = new FileOutputStream(fileName);
         props.store(os, "Source configuration");
@@ -131,19 +124,12 @@ public class JSyncSourceConfig extends SourceConfig {
                 setSyncMode(syncMode);
             } else if (KEY_REMOTE_URI.equals(k)) {
                 setRemoteUri(v);
-            } else if (KEY_LAST_ANCHOR.equals(k)) {
-                long lastAnchor = Long.parseLong(v);
-                setLastAnchor(lastAnchor);
-            } else if (KEY_NEXT_ANCHOR.equals(k)) {
-                long nextAnchor = Long.parseLong(v);
-                setNextAnchor(nextAnchor);
+            } else if (KEY_ANCHOR.equals(k)) {
+                SyncAnchor syncAnchor = getSyncAnchor();
+                syncAnchor.parse(v);
             } else if (KEY_MAX_ITEMS_PER_MESSAGE.equals(k)) {
                 int maxItemsPerMessageInSlowSync = Integer.parseInt(v);
                 setMaxItemsPerMessageInSlowSync(maxItemsPerMessageInSlowSync);
-            } else if (KEY_BREAK_ON_LAST_CHUNK.equals(k)) {
-                if (v.toLowerCase().equals(TRUE)) {
-                    setBreakMsgOnLastChunk(true);
-                }
             } else {
                 throw new IOException("Unknown property in source configuration");
             }
