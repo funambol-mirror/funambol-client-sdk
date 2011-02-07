@@ -125,7 +125,7 @@ public class SapiHandler {
 
 
     public JSONObject query(String name, String action, Vector params, 
-            Hashtable headers, InputStream requestIs, int contentLength)
+            Hashtable headers, InputStream requestIs, long contentLength)
             throws IOException, JSONException {
         String url = createUrl(name, action, params);
         HttpConnectionAdapter conn;
