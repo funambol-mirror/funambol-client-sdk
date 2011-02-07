@@ -35,6 +35,7 @@
 
 package com.funambol.sapisync;
 
+import com.funambol.sync.SyncAnchor;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
@@ -99,21 +100,19 @@ public class SapiSyncManager implements SyncManagerI {
             Log.debug(TAG_LOG, "Starting sync");
         }
         
-        int actualSyncMode = getActualSyncMode(src, syncMode);
-
         // TODO FIXME: check if resume is needed
         boolean resume = false;
 
         // TODO FIXME: twin detection
         
-        performInitializationPhase(src, actualSyncMode, resume);
+        performInitializationPhase(src, getActualSyncMode(src), resume);
 
-        if(isDownloadPhaseNeeded(actualSyncMode)) {
-            performDownloadPhase(src, actualSyncMode, resume);
+        if(isDownloadPhaseNeeded(syncMode)) {
+            performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
         }
 
-        if(isUploadPhaseNeeded(actualSyncMode)) {
-            performUploadPhase(src, actualSyncMode, resume);
+        if(isUploadPhaseNeeded(syncMode)) {
+            performUploadPhase(src, getActualUploadSyncMode(src), resume);
         }
         
         performFinalizationPhase(src);
@@ -121,6 +120,7 @@ public class SapiSyncManager implements SyncManagerI {
 
     public void cancel() {
         // TODO FIXME
+        performFinalizationPhase(null);
     }
 
     private void performInitializationPhase(SyncSource src, int syncMode,
@@ -154,12 +154,52 @@ public class SapiSyncManager implements SyncManagerI {
 
     private void performFinalizationPhase(SyncSource src) {
         sapiSyncHandler.logout();
-        src.endSync();
+        if(src != null) {
+            src.endSync();
+        }
     }
 
-    private int getActualSyncMode(SyncSource src, int syncMode) {
-        // TODO FIXME return a proper sync mode 
-        return syncMode;
+    private int getActualSyncMode(SyncSource src) {
+        SyncAnchor anchor = src.getSyncAnchor();
+        if(anchor instanceof SapiSyncAnchor) {
+            SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)anchor;
+            if((sapiAnchor.getDownloadAnchor() > 0) &&
+               (sapiAnchor.getUploadAnchor() > 0)) {
+                return SyncSource.INCREMENTAL_SYNC;
+            } else {
+                return SyncSource.FULL_SYNC;
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid source anchor format");
+        }
+    }
+
+    private int getActualDownloadSyncMode(SyncSource src) {
+        SyncAnchor anchor = src.getSyncAnchor();
+        if(anchor instanceof SapiSyncAnchor) {
+            SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)anchor;
+            if(sapiAnchor.getDownloadAnchor() > 0) {
+                return SyncSource.INCREMENTAL_DOWNLOAD;
+            } else {
+                return SyncSource.FULL_DOWNLOAD;
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid source anchor format");
+        }
+    }
+
+    private int getActualUploadSyncMode(SyncSource src) {
+        SyncAnchor anchor = src.getSyncAnchor();
+        if(anchor instanceof SapiSyncAnchor) {
+            SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)anchor;
+            if(sapiAnchor.getUploadAnchor() > 0) {
+                return SyncSource.INCREMENTAL_UPLOAD;
+            } else {
+                return SyncSource.FULL_UPLOAD;
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid source anchor format");
+        }
     }
 
     private boolean isIncrementalSync(int syncMode) {

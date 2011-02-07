@@ -35,19 +35,31 @@
 
 package com.funambol.sapisync;
 
+import com.funambol.client.sapi.SapiHandler;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
+import com.funambol.util.Log;
+import org.json.me.JSONException;
 
+import org.json.me.JSONObject;
 
 public class SapiSyncHandler {
 
     private static final String TAG_LOG = "SapiSyncHandler";
 
-    private String baseUrl = null;
-    private String user = null;
-    private String pwd = null;
+    private SapiHandler sapiHandler = null;
 
-    private String jessionId = null;
+    private static final String JSON_OBJECT_DATA  = "data";
+    private static final String JSON_OBJECT_ERROR = "error";
+
+    private static final String JSON_OBJECT_DATA_FIELD_JSESSIONID = "jsessionid";
+
+    private static final String JSON_OBJECT_ERROR_FIELD_CODE    = "code";
+    private static final String JSON_OBJECT_ERROR_FIELD_MESSAGE = "message";
+    private static final String JSON_OBJECT_ERROR_FIELD_CAUSE   = "cause";
+    
+    public static final String JSON_ERROR_CODE_SEC_1002 = "SEC-1002";
+    public static final String JSON_ERROR_CODE_SEC_1004 = "SEC-1004";
 
     /**
      * SapiSyncHandler constructor
@@ -57,9 +69,7 @@ public class SapiSyncHandler {
      * @param pwd the password to be used for the authentication
      */
     public SapiSyncHandler(String baseUrl, String user, String pwd) {
-        this.baseUrl = baseUrl;
-        this.user = user;
-        this.pwd = pwd;
+        this.sapiHandler = new SapiHandler(baseUrl, user, pwd);
     }
 
     /**
@@ -68,8 +78,25 @@ public class SapiSyncHandler {
      * @throws SyncException
      */
     public void login() throws SyncException {
-        // TODO: FIXME
-        // jessionId = ...
+        try {
+            sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_IN_QUERY_STRING);
+            JSONObject res = sapiHandler.query("login", "login", null, null, null);
+            JSONObject resData = res.getJSONObject(JSON_OBJECT_DATA);
+            if(resData != null) {
+                String jsessionid = resData.getString(JSON_OBJECT_DATA_FIELD_JSESSIONID);
+                sapiHandler.enableJSessionAuthentication(true);
+                sapiHandler.forceJSessionId(jsessionid);
+                sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
+            } else {
+                handleResponseError(resData);
+                throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
+            }
+        } catch(Exception ex) {
+            if (Log.isLoggable(Log.ERROR)) {
+                Log.error(TAG_LOG, "Failed to login", ex);
+            }
+            throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
+        }
     }
 
     /**
@@ -78,8 +105,17 @@ public class SapiSyncHandler {
      * @throws SyncException
      */
     public void logout() throws SyncException {
-        // TODO: FIXME
-        jessionId = null;
+        try {
+            sapiHandler.query("login", "logout", null, null, null);
+        } catch(Exception ex) {
+            if (Log.isLoggable(Log.ERROR)) {
+                Log.error(TAG_LOG, "Failed to logout", ex);
+            }
+            throw new SyncException(SyncException.AUTH_ERROR, "Cannot logout");
+        }
+        sapiHandler.enableJSessionAuthentication(false);
+        sapiHandler.forceJSessionId(null);
+        sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
     }
 
     /**
@@ -87,8 +123,49 @@ public class SapiSyncHandler {
      * @param item
      */
     public void uploadItem(SyncItem item) throws SyncException {
-        // TODO: FIXME
+        // TODO FIXME
+        try {
+            sapiHandler.query( "media/upload", "upload", null, null, 
+                    item.getInputStream(),
+                    item.getObjectSize());
+        } catch(Exception ex) {
+            if (Log.isLoggable(Log.ERROR)) {
+                Log.error(TAG_LOG, "Failed to upload item", ex);
+            }
+            throw new SyncException(SyncException.CLIENT_ERROR,
+                    "Cannot upload item");
+        }
     }
 
+    private void handleResponseError(JSONObject response) throws Exception {
+        try {
+            // Check for errors
+            JSONObject error = response.getJSONObject(JSON_OBJECT_ERROR);
+            if(error != null) {
+                String code    = error.getString(JSON_OBJECT_ERROR_FIELD_CODE);
+                String message = error.getString(JSON_OBJECT_ERROR_FIELD_MESSAGE);
+                String cause   = error.getString(JSON_OBJECT_ERROR_FIELD_CAUSE);
+
+                StringBuffer logMsg = new StringBuffer(
+                        "Error in SAPI response").append("\r\n");
+                logMsg.append("code: ").append(code).append("\r\n");
+                logMsg.append("cause: ").append(cause).append("\r\n");
+                logMsg.append("message: ").append(message).append("\r\n");
+
+                // Handle error codes
+                if(JSON_ERROR_CODE_SEC_1002.equals(code)) {
+                    // A session is already open. To provide new credentials 
+                    // please logout first.
+                } else if(JSON_ERROR_CODE_SEC_1004.equals(code)) {
+                    // Both header and parameter credentials provided, please
+                    // use only one authentication schema.
+                } 
+            }
+        } catch(JSONException ex) {
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Failed to retrieve error json object");
+            }
+        }
+    }
     
 }
