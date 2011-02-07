@@ -35,6 +35,7 @@
 
 package com.funambol.sapisync;
 
+import com.funambol.sync.BasicSyncListener;
 import com.funambol.sync.ItemStatus;
 import java.util.Date;
 
@@ -42,6 +43,7 @@ import com.funambol.sync.SyncAnchor;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncManagerI;
 import com.funambol.util.Log;
@@ -59,6 +61,13 @@ public class SapiSyncManager implements SyncManagerI {
 
     private SyncConfig syncConfig = null;
     private SapiSyncHandler sapiSyncHandler = null;
+
+    /**
+     * Unique instance of a BasicSyncListener which is used when the user does
+     * not set up a listener in the SyncSource. In order to avoid the creation
+     * of multiple instances of this class we use this static variable
+     */
+    private static SyncListener basicListener = null;
 
     /**
      * <code>SapiSyncManager</code> constructor
@@ -116,6 +125,10 @@ public class SapiSyncManager implements SyncManagerI {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "Starting sync");
         }
+
+        if (basicListener == null) {
+            basicListener = new BasicSyncListener();
+        }
         
         // TODO FIXME: check if resume is needed
         boolean resume = false;
@@ -151,12 +164,13 @@ public class SapiSyncManager implements SyncManagerI {
         Vector sourceStatus = new Vector();
         
         boolean incremental = isIncrementalSync(syncMode);
-        
+
         SyncItem item = getNextItemToUpload(src, incremental);
         while(item != null) {
             try {
                 // Upload the item to the server
-                sapiSyncHandler.uploadItem(item);
+                sapiSyncHandler.uploadItem(item, getSyncListenerFromSource(src));
+                
                 // Set the item status
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
                         SyncSource.STATUS_SUCCESS));
@@ -198,6 +212,15 @@ public class SapiSyncManager implements SyncManagerI {
         sapiSyncHandler.logout();
         if(src != null) {
             src.endSync();
+        }
+    }
+
+    private SyncListener getSyncListenerFromSource(SyncSource source) {
+        SyncListener slistener = source.getListener();
+        if(slistener != null) {
+            return slistener;
+        } else {
+            return basicListener;
         }
     }
 

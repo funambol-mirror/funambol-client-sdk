@@ -84,6 +84,8 @@ public class SapiHandler {
     private String  jsessionId = null;
     protected ConnectionManager connectionManager = ConnectionManager.getInstance();
 
+    private SapiQueryListener listener = null;
+
     public SapiHandler(String baseUrl, String user, String pwd) {
         this.baseUrl = baseUrl;
         this.user    = user;
@@ -109,6 +111,10 @@ public class SapiHandler {
 
     public void setConnectionManager(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
+    }
+
+    public void setSapiRequestListener(SapiQueryListener listener) {
+        this.listener = listener;
     }
 
     public JSONObject query(String name, String action, Vector params,
@@ -184,6 +190,9 @@ public class SapiHandler {
         OutputStream os = null;
         InputStream  is = null;
 
+        if(listener != null) {
+            listener.queryStarted((int)contentLength);
+        }
         try {
             os = conn.openOutputStream();
             // In case of SAPI that require a body, this must be written here
@@ -200,6 +209,9 @@ public class SapiHandler {
                             Log.trace(TAG_LOG, "Writing chunk: " + (new String(chunk)));
                         }
                         os.write(chunk, 0, read);
+                        if(listener != null) {
+                            listener.queryChunkSent(read);
+                        }
                     }
                 } while(read != -1);
             }
@@ -271,6 +283,9 @@ public class SapiHandler {
             String r = response.toString();
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "response is:" + r);
+            }
+            if(listener != null) {
+                listener.queryEnded();
             }
             // Prepare the response
             if(!StringUtil.isNullOrEmpty(r)) {
@@ -369,6 +384,30 @@ public class SapiHandler {
             }
         }
         return url.toString();
+    }
+
+    /**
+     * Used to monitor a SAPI query
+     */
+    public interface SapiQueryListener {
+
+        /**
+         * Called as soon as a request starts
+         * @param querySize the request size
+         */
+        public void queryStarted(int querySize);
+        
+        /**
+         * Called as soon as a query chunk has been sent
+         * @param chunkSize the size of the chunk
+         */
+        public void queryChunkSent(int chunkSize);
+
+        /**
+         * Called as soon as a query finishes
+         */
+        public void queryEnded();
+        
     }
 
 }

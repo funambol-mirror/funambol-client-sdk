@@ -40,6 +40,7 @@ import java.util.Date;
 
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncListener;
 
 /**
  * Implements a Mock for the SapiSyncHandler interface
@@ -67,7 +68,8 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         logoutCount++;
     }
 
-    public void uploadItem(SyncItem item) throws SyncException {
+    public void uploadItem(SyncItem item, SyncListener listener)
+            throws SyncException {
         uploadedItems.addElement(item);
     }
 

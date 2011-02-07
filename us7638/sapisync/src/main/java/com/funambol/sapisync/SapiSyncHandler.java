@@ -46,6 +46,7 @@ import org.json.me.JSONArray;
 import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.util.DateUtil;
 
@@ -130,10 +131,14 @@ public class SapiSyncHandler {
      * Upload the given item to the server
      * @param item
      */
-    public void uploadItem(SyncItem item) throws SyncException {
+    public void uploadItem(SyncItem item, SyncListener listener) throws SyncException {
         // TODO FIXME
         try {
-            sapiHandler.query( "media/upload", "upload", null, null, 
+            SapiUploadSyncListener sapiListener = new SapiUploadSyncListener(
+                    item, listener);
+            sapiHandler.setSapiRequestListener(sapiListener);
+
+            sapiHandler.query("media/upload", "upload", null, null, 
                     item.getInputStream(),
                     item.getObjectSize());
         } catch(Exception ex) {
@@ -216,6 +221,35 @@ public class SapiSyncHandler {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Failed to retrieve error json object");
             }
+        }
+    }
+
+    /**
+     * Translates the SapiQueryListener calls into SyncListener calls.
+     */
+    private class SapiUploadSyncListener implements SapiHandler.SapiQueryListener {
+
+        private SyncListener syncListener = null;
+        private String itemKey = null;
+
+        private int querySize;
+        
+        public SapiUploadSyncListener(SyncItem item, SyncListener syncListener) {
+            this.syncListener = syncListener;
+            this.itemKey = item.getKey();
+        }
+
+        public void queryStarted(int querySize) {
+            syncListener.itemAddSendingStarted(itemKey, null, querySize);
+            this.querySize = querySize;
+        }
+
+        public void queryChunkSent(int chunkSize) {
+            syncListener.itemAddChunkSent(itemKey, null, chunkSize);
+        }
+
+        public void queryEnded() {
+            syncListener.itemAddSendingEnded(itemKey, null, querySize);
         }
     }
 }
