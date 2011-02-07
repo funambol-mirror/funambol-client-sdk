@@ -35,6 +35,8 @@
 
 package com.funambol.sapisync;
 
+import java.util.Date;
+
 import com.funambol.sync.SyncAnchor;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
@@ -149,7 +151,15 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private void performDownloadPhase(SyncSource src, int syncMode, boolean resume) {
-        // TODO TBD
+
+        if (syncMode == SyncSource.FULL_DOWNLOAD) {
+        } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
+            SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
+            long anchor = sapiAnchor.getDownloadAnchor();
+            long now    = (new Date()).getTime();
+
+
+        }
     }
 
     private void performFinalizationPhase(SyncSource src) {

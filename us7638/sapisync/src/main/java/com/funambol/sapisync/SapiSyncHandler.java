@@ -35,18 +35,29 @@
 
 package com.funambol.sapisync;
 
-import com.funambol.client.sapi.SapiHandler;
+import java.util.Vector;
+import java.util.Date;
+import java.io.IOException;
+
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+import org.json.me.JSONArray;
+
+import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
 import com.funambol.util.Log;
-import org.json.me.JSONException;
-
-import org.json.me.JSONObject;
+import com.funambol.util.DateUtil;
 
 public class SapiSyncHandler {
 
     private static final String TAG_LOG = "SapiSyncHandler";
 
+    private static final int MAX_RETRIES = 3;
+
+    private String baseUrl = null;
+    private String user = null;
+    private String pwd = null;
     private SapiHandler sapiHandler = null;
 
     private static final String JSON_OBJECT_DATA  = "data";
@@ -137,6 +148,49 @@ public class SapiSyncHandler {
         }
     }
 
+    public Vector incrementalDownload(Date from, Date to, String dataName) throws SyncException {
+
+        JSONObject request = new JSONObject();
+        try {
+            request.put("from", DateUtil.formatDateTimeUTC(from));
+            request.put("to", DateUtil.formatDateTimeUTC(to));
+        } catch (JSONException je) {
+            // TODO FIXME
+        }
+        JSONObject resp = null;
+        boolean retry = true;
+        int attempt = 0;
+        do {
+            try {
+                attempt++;
+                resp = sapiHandler.query("media/picture", "updatedata", null, null, request);
+                retry = false;
+            } catch (IOException ioe) {
+                if (attempt >= MAX_RETRIES) {
+                    retry = false;
+                }
+            } catch (JSONException je) {
+                retry = false;
+            }
+        } while(retry);
+
+        try {
+            JSONArray pics = resp.getJSONArray(dataName);
+            if (pics != null) {
+                for(int i=0;i<pics.length();++i) {
+                    JSONObject pic = pics.getJSONObject(i);
+                    //MediaSyncItem mediaItem = new MediaItem();
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Server has picture: " + pic.getString("name"));
+                    }
+                }
+            }
+        } catch (JSONException je) {
+            // TODO FIXME
+        }
+        return null;
+    }
+
     private void handleResponseError(JSONObject response) throws Exception {
         try {
             // Check for errors
@@ -167,5 +221,4 @@ public class SapiSyncHandler {
             }
         }
     }
-    
 }

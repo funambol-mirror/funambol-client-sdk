@@ -32,7 +32,7 @@
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol".
  */
-package com.funambol.client.sapi;
+package com.funambol.sapisync.sapi;
 
 import java.util.Vector;
 import java.util.Hashtable;
