@@ -56,13 +56,25 @@ public class SapiSyncManager implements SyncManagerI {
 
     private SyncConfig syncConfig = null;
     private SapiSyncHandler sapiSyncHandler = null;
-    
+
+    /**
+     * <code>SapiSyncManager</code> constructor
+     * @param config
+     */
     public SapiSyncManager(SyncConfig config) {
         this.syncConfig = config;
         this.sapiSyncHandler = new SapiSyncHandler(
                 StringUtil.extractAddressFromUrl(syncConfig.getSyncUrl()),
                 syncConfig.getUserName(),
                 syncConfig.getPassword());
+    }
+
+    /**
+     * Force a specific SapiSyncHandler to be used for testing purposes.
+     * @param sapiSyncHandler
+     */
+    public void setSapiSyncHandler(SapiSyncHandler sapiSyncHandler) {
+        this.sapiSyncHandler = sapiSyncHandler;
     }
 
     /**
@@ -107,7 +119,7 @@ public class SapiSyncManager implements SyncManagerI {
 
         // TODO FIXME: twin detection
         
-        performInitializationPhase(src, getActualSyncMode(src), resume);
+        performInitializationPhase(src, getActualSyncMode(src, syncMode), resume);
 
         if(isDownloadPhaseNeeded(syncMode)) {
             performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
@@ -169,16 +181,24 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private int getActualSyncMode(SyncSource src) {
+    private int getActualSyncMode(SyncSource src, int syncMode) {
         SyncAnchor anchor = src.getSyncAnchor();
         if(anchor instanceof SapiSyncAnchor) {
             SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)anchor;
-            if((sapiAnchor.getDownloadAnchor() > 0) &&
-               (sapiAnchor.getUploadAnchor() > 0)) {
-                return SyncSource.INCREMENTAL_SYNC;
-            } else {
-                return SyncSource.FULL_SYNC;
+            if(syncMode == SyncSource.INCREMENTAL_SYNC) {
+                if(sapiAnchor.getUploadAnchor() == 0) {
+                    return SyncSource.FULL_SYNC;
+                }
+            } else if(syncMode == SyncSource.INCREMENTAL_UPLOAD) {
+                if(sapiAnchor.getUploadAnchor() == 0) {
+                    return SyncSource.FULL_UPLOAD;
+                }
+            } else if(syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
+                if(sapiAnchor.getDownloadAnchor() == 0) {
+                    return SyncSource.FULL_DOWNLOAD;
+                }
             }
+            return syncMode;
         } else {
             throw new SyncException(SyncException.ILLEGAL_ARGUMENT,
                     "Invalid source anchor format");
@@ -229,6 +249,7 @@ public class SapiSyncManager implements SyncManagerI {
 
     private boolean isUploadPhaseNeeded(int syncMode) {
         return (syncMode == SyncSource.FULL_SYNC) ||
+               (syncMode == SyncSource.FULL_UPLOAD) ||
                (syncMode == SyncSource.INCREMENTAL_SYNC) ||
                (syncMode == SyncSource.INCREMENTAL_UPLOAD);
     }

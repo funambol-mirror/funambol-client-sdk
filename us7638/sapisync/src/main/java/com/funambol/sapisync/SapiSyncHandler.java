@@ -55,9 +55,6 @@ public class SapiSyncHandler {
 
     private static final int MAX_RETRIES = 3;
 
-    private String baseUrl = null;
-    private String user = null;
-    private String pwd = null;
     private SapiHandler sapiHandler = null;
 
     private static final String JSON_OBJECT_DATA  = "data";

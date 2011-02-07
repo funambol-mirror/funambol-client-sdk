@@ -273,8 +273,11 @@ public class SapiHandler {
                 Log.trace(TAG_LOG, "response is:" + r);
             }
             // Prepare the response
-            JSONObject res = new JSONObject(r);
-            return res;
+            if(!StringUtil.isNullOrEmpty(r)) {
+                return new JSONObject(r);
+            } else {
+                return null;
+            }
         } catch (IOException ioe) {
             // If we get a non authorized error and we used a jsession id, then
             // we invalidate the jsessionId and throw the exception
