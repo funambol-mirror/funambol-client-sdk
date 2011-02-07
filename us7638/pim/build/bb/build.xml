@@ -45,6 +45,7 @@ Build file for Funambol J2ME SYNCML API.
         <property name="lib.junit"           value="${basedir}/../tools/funambol-j2me-fjunit.jar"/>
         <property name="lib.funambol.common" value="${basedir}/../common/output/bb/funambol-bb-common.jar"/>
         <property name="lib.funambol.syncml" value="${basedir}/../syncml/output/bb/funambol-bb-syncml.jar"/>
+        <property name="lib.funambol.sync"   value="${basedir}/../sync/output/bb/funambol-bb-sync.jar"/>
         <property name="dir.pim-parsers"     value="externals/pim-parsers"/>
         <property name="bb.rim.jar"          value="${bb.jdehome}/lib/net_rim_api.jar"/>
 
@@ -127,6 +128,7 @@ Build file for Funambol J2ME SYNCML API.
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>
                 <pathelement location="${lib.funambol.syncml}"/>
+                <pathelement location="${lib.funambol.sync}"/>
             </classpath>
         </javac>
     </target>
@@ -243,6 +245,7 @@ Build file for Funambol J2ME SYNCML API.
             <property name="dir.src"             value="${dir.src}"/>
             <property name="lib.funambol.common" value="${lib.funambol.common}"/>
             <property name="lib.funambol.syncml" value="${lib.funambol.syncml}"/>
+            <property name="lib.funambol.sync"   value="${lib.funambol.sync}"/>
             <property name="wtk.home"            value="${wtk.home}"/>
             <property name="classpath"           value="${classpath}"/>
             <property name="platform"            value="Java ME"/>

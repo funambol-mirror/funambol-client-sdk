@@ -37,6 +37,7 @@ Build file for Funambol Java Client API.
         <!-- External libraries -->
         <property name="lib.funambol.common" value="${basedir}/../common/output/me/funambol-j2me-common.jar"/>
         <property name="lib.funambol.syncml" value="${basedir}/../syncml/output/me/funambol-j2me-syncml.jar"/>
+        <property name="lib.funambol.sync"   value="${basedir}/../sync/output/me/funambol-j2me-sync.jar"/>
         <property name="lib.kxml"            value="${basedir}/../syncml/lib/kxml2-min-2.3.0.jar"/>
         <property name="jsr75.jar"           value="${wtk.home}/lib/jsr75.jar"/>
         <property name="wma.jar"             value="${wtk.home}/lib/wma11.jar"/>
@@ -121,6 +122,7 @@ Build file for Funambol Java Client API.
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>
                 <pathelement location="${lib.funambol.syncml}"/>
+                <pathelement location="${lib.funambol.sync}"/>
                 <pathelement location="${lib.kxml}"/>
             </classpath>
         </wtkbuild>
@@ -141,6 +143,7 @@ Build file for Funambol Java Client API.
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>
                 <pathelement location="${lib.funambol.syncml}"/>
+                <pathelement location="${lib.funambol.sync}"/>
                 <pathelement location="${dir.classes}"/>
                 <pathelement location="${lib.junit}"/>
                 <pathelement location="${lib.kxml}"/>
@@ -160,6 +163,7 @@ Build file for Funambol Java Client API.
         <unjar src="${lib.junit}" dest="${dir.test.classes}"/>
         <unjar src="${lib.funambol.common}" dest="${dir.test.classes}"/>
         <unjar src="${lib.funambol.syncml}" dest="${dir.test.classes}"/>
+        <unjar src="${lib.funambol.sync}"   dest="${dir.test.classes}"/>
         <unjar src="${lib.kxml}" dest="${dir.test.classes}"/>
         <!--
         <copy todir="${dir.classes}/res">

@@ -43,15 +43,13 @@ import javax.microedition.pim.PIMItem;
 import javax.microedition.pim.PIMList;
 import javax.microedition.pim.PIMException;
 
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncException;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.spds.SyncSource;
-import com.funambol.syncml.client.TrackableSyncSource;
-import com.funambol.syncml.client.ChangesTracker;
-import com.funambol.syncml.protocol.SyncFilter;
-import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.protocol.SyncMLStatus;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncSource;
+import com.funambol.sync.client.TrackableSyncSource;
+import com.funambol.sync.client.ChangesTracker;
+import com.funambol.sync.SyncFilter;
 
 import com.funambol.util.Log;
 
@@ -148,7 +146,7 @@ public abstract class PIMSyncSource extends TrackableSyncSource
                     pitem.commit();
                 } catch (PIMException e) {
                     Log.error(TAG_LOG, "Unable to save new item in source [" + getName() + "]: ", e);
-                    return SyncMLStatus.GENERIC_ERROR;
+                    return ERROR_STATUS;
                 }
                 if (Log.isLoggable(Log.TRACE)) {
                     Log.trace(TAG_LOG, "Before trying to get UID of PIMItem.");
@@ -161,20 +159,20 @@ public abstract class PIMSyncSource extends TrackableSyncSource
                 }
                 tracker.removeItem(item);
                 key = null;
-                return SyncMLStatus.SUCCESS;
+                return SUCCESS_STATUS;
             } else {
                 Log.error(TAG_LOG, "Can not create a blank PIMItem.");
             }
         } catch(final PIMException e) {
             Log.error(TAG_LOG, "PIMException while adding item to SyncSource [" + getName() + "]: ", e);
-            return SyncMLStatus.GENERIC_ERROR;
+            return ERROR_STATUS;
         } catch(final Exception e) {
             Log.error(TAG_LOG, "RuntimeException while updating item to SyncSource ["
                       + getName() + "]: ", e);
-            return SyncMLStatus.GENERIC_ERROR;
+            return ERROR_STATUS;
         }
         Log.error(TAG_LOG, "Unable to save new item in source [" + getName() + "]: no error");
-        return SyncMLStatus.GENERIC_ERROR;
+        return ERROR_STATUS;
     }
     
     /*
@@ -210,7 +208,7 @@ public abstract class PIMSyncSource extends TrackableSyncSource
                     pitem.commit();
                 } catch (PIMException e) {
                     Log.error(TAG_LOG, "Unable to save updated item in source [" + getName() + "]: " + e.toString());
-                    return SyncMLStatus.GENERIC_ERROR;
+                    return ERROR_STATUS;
                 }
                 if (Log.isLoggable(Log.TRACE)) {
                     Log.trace(TAG_LOG, "Before trying to get UID of PIMItem.");
@@ -223,18 +221,18 @@ public abstract class PIMSyncSource extends TrackableSyncSource
                 }
                 tracker.removeItem(item);
                 
-                return SyncMLStatus.SUCCESS;
+                return SUCCESS_STATUS;
             }
             Log.error(TAG_LOG, "Unable to save updated item in source [" + getName() + "]: item not found");
-            return SyncMLStatus.NOT_FOUND;
+            return ERROR_STATUS;
         } catch(final PIMException e) {
             Log.error(TAG_LOG, "PIMException while updating item to SyncSource [" + getName() + "]: ", e);
-            return SyncMLStatus.GENERIC_ERROR;
+            return ERROR_STATUS;
         } catch (Exception e) {
             // We had some sort of generic runtime exception
             Log.error(TAG_LOG, "RuntimeException while updating item to SyncSource ["
                       + getName() + "]: ", e);
-            return SyncMLStatus.GENERIC_ERROR;
+            return ERROR_STATUS;
         }
     }
     
@@ -253,7 +251,7 @@ public abstract class PIMSyncSource extends TrackableSyncSource
             PIMItem item = findItem(key);
             if (item == null) {
                 Log.error(TAG_LOG, "Unable to delete item in source [" + getName() + "]: no error");
-                return SyncMLStatus.NOT_FOUND;
+                return ERROR_STATUS;
             }
             deleteItem(item);
             if (Log.isLoggable(Log.TRACE)) {
@@ -262,10 +260,10 @@ public abstract class PIMSyncSource extends TrackableSyncSource
             SyncItem tmpItem = new SyncItem(key);
             tmpItem.setState(SyncItem.STATE_DELETED);
             tracker.removeItem(tmpItem);
-            return SyncMLStatus.SUCCESS;
+            return SUCCESS_STATUS;
         } catch(final Exception e) {
             Log.error(TAG_LOG, "Exception while deleting item from SyncSource ["+getName()+"]", e);
-            return SyncMLStatus.GENERIC_ERROR;
+            return ERROR_STATUS;
         }
     }
 

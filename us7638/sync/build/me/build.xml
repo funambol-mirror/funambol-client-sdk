@@ -2,7 +2,7 @@
 
 <!--
 ================================================================================
-Build file for Funambol BlackBerry SYNCML API.
+Build file for Funambol J2ME SYNCML API.
 ================================================================================
 -->
 
@@ -21,35 +21,34 @@ Build file for Funambol BlackBerry SYNCML API.
             <format property="timestamp.HH" pattern="HH" />
         </tstamp>
 
-        <property file="${user.home}/funambol/build/bb/build.properties"/>
+        <property file="${user.home}/funambol/build/me/build.properties"/>
         <property file="build/common.properties"/>
-        <property file="build/bb/build.properties"/>
+        <property file="build/me/build.properties"/>
  
-        <property name="dir.output"       value="${basedir}/output/bb"/>
+        <property name="dir.output"       value="${basedir}/output/me"/>
         <property name="dir.classes"      value="${dir.output}/classes"/>
         <property name="dir.src"          value="${basedir}/src/main/java"/>
 
         <property name="dir.test"         value="${basedir}/src/test"        />
+        <property name="dir.test.classes" value="${dir.test}/classes"        />
         <property name="dir.res"          value="${basedir}/src/test/res"    />
         <property name="dir.docs"         value="${basedir}/docs"            />
-        <property name="dir.output.html"  value="${dir.output}/html"         />
-        <property name="dir.tools"        value="${basedir}/../tools"/>
-        <property name="dir.html"         value="${dir.output}/html"/>
+        <property name="dir.html"         value="${dir.output}/html"         />
+
+        <property name="dir.tools"        value="${basedir}/../tools"        />
 
         <!-- External dependencies -->
+        <property name="lib.junit"           value="${basedir}/lib/JMUnit4CLDC10.jar"/>
+        <property name="lib.funambol.common" value="${basedir}/../common/output/me/funambol-j2me-common.jar"/>
         <property name="wma.jar"             value="${wtk.home}/lib/wma11.jar"/>
-        <property name="lib.junit"           value="${dir.tools}/funambol-j2me-fjunit.jar"/>
-        <property name="lib.funambol.common" value="${basedir}/../common/output/bb/funambol-bb-common.jar"/>
-        <property name="lib.funambol.sync"   value="${basedir}/../sync/output/bb/funambol-bb-sync.jar"/>
-        <property name="lib.kxml"            value="${basedir}/lib/kxml2-2.3.0.jar"/>
-        <property name="bb.rim.jar"          value="${bb.jdehome}/lib/net_rim_api.jar"/>
-        <property name="bb.sigtool"          value="${bb.jdehome}/bin/SignatureTool.jar"/>
+        <property name="mmapi.jar"           value="${wtk.home}/lib/mmapi.jar"/>
+
 
         <!-- Standard SDK runtime environment parameters -->
         <property name="emu.device"           value="DefaultColorPhone"/>
-        <property name="emu.heapsize"         value="700K"/>
+        <property name="emu.heapsize"         value="2M"/>
         <property name="emu.wait"             value="true"/>
-        <property name="version"              value="${release.major}.${release.minor}.${build.number}"/>
+        <property name="j2me.version"         value="${release.major}.${release.minor}.${build.number}"/>
 
         <!-- WTK Definitions -->
         <property name="wtk.home"                value="C://tools//WTK2.5.1" />
@@ -57,14 +56,10 @@ Build file for Funambol BlackBerry SYNCML API.
         <property name="wtk.midp.version"        value="2.0"/>
         <property name="wtk.optionalpda.enabled" value="false"/>
         <property name="wtk.wma.enabled"         value="true"/>
-        <property name="debug"                   value="false"/>
+        <property name="wtk.debug"               value="false"/>
 
         <!-- External dependencies -->
-        <property name="classpath"               value="${jsr75.jar}"/>
-
-        <!-- Names for the testing executable -->
-        <property name="jad.filename"            value="SyncMLTest"/>
-        <property name="jar.filename"            value="SyncMLTest"/>
+        <property name="classpath"               value="${wma.jar};${mmapi.jar};${jsr75.jar}"/>
     </target>
 
     <!-- =============================================== -->
@@ -112,28 +107,22 @@ Build file for Funambol BlackBerry SYNCML API.
     <!-- =============================================== -->
     <target name="build" depends="compile">
 
-        <unjar src="${lib.kxml}" dest="${dir.classes}"/>
         <!--======= Jar up everything ========-->
         <echo message="Packaging library"/>
-        <jar destfile="${dir.output}/${jar.name}.jar">
+        <jar destfile="${dir.output}/${j2me.name}.jar">
             <fileset dir="${dir.classes}" includes="**/*.class"/>
         </jar>
     </target>
 
     <target name="compile" depends="init">
         <mkdir dir="${dir.classes}"/>
+
         <wtkbuild srcdir="${dir.src}" destdir="${dir.classes}"
-              target="1.1" source="1.2" debug="${debug}" preverify="false"
+              target="1.1" source="1.2" preverify="false" debug="${wtk.debug}"
               listfiles="yes">
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>
-                <pathelement location="${lib.funambol.sync}"/>
-                <pathelement location="${bb.rim.jar}"/>
-                <pathelement location="${lib.kxml}"/>
             </classpath>
-            <bootclasspath>
-                <pathelement location="${bb.rim.jar}"/>
-            </bootclasspath>
         </wtkbuild>
     </target>
 
@@ -141,32 +130,31 @@ Build file for Funambol BlackBerry SYNCML API.
        <taskdef name="testsuite" classname="com.funambol.testsuitegenerator.TestSuiteGenerator"
                 classpath="${dir.tools}/TestSuiteGenerator.jar" />
 
-       <testsuite srcdir="${basedir}/test" destdir="${dir.test}"
+       <testsuite srcdir="${dir.test}" destdir="${dir.test}"
                   fjunit="true"/>
     </target>
 
     <target name="compile_test" depends="generate_test_suite, compile">
-        <wtkbuild srcdir="${dir.test}" destdir="${dir.classes}"
-              target="1.1" source="1.2" preverify="false" debug="${debug}">
+        <mkdir dir="${dir.test.classes}"/>
+        <wtkbuild srcdir="${dir.test}" destdir="${dir.test.classes}"
+              target="1.1" source="1.2" preverify="false" debug="${wtk.debug}">
             <classpath>
+                <pathelement location="${dir.classes}"/>
                 <pathelement location="${lib.junit}"/>
                 <pathelement location="${lib.funambol.common}"/>
-                <pathelement location="${lib.funambol.sync}"/>
-                <pathelement location="${lib.kxml}"/>
             </classpath>
 
         </wtkbuild>
     </target>
  
     <!-- =============================================== -->
-    <!-- TEST                                            -->
+    <!-- JME TEST                                        -->
     <!-- =============================================== -->
     <target name="test" depends="compile_test">
 
         <!-- Unpack the dependent packages -->
-        <unjar src="${lib.junit}" dest="${dir.classes}"/>
+        <unjar src="${lib.junit}" dest="${dir.test.classes}"/>
         <unjar src="${lib.funambol.common}" dest="${dir.classes}"/>
-        <unjar src="${lib.funambol.sync}" dest="${dir.classes}"/>
         <!--
         <copy todir="${dir.classes}/res">
             <fileset dir="${dir.res}" includes="*.properties" />
@@ -175,13 +163,15 @@ Build file for Funambol BlackBerry SYNCML API.
         -->
         <!-- These permissions are needed for VCardParser test -->
         <property name="jad.MIDlet-Permissions"
-                  value="javax.microedition.pim.ContactList.read,javax.microedition.pim.ContactList.write"/>
+                  value="javax.microedition.pim.ContactList.read,javax.microedition.pim.ContactList.write,
+                         javax.microedition.io.Connector.file.read,
+                         javax.microedition.io.Connector.file.write"/>
 
-        <wtkjad jadfile="${dir.output}/${jad.filename}.jad"
-            jarfile="${dir.output}/${jar.filename}.jar"
+        <wtkjad jadfile="${dir.output}/SyncMLTest.jad"
+            jarfile="${dir.output}/SyncMLTest.jar"
             name="SyncMLTest"
             vendor="Funambol Inc."
-            version="${version}">
+            version="${j2me.version}">
 
             <attribute name="MIDlet-Permissions" value="${jad.MIDlet-Permissions}"/>
 
@@ -195,68 +185,48 @@ Build file for Funambol BlackBerry SYNCML API.
          parameter to "true" (requires RetroGuard or ProGuard). The
          version parameter increments the MIDlet-Version by one. -->
 
-        <wtkpackage jarfile="${dir.output}/${jar.filename}.jar"
-            jadfile="${dir.output}/${jad.filename}.jad"
+        <wtkpackage jarfile="${dir.output}/SyncMLTest.jar"
+            jadfile="${dir.output}/SyncMLTest.jad"
             obfuscate="false"
-            preverify="true" classpath="${wma.jar}:${mmapi.jar}:${bb.rim.jar}">
-
+            preverify="true" classpath="${wma.jar}:${mmapi.jar}">
 
             <!-- Package our newly compiled classes. -->
             <fileset dir="${dir.classes}" includes="**/*.class"/>
+            <fileset dir="${dir.test.classes}" includes="**/*.class"/>
             <!--<fileset file="${lib.junit}"/>-->
 
-            <fileset dir="${dir.classes}" includes="res/*.properties" />
-            <fileset dir="${basedir}/test" includes="res/*.txt" />
+            <fileset dir="${dir.res}/.." includes="res/*.properties" />
+            <fileset dir="${dir.res}/.." includes="res/*.txt" />
 
         </wtkpackage>
 
-        <antcall target="rapc"/>
-
     </target>
 
-    <target name="rapc" description="RIM COD Compiler" depends="init">
-        <echo message="RAPC call for BlackBerry environment"/>
-
-        <!-- we need to use the executable instead of wtkrapc because wtkrapc
-             strips the RIM-MIDLet-Flags attribute-->
-
-        <exec executable="${bb.jdehome}/bin/rapc.exe" spawn="false">
-            <arg value="import=${bb.rim.jar}"/>
-            <arg value="codename=${jad.filename}"/>
-            <arg value="-midlet"/>
-            <arg value="jad=${dir.output}/${jad.filename}.jad"/>
-            <arg value="${dir.output}/${jar.filename}.jar"/>
+    <!-- =============================================== -->
+    <!-- RUN                                             -->
+    <!-- =============================================== -->
+    <target name="run" depends="init">
+        <!-- Start the MIDlet suite -->
+        <exec executable="${wtk.home}/bin/emulator" spawn="false">
+            <arg value="-Xdevice:DefaultColorPhone"/>
+            <arg value="-Xheapsize:1M"/>
+            <arg value="-Xdescriptor:${dir.output}/SyncMLTest.jad"/>
+            <arg value="-Xdomain:maximum"/>
         </exec>
+        <!-- 
+        <wtkrun jadfile="${dir.output}/SyncMLTest.jad"
+                device="DefaultColorPhone" wait="true">
+        </wtkrun>
+        -->
+    </target>
 
-        <move todir="${dir.output}">
-            <fileset dir="${basedir}">
-                <include name="${jad.filename}*.cod"/>
-                <include name="${jad.filename}*.cso"/>
-                <include name="${jad.filename}*.csl"/>
-                <include name="${jad.filename}*.debug"/>
-                <include name="${jad.filename}*.ja?"/>
-            </fileset>
-        </move>
-
-        <!-- Sign the midlet with RIM SignatureTool. RIM ceritifcates must
-             be copied into the directory containing the SignaturTool.jar -->
-        <!-- The password argument allows the build process to be completely
-             automatic, but it requires a JDE version >= 4.3 -->
-        <exec executable="java" spawn="false">
-            <arg value="-jar"/>
-            <arg value="${bb.sigtool}"/>
-            <!-- pwd_option <arg value="-p"/> -->
-            <!-- pwd_value  <arg value="${bb.sigtool.password}"/> -->
-            <arg value="-a"/>
-            <arg value="-C"/>
-            <arg value="${dir.output}/${jad.filename}.cod"/>
-        </exec>
-
-        <move file="${dir.output}/${jad.filename}.cod"
-              tofile="${dir.output}/${jad.filename}.zip"/>
-        <unzip dest="${dir.output}" src="${dir.output}/${jad.filename}.zip">
-        </unzip>
-        <delete file="${dir.build}/${jad.filename}.jar"/>
+    <!-- =============================================== -->
+    <!-- DEBUG                                           -->
+    <!-- =============================================== -->
+    <target name="debug" depends="init">
+        <wtkrun jadfile="${dir.output}/SyncTest.jad"
+                device="DefaultColorPhone" wait="true" debug="5000">
+        </wtkrun>
     </target>
 
     <!-- =============================================== -->
@@ -264,13 +234,13 @@ Build file for Funambol BlackBerry SYNCML API.
     <!-- =============================================== -->
     <target name="docs" depends="init">
         <ant antfile="${basedir}/build/build.xml" target="docs">
-            <property name="dir.html" value="${dir.html}"/>
-            <property name="dir.src" value="${dir.src}"/>
+            <property name="dir.html"            value="${dir.html}"/>
+            <property name="dir.src"             value="${dir.src}"/>
             <property name="lib.funambol.common" value="${lib.funambol.common}"/>
-            <property name="wtk.home" value="${wtk.home}"/>
-            <property name="classpath" value="${classpath}"/>
-            <property name="platform" value="BlackBerry"/>
+            <property name="wtk.home"            value="${wtk.home}"/>
+            <property name="classpath"           value="${classpath}"/>
+            <property name="platform"            value="Java ME"/>
         </ant>
-    </target>
+     </target>
 
 </project>

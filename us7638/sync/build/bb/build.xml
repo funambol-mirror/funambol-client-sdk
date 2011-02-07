@@ -6,7 +6,7 @@ Build file for Funambol BlackBerry SYNCML API.
 ================================================================================
 -->
 
-<project name="Funambol Java SyncML" default="build" basedir="../..">
+<project name="Funambol Java Sync" default="build" basedir="../..">
     <!-- Define the tasks. -->
     <taskdef resource="antenna.properties"/>
     <!--
@@ -37,11 +37,9 @@ Build file for Funambol BlackBerry SYNCML API.
         <property name="dir.html"         value="${dir.output}/html"/>
 
         <!-- External dependencies -->
-        <property name="wma.jar"             value="${wtk.home}/lib/wma11.jar"/>
-        <property name="lib.junit"           value="${dir.tools}/funambol-j2me-fjunit.jar"/>
+        <property name="wma.jar"          value="${wtk.home}/lib/wma11.jar"/>
+        <property name="lib.junit"        value="${dir.tools}/funambol-j2me-fjunit.jar"/>
         <property name="lib.funambol.common" value="${basedir}/../common/output/bb/funambol-bb-common.jar"/>
-        <property name="lib.funambol.sync"   value="${basedir}/../sync/output/bb/funambol-bb-sync.jar"/>
-        <property name="lib.kxml"            value="${basedir}/lib/kxml2-2.3.0.jar"/>
         <property name="bb.rim.jar"          value="${bb.jdehome}/lib/net_rim_api.jar"/>
         <property name="bb.sigtool"          value="${bb.jdehome}/bin/SignatureTool.jar"/>
 
@@ -112,7 +110,6 @@ Build file for Funambol BlackBerry SYNCML API.
     <!-- =============================================== -->
     <target name="build" depends="compile">
 
-        <unjar src="${lib.kxml}" dest="${dir.classes}"/>
         <!--======= Jar up everything ========-->
         <echo message="Packaging library"/>
         <jar destfile="${dir.output}/${jar.name}.jar">
@@ -127,13 +124,8 @@ Build file for Funambol BlackBerry SYNCML API.
               listfiles="yes">
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>
-                <pathelement location="${lib.funambol.sync}"/>
                 <pathelement location="${bb.rim.jar}"/>
-                <pathelement location="${lib.kxml}"/>
             </classpath>
-            <bootclasspath>
-                <pathelement location="${bb.rim.jar}"/>
-            </bootclasspath>
         </wtkbuild>
     </target>
 
@@ -151,8 +143,6 @@ Build file for Funambol BlackBerry SYNCML API.
             <classpath>
                 <pathelement location="${lib.junit}"/>
                 <pathelement location="${lib.funambol.common}"/>
-                <pathelement location="${lib.funambol.sync}"/>
-                <pathelement location="${lib.kxml}"/>
             </classpath>
 
         </wtkbuild>
@@ -166,7 +156,6 @@ Build file for Funambol BlackBerry SYNCML API.
         <!-- Unpack the dependent packages -->
         <unjar src="${lib.junit}" dest="${dir.classes}"/>
         <unjar src="${lib.funambol.common}" dest="${dir.classes}"/>
-        <unjar src="${lib.funambol.sync}" dest="${dir.classes}"/>
         <!--
         <copy todir="${dir.classes}/res">
             <fileset dir="${dir.res}" includes="*.properties" />

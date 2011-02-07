@@ -47,13 +47,11 @@ import javax.microedition.pim.PIMList;
 import javax.microedition.pim.EventList;
 import javax.microedition.pim.PIMException;
 
-import com.funambol.syncml.spds.SourceConfig;
-import com.funambol.syncml.spds.SyncException;
-import com.funambol.syncml.spds.SyncItem;
-import com.funambol.syncml.client.ChangesTracker;
-import com.funambol.syncml.protocol.SyncFilter;
-import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.protocol.SyncMLStatus;
+import com.funambol.sync.SourceConfig;
+import com.funambol.sync.SyncException;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.client.ChangesTracker;
+import com.funambol.sync.SyncFilter;
 
 //import com.funambol.common.pim.icalendar.ICalendarFormatter;
 import com.funambol.common.pim.icalendar.ICalendarSyntaxParserListener;

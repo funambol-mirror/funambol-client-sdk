@@ -45,6 +45,7 @@ Build file for Funambol J2ME SYNCML API.
         <!-- External dependencies -->
         <property name="lib.junit"           value="${basedir}/../tools/funambol-j2me-fjunit.jar"/>
         <property name="lib.funambol.common" value="${basedir}/../common/output/me/funambol-j2me-common.jar"/>
+        <property name="lib.funambol.sync"   value="${basedir}/../sync/output/me/funambol-j2me-sync.jar"/>
         <property name="lib.funambol.syncml" value="${basedir}/../syncml/output/me/funambol-j2me-syncml.jar"/>
         <property name="wma.jar"             value="${wtk.home}/lib/wma11.jar"/>
         <property name="mmapi.jar"           value="${wtk.home}/lib/mmapi.jar"/>
@@ -131,6 +132,7 @@ Build file for Funambol J2ME SYNCML API.
             <classpath>
                 <pathelement location="${lib.funambol.common}"/>
                 <pathelement location="${lib.funambol.syncml}"/>
+                <pathelement location="${lib.funambol.sync}"/>
                 <pathelement location="${jsr75.jar}"/>
             </classpath>
         </wtkbuild>
@@ -262,6 +264,7 @@ Build file for Funambol J2ME SYNCML API.
                 <pathelement location="${lib.junit}"/>
                 <pathelement location="${lib.funambol.common}"/>
                 <pathelement location="${lib.funambol.syncml}"/>
+                <pathelement location="${lib.funambol.sync}"/>
                 <pathelement location="${jsr75.jar}"/>
             </classpath>
 
@@ -277,6 +280,7 @@ Build file for Funambol J2ME SYNCML API.
         <unjar src="${lib.junit}" dest="${dir.test.classes}"/>
         <unjar src="${lib.funambol.common}" dest="${dir.classes}"/>
         <unjar src="${lib.funambol.syncml}" dest="${dir.classes}"/>
+        <unjar src="${lib.funambol.sync}" dest="${dir.classes}"/>
         <!--
         <copy todir="${dir.classes}/res">
             <fileset dir="${dir.res}" includes="*.properties" />
@@ -364,6 +368,7 @@ Build file for Funambol J2ME SYNCML API.
             <property name="dir.src"             value="${dir.src}"/>
             <property name="lib.funambol.common" value="${lib.funambol.common}"/>
             <property name="lib.funambol.syncml" value="${lib.funambol.syncml}"/>
+            <property name="lib.funambol.sync"   value="${lib.funambol.sync}"/>
             <property name="wtk.home"            value="${wtk.home}"/>
             <property name="classpath"           value="${classpath}"/>
             <property name="platform"            value="Java ME"/>
