@@ -35,6 +35,7 @@
 
 package com.funambol.sapisync;
 
+import com.funambol.sync.ItemStatus;
 import java.util.Date;
 
 import com.funambol.sync.SyncAnchor;
@@ -45,6 +46,8 @@ import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncManagerI;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
+
+import java.util.Vector;
 
 /**
  * <code>SapiSyncManager</code> represents the synchronization engine performed
@@ -145,13 +148,30 @@ public class SapiSyncManager implements SyncManagerI {
 
     private void performUploadPhase(SyncSource src, int syncMode, boolean resume) {
 
+        Vector sourceStatus = new Vector();
+        
         boolean incremental = isIncrementalSync(syncMode);
         
         SyncItem item = getNextItemToUpload(src, incremental);
         while(item != null) {
-            sapiSyncHandler.uploadItem(item);
+            try {
+                // Upload the item to the server
+                sapiSyncHandler.uploadItem(item);
+                // Set the item status
+                sourceStatus.addElement(new ItemStatus(item.getKey(),
+                        SyncSource.STATUS_SUCCESS));
+            } catch(Exception ex) {
+                if(Log.isLoggable(Log.ERROR)) {
+                    Log.error(TAG_LOG, "Failed to upload item with key: " +
+                            item.getKey(), ex);
+                }
+                sourceStatus.addElement(new ItemStatus(item.getKey(),
+                        SyncSource.STATUS_SEND_ERROR));
+            }
             item = getNextItemToUpload(src, incremental);
         }
+        
+        src.applyItemsStatus(sourceStatus);
     }
 
     private SyncItem getNextItemToUpload(SyncSource src, boolean incremental) {

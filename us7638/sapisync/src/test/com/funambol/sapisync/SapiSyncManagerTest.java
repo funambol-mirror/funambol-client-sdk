@@ -39,6 +39,7 @@ import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncConfig;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Log;
+import java.util.Hashtable;
 
 import java.util.Vector;
 
@@ -104,5 +105,8 @@ public class SapiSyncManagerTest extends TestCase {
 
         Vector items = sapiSyncHandler.getUploadedItems();
         assertEquals(items.size(), 5);
+
+        Hashtable status = syncSource.getStatusTable();
+        assertEquals(status.size(), 5);
     }
 }
