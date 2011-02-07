@@ -48,78 +48,108 @@ import com.funambol.sync.client.BaseSyncSource;
  */
 public class MockSyncSource extends BaseSyncSource {
     
-    private Hashtable status;
+    private Hashtable statusTable = null;
 
-    public int ITEMS_NUMBER = 300;
-    public int counter;
+    public int initialItemsCount = 100;
+
+    public int initialNewItemsCount     = 5;
+    public int initialUpdatedItemsCount = 5;
+    public int initialDeletedItemsCount = 5;
+
+    public int addedItemsCount   = 0;
+    public int updatedItemsCount = 0;
+    public int deletedItemsCount = 0;
 
     public MockSyncSource(SourceConfig config) {
         super(config);
-        status = null;
     }
 
-    public int getCounter() {
-      return counter;
+    public Hashtable getStatusTable() {
+      return statusTable;
+    }
+
+    public void setInitialItemsCount(int count) {
+        this.initialItemsCount = count;
+    }
+
+    public void setInitialNewItemsCount(int count) {
+        this.initialNewItemsCount = count;
+    }
+
+    public void setInitialUpdatedItemsCount(int count) {
+        this.initialUpdatedItemsCount = count;
+    }
+
+    public void setInitialDeletedItemsCount(int count) {
+        this.initialDeletedItemsCount = count;
+    }
+
+    public int getAddedItemsCount() {
+        return addedItemsCount;
+    }
+
+    public int getUpdatedItemsCount() {
+        return updatedItemsCount;
+    }
+
+    public int getDeletedItemsCount() {
+        return deletedItemsCount;
     }
     
     public int addItem(SyncItem item) {
-        String luid = item.getKey() + "_luid";
-        item.setKey(luid);
+        addedItemsCount++;
         return SyncSource.SUCCESS_STATUS;
     }
     
     public int updateItem(SyncItem item) {
+        updatedItemsCount++;
         return SyncSource.SUCCESS_STATUS;
     }
     
     public int deleteItem(String key) {
+        deletedItemsCount++;
         return SyncSource.SUCCESS_STATUS;
     }
     
     public void setItemStatus(String key, int status) throws SyncException {
-        counter++;
-        this.status.put(key, new Integer(status));
+        statusTable.put(key, new Integer(status));
     }
 
     public void beginSync(int syncMode, boolean resume) throws SyncException {
         super.beginSync(syncMode, resume);
-        this.status = new Hashtable();
+        statusTable = new Hashtable();
     }
     
     protected void initAllItems() {
-        int allTotal = ITEMS_NUMBER;
-        allItems = new SyncItem[allTotal];
-        for(int i=0; i<allTotal; i++) {
+        allItems = new SyncItem[initialItemsCount];
+        for(int i=0; i<initialItemsCount; i++) {
             allItems[i] = new SyncItem("Item"+i);
         }
     }
 
     protected void initNewItems() {
-        int newTotal = 5;
-        newItems = new SyncItem[newTotal];
-        for(int i=0; i<newTotal; i++) {
-            String name = "Item"+(i+11);
-            newItems[i] = new SyncItem(name, getType(),
+        newItems = new SyncItem[initialNewItemsCount];
+        for(int i=0; i<initialNewItemsCount; i++) {
+            String key = "Item"+(i+11);
+            newItems[i] = new SyncItem(key, getType(),
                     SyncItem.STATE_NEW, null, null);
         }
     }
 
     protected void initUpdItems() {
-        int updTotal = 3;
-        updItems = new SyncItem[updTotal];
-        for(int i=0; i<updTotal; i++) {
-            String name = "Item"+(i+4);
-            updItems[i]= new SyncItem(name, getType(),
+        updItems = new SyncItem[initialUpdatedItemsCount];
+        for(int i=0; i<initialUpdatedItemsCount; i++) {
+            String key = "Item"+(i+4);
+            updItems[i]= new SyncItem(key, getType(),
                     SyncItem.STATE_UPDATED, null, null);
         }
     }
 
     protected void initDelItems() {
-        int delTotal = 3;
-        delItems = new SyncItem[delTotal];
-        for(int i=0; i<delTotal; i++) {
-            String name = "Item"+(i+8);
-            delItems[i] = new SyncItem(name, getType(),
+        delItems = new SyncItem[initialDeletedItemsCount];
+        for(int i=0; i<initialDeletedItemsCount; i++) {
+            String key = "Item"+(i+8);
+            delItems[i] = new SyncItem(key, getType(),
                     SyncItem.STATE_DELETED, null, null);
         }
     }

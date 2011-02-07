@@ -48,7 +48,7 @@ public class SapiSyncManagerTest extends TestCase {
 
     private SapiSyncManager syncManager = null;
     private MockSapiSyncHandler sapiSyncHandler = null;
-    private MockSyncSource src = null;
+    private MockSyncSource syncSource = null;
 
     public SapiSyncManagerTest(String name) {
         super(name);
@@ -62,7 +62,7 @@ public class SapiSyncManagerTest extends TestCase {
         sapiSyncHandler = new MockSapiSyncHandler();
         syncManager.setSapiSyncHandler(sapiSyncHandler);
         
-        src = new MockSyncSource(new SourceConfig(
+        syncSource = new MockSyncSource(new SourceConfig(
                 "test", "application/*", "test"));
     }
 
@@ -76,15 +76,16 @@ public class SapiSyncManagerTest extends TestCase {
         anchor.setDownloadAnchor(0);
         anchor.setUploadAnchor(0);
 
-        src.setSyncAnchor(anchor);
+        syncSource.setSyncAnchor(anchor);
+        syncSource.setInitialItemsCount(100);
 
-        syncManager.sync(src);
+        syncManager.sync(syncSource);
 
         assertEquals(sapiSyncHandler.getLoginCount(), 1);
         assertEquals(sapiSyncHandler.getLogoutCount(), 1);
 
         Vector items = sapiSyncHandler.getUploadedItems();
-        assertEquals(items.size(), 300);   
+        assertEquals(items.size(), 100);
     }
 
     public void testIncrementalUpload() {
@@ -93,9 +94,10 @@ public class SapiSyncManagerTest extends TestCase {
         anchor.setDownloadAnchor(0);
         anchor.setUploadAnchor(100);
 
-        src.setSyncAnchor(anchor);
+        syncSource.setSyncAnchor(anchor);
+        syncSource.setInitialNewItemsCount(5);
 
-        syncManager.sync(src);
+        syncManager.sync(syncSource);
 
         assertEquals(sapiSyncHandler.getLoginCount(), 1);
         assertEquals(sapiSyncHandler.getLogoutCount(), 1);
