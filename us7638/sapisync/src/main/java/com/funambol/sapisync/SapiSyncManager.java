@@ -239,15 +239,28 @@ public class SapiSyncManager implements SyncManagerI {
                 Log.info(TAG_LOG, "The mapping store does not exist, use an empty one");
             }
         }
+        String remoteUri = src.getConfig().getRemoteUri();
 
         if (syncMode == SyncSource.FULL_DOWNLOAD) {
+
+            // Get the number of items and notify the listener
+            try {
+                int total = sapiSyncHandler.getItemsCount(remoteUri);
+                if (total != -1) {
+                    getSyncListenerFromSource(src).startReceiving(total);
+                }
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot get the number of items on server", e);
+                // We ignore this exception and try to get the content
+            }
+
             // We need to grabe the entire list of server items
             boolean done = false;
             int offset = 0;
             try {
                 do {
-                    // TODO FIXME: use the remote name
-                    JSONArray items = sapiSyncHandler.getItems("picture", null, "" + FULL_SYNC_DOWNLOAD_LIMIT,
+                    JSONArray items = sapiSyncHandler.getItems(remoteUri, null,
+                                                               "" + FULL_SYNC_DOWNLOAD_LIMIT,
                                                                "" + offset);
                     if (items != null && items.length() > 0) {
                         applyNewUpdToSyncSource(src, items, SyncItem.STATE_NEW, mapping, true);
@@ -268,10 +281,23 @@ public class SapiSyncManager implements SyncManagerI {
             Date now    = (new Date());
 
             try {
-                // TODO FIXME: use the remote uri
-                SapiSyncHandler.ChangesSet changesSet = sapiSyncHandler.getIncrementalChanges(anchor, "picture");
+                SapiSyncHandler.ChangesSet changesSet = sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
 
                 if (changesSet != null) {
+                    // Count the number of items to be received and notify the
+                    // listener
+                    int total = 0;
+                    if (changesSet.added != null) {
+                        total += changesSet.added.length();
+                    }
+                    if (changesSet.updated != null) {
+                        total += changesSet.updated.length();
+                    }
+                    if (changesSet.deleted != null) {
+                        total += changesSet.deleted.length();
+                    }
+                    getSyncListenerFromSource(src).startReceiving(total);
+
                     // We must pass all of the items to the sync source, but for each
                     // item we need to retrieve the complete information
                     if (changesSet.added != null) {
@@ -308,7 +334,7 @@ public class SapiSyncManager implements SyncManagerI {
             }
             if (itemsId.length() > 0) {
                 // Ask for these items
-                JSONArray items = sapiSyncHandler.getItems("picture", itemsId, null, null);
+                JSONArray items = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), itemsId, null, null);
                 if (items != null) {
                     applyNewUpdToSyncSource(src, items, state, mapping, false);
                 }

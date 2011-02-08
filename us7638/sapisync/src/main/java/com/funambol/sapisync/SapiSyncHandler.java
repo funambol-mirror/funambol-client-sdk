@@ -242,6 +242,34 @@ public class SapiSyncHandler {
         return null;
     }
 
+    public int getItemsCount(String remoteUri) throws JSONException {
+        JSONObject resp = null;
+        boolean retry = true;
+        int attempt = 0;
+        do {
+            try {
+                attempt++;
+                resp = sapiHandler.query("media/" + remoteUri, "count", null, null, null);
+                retry = false;
+            } catch (IOException ioe) {
+                if (attempt >= MAX_RETRIES) {
+                    retry = false;
+                }
+            }
+        } while(retry);
+
+        if (resp != null) {
+            JSONObject data = resp.getJSONObject("data");
+            if (data != null) {
+                // TODO FIXME: use the right name
+                if (data.has("count")) {
+                    return Integer.parseInt(data.getString("count"));
+                }
+            }
+        }
+        return -1;
+    }
+
     private void handleResponseError(JSONObject response) throws Exception {
         try {
             // Check for errors
