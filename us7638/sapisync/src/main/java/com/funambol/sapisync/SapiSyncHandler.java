@@ -181,23 +181,36 @@ public class SapiSyncHandler {
 
         JSONObject data = resp.getJSONObject("data");
         if (data != null) {
-            JSONObject items = data.getJSONObject(dataType);
-            if (items != null) {
-                res.added = items.getJSONArray("N");
-                res.updated = items.getJSONArray("U");
-                res.deleted = items.getJSONArray("D");
+            if (data.has(dataType)) {
+                JSONObject items = data.getJSONObject(dataType);
+                if (items != null) {
+                    res.added = items.getJSONArray("N");
+                    res.updated = items.getJSONArray("U");
+                    res.deleted = items.getJSONArray("D");
+                }
             }
         }
 
         return res;
     }
 
-    public JSONArray getItems(String remoteUri, JSONArray ids) throws JSONException {
-        JSONObject request = new JSONObject();
-        request.put("ids", ids);
+    public JSONArray getItems(String remoteUri, JSONArray ids, String limit, String offset) throws JSONException {
 
         Vector params = new Vector();
-        params.addElement(request.toString());
+        if (ids != null) {
+            JSONObject request = new JSONObject();
+            request.put("ids", ids);
+
+            params.addElement(request.toString());
+        }
+
+        if (limit != null) {
+            params.addElement("limit=" + limit);
+        }
+
+        if (offset != null) {
+            params.addElement("offset=" + offset);
+        }
         params.addElement("exif=none");
 
         JSONObject resp = null;
@@ -219,8 +232,10 @@ public class SapiSyncHandler {
             JSONObject data = resp.getJSONObject("data");
             if (data != null) {
                 // TODO FIXME: use the right name
-                JSONArray items = data.getJSONArray("pictures");
-                return items;
+                if (data.has("pictures")) {
+                    JSONArray items = data.getJSONArray("pictures");
+                    return items;
+                }
             }
         }
 

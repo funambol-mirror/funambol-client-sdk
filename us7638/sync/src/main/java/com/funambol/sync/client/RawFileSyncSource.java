@@ -394,7 +394,7 @@ public class RawFileSyncSource extends TrackableSyncSource {
     public void setSupportedExtensions(String[] extensions) {
         this.extensions = extensions;
     }
-    
+
     /**
      * Return whether a given filename is filtered by the SyncSource.
      * @param filename

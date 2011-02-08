@@ -52,6 +52,7 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncManagerI;
+import com.funambol.sync.TwinDetectionSource;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.util.Log;
@@ -68,6 +69,7 @@ public class SapiSyncManager implements SyncManagerI {
     private static final String TAG_LOG = "SapiSyncManager";
 
     private static final int MAX_ITEMS_PER_BLOCK = 100;
+    private static final int FULL_SYNC_DOWNLOAD_LIMIT = 300;
 
     private SyncConfig syncConfig = null;
     private SapiSyncHandler sapiSyncHandler = null;
@@ -151,11 +153,20 @@ public class SapiSyncManager implements SyncManagerI {
             getSyncListenerFromSource(src).syncStarted(getActualSyncMode(src, syncMode));
 
             if(isDownloadPhaseNeeded(syncMode)) {
+                // Get ready to update the download anchor
+                long newDownloadAnchor = (new Date()).getTime();
                 performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
+                // If we had no error so far, then we update the anchor
+                SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
+                anchor.setDownloadAnchor(newDownloadAnchor);
             }
 
             if(isUploadPhaseNeeded(syncMode)) {
+                long newUploadAnchor = (new Date()).getTime();
                 performUploadPhase(src, getActualUploadSyncMode(src), resume);
+                // If we had no error so far, then we update the anchor
+                SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
+                anchor.setUploadAnchor(newUploadAnchor);
             }
 
             performFinalizationPhase(src);
@@ -218,12 +229,6 @@ public class SapiSyncManager implements SyncManagerI {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Starting download phase " + syncMode);
         }
-        // TODO FIXME ////////////
-        if (syncMode == SyncSource.FULL_DOWNLOAD) {
-            syncMode = SyncSource.INCREMENTAL_DOWNLOAD;
-            Log.info(TAG_LOG, "Temporarly switched to incremental download");
-        }
-        /////////////////////////
 
         StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
         StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore(src.getName() + "_mapping");
@@ -236,7 +241,27 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         if (syncMode == SyncSource.FULL_DOWNLOAD) {
-
+            // We need to grabe the entire list of server items
+            boolean done = false;
+            int offset = 0;
+            try {
+                do {
+                    // TODO FIXME: use the remote name
+                    JSONArray items = sapiSyncHandler.getItems("picture", null, "" + FULL_SYNC_DOWNLOAD_LIMIT,
+                                                               "" + offset);
+                    if (items != null && items.length() > 0) {
+                        applyNewUpdToSyncSource(src, items, SyncItem.STATE_NEW, mapping, true);
+                        offset += items.length();
+                        if (items.length() < FULL_SYNC_DOWNLOAD_LIMIT) {
+                            done = true;
+                        }
+                    } else {
+                        done = true;
+                    }
+                } while(!done);
+            } catch (JSONException je) {
+                Log.error(TAG_LOG, "Cannot parse server data", je);
+            }
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
             SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
             Date anchor = new Date(sapiAnchor.getDownloadAnchor());
@@ -283,72 +308,107 @@ public class SapiSyncManager implements SyncManagerI {
             }
             if (itemsId.length() > 0) {
                 // Ask for these items
-                JSONArray items = sapiSyncHandler.getItems("picture", itemsId);
-                // Apply these changes into the sync source
+                JSONArray items = sapiSyncHandler.getItems("picture", itemsId, null, null);
                 if (items != null) {
-                    Vector sourceItems = new Vector();
-                    for(int k=0;k<items.length();++k) {
-                        JSONObject item = items.getJSONObject(k);
-                        String     guid = item.getString("id");
-                        long       size = Long.parseLong(item.getString("size"));
-
-                        String luid;
-                        if (state == SyncItem.STATE_UPDATED) {
-                            luid = mapping.get(guid);
-                        } else {
-                            luid = guid;
-                        }
-
-                        SyncItem syncItem = src.createSyncItem(luid, src.getType(), state,  null, size);
-                        syncItem.setGuid(guid);
-                        OutputStream os = null;
-                        try {
-                            os = syncItem.getOutputStream();
-                            os.write(item.toString().getBytes());
-                            os.close();
-                        } catch (IOException ioe) {
-                            Log.error(TAG_LOG, "Cannot write into sync item stream", ioe);
-                            // Ignore this item and continue
-                        } finally {
-                            try {
-                                if (os != null) {
-                                    os.close();
-                                }
-                            } catch (IOException ioe) {
-                            }
-                        }
-
-
-                        if (state == SyncItem.STATE_UPDATED) {
-                            getSyncListenerFromSource(src).itemUpdated(syncItem);
-                        } else {
-                            getSyncListenerFromSource(src).itemReceived(syncItem);
-                        }
-
-                        sourceItems.addElement(syncItem);
-                    }
-                    // Apply the items in the sync source
-                    sourceItems = src.applyChanges(sourceItems);
-                    // The sourceItems returned by the call contains the LUID,
-                    // so we can create the luid/guid map here
-                    if (state == SyncItem.STATE_NEW) {
-                        try {
-                            for(int l=0;l<sourceItems.size();++l) {
-                                SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
-                                if (Log.isLoggable(Log.TRACE)) {
-                                    Log.trace(TAG_LOG, "Updating mapping info for: " + newItem.getGuid() + "," + newItem.getKey());
-                                }
-                                mapping.put(newItem.getGuid(), newItem.getKey());
-                                mapping.save();
-                            }
-                        } catch (Exception e) {
-                            Log.error(TAG_LOG, "Cannot save mappings", e);
-                        }
-                    }
+                    applyNewUpdToSyncSource(src, items, state, mapping, false);
                 }
             }
         }
     }
+
+    private void applyNewUpdToSyncSource(SyncSource src, JSONArray items, char state, StringKeyValueStore mapping,
+                                         boolean deepTwinSearch) throws SyncException, JSONException {
+        // Apply these changes into the sync source
+        Vector sourceItems = new Vector();
+        for(int k=0;k<items.length();++k) {
+            JSONObject item = items.getJSONObject(k);
+            String     guid = item.getString("id");
+            long       size = Long.parseLong(item.getString("size"));
+
+            if (deepTwinSearch) {
+                // In this case we cannot rely on mappings to detect twins, we
+                // rather perform a content analysis to determine twins
+                if (src instanceof TwinDetectionSource) {
+                    TwinDetectionSource twinSource = (TwinDetectionSource)src;
+                    SyncItem sourceItem = new SyncItem(guid, src.getType(), state, null);
+                    sourceItem.setContent(item.toString().getBytes());
+                    SyncItem twinItem = twinSource.findTwin(sourceItem);
+                    if (twinItem != null) {
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Found twin for item: " + guid);
+                        }
+                        // Skip the processing of this item
+                        continue;
+                    }
+                } else {
+                    Log.error(TAG_LOG, "Source does not implement TwinDetection, possible creation of duplicates");
+                }
+            } else {
+                // In this case we only check if an item with the same guid
+                // already exists. In such a case we turn the command into a
+                // replace
+                if (state == SyncItem.STATE_NEW && mapping.get(guid) != null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Turning add into replace as item already exists " + guid);
+                    }
+                    state = SyncItem.STATE_UPDATED;
+                }
+            }
+
+            String luid;
+            if (state == SyncItem.STATE_UPDATED) {
+                luid = mapping.get(guid);
+            } else {
+                luid = guid;
+            }
+
+            SyncItem syncItem = src.createSyncItem(luid, src.getType(), state,  null, size);
+            syncItem.setGuid(guid);
+            OutputStream os = null;
+            try {
+                os = syncItem.getOutputStream();
+                os.write(item.toString().getBytes());
+                os.close();
+            } catch (IOException ioe) {
+                Log.error(TAG_LOG, "Cannot write into sync item stream", ioe);
+                // Ignore this item and continue
+            } finally {
+                try {
+                    if (os != null) {
+                        os.close();
+                    }
+                } catch (IOException ioe) {
+                }
+            }
+
+            if (state == SyncItem.STATE_UPDATED) {
+                getSyncListenerFromSource(src).itemUpdated(syncItem);
+            } else {
+                getSyncListenerFromSource(src).itemReceived(syncItem);
+            }
+
+            sourceItems.addElement(syncItem);
+        }
+        // Apply the items in the sync source
+        sourceItems = src.applyChanges(sourceItems);
+        // The sourceItems returned by the call contains the LUID,
+        // so we can create the luid/guid map here
+        if (state == SyncItem.STATE_NEW) {
+            try {
+                for(int l=0;l<sourceItems.size();++l) {
+                    SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "Updating mapping info for: " + newItem.getGuid() + "," + newItem.getKey());
+                    }
+                    mapping.put(newItem.getGuid(), newItem.getKey());
+                    mapping.save();
+                }
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot save mappings", e);
+            }
+        }
+    }
+
 
     private void applyDelItems(SyncSource src, JSONArray removed, StringKeyValueStore mapping)
     throws SyncException, JSONException {
