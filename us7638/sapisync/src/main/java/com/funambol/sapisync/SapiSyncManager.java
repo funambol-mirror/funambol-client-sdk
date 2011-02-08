@@ -324,6 +324,7 @@ public class SapiSyncManager implements SyncManagerI {
                     if (changesSet.deleted != null) {
                         total += changesSet.deleted.length();
                     }
+
                     getSyncListenerFromSource(src).startReceiving(total);
 
                     // We must pass all of the items to the sync source, but for each
@@ -363,6 +364,7 @@ public class SapiSyncManager implements SyncManagerI {
             if (itemsId.length() > 0) {
                 // Ask for these items
                 JSONArray items = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), itemsId, null, null);
+
                 if (items != null) {
                     applyNewUpdToSyncSource(src, items, state, mapping, false);
                 }
@@ -475,12 +477,13 @@ public class SapiSyncManager implements SyncManagerI {
 
         Vector delItems = new Vector();
         for(int i=0;i < removed.length();++i) {
-            String guid = removed.getString(i++);
+            String guid = removed.getString(i);
             String luid = mapping.get(guid);
             if (luid == null) {
                 luid = guid;
             }
             SyncItem delItem = new SyncItem(luid, src.getType(), SyncItem.STATE_DELETED, null);
+            delItem.setGuid(guid);
             delItems.addElement(delItem);
             getSyncListenerFromSource(src).itemDeleted(delItem);
         }

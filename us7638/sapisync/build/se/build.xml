@@ -113,7 +113,7 @@ Build file for Funambol Java SyncML
         </copy>
         
         <javac srcdir="${dir.test}" destdir="${dir.classes}"
-               target="1.1" source="1.2" debug="${wtk.debug}"
+               target="1.1" source="1.2" debug="${debug}"
                listfiles="yes">
 
                <classpath>

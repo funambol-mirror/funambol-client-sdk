@@ -38,6 +38,10 @@ package com.funambol.sapisync;
 import java.util.Vector;
 import java.util.Date;
 
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+import org.json.me.JSONArray;
+
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
@@ -51,10 +55,17 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
     private static final String TEST_USERNAME = "user";
     private static final String TEST_PASSWORD = "pwd";
 
-    private Vector itemsToDownload = new Vector();
+    private ChangesSet changesSet = null;
+    private JSONArray fullSyncItems[] = null;
+    private int itemsCount;
     private Vector uploadedItems = new Vector();
     private int loginCount = 0;
     private int logoutCount = 0;
+    private int fullSyncItemsIdx = 0;
+
+    private Vector limitRequests  = new Vector();
+    private Vector offsetRequests = new Vector();
+    private Vector idsRequests    = new Vector();
 
     public MockSapiSyncHandler() {
         super(TEST_SERVER, TEST_USERNAME, TEST_PASSWORD);
@@ -73,13 +84,60 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         uploadedItems.addElement(item);
     }
 
-    public Vector incrementalDownload(Date from, Date to, String dataName)
-            throws SyncException {
-        return itemsToDownload;
+    public ChangesSet getIncrementalChanges(Date from, String dataType) throws JSONException {
+        return changesSet;
     }
 
-    public void setItemsToDownload(Vector itemsToDownload) {
-        this.itemsToDownload = itemsToDownload;
+    public void setIncrementalChanges(JSONArray added, JSONArray updated, JSONArray deleted) {
+        ChangesSet res = new ChangesSet();
+        res.added = added;
+        res.updated = updated;
+        res.deleted = deleted;
+        this.changesSet = res;
+    }
+
+    public JSONArray getItems(String remoteUri, JSONArray ids, String limit, String offset) throws JSONException {
+
+        // Save this information to be checked later
+        if (limit != null) {
+            limitRequests.addElement(limit);
+        }
+        if (offset != null) {
+            offsetRequests.addElement(offset);
+        }
+        if (ids != null) {
+            idsRequests.addElement(ids);
+        }
+        // Return the proper value
+        if (fullSyncItems == null) {
+            return null;
+        } else {
+            return fullSyncItems[fullSyncItemsIdx++];
+        }
+    }
+
+    public void setItems(JSONArray fullSyncItems[]) {
+        this.fullSyncItems = fullSyncItems;
+    }
+
+    public Vector getLimitRequests() {
+        return limitRequests;
+    }
+
+    public Vector getOffsetRequests() {
+        return offsetRequests;
+    }
+
+    public Vector getIdsRequests() {
+        return idsRequests;
+    }
+
+    public int getItemsCount(String remoteUri) throws JSONException {
+        return itemsCount;
+    }
+
+    public void setItemsCount(int itemsCount) {
+        this.itemsCount = itemsCount;
     }
 
     public Vector getUploadedItems() {
