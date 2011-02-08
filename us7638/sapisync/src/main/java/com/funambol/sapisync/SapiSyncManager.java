@@ -73,6 +73,7 @@ public class SapiSyncManager implements SyncManagerI {
 
     private SyncConfig syncConfig = null;
     private SapiSyncHandler sapiSyncHandler = null;
+    private SapiSyncStatus syncStatus = null;
 
     /**
      * Unique instance of a BasicSyncListener which is used when the user does
@@ -145,7 +146,7 @@ public class SapiSyncManager implements SyncManagerI {
         // TODO FIXME: check if resume is needed
         boolean resume = false;
 
-        SapiSyncStatus syncStatus = new SapiSyncStatus(src.getName());
+        syncStatus = new SapiSyncStatus(src.getName());
         try {
             syncStatus.load();
         } catch (Exception e) {
@@ -446,19 +447,25 @@ public class SapiSyncManager implements SyncManagerI {
         sourceItems = src.applyChanges(sourceItems);
         // The sourceItems returned by the call contains the LUID,
         // so we can create the luid/guid map here
-        if (state == SyncItem.STATE_NEW) {
-            try {
-                for(int l=0;l<sourceItems.size();++l) {
-                    SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
+        try {
+            for(int l=0;l<sourceItems.size();++l) {
+                SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
+                // Update the sync status
+                syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(), newItem.getState(), newItem.getSyncStatus());
+                // and the mapping table
+                if (state == SyncItem.STATE_NEW) {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "Updating mapping info for: " + newItem.getGuid() + "," + newItem.getKey());
                     }
                     mapping.put(newItem.getGuid(), newItem.getKey());
-                    mapping.save();
                 }
-            } catch (Exception e) {
-                Log.error(TAG_LOG, "Cannot save mappings", e);
             }
+            if (state == SyncItem.STATE_NEW) {
+                mapping.save();
+            }
+            syncStatus.save();
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot save mappings", e);
         }
     }
 
