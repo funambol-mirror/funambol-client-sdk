@@ -145,6 +145,18 @@ public class SapiSyncManager implements SyncManagerI {
         // TODO FIXME: check if resume is needed
         boolean resume = false;
 
+        SapiSyncStatus syncStatus = new SapiSyncStatus(src.getName());
+        try {
+            syncStatus.load();
+        } catch (Exception e) {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Cannot load sync status, use an empty one");
+            }
+        }
+
+        // Set the basic properties in the sync status
+        syncStatus.setRemoteUri(src.getConfig().getRemoteUri());
+ 
         try {
             getSyncListenerFromSource(src).startSession();
 
@@ -170,9 +182,24 @@ public class SapiSyncManager implements SyncManagerI {
             }
 
             performFinalizationPhase(src);
+        } catch (Throwable t) {
+            Log.error(TAG_LOG, "Error while synchronizing", t);
+            syncStatus.setSyncException(t);
+            try {
+                syncStatus.save();
+            } catch (IOException ioe) {
+                Log.error(TAG_LOG, "Cannot save sync status", ioe);
+            }
+            SyncException se;
+            if (t instanceof SyncException) {
+                se = (SyncException)t;
+            } else {
+                se = new SyncException(SyncException.CLIENT_ERROR, "Generic error");
+            }
+            throw se;
         } finally {
-            // TODO: create a report
-            getSyncListenerFromSource(src).endSession(null);
+            // We must guarantee this method is invoked in all cases
+            getSyncListenerFromSource(src).endSession(syncStatus);
         }
     }
 
@@ -231,7 +258,7 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
-        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore(src.getName() + "_mapping");
+        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore("mapping_" + src.getName());
         try {
             mapping.load();
         } catch (Exception e) {
