@@ -37,7 +37,7 @@ package com.funambol.client.test;
 
 import java.util.Vector;
 
-import com.funambol.syncml.spds.SyncStatus;
+import com.funambol.sync.SyncReport;
 import com.funambol.syncml.spds.SyncManager;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.BasicSyncListener;
@@ -65,7 +65,7 @@ public class SyncMonitor {
         }
     }
 
-    public SyncStatus getSyncStatus(String source) {
+    public SyncReport getSyncStatus(String source) {
         if(sManager != null) {
             return sManager.getSyncStatus();
         } else {

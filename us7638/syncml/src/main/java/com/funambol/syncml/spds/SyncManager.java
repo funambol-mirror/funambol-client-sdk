@@ -297,8 +297,7 @@ public class SyncManager implements SyncManagerI {
      *
      */
     public void sync(SyncSource source) throws SyncException {
-        int syncMode = getSyncMLSyncMode(source.getSyncMode());
-        sync(source, syncMode, false);
+        sync(source, source.getSyncMode(), false);
     }
 
 
@@ -316,8 +315,7 @@ public class SyncManager implements SyncManagerI {
      *
      */
     public void sync(SyncSource source, boolean askServerDevInf) throws SyncException {
-        int syncMode = getSyncMLSyncMode(source.getSyncMode());
-        sync(source, syncMode, askServerDevInf);
+        sync(source, source.getSyncMode(), askServerDevInf);
     }
 
     /**
@@ -349,6 +347,9 @@ public class SyncManager implements SyncManagerI {
     public synchronized void sync(SyncSource src, int syncMode,
                                   boolean askServerDevInf)
             throws SyncException {
+
+        // Translate the abstract sync mode into the corresponding syncml one
+        syncMode = getSyncMLSyncMode(syncMode);
 
         busy = true;
         cancel = false;

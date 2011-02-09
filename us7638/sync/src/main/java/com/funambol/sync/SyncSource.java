@@ -94,6 +94,7 @@ public interface SyncSource {
     public static final int INCREMENTAL_SYNC = 3;
     public static final int INCREMENTAL_UPLOAD = 4;
     public static final int INCREMENTAL_DOWNLOAD = 5;
+    public static final int NO_SYNC = 6;
 
     // These are the status that sync source operations can return
     public static final int SUCCESS_STATUS           = 0;
