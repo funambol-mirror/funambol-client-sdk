@@ -41,12 +41,9 @@ import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.ChangesTracker;
 import com.funambol.sync.client.TrackableSyncSource;
-import com.funambol.platform.HttpConnectionAdapter;
-import com.funambol.util.ConnectionManager;
+import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.util.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -61,6 +58,8 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     protected boolean downloadFileObject;
     protected boolean downloadThumbnails;
 
+    private HttpDownloader downloader = null;
+
     //------------------------------------------------------------- Constructors
 
     /**
@@ -70,6 +69,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         super(config, tracker);
         downloadFileObject = true;
         downloadThumbnails = false;
+        downloader = new HttpDownloader();
     }
 
     public int addItem(SyncItem item) throws SyncException {
@@ -91,7 +91,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
                 String baseUrl = jsonFile.getUrl();
                 long size      = jsonFile.getSize();
                 OutputStream fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
-                downloadToOutputStream(composeUrl(baseUrl, name), fileos, size);
+                downloader.download(composeUrl(baseUrl, name), fileos, size);
             }
             if(downloadThumbnails) {
                 // TODO FIXME download thumbnails
@@ -124,70 +124,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
      */
     protected abstract OutputStream getDownloadOutputStream(String name,
             long size, boolean isUpdate, boolean isThumbnail);
-
-    /**
-     * Download the given url to the given OutputStream.
-     * 
-     * @param url
-     * @param os
-     * @param size
-     */
-    private void downloadToOutputStream(String url, OutputStream os, long size) {
-
-        HttpConnectionAdapter conn = null;
-        InputStream is = null;
-        try {
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Sending http request to: " + url);
-            }
-            conn = ConnectionManager.getInstance().openHttpConnection(
-                    url, "wrapper");
-            conn.setRequestMethod(HttpConnectionAdapter.GET);
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Response is: " + conn.getResponseCode());
-            }
-            if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
-                is = conn.openInputStream();
-                // Read until we have data
-                int b;
-                do {
-                    b = is.read();
-                    size--;
-                    if (b != -1) {
-                        os.write(b);
-                    }
-                } while(b != -1 && size > 0);
-            } else {
-                Log.error(TAG_LOG, "Http request failed. Server replied: " +
-                        conn.getResponseCode() + ", message: " +
-                        conn.getResponseMessage());
-                return;
-            }
-        } catch(IOException ex) {
-            Log.error(TAG_LOG, "Http download failed", ex);
-            return;
-        } finally {
-            // Release all resources
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {}
-                os = null;
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {}
-                is = null;
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (IOException e) {}
-                conn = null;
-            }
-        }
-    }
 
     private String composeUrl(String baseUrl, String filename) {
         StringBuffer res = new StringBuffer();
