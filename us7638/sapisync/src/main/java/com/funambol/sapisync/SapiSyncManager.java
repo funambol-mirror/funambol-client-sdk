@@ -155,10 +155,13 @@ public class SapiSyncManager implements SyncManagerI {
             }
         }
 
-        // Set the basic properties in the sync status
-        syncStatus.setRemoteUri(src.getConfig().getRemoteUri());
  
         try {
+            // Set the basic properties in the sync status
+            syncStatus.setRemoteUri(src.getConfig().getRemoteUri());
+            syncStatus.setInterrupted(true);
+            syncStatus.save();
+
             getSyncListenerFromSource(src).startSession();
 
             performInitializationPhase(src, getActualSyncMode(src, syncMode), resume);
@@ -174,16 +177,19 @@ public class SapiSyncManager implements SyncManagerI {
                 anchor.setDownloadAnchor(newDownloadAnchor);
             }
 
-            // TODO FIXME
-            /*if(isUploadPhaseNeeded(syncMode)) {
+            if(isUploadPhaseNeeded(syncMode)) {
                 long newUploadAnchor = (new Date()).getTime();
                 performUploadPhase(src, getActualUploadSyncMode(src), resume);
                 // If we had no error so far, then we update the anchor
                 SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
                 anchor.setUploadAnchor(newUploadAnchor);
-            }*/
+            }
 
             performFinalizationPhase(src);
+
+            syncStatus.setInterrupted(false);
+            syncStatus.setStatusCode(SyncListener.SUCCESS);
+
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Error while synchronizing", t);
             syncStatus.setSyncException(t);

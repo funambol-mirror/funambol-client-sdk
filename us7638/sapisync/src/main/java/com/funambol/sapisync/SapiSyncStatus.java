@@ -526,7 +526,7 @@ public class SapiSyncStatus implements SyncReport {
         res.append("==================================================================\n");
         res.append("| Syncrhonization report for\n");
         res.append("| Local URI: ").append(locUri).append(" - Remote URI:").append(remoteUri).append("\n");
-        res.append("| Requested sync mode: ").append(requestedSyncMode);
+        res.append("| Requested sync mode: ").append(requestedSyncMode).append("\n");
         res.append("|-----------------------------------------------------------------\n");
         res.append("| Changes received from server in this sync\n");
         res.append("|-----------------------------------------------------------------\n");
