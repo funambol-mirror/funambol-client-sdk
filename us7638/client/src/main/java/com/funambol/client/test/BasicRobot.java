@@ -89,7 +89,7 @@ public abstract class BasicRobot extends Robot {
             Log.debug(TAG_LOG, "check last sync requested sync mode");
         }
 
-        SyncStatus sr = syncMonitor.getSyncStatus(source);
+        SyncStatus sr = (SyncStatus)syncMonitor.getSyncStatus(source);
         assertTrue(sr != null, "source has no report associated");
         assertTrue(sr.getRequestedSyncMode() == mode, "Requested sync mode mismatch");
     }
@@ -100,7 +100,7 @@ public abstract class BasicRobot extends Robot {
             Log.debug(TAG_LOG, "check last sync alerted sync mode");
         }
 
-        SyncStatus sr = syncMonitor.getSyncStatus(source);
+        SyncStatus sr = (SyncStatus)syncMonitor.getSyncStatus(source);
         assertTrue(sr != null, "source has no report associated");
         assertTrue(sr.getAlertedSyncMode() == mode, "Alerted sync mode mismatch");
     }
@@ -111,7 +111,7 @@ public abstract class BasicRobot extends Robot {
             Log.debug(TAG_LOG, "check last sync remote URI");
         }
 
-        SyncStatus sr = syncMonitor.getSyncStatus(source);
+        SyncStatus sr = (SyncStatus)syncMonitor.getSyncStatus(source);
         assertTrue(sr != null, "source has no report associated");
         assertTrue(sr.getRemoteUri(), uri, "Requested remote URI mismatch");
     }
@@ -125,7 +125,7 @@ public abstract class BasicRobot extends Robot {
             Log.debug(TAG_LOG, "check last sync exchanged data");
         }
 
-        SyncStatus sr = syncMonitor.getSyncStatus(source);
+        SyncStatus sr = (SyncStatus)syncMonitor.getSyncStatus(source);
         assertTrue(sr != null, "source has no report associated");
 
         assertTrue(receivedAdd, sr.getReceivedAddNumber(),

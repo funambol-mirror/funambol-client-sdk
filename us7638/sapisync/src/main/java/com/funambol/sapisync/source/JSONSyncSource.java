@@ -42,7 +42,10 @@ import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.ChangesTracker;
 import com.funambol.sync.client.TrackableSyncSource;
 import com.funambol.sapisync.source.util.HttpDownloader;
+import com.funambol.sync.SyncConfig;
 import com.funambol.util.Log;
+import com.funambol.util.StringUtil;
+import java.io.IOException;
 
 import java.io.OutputStream;
 
@@ -59,52 +62,68 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     protected boolean downloadThumbnails;
 
     private HttpDownloader downloader = null;
+    private SyncConfig syncConfig = null;
 
     //------------------------------------------------------------- Constructors
 
     /**
      * JSONSyncSource constructor: initialize source config
      */
-    public JSONSyncSource(SourceConfig config, ChangesTracker tracker) {
+    public JSONSyncSource(SourceConfig config, SyncConfig syncConfig, ChangesTracker tracker) {
         super(config, tracker);
-        downloadFileObject = true;
-        downloadThumbnails = false;
-        downloader = new HttpDownloader();
+        this.downloadFileObject = true;
+        this.downloadThumbnails = false;
+        this.downloader = new HttpDownloader();
+        this.syncConfig = syncConfig;
     }
 
     public int addItem(SyncItem item) throws SyncException {
-        super.addItem(item);
-        return addUpdateItem(item, false);
-    }
-
-    public int updateItem(SyncItem item) throws SyncException {
-        super.updateItem(item);
-        return addUpdateItem(item, true);
-    }
-
-    private int addUpdateItem(SyncItem item, boolean isUpdate) throws SyncException {
         try {
             String itemContent = new String(item.getContent());
             JSONFileObject jsonFile = new JSONFileObject(itemContent);
+            int res = addUpdateItem(item, jsonFile, false);
+            super.addItem(item);
+            return res;
+        } catch (Throwable t) {
+            Log.error(TAG_LOG, "Cannot add item", t);
+            return SyncSource.ERROR_STATUS;
+        }
+    }
+
+    public int updateItem(SyncItem item) throws SyncException {
+        try {
+            String itemContent = new String(item.getContent());
+            JSONFileObject jsonFile = new JSONFileObject(itemContent);
+            int res = addUpdateItem(item, jsonFile, true);
+            super.addItem(item);
+            return res;
+        } catch (Throwable t) {
+            Log.error(TAG_LOG, "Cannot add item", t);
+            return SyncSource.ERROR_STATUS;
+        }
+    }
+
+    protected int addUpdateItem(SyncItem item, JSONFileObject jsonFile,
+            boolean isUpdate) throws SyncException {
+        try {
             if(downloadFileObject) {
-                String name    = jsonFile.getName();
                 String baseUrl = jsonFile.getUrl();
-                long size      = jsonFile.getSize();
+                long size = jsonFile.getSize();
                 OutputStream fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
-                downloader.download(composeUrl(baseUrl, name), fileos, size);
+                downloader.download(composeUrl(baseUrl), fileos, size);
             }
             if(downloadThumbnails) {
                 // TODO FIXME download thumbnails
             }
-            return SyncSource.STATUS_SUCCESS;
+            return SyncSource.SUCCESS_STATUS;
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Cannot save json item", t);
-            return SyncSource.STATUS_RECV_ERROR;
+            return SyncSource.ERROR_STATUS;
         }
     }
 
     protected OutputStream getDownloadOutputStream(JSONFileObject jsonItem,
-            boolean isUpdate, boolean isThumbnail) {
+            boolean isUpdate, boolean isThumbnail) throws IOException {
         return getDownloadOutputStream(
                 jsonItem.getName(),
                 jsonItem.getSize(),
@@ -123,13 +142,21 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
      * @return
      */
     protected abstract OutputStream getDownloadOutputStream(String name,
-            long size, boolean isUpdate, boolean isThumbnail);
+            long size, boolean isUpdate, boolean isThumbnail) throws IOException;
 
-    private String composeUrl(String baseUrl, String filename) {
+    /**
+     * Composes the url to use for the download operation.
+     * 
+     * @param baseUrl
+     * @param filename
+     * @return
+     */
+    private String composeUrl(String baseUrl) {
+        String serverUrl = StringUtil.extractAddressFromUrl(
+                syncConfig.getSyncUrl());
         StringBuffer res = new StringBuffer();
+        res.append(serverUrl);
         res.append(baseUrl);
-        res.append('/');
-        res.append(filename);
         return res.toString();
     }
 }

@@ -174,13 +174,14 @@ public class SapiSyncManager implements SyncManagerI {
                 anchor.setDownloadAnchor(newDownloadAnchor);
             }
 
-            if(isUploadPhaseNeeded(syncMode)) {
+            // TODO FIXME
+            /*if(isUploadPhaseNeeded(syncMode)) {
                 long newUploadAnchor = (new Date()).getTime();
                 performUploadPhase(src, getActualUploadSyncMode(src), resume);
                 // If we had no error so far, then we update the anchor
                 SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
                 anchor.setUploadAnchor(newUploadAnchor);
-            }
+            }*/
 
             performFinalizationPhase(src);
         } catch (Throwable t) {
@@ -229,7 +230,7 @@ public class SapiSyncManager implements SyncManagerI {
                 
                 // Set the item status
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
-                        SyncSource.STATUS_SUCCESS));
+                        SyncSource.SUCCESS_STATUS));
             } catch(Exception ex) {
                 if(Log.isLoggable(Log.ERROR)) {
                     Log.error(TAG_LOG, "Failed to upload item with key: " +
@@ -459,7 +460,7 @@ public class SapiSyncManager implements SyncManagerI {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "Updating mapping info for: " + newItem.getGuid() + "," + newItem.getKey());
                     }
-                    mapping.put(newItem.getGuid(), newItem.getKey());
+                    mapping.add(newItem.getGuid(), newItem.getKey());
                 }
             }
             if (state == SyncItem.STATE_NEW) {
