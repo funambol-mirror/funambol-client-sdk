@@ -194,7 +194,8 @@ public class SapiSyncHandler {
         return res;
     }
 
-    public JSONArray getItems(String remoteUri, JSONArray ids, String limit, String offset) throws JSONException {
+    public JSONArray getItems(String remoteUri, String dataTag, JSONArray ids,
+                              String limit, String offset) throws JSONException {
 
         Vector params = new Vector();
         if (ids != null) {
@@ -231,9 +232,8 @@ public class SapiSyncHandler {
         if (resp != null) {
             JSONObject data = resp.getJSONObject("data");
             if (data != null) {
-                // TODO FIXME: use the right name
-                if (data.has("pictures")) {
-                    JSONArray items = data.getJSONArray("pictures");
+                if (data.has(dataTag)) {
+                    JSONArray items = data.getJSONArray(dataTag);
                     return items;
                 }
             }
@@ -261,7 +261,6 @@ public class SapiSyncHandler {
         if (resp != null) {
             JSONObject data = resp.getJSONObject("data");
             if (data != null) {
-                // TODO FIXME: use the right name
                 if (data.has("count")) {
                     return Integer.parseInt(data.getString("count"));
                 }

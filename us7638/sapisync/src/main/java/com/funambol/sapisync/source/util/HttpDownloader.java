@@ -1,6 +1,6 @@
 /*
  * Funambol is a mobile platform developed by Funambol, Inc. 
- * Copyright (C) 2008 Funambol, Inc.
+ * Copyright (C) 2011 Funambol, Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
@@ -48,7 +48,8 @@ public class HttpDownloader  {
 
     private static final String TAG_LOG = "HttpDownloader";
 
-    private final int DEFAULT_CHUNK_SIZE = 4096;
+    private static final int DEFAULT_CHUNK_SIZE = 4096;
+    private static final int MAX_RETRY = 3;
 
     private DownloadListener listener = null;
     
@@ -70,10 +71,57 @@ public class HttpDownloader  {
      * @param url
      * @param os
      * @param size
-     * @throws SyncException in case there is a network error of any kind (including auth error)
+     * @throws SyncException in case there is a non temporary network error of any kind (for example auth error)
      * @throws IOException in case there is a problem writing the output stream
+     *
+     * @return the total number of downloaded bytes. If this is smaller than size, then the download
+     *         was interrupted and can be resumed later. The user shall always check the returned value.
      */
-    public void download(String url, OutputStream os, long size) throws SyncException, IOException {
+    public long download(String url, OutputStream os, long size) throws SyncException, IOException {
+        boolean retry;
+        int i = 0;
+        long downloadedSize = 0;
+        do {
+            ++i;
+            retry = false;
+            try {
+                if (downloadedSize == 0) {
+                    long s = download(url, os, size, -1, -1);
+                    downloadedSize += s;
+                } else {
+                    long s = download(url, os, size, downloadedSize, size - 1);
+                    downloadedSize += s;
+                }
+            } catch (SyncException se) {
+                // If we had a network error, then we try to resume the download
+                // (until we reach a max number of errors)
+                if (se.getCode() == SyncException.CONN_NOT_FOUND && i < MAX_RETRY) {
+                    retry = true;
+                }
+            }
+        } while(retry && downloadedSize < size);
+        return downloadedSize;
+    }
+
+    /**
+     * Resumes the download of an interrupted item
+     * @param url
+     * @param os
+     * @param size
+     * @param startOffset
+     * @throws SyncException
+     * @throws IOException
+     */
+    public void resume(String url, OutputStream os, long size, long startOffset)
+    throws SyncException, IOException {
+        download(url, os, size, startOffset, size - 1);
+    }
+
+    protected int download(String url, OutputStream os, long size, long startOffset, long endOffset)
+    throws SyncException, IOException {
+
+        int downloadedSize = 0;
+
         HttpConnectionAdapter conn = null;
         InputStream is = null;
         if(listener != null) {
@@ -81,23 +129,54 @@ public class HttpDownloader  {
         }
 
         boolean errorWritingStream = false;
+        boolean resume = false;
         try {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Sending http request to: " + url);
             }
-            conn = ConnectionManager.getInstance().openHttpConnection(
-                    url, "wrapper");
+            conn = ConnectionManager.getInstance().openHttpConnection(url, "wrapper");
             conn.setRequestMethod(HttpConnectionAdapter.GET);
+            if (startOffset > 0  && endOffset > 0) {
+                // This is a resume request. Add the proper header
+                StringBuffer range = new StringBuffer();
+                range.append("bytes ").append(startOffset).append("-").append(endOffset)
+                     .append("/").append(size);
+                conn.setRequestProperty("Content-Range", range.toString());
+                resume = true;
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Resuming download for: " + url);
+                }
+            }
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Response is: " + conn.getResponseCode());
             }
-            if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
+
+            boolean ok;
+            int respCode = conn.getResponseCode();
+            if (resume) {
+                if (respCode == HttpConnectionAdapter.HTTP_PARTIAL) {
+                    // Move the output stream to the right position
+                    ok = true;
+                } else if (respCode == HttpConnectionAdapter.HTTP_OK) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Server refused resuming download");
+                    }
+                    // Leave the os at the very beginning, so that we overwrite old data
+                    // TODO: use the proper error
+                    throw new SyncException(SyncException.CLIENT_ERROR, "Cannot resume download");
+                } else {
+                    ok = false;
+                }
+            } else {
+                ok = respCode == HttpConnectionAdapter.HTTP_OK;
+            }
+
+            if (ok) {
                 is = conn.openInputStream();
                 byte[] data = new byte[DEFAULT_CHUNK_SIZE];
                 int n = 0;
                 while ((n = is.read(data)) != -1) {
-
-                    // We intercept the IO operation during writing because this
+                    // We intercept the IO exception during writing because this
                     // must generate a generic error for this specific item, but not
                     // interrupt the sync like a network error
                     // TODO FIXME: handle device full error
@@ -108,6 +187,10 @@ public class HttpDownloader  {
                         errorWritingStream = true;
                         break;
                     }
+
+                    // Keep track of how many bytes were downloaded and locally saved
+                    downloadedSize += n;
+
                     if(listener != null) {
                         listener.downloadChunkReceived(n);
                     }
@@ -119,13 +202,10 @@ public class HttpDownloader  {
 
                 if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_UNAUTHORIZED) {
                     throw new SyncException(SyncException.AUTH_ERROR, "HTTP error code: " + conn.getResponseCode());
-                } else {
-                    throw new SyncException(SyncException.CONN_NOT_FOUND, "HTTP error code: " + conn.getResponseCode());
                 }
             }
         } catch(IOException ex) {
             Log.error(TAG_LOG, "Http download failed with a network error", ex);
-            throw new SyncException(SyncException.CONN_NOT_FOUND, "Network error downloading");
         } finally {
             // Release all resources
             if (os != null) {
@@ -154,8 +234,8 @@ public class HttpDownloader  {
             if (errorWritingStream) {
                 throw new IOException("Cannot write output stream");
             }
-
         }
+        return downloadedSize;
     }
 
     /**

@@ -35,6 +35,7 @@
 
 package com.funambol.sapisync;
 
+import java.util.Vector;
 import java.util.Date;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -53,12 +54,12 @@ import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncManagerI;
 import com.funambol.sync.TwinDetectionSource;
+import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
-import java.util.Vector;
 
 /**
  * <code>SapiSyncManager</code> represents the synchronization engine performed
@@ -142,6 +143,12 @@ public class SapiSyncManager implements SyncManagerI {
         if (basicListener == null) {
             basicListener = new BasicSyncListener();
         }
+
+        // JSONSyncSource require an updated sync config, therefore we update it at the beginning of each sync
+        if (src instanceof JSONSyncSource) {
+            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
+            jsonSyncSource.updateSyncConfig(syncConfig);
+        }
         
         // TODO FIXME: check if resume is needed
         boolean resume = false;
@@ -154,7 +161,6 @@ public class SapiSyncManager implements SyncManagerI {
                 Log.info(TAG_LOG, "Cannot load sync status, use an empty one");
             }
         }
-
  
         try {
             // Set the basic properties in the sync status
@@ -289,12 +295,14 @@ public class SapiSyncManager implements SyncManagerI {
                 // We ignore this exception and try to get the content
             }
 
-            // We need to grabe the entire list of server items
+            String dataTag = getDataTag(src);
+
+            // We need to grab the entire list of server items
             boolean done = false;
             int offset = 0;
             try {
                 do {
-                    JSONArray items = sapiSyncHandler.getItems(remoteUri, null,
+                    JSONArray items = sapiSyncHandler.getItems(remoteUri, dataTag, null,
                                                                "" + FULL_SYNC_DOWNLOAD_LIMIT,
                                                                "" + offset);
                     if (items != null && items.length() > 0) {
@@ -361,6 +369,7 @@ public class SapiSyncManager implements SyncManagerI {
         // pages to make sure we don't use too much memory. Each page of items
         // is then passed to the sync source
         int i = 0;
+        String dataTag = getDataTag(src);
         while(i < added.length()) {
             // Fetch a single page of items
             JSONArray itemsId = new JSONArray();
@@ -370,7 +379,8 @@ public class SapiSyncManager implements SyncManagerI {
             }
             if (itemsId.length() > 0) {
                 // Ask for these items
-                JSONArray items = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), itemsId, null, null);
+                JSONArray items = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), dataTag,
+                                                           itemsId, null, null);
 
                 if (items != null) {
                     applyNewUpdToSyncSource(src, items, state, mapping, false);
@@ -589,5 +599,18 @@ public class SapiSyncManager implements SyncManagerI {
                (syncMode == SyncSource.FULL_UPLOAD) ||
                (syncMode == SyncSource.INCREMENTAL_SYNC) ||
                (syncMode == SyncSource.INCREMENTAL_UPLOAD);
+    }
+
+    private String getDataTag(SyncSource src) {
+        String dataTag = null;
+        if (src instanceof JSONSyncSource) {
+            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
+            dataTag = jsonSyncSource.getDataTag();
+        }
+        if (dataTag == null) {
+            // This is the default value
+            dataTag = src.getConfig().getRemoteUri() + "s";
+        }
+        return dataTag;
     }
 }

@@ -63,6 +63,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
 
     private HttpDownloader downloader = null;
     private SyncConfig syncConfig = null;
+    private String dataTag = null;
 
     //------------------------------------------------------------- Constructors
 
@@ -118,6 +119,21 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             Log.error(TAG_LOG, "Cannot add item", t);
             return SyncSource.ERROR_STATUS;
         }
+    }
+
+    public void updateSyncConfig(SyncConfig syncConfig) {
+        this.syncConfig = syncConfig;
+    }
+
+    // This method returns the tag name in the JSONobject for the specific
+    // type of data handled by this source. Refer to the SAPI documentation
+    // for more info.
+    public String getDataTag() {
+        return dataTag;
+    }
+
+    public void setDataTag(String dataTag) {
+        this.dataTag = dataTag;
     }
 
     protected int addUpdateItem(SyncItem item, JSONFileObject jsonFile, boolean isUpdate)
