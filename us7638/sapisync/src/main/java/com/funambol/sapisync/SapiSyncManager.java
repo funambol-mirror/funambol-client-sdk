@@ -57,6 +57,8 @@ import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
+import com.funambol.sync.Filter;
+import com.funambol.sync.SyncFilter;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
@@ -234,7 +236,8 @@ public class SapiSyncManager implements SyncManagerI {
         
         boolean incremental = isIncrementalSync(syncMode);
 
-        SyncItem item = getNextItemToUpload(src, incremental);
+        int uploadedCount = 0;
+        SyncItem item = getNextItemToUpload(src, incremental, uploadedCount);
         while(item != null) {
             try {
                 // Upload the item to the server
@@ -251,15 +254,41 @@ public class SapiSyncManager implements SyncManagerI {
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
                         SyncSource.STATUS_SEND_ERROR));
             }
-            item = getNextItemToUpload(src, incremental);
+            uploadedCount++;
+            item = getNextItemToUpload(src, incremental, uploadedCount);
         }
         
         src.applyItemsStatus(sourceStatus);
     }
 
-    private SyncItem getNextItemToUpload(SyncSource src, boolean incremental) {
+    private SyncItem getNextItemToUpload(SyncSource src, boolean incremental,
+            int uploadedCount) {
+        SyncItem nextItem = getNextItem(src, incremental);
+        SyncFilter syncFilter = src.getFilter();
+        if(syncFilter != null) {
+            Filter filter = incremental ? syncFilter.getIncrementalUploadFilter() :
+                syncFilter.getFullUploadFilter();
+            if(filter != null) {
+                if(filter.getType() == Filter.ITEMS_COUNT_TYPE) {
+                    if(uploadedCount >= filter.getCount()) {
+                        // No further items shall be uploaded
+                        nextItem = null;
+                    }
+                } else {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            }
+        }
+        return nextItem;
+    }
+
+    private SyncItem getNextItem(SyncSource src, boolean incremental) {
         if(incremental) {
-            return src.getNextNewItem();
+            SyncItem next = src.getNextNewItem();
+            if(next == null) {
+                next = src.getNextUpdatedItem();
+            }
+            return next;
         } else {
             return src.getNextItem();
         }
@@ -284,9 +313,31 @@ public class SapiSyncManager implements SyncManagerI {
 
         if (syncMode == SyncSource.FULL_DOWNLOAD) {
 
+            Filter itemsCountFilter = null;
+            
+            SyncFilter syncFilter = src.getFilter();
+            if(syncFilter != null) {
+                Filter filter = syncFilter.getFullDownloadFilter();
+                if(filter != null) {
+                    if(filter.getType() == Filter.ITEMS_COUNT_TYPE) {
+                        itemsCountFilter = filter;
+                    } else {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                }
+            }
+            int total = -1;
             // Get the number of items and notify the listener
             try {
-                int total = sapiSyncHandler.getItemsCount(remoteUri);
+                total = sapiSyncHandler.getItemsCount(remoteUri);
+                // Apply items count filter
+                if(itemsCountFilter != null && total > itemsCountFilter.getCount()) {
+                    int maxCount = itemsCountFilter.getCount();
+                    if(total > maxCount) {
+                        Log.debug(TAG_LOG, "Filtering total items count to: " + maxCount);
+                        total = maxCount;
+                    }
+                }
                 if (total != -1) {
                     getSyncListenerFromSource(src).startReceiving(total);
                 }
@@ -295,20 +346,26 @@ public class SapiSyncManager implements SyncManagerI {
                 // We ignore this exception and try to get the content
             }
 
-            String dataTag = getDataTag(src);
+            int downloadLimit = FULL_SYNC_DOWNLOAD_LIMIT;
 
-            // We need to grab the entire list of server items
-            boolean done = false;
+            String dataTag = getDataTag(src);
+            
             int offset = 0;
+            boolean done = false;
             try {
                 do {
+                    // Update the download limit given the total amount of items
+                    // to download
+                    if((offset + downloadLimit) > total) {
+                        downloadLimit = total - offset;
+                    }
                     JSONArray items = sapiSyncHandler.getItems(remoteUri, dataTag, null,
-                                                               "" + FULL_SYNC_DOWNLOAD_LIMIT,
-                                                               "" + offset);
+                            "" + downloadLimit,
+                            "" + offset);
                     if (items != null && items.length() > 0) {
                         applyNewUpdToSyncSource(src, items, SyncItem.STATE_NEW, mapping, true);
                         offset += items.length();
-                        if (items.length() < FULL_SYNC_DOWNLOAD_LIMIT) {
+                        if ((items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
                             done = true;
                         }
                     } else {
@@ -321,8 +378,6 @@ public class SapiSyncManager implements SyncManagerI {
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
             SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
             Date anchor = new Date(sapiAnchor.getDownloadAnchor());
-            Date now    = (new Date());
-
             try {
                 SapiSyncHandler.ChangesSet changesSet = sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
 

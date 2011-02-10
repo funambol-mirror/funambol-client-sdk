@@ -36,57 +36,64 @@
 package com.funambol.sync;
 
 /**
- * <code>SyncFilter</code> represents a sync filter which may contain four
- * specific filters:
+ * <code>Filter</code> represents a generic filter and can have different types:
  *  <ul>
- *      <li>fullDownloadFilter: filters incoming items during a full sync.</li>
- *      <li>fullUploadFilter: filters outgoing items during a full sync.</li>
- *      <li>incrementalDownloadFilter: filters incoming items during an
- *      incremental sync.</li>
- *      <li>incrementalUploadFilter: filters outgoing items during an
- *      incremental sync.</li>
+ *      <li>DATE_RECENT_TYPE: Items whose date is more recent than a given
+ *      threshold</li>
+ *      <li>ITEMS_COUNT_TYPE: Max number of items (without a particular
+ *      order)</li>
+ *      <li>DATE_WINDOW_TYPE: All the items that fall into the window</li>
+ *      <li>COUNT_RECENT_TYPE: Max number of items starting from the most recent
+ *      ones</li>
  *  </ul>
  */
-public class SyncFilter {
+public class Filter {
 
-    private Filter fullDownloadFilter        = null;
-    private Filter fullUploadFilter          = null;
-    private Filter incrementalDownloadFilter = null;
-    private Filter incrementalUploadFilter   = null;
+    /**
+     * Items whose date is more recent than a given threshold
+     */
+    public static final int DATE_RECENT_TYPE = 0;
 
-    public SyncFilter() {
+    /**
+     * Max number of items (without a particular order)
+     */ 
+    public static final int ITEMS_COUNT_TYPE = 1;
+
+    /**
+     * All the items that fall into the window
+     */
+    public static final int DATE_WINDOW_TYPE = 2;
+    
+    /**
+     * Max number of items starting from the most recent ones
+     */
+    public static final int COUNT_RECENT_TYPE = 3;
+
+    private int type;
+
+    private int count;
+    private long date;
+
+    public Filter(int type) {
+        this(type, -1, -1);
     }
 
-    public Filter getFullDownloadFilter() {
-        return fullDownloadFilter;
+    public Filter(int type, long date, int count) {
+        this.type = type;
+        this.date = date;
+        this.count = count;
     }
 
-    public void setFullDownloadFilter(Filter filter) {
-        fullDownloadFilter = filter;
+    public int getType() {
+        return type;
     }
 
-    public Filter getFullUploadFilter() {
-        return fullUploadFilter;
+    public long getDate() {
+        return date;
     }
 
-    public void setFullUploadFilter(Filter filter) {
-        fullUploadFilter = filter;
-    }
-
-    public Filter getIncrementalDownloadFilter() {
-        return incrementalDownloadFilter;
-    }
-
-    public void setIncrementalDownloadFilter(Filter filter) {
-        incrementalDownloadFilter = filter;
-    }
-
-    public Filter getIncrementalUploadFilter() {
-        return incrementalUploadFilter;
-    }
-
-    public void setIncrementalUploadFilter(Filter filter) {
-        incrementalUploadFilter = filter;
+    public int getCount() {
+        return count;
     }
 
 }

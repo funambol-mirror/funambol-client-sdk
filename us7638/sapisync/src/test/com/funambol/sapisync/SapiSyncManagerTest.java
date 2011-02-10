@@ -45,6 +45,8 @@ import org.json.me.JSONArray;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncFilter;
+import com.funambol.sync.Filter;
 import com.funambol.sync.BasicSyncListener;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
@@ -159,6 +161,7 @@ public class SapiSyncManagerTest extends TestCase {
 
         syncSource.setSyncAnchor(anchor);
         syncSource.setInitialNewItemsCount(5);
+        syncSource.setInitialUpdatedItemsCount(3);
 
         syncManager.sync(syncSource);
 
@@ -166,10 +169,10 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(sapiSyncHandler.getLogoutCount(), 1);
 
         Vector items = sapiSyncHandler.getUploadedItems();
-        assertEquals(items.size(), 5);
+        assertEquals(items.size(), 8);
 
         Hashtable status = syncSource.getStatusTable();
-        assertEquals(status.size(), 5);
+        assertEquals(status.size(), 8);
     }
 
     public void testFullDownload1() throws Exception {
@@ -196,11 +199,11 @@ public class SapiSyncManagerTest extends TestCase {
 
         syncManager.sync(syncSource);
         // We expect 10 adds into the sync source
-        assertTrue(syncSource.getAddedItemsCount() == 10);
-        assertTrue(syncSourceListener.getNumAdd() == 10);
-        assertTrue(syncSourceListener.getNumUpd() == 0);
-        assertTrue(syncSourceListener.getNumDel() == 0);
-        assertTrue(syncSourceListener.getNumReceiving() == 10);
+        assertEquals(syncSource.getAddedItemsCount(), 10);
+        assertEquals(syncSourceListener.getNumAdd(), 10);
+        assertEquals(syncSourceListener.getNumUpd(), 0);
+        assertEquals(syncSourceListener.getNumDel(), 0);
+        assertEquals(syncSourceListener.getNumReceiving(), 10);
     }
 
     public void testFullDownload2() throws Exception {
@@ -241,13 +244,13 @@ public class SapiSyncManagerTest extends TestCase {
 
         syncManager.sync(syncSource);
         // We expect 310 adds into the sync source
-        assertTrue(syncSource.getAddedItemsCount() == 310);
-        assertTrue(syncSourceListener.getNumAdd() == 310);
-        assertTrue(syncSourceListener.getNumUpd() == 0);
-        assertTrue(syncSourceListener.getNumDel() == 0);
-        assertTrue(syncSourceListener.getNumReceiving() == 310);
-        assertTrue(sapiSyncHandler.getLimitRequests().size() == 2);
-        assertTrue(sapiSyncHandler.getOffsetRequests().size() == 2);
+        assertEquals(syncSource.getAddedItemsCount(), 310);
+        assertEquals(syncSourceListener.getNumAdd(), 310);
+        assertEquals(syncSourceListener.getNumUpd(), 0);
+        assertEquals(syncSourceListener.getNumDel(), 0);
+        assertEquals(syncSourceListener.getNumReceiving(), 310);
+        assertEquals(sapiSyncHandler.getLimitRequests().size(), 2);
+        assertEquals(sapiSyncHandler.getOffsetRequests().size(), 2);
         Vector limitRequests = sapiSyncHandler.getLimitRequests();
         Vector offsetRequests = sapiSyncHandler.getOffsetRequests();
         String limit0 = (String)limitRequests.elementAt(0);
@@ -256,7 +259,7 @@ public class SapiSyncManagerTest extends TestCase {
         String offset1 = (String)offsetRequests.elementAt(1);
 
         assertEquals(limit0, "300");
-        assertEquals(limit1, "300");
+        assertEquals(limit1, "10");
         assertEquals(offset0, "0");
         assertEquals(offset1, "300");
     }
@@ -315,13 +318,13 @@ public class SapiSyncManagerTest extends TestCase {
 
         syncManager.sync(syncSource);
         // We expect 10 adds into the sync source
-        assertTrue(syncSource.getAddedItemsCount() == 10);
-        assertTrue(syncSource.getUpdatedItemsCount() == 8);
-        assertTrue(syncSource.getDeletedItemsCount() == 7);
-        assertTrue(syncSourceListener.getNumAdd() == 10);
-        assertTrue(syncSourceListener.getNumUpd() == 8);
-        assertTrue(syncSourceListener.getNumDel() == 7);
-        assertTrue(syncSourceListener.getNumReceiving() == 25);
+        assertEquals(syncSource.getAddedItemsCount(), 10);
+        assertEquals(syncSource.getUpdatedItemsCount(), 8);
+        assertEquals(syncSource.getDeletedItemsCount(), 7);
+        assertEquals(syncSourceListener.getNumAdd(), 10);
+        assertEquals(syncSourceListener.getNumUpd(), 8);
+        assertEquals(syncSourceListener.getNumDel(), 7);
+        assertEquals(syncSourceListener.getNumReceiving(), 25);
     }
 
     public void testIncrementalDownload2() throws Exception {
@@ -387,17 +390,161 @@ public class SapiSyncManagerTest extends TestCase {
 
         syncManager.sync(syncSource);
         // We expect 10 adds into the sync source
-        assertTrue(syncSource.getAddedItemsCount() == 110);
-        assertTrue(syncSource.getUpdatedItemsCount() == 20);
-        assertTrue(syncSource.getDeletedItemsCount() == 10);
-        assertTrue(syncSourceListener.getNumAdd() == 110);
-        assertTrue(syncSourceListener.getNumUpd() == 20);
-        assertTrue(syncSourceListener.getNumDel() == 10);
-        assertTrue(syncSourceListener.getNumReceiving() == 140);
+        assertEquals(syncSource.getAddedItemsCount(), 110);
+        assertEquals(syncSource.getUpdatedItemsCount(), 20);
+        assertEquals(syncSource.getDeletedItemsCount(), 10);
+        assertEquals(syncSourceListener.getNumAdd(), 110);
+        assertEquals(syncSourceListener.getNumUpd(), 20);
+        assertEquals(syncSourceListener.getNumDel(), 10);
+        assertEquals(syncSourceListener.getNumReceiving(), 140);
         // Since the number of add is greater than 100, we expect that two SAPI
         // are invoked to the the list of changes. Therefore we have two
         // invokations for the "adds" and one for the "updates" (no one for the
         // deletes)
-        assertTrue(sapiSyncHandler.getIdsRequests().size() == 3);
+        assertEquals(sapiSyncHandler.getIdsRequests().size(), 3);
+    }
+    
+    public void testFullUploadFilter_ItemsCount() {
+        SapiSyncAnchor anchor = new SapiSyncAnchor();
+        anchor.setDownloadAnchor(0);
+        anchor.setUploadAnchor(0);
+
+        SyncFilter syncFilter = new SyncFilter();
+        syncFilter.setFullUploadFilter(
+            new Filter(Filter.ITEMS_COUNT_TYPE, -1, 8));
+        
+        syncSource.setFilter(syncFilter);
+        syncSource.setSyncAnchor(anchor);
+        syncSource.setInitialItemsCount(100);
+
+        syncManager.sync(syncSource);
+
+        Vector items = sapiSyncHandler.getUploadedItems();
+        assertEquals(items.size(), 8);
+    }
+    
+    public void testIncrementalUploadFilter_ItemsCount() {
+    
+        SapiSyncAnchor anchor = new SapiSyncAnchor();
+        anchor.setDownloadAnchor(0);
+        anchor.setUploadAnchor(100);
+
+        SyncFilter syncFilter = new SyncFilter();
+        syncFilter.setIncrementalUploadFilter(
+            new Filter(Filter.ITEMS_COUNT_TYPE, -1, 12));
+        
+        syncSource.setFilter(syncFilter);
+        syncSource.setSyncAnchor(anchor);
+        syncSource.setInitialNewItemsCount(40);
+
+        syncManager.sync(syncSource);
+
+        assertEquals(sapiSyncHandler.getLoginCount(), 1);
+        assertEquals(sapiSyncHandler.getLogoutCount(), 1);
+
+        Vector items = sapiSyncHandler.getUploadedItems();
+        assertEquals(items.size(), 12);
+
+        Hashtable status = syncSource.getStatusTable();
+        assertEquals(status.size(), 12);
+    }
+    
+    public void testFullDownloadFilter_ItemsCount() throws Exception {
+        SapiSyncAnchor anchor = new SapiSyncAnchor();
+        anchor.setDownloadAnchor(0);
+        anchor.setUploadAnchor(0);
+
+        syncSource.setSyncAnchor(anchor);
+        
+        SyncFilter syncFilter = new SyncFilter();
+        syncFilter.setFullDownloadFilter(
+            new Filter(Filter.ITEMS_COUNT_TYPE, -1, 3));
+        
+        syncSource.setFilter(syncFilter);
+
+        // In a full download we expect the count items sapi to be invoked and
+        // then the sapi to retrive the list of all items
+        sapiSyncHandler.setItemsCount(10);
+        JSONArray items = new JSONArray();
+        
+        for(int i=0;i<10;++i) {
+            JSONObject item = new JSONObject();
+            item.put("id", "" + i);
+            item.put("size", "" + i);
+            items.put(item);
+        }
+        JSONArray allItems[] = new JSONArray[1];
+        allItems[0] = items;
+        sapiSyncHandler.setItems(allItems);
+
+        syncManager.sync(syncSource);
+        
+        assertEquals(sapiSyncHandler.getLimitRequests().size(), 1);
+        assertEquals(sapiSyncHandler.getOffsetRequests().size(), 1);
+        
+        Vector limitRequests = sapiSyncHandler.getLimitRequests();
+        Vector offsetRequests = sapiSyncHandler.getOffsetRequests();
+        String limit0 = (String)limitRequests.elementAt(0);
+        String offset0 = (String)offsetRequests.elementAt(0);
+
+        assertEquals(limit0, "3");
+        assertEquals(offset0, "0");
+    }
+    
+    public void testFullDownloadFilter_ItemsCount2() throws Exception {
+        SapiSyncAnchor anchor = new SapiSyncAnchor();
+        anchor.setDownloadAnchor(0);
+        anchor.setUploadAnchor(0);
+
+        syncSource.setSyncAnchor(anchor);
+        
+        SyncFilter syncFilter = new SyncFilter();
+        syncFilter.setFullDownloadFilter(
+            new Filter(Filter.ITEMS_COUNT_TYPE, -1, 309));
+        
+        syncSource.setFilter(syncFilter);
+
+        // In a full download we expect the count items sapi to be invoked and
+        // then the sapi to retrive the list of all items
+        sapiSyncHandler.setItemsCount(340);
+        JSONArray items = new JSONArray();
+        
+        for(int i=0;i<300;++i) {
+            JSONObject item = new JSONObject();
+            item.put("id", "" + i);
+            item.put("size", "" + i);
+            items.put(item);
+        }
+        
+        JSONArray items1 = new JSONArray();
+        // The SapiSyncManager asks 300 items per request
+        for(int i=300;i<340;++i) {
+            JSONObject item = new JSONObject();
+            item.put("id", "" + i);
+            item.put("size", "" + i);
+            items1.put(item);
+        }
+        
+        JSONArray allItems[] = new JSONArray[2];
+        allItems[0] = items;
+        allItems[1] = items1;
+        sapiSyncHandler.setItems(allItems);
+
+        syncManager.sync(syncSource);
+        
+        assertEquals(sapiSyncHandler.getLimitRequests().size(), 2);
+        assertEquals(sapiSyncHandler.getOffsetRequests().size(), 2);
+        
+        Vector limitRequests = sapiSyncHandler.getLimitRequests();
+        Vector offsetRequests = sapiSyncHandler.getOffsetRequests();
+        String limit0 = (String)limitRequests.elementAt(0);
+        String limit1 = (String)limitRequests.elementAt(1);
+        String offset0 = (String)offsetRequests.elementAt(0);
+        String offset1 = (String)offsetRequests.elementAt(1);
+
+        assertEquals(limit0, "300");
+        assertEquals(offset0, "0");
+        assertEquals(limit1, "9");
+        assertEquals(offset1, "300");
     }
 }

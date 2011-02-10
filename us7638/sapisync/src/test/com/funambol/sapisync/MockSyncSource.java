@@ -50,11 +50,11 @@ public class MockSyncSource extends BaseSyncSource {
     
     private Hashtable statusTable = null;
 
-    public int initialItemsCount = 100;
+    public int initialItemsCount = 0;
 
-    public int initialNewItemsCount     = 5;
-    public int initialUpdatedItemsCount = 5;
-    public int initialDeletedItemsCount = 5;
+    public int initialNewItemsCount     = 0;
+    public int initialUpdatedItemsCount = 0;
+    public int initialDeletedItemsCount = 0;
 
     public int addedItemsCount   = 0;
     public int updatedItemsCount = 0;

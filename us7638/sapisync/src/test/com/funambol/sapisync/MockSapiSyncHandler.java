@@ -96,7 +96,7 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         this.changesSet = res;
     }
 
-    public JSONArray getItems(String remoteUri, JSONArray ids, String limit, String offset) throws JSONException {
+    public JSONArray getItems(String remoteUri, String dataTag, JSONArray ids, String limit, String offset) throws JSONException {
 
         // Save this information to be checked later
         if (limit != null) {
