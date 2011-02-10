@@ -415,6 +415,11 @@ public class SapiSyncManager implements SyncManagerI {
                 Log.error(TAG_LOG, "Cannot apply changes", je);
             }
         }
+        try {
+            mapping.save();
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot save mapping store", e);
+        }
     }
 
     private void applyNewUpdItems(SyncSource src, JSONArray added, char state, StringKeyValueStore mapping)
@@ -533,9 +538,6 @@ public class SapiSyncManager implements SyncManagerI {
                     }
                     mapping.add(newItem.getGuid(), newItem.getKey());
                 }
-            }
-            if (state == SyncItem.STATE_NEW) {
-                mapping.save();
             }
             syncStatus.save();
         } catch (Exception e) {
