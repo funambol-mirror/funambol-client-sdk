@@ -35,14 +35,14 @@
 
 package com.funambol.sapisync.source.util;
 
-import com.funambol.platform.HttpConnectionAdapter;
-import com.funambol.util.ConnectionManager;
-import com.funambol.util.Log;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.funambol.sync.SyncException;
+import com.funambol.platform.HttpConnectionAdapter;
+import com.funambol.util.ConnectionManager;
+import com.funambol.util.Log;
 
 public class HttpDownloader  {
 
@@ -65,12 +65,22 @@ public class HttpDownloader  {
         this.listener = listener;
     }
 
-    public void download(String url, OutputStream os, long size) throws IOException {
+    /**
+     * Download the content at the given url and writes it into the given output stream
+     * @param url
+     * @param os
+     * @param size
+     * @throws SyncException in case there is a network error of any kind (including auth error)
+     * @throws IOException in case there is a problem writing the output stream
+     */
+    public void download(String url, OutputStream os, long size) throws SyncException, IOException {
         HttpConnectionAdapter conn = null;
         InputStream is = null;
         if(listener != null) {
             listener.downloadStarted(size);
         }
+
+        boolean errorWritingStream = false;
         try {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Sending http request to: " + url);
@@ -86,7 +96,18 @@ public class HttpDownloader  {
                 byte[] data = new byte[DEFAULT_CHUNK_SIZE];
                 int n = 0;
                 while ((n = is.read(data)) != -1) {
-                    os.write(data, 0, n);
+
+                    // We intercept the IO operation during writing because this
+                    // must generate a generic error for this specific item, but not
+                    // interrupt the sync like a network error
+                    // TODO FIXME: handle device full error
+                    try {
+                        os.write(data, 0, n);
+                    } catch (IOException ioe) {
+                        Log.error(TAG_LOG, "Cannot write output stream", ioe);
+                        errorWritingStream = true;
+                        break;
+                    }
                     if(listener != null) {
                         listener.downloadChunkReceived(n);
                     }
@@ -95,11 +116,16 @@ public class HttpDownloader  {
                 Log.error(TAG_LOG, "Http request failed. Server replied: " +
                         conn.getResponseCode() + ", message: " +
                         conn.getResponseMessage());
-                throw new IOException("HTTP error code: " + conn.getResponseCode());
+
+                if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_UNAUTHORIZED) {
+                    throw new SyncException(SyncException.AUTH_ERROR, "HTTP error code: " + conn.getResponseCode());
+                } else {
+                    throw new SyncException(SyncException.CONN_NOT_FOUND, "HTTP error code: " + conn.getResponseCode());
+                }
             }
         } catch(IOException ex) {
-            Log.error(TAG_LOG, "Http download failed", ex);
-            throw ex;
+            Log.error(TAG_LOG, "Http download failed with a network error", ex);
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "Network error downloading");
         } finally {
             // Release all resources
             if (os != null) {
@@ -123,6 +149,12 @@ public class HttpDownloader  {
             if(listener != null) {
                 listener.downloadEnded();
             }
+
+            // If we get here with a stream error we shall report an IOException
+            if (errorWritingStream) {
+                throw new IOException("Cannot write output stream");
+            }
+
         }
     }
 

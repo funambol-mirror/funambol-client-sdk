@@ -35,6 +35,9 @@
 
 package com.funambol.sapisync.source;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
@@ -45,9 +48,6 @@ import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.sync.SyncConfig;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
-import java.io.IOException;
-
-import java.io.OutputStream;
 
 /**
  * Represents a SyncSource which handles JSON file objects as input SyncItems.
@@ -78,12 +78,20 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     }
 
     public int addItem(SyncItem item) throws SyncException {
+        // Note that the addItem must still download the actual item content, therefore
+        // it can get a network error and this must be propagated
         try {
             String itemContent = new String(item.getContent());
             JSONFileObject jsonFile = new JSONFileObject(itemContent);
             int res = addUpdateItem(item, jsonFile, false);
             super.addItem(item);
             return res;
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Cannot add item, ioe");
+            return SyncSource.ERROR_STATUS;
+        } catch (SyncException se) {
+            // This kind of exception blocks the sync because it is a network error of some kind
+            throw se;
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Cannot add item", t);
             return SyncSource.ERROR_STATUS;
@@ -91,35 +99,40 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     }
 
     public int updateItem(SyncItem item) throws SyncException {
+        // We consider IOException and other generic exception as non
+        // blocking exceptions for the sync. Only network exceptions will
+        // block it
         try {
             String itemContent = new String(item.getContent());
             JSONFileObject jsonFile = new JSONFileObject(itemContent);
             int res = addUpdateItem(item, jsonFile, true);
             super.addItem(item);
             return res;
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Cannot add item, ioe");
+            return SyncSource.ERROR_STATUS;
+        } catch (SyncException se) {
+            // This kind of exception blocks the sync because it is a network error of some kind
+            throw se;
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Cannot add item", t);
             return SyncSource.ERROR_STATUS;
         }
     }
 
-    protected int addUpdateItem(SyncItem item, JSONFileObject jsonFile,
-            boolean isUpdate) throws SyncException {
-        try {
-            if(downloadFileObject) {
-                String baseUrl = jsonFile.getUrl();
-                long size = jsonFile.getSize();
-                OutputStream fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
-                downloader.download(composeUrl(baseUrl), fileos, size);
-            }
-            if(downloadThumbnails) {
-                // TODO FIXME download thumbnails
-            }
-            return SyncSource.SUCCESS_STATUS;
-        } catch (Throwable t) {
-            Log.error(TAG_LOG, "Cannot save json item", t);
-            return SyncSource.ERROR_STATUS;
+    protected int addUpdateItem(SyncItem item, JSONFileObject jsonFile, boolean isUpdate)
+    throws SyncException, IOException {
+        if(downloadFileObject) {
+            String baseUrl = jsonFile.getUrl();
+            long size = jsonFile.getSize();
+            OutputStream fileos = null;
+            fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
+            downloader.download(composeUrl(baseUrl), fileos, size);
         }
+        if(downloadThumbnails) {
+            // TODO FIXME download thumbnails
+        }
+        return SyncSource.SUCCESS_STATUS;
     }
 
     protected OutputStream getDownloadOutputStream(JSONFileObject jsonItem,
