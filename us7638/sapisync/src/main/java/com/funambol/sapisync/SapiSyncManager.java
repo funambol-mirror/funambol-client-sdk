@@ -501,6 +501,10 @@ public class SapiSyncManager implements SyncManagerI {
             } else {
                 luid = guid;
             }
+            // If the client doesn't have the luid we change the state to new
+            if(StringUtil.isNullOrEmpty(luid)) {
+                state = SyncItem.STATE_NEW;
+            }
 
             SyncItem syncItem = src.createSyncItem(luid, src.getType(), state,  null, size);
             syncItem.setGuid(guid);
