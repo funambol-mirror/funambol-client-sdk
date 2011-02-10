@@ -66,12 +66,14 @@ public class JSONFileObject extends JSONObject {
         this.date = getLong("date");
         this.size = getLong("size");
 
-        JSONArray thumbs = getJSONArray("thumbnails");
-        if(thumbs != null) {
-            this.thumbnails = new Vector();
-            for(int i=0; i<thumbs.length(); i++) {
-                JSONObject thumb = thumbs.getJSONObject(i);
-                this.thumbnails.addElement(new JSONFileThumbnail(thumb));
+        if (this.has("thumbnails")) {
+            JSONArray thumbs = getJSONArray("thumbnails");
+            if(thumbs != null) {
+                this.thumbnails = new Vector();
+                for(int i=0; i<thumbs.length(); i++) {
+                    JSONObject thumb = thumbs.getJSONObject(i);
+                    this.thumbnails.addElement(new JSONFileThumbnail(thumb));
+                }
             }
         }
     }

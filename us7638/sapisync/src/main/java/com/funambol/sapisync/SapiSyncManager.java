@@ -57,6 +57,7 @@ import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
+import com.funambol.sync.ItemDownloadInterruptionException;
 import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
 import com.funambol.util.Log;
@@ -374,6 +375,12 @@ public class SapiSyncManager implements SyncManagerI {
                 } while(!done);
             } catch (JSONException je) {
                 Log.error(TAG_LOG, "Cannot parse server data", je);
+            } catch (ItemDownloadInterruptionException ide) {
+                // An item could not be downloaded
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "");
+                }
+                // TODO FIXME: handle the suspend/resume
             }
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
             SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();

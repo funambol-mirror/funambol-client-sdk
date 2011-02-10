@@ -41,6 +41,7 @@ import java.io.OutputStream;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
+import com.funambol.sync.ItemDownloadInterruptionException;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.ChangesTracker;
 import com.funambol.sync.client.TrackableSyncSource;
@@ -143,7 +144,12 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             long size = jsonFile.getSize();
             OutputStream fileos = null;
             fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
-            downloader.download(composeUrl(baseUrl), fileos, size);
+            long actualSize = downloader.download(composeUrl(baseUrl), fileos, size);
+            if (size != actualSize) {
+                // The download was interrupted. We shall keep track of this interrupted download
+                // so that it can be resumed
+                throw new ItemDownloadInterruptionException(item, actualSize);
+            }
         }
         if(downloadThumbnails) {
             // TODO FIXME download thumbnails

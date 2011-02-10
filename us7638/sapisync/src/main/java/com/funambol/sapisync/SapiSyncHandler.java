@@ -184,9 +184,15 @@ public class SapiSyncHandler {
             if (data.has(dataType)) {
                 JSONObject items = data.getJSONObject(dataType);
                 if (items != null) {
-                    res.added = items.getJSONArray("N");
-                    res.updated = items.getJSONArray("U");
-                    res.deleted = items.getJSONArray("D");
+                    if (items.has("N")) {
+                        res.added = items.getJSONArray("N");
+                    }
+                    if (items.has("U")) {
+                        res.updated = items.getJSONArray("U");
+                    }
+                    if (items.has("D")) {
+                        res.deleted = items.getJSONArray("D");
+                    }
                 }
             }
         }
