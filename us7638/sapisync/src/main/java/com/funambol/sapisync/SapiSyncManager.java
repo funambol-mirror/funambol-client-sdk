@@ -517,6 +517,12 @@ public class SapiSyncManager implements SyncManagerI {
                 state = SyncItem.STATE_NEW;
             }
 
+            if (state == SyncItem.STATE_NEW) {
+                getSyncListenerFromSource(src).itemAddReceivingStarted(luid, null, size);
+            } else if(state == SyncItem.STATE_UPDATED) {
+                getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
+            }
+
             SyncItem syncItem = src.createSyncItem(luid, src.getType(), state, null, size);
             syncItem.setGuid(guid);
             OutputStream os = null;
@@ -536,6 +542,12 @@ public class SapiSyncManager implements SyncManagerI {
                 }
             }
             sourceItems.addElement(syncItem);
+
+            if (state == SyncItem.STATE_NEW) {
+                getSyncListenerFromSource(src).itemAddReceivingEnded(luid, null);
+            } else if(state == SyncItem.STATE_UPDATED) {
+                getSyncListenerFromSource(src).itemReplaceReceivingEnded(luid, null);
+            }
         }
         // Apply the items in the sync source
         sourceItems = src.applyChanges(sourceItems);

@@ -38,6 +38,7 @@ package com.funambol.sapisync;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.json.me.JSONException;
 import org.json.me.JSONObject;
 import org.json.me.JSONArray;
 
@@ -64,14 +65,35 @@ public class SapiSyncManagerTest extends TestCase {
     private class TestSyncListener extends BasicSyncListener {
 
         private int numReceiving;
+        private int numAdd;
+        private int numUpd;
         private int numDel;
 
         public void startReceiving(int number) {
             numReceiving = number;
         }
 
+        public void endReceiving() {
+        }
+
+        public void itemAddReceivingStarted(String key, String parent, long size) {
+            numAdd++;
+        }
+
         public void itemDeleted(SyncItem item) {
             numDel++;
+        }
+
+        public void itemReplaceReceivingStarted(String key, String parent, long size) {
+            numUpd++;
+        }
+
+        public int getNumAdd() {
+            return numAdd;
+        }
+
+        public int getNumUpd() {
+            return numUpd;
         }
 
         public int getNumDel() {
@@ -178,6 +200,8 @@ public class SapiSyncManagerTest extends TestCase {
         syncManager.sync(syncSource);
         // We expect 10 adds into the sync source
         assertEquals(syncSource.getAddedItemsCount(), 10);
+        assertEquals(syncSourceListener.getNumAdd(), 10);
+        assertEquals(syncSourceListener.getNumUpd(), 0);
         assertEquals(syncSourceListener.getNumDel(), 0);
         assertEquals(syncSourceListener.getNumReceiving(), 10);
     }
@@ -221,6 +245,8 @@ public class SapiSyncManagerTest extends TestCase {
         syncManager.sync(syncSource);
         // We expect 310 adds into the sync source
         assertEquals(syncSource.getAddedItemsCount(), 310);
+        assertEquals(syncSourceListener.getNumAdd(), 310);
+        assertEquals(syncSourceListener.getNumUpd(), 0);
         assertEquals(syncSourceListener.getNumDel(), 0);
         assertEquals(syncSourceListener.getNumReceiving(), 310);
         assertEquals(sapiSyncHandler.getLimitRequests().size(), 2);
@@ -295,6 +321,8 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(syncSource.getAddedItemsCount(), 10);
         assertEquals(syncSource.getUpdatedItemsCount(), 8);
         assertEquals(syncSource.getDeletedItemsCount(), 7);
+        assertEquals(syncSourceListener.getNumAdd(), 10);
+        assertEquals(syncSourceListener.getNumUpd(), 8);
         assertEquals(syncSourceListener.getNumDel(), 7);
         assertEquals(syncSourceListener.getNumReceiving(), 25);
     }
@@ -365,6 +393,8 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(syncSource.getAddedItemsCount(), 110);
         assertEquals(syncSource.getUpdatedItemsCount(), 20);
         assertEquals(syncSource.getDeletedItemsCount(), 10);
+        assertEquals(syncSourceListener.getNumAdd(), 110);
+        assertEquals(syncSourceListener.getNumUpd(), 20);
         assertEquals(syncSourceListener.getNumDel(), 10);
         assertEquals(syncSourceListener.getNumReceiving(), 140);
         // Since the number of add is greater than 100, we expect that two SAPI

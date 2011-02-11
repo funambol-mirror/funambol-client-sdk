@@ -48,6 +48,7 @@ import com.funambol.sync.client.TrackableSyncSource;
 import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncReport;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
@@ -67,6 +68,8 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     private SyncConfig syncConfig = null;
     private String dataTag = null;
 
+    private SyncListener proxyListener = null;
+    
     //------------------------------------------------------------- Constructors
 
     /**
@@ -198,6 +201,113 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         return res.toString();
     }
 
+    public SyncListener getListener() {
+        if(proxyListener == null) {
+            proxyListener = new ProxySyncListener(super.getListener());
+        }
+        return proxyListener;
+    }
+
+    /**
+     * Filters some SyncListener calls which are actually invoked by the DownloadSyncListener
+     */
+    private class ProxySyncListener implements SyncListener {
+
+        private SyncListener syncListener = null;
+
+        public ProxySyncListener(SyncListener syncListener) {
+            this.syncListener = syncListener;
+        }
+
+        public void startSession() {
+            syncListener.startSession();
+        }
+        public void endSession(SyncReport report) {
+            syncListener.endSession(report);
+        }
+        public void startConnecting() {
+            syncListener.startConnecting();
+        }
+        public void endConnecting(int action) {
+            syncListener.endConnecting(action);
+        }
+        public void syncStarted(int alertCode) {
+            syncListener.syncStarted(alertCode);
+        }
+        public void endSyncing() {
+            syncListener.endSyncing();
+        }
+        public void startReceiving(int number) {
+            syncListener.startReceiving(number);
+        }
+        public void itemAddReceivingStarted(String key, String parent, long size) {
+            // Do nothing
+            // This is actually called by the DownloadSyncListener
+        }
+        public void itemAddReceivingEnded(String key, String parent) {
+            // Do nothing
+            // This is actually called by the DownloadSyncListener
+        }
+        public void itemAddReceivingProgress(String key, String parent, long size) {
+            // Do nothing
+            // This is actually called by the DownloadSyncListener
+        }
+        public void itemReplaceReceivingStarted(String key, String parent, long size) {
+            // Do nothing
+            // This is actually called by the DownloadSyncListener
+        }
+        public void itemReplaceReceivingEnded(String key, String parent) {
+            // Do nothing
+            // This is actually called by the DownloadSyncListener
+        }
+        public void itemReplaceReceivingProgress(String key, String parent, long size) {
+            // Do nothing
+            // This is actually called by the DownloadSyncListener
+        }
+        public void itemDeleted(SyncItem item) {
+            syncListener.itemDeleted(item);
+        }
+        public void endReceiving() {
+            syncListener.endReceiving();
+        }
+        public void startSending(int numNewItems, int numUpdItems, int numDelItems) {
+            syncListener.startSending(numNewItems, numUpdItems, numDelItems);
+        }
+        public void itemAddSendingStarted(String key, String parent, long size) {
+            syncListener.itemAddSendingStarted(key, parent, size);
+        }
+        public void itemAddSendingEnded(String key, String parent) {
+            syncListener.itemAddSendingEnded(key, parent);
+        }
+        public void itemAddSendingProgress(String key, String parent, long size) {
+            syncListener.itemAddSendingProgress(key, parent, size);
+        }
+        public void itemReplaceSendingStarted(String key, String parent, long size) {
+            syncListener.itemReplaceSendingStarted(key, parent, size);
+        }
+        public void itemReplaceSendingEnded(String key, String parent) {
+            syncListener.itemReplaceSendingEnded(key, parent);
+        }
+        public void itemReplaceSendingProgress(String key, String parent, long size) {
+            syncListener.itemReplaceSendingProgress(key, parent, size);
+        }
+        public void itemDeleteSent(SyncItem item) {
+            syncListener.itemDeleteSent(item);
+        }
+        public void endSending() {
+            syncListener.endSending();
+        }
+        public void startFinalizing() {
+            syncListener.startFinalizing();
+        }
+        public void endFinalizing() { 
+            syncListener.endFinalizing();
+        }
+        public boolean startSyncing(int alertCode, Object devInf) {
+            return syncListener.startSyncing(alertCode, devInf);
+        }
+    }
+    
     /**
      * Translates the HttpDownloader.DownloadListener calls into SyncListener calls.
      */
@@ -237,7 +347,11 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
 
         public void downloadEnded() {
             if(syncListener != null) {
-                syncListener.itemAddReceivingEnded(itemKey, itemParent);
+                if(itemState == SyncItem.STATE_NEW) {
+                    syncListener.itemAddReceivingEnded(itemKey, itemParent);
+                } else {
+                    syncListener.itemReplaceReceivingEnded(itemKey, itemParent);
+                }
             }
         }
     }
