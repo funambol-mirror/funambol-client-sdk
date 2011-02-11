@@ -76,7 +76,7 @@ public class SapiSyncManagerTest extends TestCase {
         public void endReceiving() {
         }
 
-        public void itemReceived(SyncItem item) {
+        public void itemAddReceivingStarted(SyncItem item) {
             numAdd++;
         }
 
@@ -84,7 +84,7 @@ public class SapiSyncManagerTest extends TestCase {
             numDel++;
         }
 
-        public void itemUpdated(SyncItem item) {
+        public void itemReplaceReceivingStarted(SyncItem item) {
             numUpd++;
         }
 

@@ -524,13 +524,6 @@ public class SapiSyncManager implements SyncManagerI {
                 } catch (IOException ioe) {
                 }
             }
-
-            if (state == SyncItem.STATE_UPDATED) {
-                getSyncListenerFromSource(src).itemUpdated(syncItem);
-            } else {
-                getSyncListenerFromSource(src).itemReceived(syncItem);
-            }
-
             sourceItems.addElement(syncItem);
         }
         // Apply the items in the sync source

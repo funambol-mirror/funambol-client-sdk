@@ -75,41 +75,20 @@ public class SyncMonitorListener extends BasicSyncListener {
         sendingPhaseCounter    = 0;
     }
 
-    public void itemReceived(SyncItem item) {
-        lis.itemReceived(item);
-        ++receivingPhaseCounter;
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "endReceiving: " + interruptOnPhase);
-        }
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "receivingPhaseCounter: " + receivingPhaseCounter);
-        }
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "interruptOnPhaseNumber: " + interruptOnPhaseNumber);
-        }
-        if ("Receiving".equals(interruptOnPhase) && receivingPhaseCounter == interruptOnPhaseNumber) {
-            interruptSync(interruptReason);
-        }
-    }
-
     public void itemDeleted(SyncItem item) {
         lis.itemDeleted(item);
     }
 
-    public void itemUpdated(SyncItem item) {
-        lis.itemUpdated(item);
-    }
-
-    public void itemAddSendingEnded(String key, String parent, int size) {
+    public void itemAddSendingEnded(String key, String parent) {
         ++sendingPhaseCounter;
         if ("Sending".equals(interruptOnPhase) && sendingPhaseCounter == interruptOnPhaseNumber) {
             interruptSync(interruptReason);
         }
-        lis.itemAddSendingEnded(key, parent, size);
+        lis.itemAddSendingEnded(key, parent);
     }
 
-    public void itemReplaceSendingEnded(String key, String parent, int size) {
-        lis.itemReplaceSendingEnded(key, parent, size);
+    public void itemReplaceSendingEnded(String key, String parent) {
+        lis.itemReplaceSendingEnded(key, parent);
     }
 
     public void itemDeleteSent(SyncItem item) {
@@ -145,28 +124,24 @@ public class SyncMonitorListener extends BasicSyncListener {
         lis.endReceiving();
     }
 
-    public void dataReceived(String date, int size) {
-        lis.dataReceived(date, size);
-    }
-
     public void startSending(int numNewItems, int numUpdItems, int numDelItems) {
         lis.startSending(numNewItems, numUpdItems, numDelItems);
     }
 
-    public void itemAddSendingStarted(String key, String parent, int size) {
+    public void itemAddSendingStarted(String key, String parent, long size) {
         lis.itemAddSendingStarted(key, parent, size);
     }
 
-    public void itemAddChunkSent(String key, String parent, int size) {
-        lis.itemAddChunkSent(key, parent, size);
+    public void itemAddSendingProgress(String key, String parent, long size) {
+        lis.itemAddSendingProgress(key, parent, size);
     }
 
-    public void itemReplaceSendingStarted(String key, String parent, int size) {
+    public void itemReplaceSendingStarted(String key, String parent, long size) {
         lis.itemReplaceSendingStarted(key, parent, size);
     }
 
-    public void itemReplaceChunkSent(String key, String parent, int size) {
-        lis.itemReplaceChunkSent(key, parent, size);
+    public void itemReplaceSendingProgress(String key, String parent, long size) {
+        lis.itemReplaceSendingProgress(key, parent, size);
     }
 
     public void endSending() {

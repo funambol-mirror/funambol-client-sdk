@@ -95,17 +95,50 @@ public class BasicSyncListener implements SyncListener {
     public void startReceiving(int number) {}
 
     /**
-     * Invoked at the end of the receiving phase
+     * Invoked when the receiving of a new item has started
+     * @param key is the item key
+     * @param parent is the item parent
+     * @param size is the total item size
      */
-    public void endReceiving() {};
- 
+    public void itemAddReceivingStarted(String key, String parent, long size) {}
+
     /**
-     * Invoked each time a message is received and stored successfully
-     * in the client.
-     *
-     * @param item is the new value received
+     * Invoked when the receiving of a new item has terminated
+     * @param key is the item key
+     * @param parent is the item parent
      */
-    public void itemReceived(SyncItem item) {}
+    public void itemAddReceivingEnded(String key, String parent) {}
+
+    /**
+     * Invoked when the item received bytes change
+     * @param key is the item key
+     * @param parent is the item parent
+     * @param size is the current size of the sent bytes
+     */
+    public void itemAddReceivingProgress(String key, String parent, long size) {}
+
+    /**
+     * Invoked when the receiving of an updated item has started
+     * @param key is the item key
+     * @param parent is the item parent
+     * @param size is the total item size
+     */
+    public void itemReplaceReceivingStarted(String key, String parent, long size) {}
+
+    /**
+     * Invoked when the receiving of an updated item has terminated
+     * @param key is the item key
+     * @param parent is the item parent
+     */
+    public void itemReplaceReceivingEnded(String key, String parent) {}
+
+    /**
+     * Invoked when the item received bytes change
+     * @param key is the item key
+     * @param parent is the item parent
+     * @param size is the current size of the sent bytes
+     */
+    public void itemReplaceReceivingProgress(String key, String parent, long size) {}
 
     /**
      * Invoked each time a message is deleted
@@ -115,20 +148,9 @@ public class BasicSyncListener implements SyncListener {
     public void itemDeleted(SyncItem item) {}
 
     /**
-     * Invoked when an item changes on the other side.
-     *
-     * @param item is the item that changed
+     * Invoked at the end of the receiving phase
      */
-    public void itemUpdated(SyncItem item) {}
-
-    /**
-     * Invoked each time data is received from the server, with the timestamp
-     * and the size in bytes of the receive data.
-     *
-     * @param date is the timestamp
-     * @param size is the number of bytes received
-     */
-    public void dataReceived(String date, int size) {}
+    public void endReceiving() {};
 
     /**
      * Invoked before beginning to send items to the server.
@@ -139,24 +161,51 @@ public class BasicSyncListener implements SyncListener {
      */
     public void startSending(int numNewItems, int numUpdItems, int numDelItems) {}
 
-    public void itemAddSendingStarted(String key, String parent, int size) {}
-    public void itemAddSendingEnded(String key, String parent, int size) {}
-    public void itemAddChunkSent(String key, String parent, int size) {}
-
-    public void itemReplaceSendingStarted(String key, String parent, int size) {}
-    public void itemReplaceSendingEnded(String key, String parent, int size) {}
-    public void itemReplaceChunkSent(String key, String parent, int size) {}
-
+    /**
+     * Invoked when the sending of a new item has started
+     * @param key is the item key
+     * @param parent is the item parent
+     * @param size is the total item size
+     */
+    public void itemAddSendingStarted(String key, String parent, long size) {}
 
     /**
-     * Invoked each time an item added is sent to the server.
+     * Invoked when the sending of a new item has terminated
+     * @param key is the item key
+     * @param parent is the item parent
      */
-    //public void itemAddSent(Object item) {}
+    public void itemAddSendingEnded(String key, String parent) {}
 
     /**
-     * Invoked each time an item replaced is sent to the server.
+     * Invoked when the item sent bytes change
+     * @param key is the item key
+     * @param parent is the item parent
+     * @param size is the current size of the sent bytes
      */
-    //public void itemReplaceSent(Object item) {}
+    public void itemAddSendingProgress(String key, String parent, long size) {}
+
+    /**
+     * Invoked when the sending of an updated item has started
+     * @param key is the item key
+     * @param parent is the item parent
+     * @param size is the total item size
+     */
+    public void itemReplaceSendingStarted(String key, String parent, long size) {}
+
+    /**
+     * Invoked when the sending of an updated item has terminated
+     * @param key is the item key
+     * @param parent is the item parent
+     */
+    public void itemReplaceSendingEnded(String key, String parent) {}
+
+    /**
+     * Invoked when the item sent bytes change
+     * @param key is the item key
+     * @param parent is the item parent
+     * @param size is the current size of the sent bytes
+     */
+    public void itemReplaceSendingProgress(String key, String parent, long size) {}
 
     /**
      * Invoked each time an item deleted is sent to the server.

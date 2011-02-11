@@ -192,7 +192,7 @@ public class HttpDownloader  {
                     downloadedSize += n;
 
                     if(listener != null) {
-                        listener.downloadChunkReceived(n);
+                        listener.downloadProgress(downloadedSize);
                     }
                 }
             } else {
@@ -244,19 +244,19 @@ public class HttpDownloader  {
     public interface DownloadListener {
 
         /**
-         * Called as soon as the download starts
-         * @param totalSize the total size to download
+         * Reports that a new download operation started.
+         * @param totalSize the total size of bytes to download
          */
         public void downloadStarted(long totalSize);
 
         /**
-         * Called as soon as a download chunk has been received
-         * @param chunkSize the size of the chunk
+         * Reports the progress of a download operation.
+         * @param size the total number of bytes received from the beginning
          */
-        public void downloadChunkReceived(int chunkSize);
+        public void downloadProgress(long size);
 
         /**
-         * Called as soon as the download finishes
+         * Reports that a download operation ended.
          */
         public void downloadEnded();
 

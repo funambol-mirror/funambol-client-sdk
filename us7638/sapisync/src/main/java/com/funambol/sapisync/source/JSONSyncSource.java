@@ -47,6 +47,7 @@ import com.funambol.sync.client.ChangesTracker;
 import com.funambol.sync.client.TrackableSyncSource;
 import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
@@ -144,6 +145,8 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             long size = jsonFile.getSize();
             OutputStream fileos = null;
             fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
+
+            downloader.setDownloadListener(new DownloadSyncListener(item, getListener()));
             long actualSize = downloader.download(composeUrl(baseUrl), fileos, size);
             if (size != actualSize) {
                 // The download was interrupted. We shall keep track of this interrupted download
@@ -193,5 +196,49 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         res.append(serverUrl);
         res.append(baseUrl);
         return res.toString();
+    }
+
+    /**
+     * Translates the HttpDownloader.DownloadListener calls into SyncListener calls.
+     */
+    private class DownloadSyncListener implements HttpDownloader.DownloadListener {
+
+        private SyncListener syncListener = null;
+        private String itemKey = null;
+        private String itemParent = null;
+        private char itemState;
+
+        public DownloadSyncListener(SyncItem item, SyncListener syncListener) {
+            this.syncListener = syncListener;
+            this.itemKey = item.getKey();
+            this.itemParent = item.getParent();
+            this.itemState = item.getState();
+        }
+
+        public void downloadStarted(long totalSize) {
+            if(syncListener != null) {
+                if(itemState == SyncItem.STATE_NEW) {
+                    syncListener.itemAddReceivingStarted(itemKey, itemParent, totalSize);
+                } else {
+                    syncListener.itemReplaceReceivingStarted(itemKey, itemParent, totalSize);
+                }
+            }
+        }
+
+        public void downloadProgress(long size) {
+            if(syncListener != null) {
+                if(itemState == SyncItem.STATE_NEW) {
+                    syncListener.itemAddReceivingProgress(itemKey, itemParent, size);
+                } else {
+                    syncListener.itemReplaceReceivingProgress(itemKey, itemParent, size);
+                }
+            }
+        }
+
+        public void downloadEnded() {
+            if(syncListener != null) {
+                syncListener.itemAddReceivingEnded(itemKey, itemParent);
+            }
+        }
     }
 }

@@ -149,13 +149,28 @@ class SyncSourceLOHandler {
                 state = SyncItem.STATE_DELETED;
             }
 
+            boolean newItem = (incomingLo == null);
+
             SyncItem syncItem = getNextIncomingItem(chunk, state);
 
+            long size = chunk.getObjectSize();
             if (listener != null) {
                 if (SyncML.TAG_ADD.equals(command.getName())) {
-                    listener.itemReceived(syncItem);
+                    if(newItem) {
+                        listener.itemAddReceivingStarted(chunk.getKey(),
+                                chunk.getParent(), (int)size);
+                    } else {
+                        listener.itemAddReceivingProgress(chunk.getKey(),
+                                chunk.getParent(), chunk.getContent().length);
+                    }
                 } else if (SyncML.TAG_REPLACE.equals(command.getName())) {
-                    listener.itemUpdated(syncItem);
+                    if(newItem) {
+                        listener.itemAddReceivingStarted(chunk.getKey(),
+                                chunk.getParent(), (int)size);
+                    } else {
+                        listener.itemAddReceivingProgress(chunk.getKey(),
+                                chunk.getParent(), chunk.getContent().length);
+                    }
                 } else {
                     listener.itemDeleted(syncItem);
                 }
@@ -188,8 +203,14 @@ class SyncSourceLOHandler {
                     }
                 }
             }
-
             syncItems.addElement(syncItem);
+            if (listener != null && !chunk.hasMoreData()) {
+                if (SyncML.TAG_ADD.equals(command.getName())) {
+                    listener.itemAddReceivingEnded(chunk.getKey(), chunk.getParent());
+                } else if (SyncML.TAG_REPLACE.equals(command.getName())) {
+                    listener.itemReplaceReceivingEnded(chunk.getKey(), chunk.getParent());
+                }
+            }
             incomingLo = null;
             incomingLoStream = null;
         }
@@ -198,9 +219,6 @@ class SyncSourceLOHandler {
         // Convert the status codes from SyncSource neutral to SyncML
         for(int i=0;i<syncItems.size();++i) {
             SyncItem item = (SyncItem)syncItems.elementAt(i);
-
-            System.out.println("MARCO: converting status from: " + item.getSyncStatus() + " to " + getSyncMLStatusCode(item.getSyncStatus()));
-
             item.setSyncStatus(getSyncMLStatusCode(item.getSyncStatus()));
         }
 
@@ -841,11 +859,11 @@ class SyncSourceLOHandler {
             // This is an individual chunk
             switch (command) {
                 case ADD_COMMAND:
-                    listener.itemAddChunkSent(chunk.getKey(), chunk.getParent(),
+                    listener.itemAddSendingProgress(chunk.getKey(), chunk.getParent(),
                                               chunk.getContent().length);
                     break;
                 case REPLACE_COMMAND:
-                    listener.itemReplaceChunkSent(chunk.getKey(), chunk.getParent(),
+                    listener.itemReplaceSendingProgress(chunk.getKey(), chunk.getParent(),
                                                   chunk.getContent().length);
                     break;
                 default:
@@ -856,12 +874,10 @@ class SyncSourceLOHandler {
             // This is the last chunk of a multi or single chunked item
             switch (command) {
                 case ADD_COMMAND:
-                    listener.itemAddSendingEnded(chunk.getKey(), chunk.getParent(),
-                                                 chunk.getContent().length);
+                    listener.itemAddSendingEnded(chunk.getKey(), chunk.getParent());
                     break;
                 case REPLACE_COMMAND:
-                    listener.itemReplaceSendingEnded(chunk.getKey(), chunk.getParent(),
-                                                     chunk.getContent().length);
+                    listener.itemReplaceSendingEnded(chunk.getKey(), chunk.getParent());
                     break;
                 default:
                     Log.error(TAG_LOG, "Unknown command type " + command);

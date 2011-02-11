@@ -314,24 +314,27 @@ public class SapiSyncHandler {
         private SyncListener syncListener = null;
         private String itemKey = null;
 
-        private int querySize;
-        
         public SapiUploadSyncListener(SyncItem item, SyncListener syncListener) {
             this.syncListener = syncListener;
             this.itemKey = item.getKey();
         }
 
-        public void queryStarted(int querySize) {
-            syncListener.itemAddSendingStarted(itemKey, null, querySize);
-            this.querySize = querySize;
+        public void queryStarted(int totalSize) {
+            if(syncListener != null) {
+                syncListener.itemAddSendingStarted(itemKey, null, totalSize);
+            }
         }
 
-        public void queryChunkSent(int chunkSize) {
-            syncListener.itemAddChunkSent(itemKey, null, chunkSize);
+        public void queryProgress(int size) {
+            if(syncListener != null) {
+                syncListener.itemAddSendingProgress(itemKey, null, size);
+            }
         }
 
         public void queryEnded() {
-            syncListener.itemAddSendingEnded(itemKey, null, querySize);
+            if(syncListener != null) {
+                syncListener.itemAddSendingEnded(itemKey, null);
+            }
         }
     }
 }

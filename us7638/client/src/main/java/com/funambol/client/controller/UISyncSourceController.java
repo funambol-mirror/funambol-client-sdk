@@ -67,8 +67,9 @@ public class UISyncSourceController implements SyncListener {
     private int              totalSending;
     private int              totalReceived;
     private int              totalReceiving;
-    private long             currentItemSize = 0;
-    private long             currentItemSentSize = 0;
+
+    private long             currentSendingItemSize = 0;
+    private long             currentReceivingItemSize = 0;
 
     private Bitmap           statusIcon = null;
     private Bitmap           statusSelectedIcon = null;
@@ -160,13 +161,6 @@ public class UISyncSourceController implements SyncListener {
         if(animation == null) {
             animation = new SourceSyncingAnimation();
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see com.funambol.util.SyncListener#dataReceived(java.lang.String, int)
-     */
-    public void dataReceived(String date, int size) {
     }
 
     /*
@@ -363,15 +357,26 @@ public class UISyncSourceController implements SyncListener {
     /*
      * (non-Javadoc)
      */
-    public void itemAddSendingEnded(String key, String parent, int size) {
+    public void itemAddSendingEnded(String key, String parent) {
     }
 
-    public void itemAddSendingStarted(String key, String parent, int size) {
+    public void itemAddSendingStarted(String key, String parent, long size) {
         startSending(key, size);
     }
 
-    public void itemAddChunkSent(String key, String parent, int size) {
-        chunkSent(key, size);
+    public void itemAddSendingProgress(String key, String parent, long size) {
+        sentProgress(key, size);
+    }
+
+    public void itemAddReceivingEnded(String key, String parent) {
+    }
+
+    public void itemAddReceivingStarted(String key, String parent, long size) {
+        startReceiving(key, size);
+    }
+
+    public void itemAddReceivingProgress(String key, String parent, long size) {
+        receivedProgress(key, size);
     }
 
     /*
@@ -387,41 +392,41 @@ public class UISyncSourceController implements SyncListener {
      * @see com.funambol.util.SyncListener#itemDeleted(java.lang.Object)
      */
     public void itemDeleted(SyncItem item) {
-        receivedChange();
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see com.funambol.util.SyncListener#itemReceived(java.lang.Object)
-     */
-    public void itemReceived(SyncItem item) {
-        receivedChange();
+        startReceiving(item.getKey(), 0);
     }
 
     /*
      * (non-Javadoc)
      * @see com.funambol.util.SyncListener#itemReplaceSent(java.lang.Object)
      */
-    public void itemReplaceSendingStarted(String key, String parent, int size) {
+    public void itemReplaceSendingStarted(String key, String parent, long size) {
         startSending(key, size);
     }
 
-    public void itemReplaceSendingEnded(String key, String parent, int size) {
+    public void itemReplaceSendingEnded(String key, String parent) {
         currentStep++;
         updateCurrentProgress();
     }
 
-    public void itemReplaceChunkSent(String key, String parent, int size) {
-        chunkSent(key, size);
+    public void itemReplaceSendingProgress(String key, String parent, long size) {
+        sentProgress(key, size);
     }
-
 
     /*
      * (non-Javadoc)
-     * @see com.funambol.util.SyncListener#itemUpdated(java.lang.Object)
+     * @see com.funambol.util.SyncListener#itemReplaceReceivingStarted(java.lang.Object)
      */
-    public void itemUpdated(SyncItem item) {
-        receivedChange();
+    public void itemReplaceReceivingStarted(String key, String parent, long size) {
+        startReceiving(key, size);
+    }
+
+    public void itemReplaceReceivingEnded(String key, String parent) {
+        currentStep++;
+        updateCurrentProgress();
+    }
+
+    public void itemReplaceReceivingProgress(String key, String parent, long size) {
+        receivedProgress(key, size);
     }
 
     /*
@@ -596,59 +601,61 @@ public class UISyncSourceController implements SyncListener {
         }
     }
 
-    private void receivedChange() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "receivedChange");
+    private void sentProgress(String key, long size) {
+        
+        StringBuffer sb = new StringBuffer(localization.getLanguage("status_sending_item"));
+        sb.append(" ").append(totalSent);
+
+        if (totalSending > 0) {
+            sb.append("/").append(totalSending);
         }
 
-        totalReceived++;
-        StringBuffer sb = new StringBuffer(localization.getLanguage("status_receiving_item"));
-        sb.append(" ").append(totalReceived);
-        if (totalReceiving > 0) {
-            sb.append("/").append(totalReceiving);
+        // This is a LO
+        // Compute the percentage of what we have sent so far
+        if(currentSendingItemSize > 0) {
+            long perc = (size * 100) / currentSendingItemSize;
+            if (perc > 100) {
+                perc = 100;
+            }
+            sb.append(" (").append(perc).append("%)");
         }
-        currentStep++;
         if (uiSource != null) {
             if (!cancelling) {
                 uiSource.setStatusString(sb.toString());
                 uiSource.redraw();
             }
-            updateCurrentProgress();
         }
     }
 
-    private void chunkSent(String key, int size) {
-        if (size != currentItemSize) {
+    private void receivedProgress(String key, long size) {
 
-            StringBuffer sb = new StringBuffer(localization.getLanguage("status_sending_item"));
-            sb.append(" ").append(totalSent);
+        StringBuffer sb = new StringBuffer(localization.getLanguage("status_receiving_item"));
+        sb.append(" ").append(totalReceived);
 
-            if (totalSending > 0) {
-                sb.append("/").append(totalSending);
-            }
+        if (totalReceiving > 0) {
+            sb.append("/").append(totalReceiving);
+        }
 
-            // This is a LO
-            // Compute the percentage of what we have sent so far
-            long perc = (currentItemSentSize * 100) / currentItemSize;
+        // This is a LO
+        // Compute the percentage of what we have sent so far
+        if(currentReceivingItemSize > 0) {
+            long perc = (size * 100) / currentReceivingItemSize;
             if (perc > 100) {
                 perc = 100;
             }
             sb.append(" (").append(perc).append("%)");
-            currentItemSentSize += size;
-
-            if (uiSource != null) {
-                if (!cancelling) {
-                    uiSource.setStatusString(sb.toString());
-                    uiSource.redraw();
-                }
+        }
+        if (uiSource != null) {
+            if (!cancelling) {
+                uiSource.setStatusString(sb.toString());
+                uiSource.redraw();
             }
         }
     }
 
-    private void startSending(String key, int size) {
+    private void startSending(String key, long size) {
         totalSent++;
-        currentItemSize = size;
-        currentItemSentSize = 0;
+        currentSendingItemSize = size;
 
         StringBuffer sb = new StringBuffer(localization.getLanguage("status_sending_item"));
         sb.append(" ").append(totalSent);
@@ -665,8 +672,23 @@ public class UISyncSourceController implements SyncListener {
         }
     }
 
+    private void startReceiving(String key, long size) {
+        totalReceived++;
+        currentReceivingItemSize = size;
 
-    private void changeSent(String key) {
+        StringBuffer sb = new StringBuffer(localization.getLanguage("status_receiving_item"));
+        sb.append(" ").append(totalReceived);
+
+        if (totalReceiving > 0) {
+            sb.append("/").append(totalReceiving);
+        }
+
+        if (uiSource != null) {
+            if (!cancelling) {
+                uiSource.setStatusString(sb.toString());
+                uiSource.redraw();
+            }
+        }
     }
 
     private String createLastSyncedString(long anchor) {
@@ -826,8 +848,6 @@ public class UISyncSourceController implements SyncListener {
 
         if (uiSource != null) {
             // Update the total if new info is available
-            int totalNumberOfSteps = 4;
-
             int progress = 0;
 
             if (totalSending > 0 &&

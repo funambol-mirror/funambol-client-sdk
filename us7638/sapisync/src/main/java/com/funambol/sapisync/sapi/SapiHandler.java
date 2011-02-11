@@ -200,7 +200,8 @@ public class SapiHandler {
             // the length of the stream. Callers shall put it in the custom
             // headers if it is required.
             if (requestIs != null) {
-                int read = 0;
+                int total = 0;
+                int read  = 0;
                 byte chunk[] = new byte[4096];
                 do {
                     read = requestIs.read(chunk);
@@ -208,9 +209,10 @@ public class SapiHandler {
                         if (Log.isLoggable(Log.TRACE)) {
                             Log.trace(TAG_LOG, "Writing chunk: " + (new String(chunk)));
                         }
+                        total += read;
                         os.write(chunk, 0, read);
                         if(listener != null) {
-                            listener.queryChunkSent(read);
+                            listener.queryProgress(total);
                         }
                     }
                 } while(read != -1);
@@ -400,19 +402,19 @@ public class SapiHandler {
     public interface SapiQueryListener {
 
         /**
-         * Called as soon as a request starts
-         * @param querySize the request size
+         * Reports that a new query operation started.
+         * @param totalSize the total size of bytes to send
          */
-        public void queryStarted(int querySize);
+        public void queryStarted(int totalSize);
         
         /**
-         * Called as soon as a query chunk has been sent
-         * @param chunkSize the size of the chunk
+         * Reports the progress of a query operation.
+         * @param size the total number of bytes sent from the beginning
          */
-        public void queryChunkSent(int chunkSize);
+        public void queryProgress(int size);
 
         /**
-         * Called as soon as a query finishes
+         * Reports that a query operation ended.
          */
         public void queryEnded();
         
