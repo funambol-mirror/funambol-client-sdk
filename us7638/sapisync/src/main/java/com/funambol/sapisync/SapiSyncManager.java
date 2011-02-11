@@ -147,7 +147,8 @@ public class SapiSyncManager implements SyncManagerI {
             basicListener = new BasicSyncListener();
         }
 
-        // JSONSyncSource require an updated sync config, therefore we update it at the beginning of each sync
+        // JSONSyncSource require an updated sync config, therefore we update it
+        // at the beginning of each sync
         if (src instanceof JSONSyncSource) {
             JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
             jsonSyncSource.updateSyncConfig(syncConfig);
@@ -295,14 +296,17 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void performDownloadPhase(SyncSource src, int syncMode, boolean resume) throws SyncException {
+    private void performDownloadPhase(SyncSource src, int syncMode,
+            boolean resume) throws SyncException {
 
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Starting download phase " + syncMode);
         }
 
-        StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
-        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore("mapping_" + src.getName());
+        StringKeyValueStoreFactory mappingFactory =
+                StringKeyValueStoreFactory.getInstance();
+        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore(
+                "mapping_" + src.getName());
         try {
             mapping.load();
         } catch (Exception e) {
@@ -386,7 +390,8 @@ public class SapiSyncManager implements SyncManagerI {
             SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
             Date anchor = new Date(sapiAnchor.getDownloadAnchor());
             try {
-                SapiSyncHandler.ChangesSet changesSet = sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
+                SapiSyncHandler.ChangesSet changesSet =
+                        sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
 
                 if (changesSet != null) {
                     // Count the number of items to be received and notify the
@@ -407,11 +412,13 @@ public class SapiSyncManager implements SyncManagerI {
                     // We must pass all of the items to the sync source, but for each
                     // item we need to retrieve the complete information
                     if (changesSet.added != null) {
-                        applyNewUpdItems(src, changesSet.added, SyncItem.STATE_NEW, mapping);
+                        applyNewUpdItems(src, changesSet.added,
+                                SyncItem.STATE_NEW, mapping);
                     }
 
                     if (changesSet.updated != null) {
-                        applyNewUpdItems(src, changesSet.updated, SyncItem.STATE_UPDATED, mapping);
+                        applyNewUpdItems(src, changesSet.updated,
+                                SyncItem.STATE_UPDATED, mapping);
                     }
 
                     if (changesSet.deleted != null) {
@@ -429,8 +436,8 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void applyNewUpdItems(SyncSource src, JSONArray added, char state, StringKeyValueStore mapping)
-    throws SyncException, JSONException {
+    private void applyNewUpdItems(SyncSource src, JSONArray added, char state, 
+            StringKeyValueStore mapping) throws SyncException, JSONException {
         // The JSONArray contains the "id" of the new items, we still need to
         // download their complete meta information. We get the new items in
         // pages to make sure we don't use too much memory. Each page of items
@@ -446,8 +453,9 @@ public class SapiSyncManager implements SyncManagerI {
             }
             if (itemsId.length() > 0) {
                 // Ask for these items
-                JSONArray items = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), dataTag,
-                                                           itemsId, null, null);
+                JSONArray items = sapiSyncHandler.getItems(
+                        src.getConfig().getRemoteUri(), dataTag,
+                        itemsId, null, null);
 
                 if (items != null) {
                     applyNewUpdToSyncSource(src, items, state, mapping, false);
@@ -456,8 +464,9 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void applyNewUpdToSyncSource(SyncSource src, JSONArray items, char state, StringKeyValueStore mapping,
-                                         boolean deepTwinSearch) throws SyncException, JSONException {
+    private void applyNewUpdToSyncSource(SyncSource src, JSONArray items, 
+            char state, StringKeyValueStore mapping, boolean deepTwinSearch)
+            throws SyncException, JSONException {
         // Apply these changes into the sync source
         Vector sourceItems = new Vector();
         for(int k=0;k<items.length();++k) {
@@ -481,7 +490,8 @@ public class SapiSyncManager implements SyncManagerI {
                         continue;
                     }
                 } else {
-                    Log.error(TAG_LOG, "Source does not implement TwinDetection, possible creation of duplicates");
+                    Log.error(TAG_LOG, "Source does not implement TwinDetection, "
+                            + "possible creation of duplicates");
                 }
             } else {
                 // In this case we only check if an item with the same guid
@@ -489,7 +499,8 @@ public class SapiSyncManager implements SyncManagerI {
                 // replace
                 if (state == SyncItem.STATE_NEW && mapping.get(guid) != null) {
                     if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Turning add into replace as item already exists " + guid);
+                        Log.info(TAG_LOG, "Turning add into replace as item "
+                                + "already exists " + guid);
                     }
                     state = SyncItem.STATE_UPDATED;
                 }
@@ -506,7 +517,7 @@ public class SapiSyncManager implements SyncManagerI {
                 state = SyncItem.STATE_NEW;
             }
 
-            SyncItem syncItem = src.createSyncItem(luid, src.getType(), state,  null, size);
+            SyncItem syncItem = src.createSyncItem(luid, src.getType(), state, null, size);
             syncItem.setGuid(guid);
             OutputStream os = null;
             try {
@@ -534,11 +545,13 @@ public class SapiSyncManager implements SyncManagerI {
             for(int l=0;l<sourceItems.size();++l) {
                 SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
                 // Update the sync status
-                syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(), newItem.getState(), newItem.getSyncStatus());
+                syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
+                        newItem.getState(), newItem.getSyncStatus());
                 // and the mapping table
                 if (state == SyncItem.STATE_NEW) {
                     if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "Updating mapping info for: " + newItem.getGuid() + "," + newItem.getKey());
+                        Log.trace(TAG_LOG, "Updating mapping info for: " +
+                                newItem.getGuid() + "," + newItem.getKey());
                     }
                     mapping.add(newItem.getGuid(), newItem.getKey());
                 }
@@ -550,9 +563,8 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
 
-    private void applyDelItems(SyncSource src, JSONArray removed, StringKeyValueStore mapping)
-    throws SyncException, JSONException {
-
+    private void applyDelItems(SyncSource src, JSONArray removed, 
+            StringKeyValueStore mapping) throws SyncException, JSONException {
         Vector delItems = new Vector();
         for(int i=0;i < removed.length();++i) {
             String guid = removed.getString(i);
@@ -560,7 +572,8 @@ public class SapiSyncManager implements SyncManagerI {
             if (luid == null) {
                 luid = guid;
             }
-            SyncItem delItem = new SyncItem(luid, src.getType(), SyncItem.STATE_DELETED, null);
+            SyncItem delItem = new SyncItem(luid, src.getType(),
+                    SyncItem.STATE_DELETED, null);
             delItem.setGuid(guid);
             delItems.addElement(delItem);
             getSyncListenerFromSource(src).itemDeleted(delItem);
