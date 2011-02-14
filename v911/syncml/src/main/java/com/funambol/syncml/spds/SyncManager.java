@@ -228,6 +228,10 @@ public class SyncManager {
 
     private boolean forceCapsInXml = true;
 
+    private boolean sendSuspendOnCancel = false;
+
+    private boolean suspendAlertSent = false;
+
     //------------------------------------------------------------- Constructors
     /**
      * SyncManager constructor
@@ -338,6 +342,7 @@ public class SyncManager {
         busy = true;
         cancel = false;
         resume = false;
+        suspendAlertSent = false;
 
         // Initialize the mapping message manager
         if (Log.isLoggable(Log.DEBUG)) {
@@ -391,6 +396,7 @@ public class SyncManager {
 
         // Creates a sync source large object handler
         sourceLOHandler = new SyncSourceLOHandler(src, maxMsgSize, wbxml);
+        sourceLOHandler.setSendSuspendOnCancel(sendSuspendOnCancel);
 
         // Update the sync status (do not save as it is not very useful so far)
         syncStatus.setRequestedSyncMode(syncMode);
@@ -589,6 +595,11 @@ public class SyncManager {
                 done = processModifications(msg, source);
 
                 getSyncListenerFromSource(src).endReceiving();
+
+                // Now we can throw the exception to cancel the sync
+                if (cancel && sendSuspendOnCancel && suspendAlertSent) {
+                    throw new SyncException(SyncException.CANCELLED, "SyncManager sync got cancelled");
+                }
             } while (!done);
 
             if (Log.isLoggable(Log.INFO)) {
@@ -758,6 +769,9 @@ public class SyncManager {
      * them are cancelled.
      */
     public void cancel() {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Cancelling sync in manager");
+        }
         cancel = true;
         if (sourceLOHandler != null) {
             sourceLOHandler.cancel(); 
@@ -2264,7 +2278,26 @@ public class SyncManager {
                 addDevInfResults = null;
             }
 
-            if (this.state == STATE_MODIFICATION_COMPLETED) {
+            if (cancel && sendSuspendOnCancel) {
+                // Prepare the suspend alert
+                Alert suspendAlert = new Alert();
+                suspendAlert.setCmdID(getNextCmdID());
+                suspendAlert.setData(SyncML.ALERT_CODE_SUSPEND);
+                Item alertItem = Item.newInstance();
+                Source alertSource = Source.newInstance();
+                alertSource.setLocURI(deviceId);
+                alertItem.setSource(alertSource);
+                Target alertTarget = Target.newInstance();
+                alertTarget.setLocURI(serverUrl);
+                alertItem.setTarget(alertTarget);
+                Vector alertItems = new Vector(1);
+                alertItems.addElement(alertItem);
+                suspendAlert.setItems(alertItems);
+
+                bodyCommands.addElement(suspendAlert);
+
+                suspendAlertSent = true;
+            } else if (this.state == STATE_MODIFICATION_COMPLETED) {
                 // We ask for the next message to the other side
                 Alert nextMsgAlert = new Alert();
                 nextMsgAlert.setCmdID(getNextCmdID());
@@ -2284,16 +2317,20 @@ public class SyncManager {
             }
 
 
-            if (this.state != STATE_MODIFICATION_COMPLETED) {
-                Sync syncCommand = prepareSyncTag(msgSize);
-                bodyCommands.addElement(syncCommand);
-            }
-
-            if (this.state == STATE_MODIFICATION_COMPLETED) {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Modification done, sending <final> tag.");
+            // If we are cancelling then we shall not add the modifications to
+            // this message
+            if ((!cancel) || (!sendSuspendOnCancel)) {
+                if (this.state != STATE_MODIFICATION_COMPLETED) {
+                    Sync syncCommand = prepareSyncTag(msgSize);
+                    bodyCommands.addElement(syncCommand);
                 }
-                body.setFinalMsg(new Boolean(true));
+
+                if (this.state == STATE_MODIFICATION_COMPLETED) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Modification done, sending <final> tag.");
+                    }
+                    body.setFinalMsg(new Boolean(true));
+                }
             }
 
             body.setCommands(bodyCommands);
@@ -2730,7 +2767,13 @@ public class SyncManager {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Cancelling sync for source ["+source.getName()+"]");
         }
-        throw new SyncException(SyncException.CANCELLED, "SyncManager sync got cancelled");
+        if (sendSuspendOnCancel) {
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Need to send suspend alert");
+            }
+        } else {
+            throw new SyncException(SyncException.CANCELLED, "SyncManager sync got cancelled");
+        }
     }
 
     private boolean isSyncToBeCancelled() {
