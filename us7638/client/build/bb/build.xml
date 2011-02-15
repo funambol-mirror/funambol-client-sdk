@@ -35,6 +35,7 @@ Build file for Funambol Java Client
         <property name="dir.html"         value="${dir.output}/html"         />
         <property name="lib.funambol.common" value="${basedir}/../common/output/bb/funambol-bb-common.jar"/>
         <property name="lib.funambol.sync"   value="${basedir}/../sync/output/bb/funambol-bb-sync.jar"/>
+        <property name="lib.funambol.sapisync" value="${basedir}/../sapisync/output/bb/funambol-bb-sapisync.jar"/>
         <property name="lib.funambol.syncml" value="${basedir}/../syncml/output/bb/funambol-bb-syncml.jar"/>
     </target>
    
@@ -52,6 +53,7 @@ Build file for Funambol Java Client
                    <pathelement location="${lib.funambol.common}"/>
                    <pathelement location="${lib.funambol.sync}"/>
                    <pathelement location="${lib.funambol.syncml}"/>
+                   <pathelement location="${lib.funambol.sapisync}"/>
                </classpath>
         </javac>
     </target>

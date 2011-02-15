@@ -295,8 +295,14 @@ public interface SyncSource {
      */
     public void setServerItemsNumber(int number);
 
+    /**
+     * Returns the current anchor for this source
+     */
     public SyncAnchor getSyncAnchor();
 
+    /**
+     * Sets the anchor for this source
+     */
     public void setSyncAnchor(SyncAnchor syncAnchor);
 
     /**

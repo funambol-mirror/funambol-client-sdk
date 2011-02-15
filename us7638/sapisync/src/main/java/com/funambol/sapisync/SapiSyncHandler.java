@@ -159,8 +159,8 @@ public class SapiSyncHandler {
     public ChangesSet getIncrementalChanges(Date from, String dataType) throws JSONException {
 
         Vector params = new Vector();
-        params.add("from=" + DateUtil.formatDateTimeUTC(from));
-        params.add("type=" + dataType);
+        params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
+        params.addElement("type=" + dataType);
 
         JSONObject resp = null;
         boolean retry = true;
@@ -217,7 +217,7 @@ public class SapiSyncHandler {
             params.addElement("offset=" + offset);
         }
         if (from != null) {
-            params.add("from=" + DateUtil.formatDateTimeUTC(from));
+            params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
         }
         params.addElement("exif=none");
 
@@ -253,7 +253,7 @@ public class SapiSyncHandler {
 
         Vector params = new Vector();
         if (from != null) {
-            params.add("from=" + DateUtil.formatDateTimeUTC(from));
+            params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
         }
 
         JSONObject resp = null;
