@@ -210,13 +210,14 @@ public class SapiSyncHandler {
 
             params.addElement(request.toString());
         }
-
         if (limit != null) {
             params.addElement("limit=" + limit);
         }
-
         if (offset != null) {
             params.addElement("offset=" + offset);
+        }
+        if (from != null) {
+            params.add("from=" + DateUtil.formatDateTimeUTC(from));
         }
         params.addElement("exif=none");
 
@@ -249,13 +250,19 @@ public class SapiSyncHandler {
     }
 
     public int getItemsCount(String remoteUri, Date from) throws JSONException {
+
+        Vector params = new Vector();
+        if (from != null) {
+            params.add("from=" + DateUtil.formatDateTimeUTC(from));
+        }
+
         JSONObject resp = null;
         boolean retry = true;
         int attempt = 0;
         do {
             try {
                 attempt++;
-                resp = sapiHandler.query("media/" + remoteUri, "count", null, null, null);
+                resp = sapiHandler.query("media/" + remoteUri, "count", params, null, null);
                 retry = false;
             } catch (IOException ioe) {
                 if (attempt >= MAX_RETRIES) {
