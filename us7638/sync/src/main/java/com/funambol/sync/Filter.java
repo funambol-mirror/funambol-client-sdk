@@ -63,11 +63,6 @@ public class Filter {
      * All the items that fall into the window
      */
     public static final int DATE_WINDOW_TYPE = 2;
-    
-    /**
-     * Max number of items starting from the most recent ones
-     */
-    public static final int COUNT_RECENT_TYPE = 3;
 
     private int type;
 

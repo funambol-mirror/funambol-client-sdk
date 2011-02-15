@@ -201,7 +201,7 @@ public class SapiSyncHandler {
     }
 
     public JSONArray getItems(String remoteUri, String dataTag, JSONArray ids,
-                              String limit, String offset) throws JSONException {
+                              String limit, String offset, Date from) throws JSONException {
 
         Vector params = new Vector();
         if (ids != null) {
@@ -248,7 +248,7 @@ public class SapiSyncHandler {
         return null;
     }
 
-    public int getItemsCount(String remoteUri) throws JSONException {
+    public int getItemsCount(String remoteUri, Date from) throws JSONException {
         JSONObject resp = null;
         boolean retry = true;
         int attempt = 0;

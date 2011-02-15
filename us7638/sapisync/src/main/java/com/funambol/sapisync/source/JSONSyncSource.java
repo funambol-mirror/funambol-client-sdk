@@ -93,7 +93,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             super.addItem(item);
             return res;
         } catch (IOException ioe) {
-            Log.error(TAG_LOG, "Cannot add item, ioe");
+            Log.error(TAG_LOG, "Cannot add item", ioe);
             return SyncSource.ERROR_STATUS;
         } catch (SyncException se) {
             // This kind of exception blocks the sync because it is a network error of some kind
@@ -199,6 +199,15 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         res.append(serverUrl);
         res.append(baseUrl);
         return res.toString();
+    }
+
+    /**
+     * Return whether the given item is supported by the source
+     * @param item
+     * @return
+     */
+    public boolean filterSyncItem(SyncItem item) {
+        return true;
     }
 
     public SyncListener getListener() {

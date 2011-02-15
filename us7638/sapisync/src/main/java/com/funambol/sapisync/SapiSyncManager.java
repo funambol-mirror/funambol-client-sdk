@@ -316,59 +316,62 @@ public class SapiSyncManager implements SyncManagerI {
         }
         String remoteUri = src.getConfig().getRemoteUri();
 
+        SyncFilter syncFilter = src.getFilter();
+        
         if (syncMode == SyncSource.FULL_DOWNLOAD) {
 
-            Filter itemsCountFilter = null;
+            int totalCount = -1;
+
+            int filterMaxCount = -1;
+            Date filterFrom = null;
             
-            SyncFilter syncFilter = src.getFilter();
+            Filter fullDownloadFilter = null;
             if(syncFilter != null) {
-                Filter filter = syncFilter.getFullDownloadFilter();
-                if(filter != null) {
-                    if(filter.getType() == Filter.ITEMS_COUNT_TYPE) {
-                        itemsCountFilter = filter;
-                    } else {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
+                fullDownloadFilter = syncFilter.getFullDownloadFilter();
+            }
+            if(fullDownloadFilter != null) {
+                if(fullDownloadFilter != null && fullDownloadFilter.getType()
+                        == Filter.ITEMS_COUNT_TYPE) {
+                    filterMaxCount = fullDownloadFilter.getCount();
+                } else if(fullDownloadFilter != null && fullDownloadFilter.getType()
+                        == Filter.DATE_RECENT_TYPE) {
+                    filterFrom = new Date(fullDownloadFilter.getDate());
+                } else {
+                    throw new UnsupportedOperationException("Not implemented yet");
                 }
             }
-            int total = -1;
+            
             // Get the number of items and notify the listener
             try {
-                total = sapiSyncHandler.getItemsCount(remoteUri);
-                // Apply items count filter
-                if(itemsCountFilter != null && total > itemsCountFilter.getCount()) {
-                    int maxCount = itemsCountFilter.getCount();
-                    if(total > maxCount) {
-                        Log.debug(TAG_LOG, "Filtering total items count to: " + maxCount);
-                        total = maxCount;
+                totalCount = sapiSyncHandler.getItemsCount(remoteUri, filterFrom);
+                if (totalCount != -1) {
+                    if(filterMaxCount > 0) {
+                        getSyncListenerFromSource(src).startReceiving(filterMaxCount);
+                    } else {
+                        getSyncListenerFromSource(src).startReceiving(totalCount);
                     }
-                }
-                if (total != -1) {
-                    getSyncListenerFromSource(src).startReceiving(total);
                 }
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Cannot get the number of items on server", e);
                 // We ignore this exception and try to get the content
             }
-
             int downloadLimit = FULL_SYNC_DOWNLOAD_LIMIT;
-
             String dataTag = getDataTag(src);
-            
             int offset = 0;
             boolean done = false;
             try {
                 do {
                     // Update the download limit given the total amount of items
                     // to download
-                    if((offset + downloadLimit) > total) {
-                        downloadLimit = total - offset;
+                    if((offset + downloadLimit) > totalCount) {
+                        downloadLimit = totalCount - offset;
                     }
                     JSONArray items = sapiSyncHandler.getItems(remoteUri, dataTag, null,
-                            "" + downloadLimit,
-                            "" + offset);
+                            Integer.toString(downloadLimit),
+                            Integer.toString(offset), filterFrom);
                     if (items != null && items.length() > 0) {
-                        applyNewUpdToSyncSource(src, items, SyncItem.STATE_NEW, mapping, true);
+                        done = applyNewUpdToSyncSource(src, items, SyncItem.STATE_NEW,
+                                filterMaxCount, offset, mapping, true);
                         offset += items.length();
                         if ((items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
                             done = true;
@@ -387,6 +390,9 @@ public class SapiSyncManager implements SyncManagerI {
                 // TODO FIXME: handle the suspend/resume
             }
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
+            if(syncFilter != null && syncFilter.getIncrementalDownloadFilter() != null) {
+                throw new UnsupportedOperationException("Not implemented yet");
+            }
             SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
             Date anchor = new Date(sapiAnchor.getDownloadAnchor());
             try {
@@ -415,12 +421,10 @@ public class SapiSyncManager implements SyncManagerI {
                         applyNewUpdItems(src, changesSet.added,
                                 SyncItem.STATE_NEW, mapping);
                     }
-
                     if (changesSet.updated != null) {
                         applyNewUpdItems(src, changesSet.updated,
                                 SyncItem.STATE_UPDATED, mapping);
                     }
-
                     if (changesSet.deleted != null) {
                         applyDelItems(src, changesSet.deleted, mapping);
                     }
@@ -455,21 +459,38 @@ public class SapiSyncManager implements SyncManagerI {
                 // Ask for these items
                 JSONArray items = sapiSyncHandler.getItems(
                         src.getConfig().getRemoteUri(), dataTag,
-                        itemsId, null, null);
+                        itemsId, null, null, null);
 
                 if (items != null) {
-                    applyNewUpdToSyncSource(src, items, state, mapping, false);
+                    applyNewUpdToSyncSource(src, items, state, -1, -1, mapping, false);
                 }
             }
         }
     }
 
-    private void applyNewUpdToSyncSource(SyncSource src, JSONArray items, 
-            char state, StringKeyValueStore mapping, boolean deepTwinSearch)
+    /**
+     * Apply the given items to the source, returning whether the source can
+     * accept further items.
+     * 
+     * @param src
+     * @param items
+     * @param state
+     * @param mapping
+     * @param deepTwinSearch
+     * @return
+     * @throws SyncException
+     * @throws JSONException
+     */
+    private boolean applyNewUpdToSyncSource(SyncSource src, JSONArray items,
+            char state, int maxItemsCount, int appliedItemsCount,
+            StringKeyValueStore mapping, boolean deepTwinSearch)
             throws SyncException, JSONException {
+
+        boolean done = false;
+        
         // Apply these changes into the sync source
         Vector sourceItems = new Vector();
-        for(int k=0;k<items.length();++k) {
+        for(int k=0; k<items.length() && !done; ++k) {
             JSONObject item = items.getJSONObject(k);
             String     guid = item.getString("id");
             long       size = Long.parseLong(item.getString("size"));
@@ -541,8 +562,20 @@ public class SapiSyncManager implements SyncManagerI {
                 } catch (IOException ioe) {
                 }
             }
-            sourceItems.addElement(syncItem);
-
+            // Filter downloaded items for JSONSyncSources only
+            if(src instanceof JSONSyncSource) {
+                if(((JSONSyncSource)src).filterSyncItem(syncItem)) {
+                    sourceItems.addElement(syncItem);
+                }
+            } else {
+                sourceItems.addElement(syncItem);
+            }
+            // Apply items count filter
+            if(maxItemsCount > 0) {
+                if((appliedItemsCount + sourceItems.size()) >= maxItemsCount) {
+                    done = true;
+                }
+            }
             if (state == SyncItem.STATE_NEW) {
                 getSyncListenerFromSource(src).itemAddReceivingEnded(luid, null);
             } else if(state == SyncItem.STATE_UPDATED) {
@@ -572,6 +605,7 @@ public class SapiSyncManager implements SyncManagerI {
         } catch (Exception e) {
             Log.error(TAG_LOG, "Cannot save mappings", e);
         }
+        return done;
     }
 
 

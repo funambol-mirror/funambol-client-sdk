@@ -63,9 +63,11 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
     private int logoutCount = 0;
     private int fullSyncItemsIdx = 0;
 
-    private Vector limitRequests  = new Vector();
-    private Vector offsetRequests = new Vector();
-    private Vector idsRequests    = new Vector();
+    private Vector limitRequests        = new Vector();
+    private Vector dateLimitRequests    = new Vector();
+    private Vector dateLimitAllRequests = new Vector();
+    private Vector offsetRequests       = new Vector();
+    private Vector idsRequests          = new Vector();
 
     public MockSapiSyncHandler() {
         super(TEST_SERVER, TEST_USERNAME, TEST_PASSWORD);
@@ -96,9 +98,13 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         this.changesSet = res;
     }
 
-    public JSONArray getItems(String remoteUri, String dataTag, JSONArray ids, String limit, String offset) throws JSONException {
+    public JSONArray getItems(String remoteUri, String dataTag, JSONArray ids,
+            String limit, String offset, Date from) throws JSONException {
 
         // Save this information to be checked later
+        if (from != null) {
+            dateLimitRequests.addElement(from);
+        }
         if (limit != null) {
             limitRequests.addElement(limit);
         }
@@ -120,6 +126,14 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         this.fullSyncItems = fullSyncItems;
     }
 
+    public Vector getDateLimitRequests() {
+        return dateLimitRequests;
+    }
+
+    public Vector getDateLimitAllRequests() {
+        return dateLimitAllRequests;
+    }
+
     public Vector getLimitRequests() {
         return limitRequests;
     }
@@ -132,7 +146,10 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         return idsRequests;
     }
 
-    public int getItemsCount(String remoteUri) throws JSONException {
+    public int getItemsCount(String remoteUri, Date from) throws JSONException {
+        if (from != null) {
+            dateLimitAllRequests.addElement(from);
+        }
         return itemsCount;
     }
 

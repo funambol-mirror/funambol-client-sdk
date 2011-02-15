@@ -52,6 +52,7 @@ import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Log;
+import java.util.Date;
 
 import junit.framework.*;
 
@@ -487,8 +488,11 @@ public class SapiSyncManagerTest extends TestCase {
         String limit0 = (String)limitRequests.elementAt(0);
         String offset0 = (String)offsetRequests.elementAt(0);
 
-        assertEquals(limit0, "3");
+        assertEquals(limit0, "10");
         assertEquals(offset0, "0");
+
+        assertEquals(syncSourceListener.getNumReceiving(), 3);
+        assertEquals(syncSourceListener.getNumAdd(), 3);
     }
     
     public void testFullDownloadFilter_ItemsCount2() throws Exception {
@@ -544,7 +548,53 @@ public class SapiSyncManagerTest extends TestCase {
 
         assertEquals(limit0, "300");
         assertEquals(offset0, "0");
-        assertEquals(limit1, "9");
+        assertEquals(limit1, "40");
         assertEquals(offset1, "300");
+
+        assertEquals(syncSourceListener.getNumReceiving(), 309);
+        assertEquals(syncSourceListener.getNumAdd(), 309);
+    }
+
+    public void testFullDownloadFilter_DateRecent() throws Exception {
+        SapiSyncAnchor anchor = new SapiSyncAnchor();
+        anchor.setDownloadAnchor(0);
+        anchor.setUploadAnchor(0);
+
+        syncSource.setSyncAnchor(anchor);
+
+        SyncFilter syncFilter = new SyncFilter();
+        syncFilter.setFullDownloadFilter(
+            new Filter(Filter.DATE_RECENT_TYPE, 1234567890, 0));
+
+        syncSource.setFilter(syncFilter);
+
+        // In a full download we expect the count items sapi to be invoked and
+        // then the sapi to retrive the list of all items
+        sapiSyncHandler.setItemsCount(10);
+        JSONArray items = new JSONArray();
+
+        for(int i=0;i<10;++i) {
+            JSONObject item = new JSONObject();
+            item.put("id", "" + i);
+            item.put("size", "" + i);
+            items.put(item);
+        }
+        JSONArray allItems[] = new JSONArray[1];
+        allItems[0] = items;
+        sapiSyncHandler.setItems(allItems);
+
+        syncManager.sync(syncSource);
+
+        Vector dateLimitAllRequests = sapiSyncHandler.getDateLimitAllRequests();
+        Vector dateLimitRequests = sapiSyncHandler.getDateLimitRequests();
+        
+        assertEquals(dateLimitAllRequests.size(), 1);
+        assertEquals(dateLimitRequests.size(), 1);
+        
+        long dateAll = ((Date)dateLimitAllRequests.elementAt(0)).getTime();
+        long date = ((Date)dateLimitRequests.elementAt(0)).getTime();
+        
+        assertEquals(dateAll, 1234567890);
+        assertEquals(date, 1234567890);
     }
 }
