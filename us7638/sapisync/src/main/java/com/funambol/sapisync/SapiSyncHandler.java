@@ -193,7 +193,13 @@ public class SapiSyncHandler {
 
             // Get the timestamp if available
             if (data.has("responsetime")) {
-                res.timeStamp = data.getLong("responsetime");
+                String ts = data.getString("responsetime");
+                try {
+                    res.timeStamp = Long.parseLong(ts);
+                } catch (Exception e) {
+                    Log.error(TAG_LOG, "Cannot parse server responsetime");
+                    res.timeStamp = -1;
+                }
             }
         }
 
@@ -246,7 +252,13 @@ public class SapiSyncHandler {
                     res.items = items;
                 }
                 if (data.has("responsetime")) {
-                    res.timeStamp = data.getLong("responsetime");
+                    String ts = data.getString("responsetime");
+                    try {
+                        res.timeStamp = Long.parseLong(ts);
+                    } catch (Exception e) {
+                        Log.error(TAG_LOG, "Cannot parse server responsetime");
+                        res.timeStamp = -1;
+                    }
                 }
                 return res;
             }
