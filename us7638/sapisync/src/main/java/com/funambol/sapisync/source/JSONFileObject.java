@@ -36,8 +36,8 @@
 package com.funambol.sapisync.source;
 
 import java.util.Vector;
-import org.json.me.JSONArray;
 
+import org.json.me.JSONArray;
 import org.json.me.JSONException;
 import org.json.me.JSONObject;
 
@@ -45,8 +45,10 @@ import org.json.me.JSONObject;
  * Represents a JSON object containing a file meta data. It can also contain a
  * Vector of JSONFileThumbnail objects.
  */
-public class JSONFileObject extends JSONObject {
+public class JSONFileObject {
 
+    private JSONObject jsonObject;
+    
     private String id;
     private String name;
     private String url;
@@ -57,17 +59,22 @@ public class JSONFileObject extends JSONObject {
     private Vector thumbnails;
 
     public JSONFileObject(String json) throws JSONException {
-        super(json);
+        this(new JSONObject(json));
+    }
 
-        this.id   = getString("id");
-        this.name = getString("name");
-        this.url  = getString("url");
+    public JSONFileObject(JSONObject jsonObject) throws JSONException {
 
-        this.date = getLong("date");
-        this.size = getLong("size");
+        this.jsonObject = jsonObject;
+        
+        this.id   = jsonObject.getString("id");
+        this.name = jsonObject.getString("name");
+        this.url  = jsonObject.getString("url");
 
-        if (this.has("thumbnails")) {
-            JSONArray thumbs = getJSONArray("thumbnails");
+        this.date = jsonObject.getLong("date");
+        this.size = jsonObject.getLong("size");
+
+        if (jsonObject.has("thumbnails")) {
+            JSONArray thumbs = jsonObject.getJSONArray("thumbnails");
             if(thumbs != null) {
                 this.thumbnails = new Vector();
                 for(int i=0; i<thumbs.length(); i++) {
@@ -109,7 +116,7 @@ public class JSONFileObject extends JSONObject {
 
         public JSONFileThumbnail(JSONObject json) throws JSONException {
             this.size = json.getString("size");
-            this.url  = getString("url");
+            this.url  = jsonObject.getString("url");
         }
 
         public String getSize() {

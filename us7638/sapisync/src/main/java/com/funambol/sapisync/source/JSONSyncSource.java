@@ -46,11 +46,15 @@ import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.ChangesTracker;
 import com.funambol.sync.client.TrackableSyncSource;
 import com.funambol.sapisync.source.util.HttpDownloader;
+import com.funambol.sync.Filter;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncReport;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
+
+import org.json.me.JSONObject;
+import org.json.me.JSONException;
 
 /**
  * Represents a SyncSource which handles JSON file objects as input SyncItems.
@@ -83,12 +87,17 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         this.syncConfig = syncConfig;
     }
 
+    public SyncItem createSyncItem(String key, String type, char state,
+                                   String parent, JSONObject json) throws JSONException {
+        JSONSyncItem item = new JSONSyncItem(key, type, state, parent, json);
+        return item;
+    }
+
     public int addItem(SyncItem item) throws SyncException {
         // Note that the addItem must still download the actual item content, therefore
         // it can get a network error and this must be propagated
         try {
-            String itemContent = new String(item.getContent());
-            JSONFileObject jsonFile = new JSONFileObject(itemContent);
+            JSONFileObject jsonFile = getJSONFileFromSyncItem(item);
             int res = addUpdateItem(item, jsonFile, false);
             super.addItem(item);
             return res;
@@ -109,10 +118,9 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         // blocking exceptions for the sync. Only network exceptions will
         // block it
         try {
-            String itemContent = new String(item.getContent());
-            JSONFileObject jsonFile = new JSONFileObject(itemContent);
+            JSONFileObject jsonFile = getJSONFileFromSyncItem(item);
             int res = addUpdateItem(item, jsonFile, true);
-            super.addItem(item);
+            super.updateItem(item);
             return res;
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Cannot add item, ioe");
@@ -124,6 +132,17 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             Log.error(TAG_LOG, "Cannot add item", t);
             return SyncSource.ERROR_STATUS;
         }
+    }
+
+    private JSONFileObject getJSONFileFromSyncItem(SyncItem item) throws JSONException {
+        JSONFileObject jsonFile = null;
+        if(item instanceof JSONSyncItem) {
+            jsonFile = ((JSONSyncItem)item).getJSONFileObject();
+        } else {
+            String itemContent = new String(item.getContent());
+            jsonFile = new JSONFileObject(itemContent);
+        }
+        return jsonFile;
     }
 
     public void updateSyncConfig(SyncConfig syncConfig) {
@@ -207,6 +226,23 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
      * @return
      */
     public boolean filterSyncItem(SyncItem item) {
+
+        //
+        // TODO: FIXME remove date filtering once implemented server side
+        //
+        if(item instanceof JSONSyncItem) {
+            if(filter != null) {
+                Filter df = filter.getFullDownloadFilter();
+                if(df != null && df.getType() == Filter.DATE_RECENT_TYPE) {
+                    long dateFilter = df.getDate();
+                    JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
+                    // Reject the item if it doesn't respect the date filter
+                    if(json.getDate() < dateFilter) {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
 

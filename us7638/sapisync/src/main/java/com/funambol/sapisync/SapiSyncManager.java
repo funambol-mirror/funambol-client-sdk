@@ -544,7 +544,13 @@ public class SapiSyncManager implements SyncManagerI {
                 getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
             }
 
-            SyncItem syncItem = src.createSyncItem(luid, src.getType(), state, null, size);
+            SyncItem syncItem = null;
+            if(src instanceof JSONSyncSource) {
+                syncItem = ((JSONSyncSource)src).createSyncItem(
+                        luid, src.getType(), state, null, item);
+            } else {
+                syncItem = src.createSyncItem(luid, src.getType(), state, null, size);
+            }
             syncItem.setGuid(guid);
             OutputStream os = null;
             try {
