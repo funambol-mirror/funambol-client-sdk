@@ -574,6 +574,10 @@ public class SapiSyncManager implements SyncManagerI {
             if(src instanceof JSONSyncSource) {
                 if(((JSONSyncSource)src).filterSyncItem(syncItem)) {
                     sourceItems.addElement(syncItem);
+                } else {
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Item rejected by the source: " + luid);
+                    }
                 }
             } else {
                 sourceItems.addElement(syncItem);
@@ -581,6 +585,9 @@ public class SapiSyncManager implements SyncManagerI {
             // Apply items count filter
             if(maxItemsCount > 0) {
                 if((appliedItemsCount + sourceItems.size()) >= maxItemsCount) {
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "The source doesn't accept more items");
+                    }
                     done = true;
                 }
             }
