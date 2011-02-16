@@ -228,8 +228,7 @@ public class SyncEngine implements SyncSchedulerListener {
             AppSyncSource appSource = (AppSyncSource) sources.elementAt(x);
             SyncSource    source    = appSource.getSyncSource();
             int mode = source.getConfig().getSyncMode();
-            if (   mode != SyncML.ALERT_CODE_REFRESH_FROM_CLIENT
-                && mode != SyncML.ALERT_CODE_REFRESH_FROM_SERVER) {
+            if (mode != SyncSource.FULL_UPLOAD && mode != SyncSource.FULL_DOWNLOAD) {
                 checkSources.addElement(source);
             }
         }
