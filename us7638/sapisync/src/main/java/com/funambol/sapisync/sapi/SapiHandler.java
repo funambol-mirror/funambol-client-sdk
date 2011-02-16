@@ -161,7 +161,7 @@ public class SapiHandler {
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Authorization is specified via jsessionid");
                 }
-                conn.setRequestProperty("Cookie", jsessionId);
+                conn.setRequestProperty("Cookie", JSESSIONID_HEADER + "=" + jsessionId);
             } else if (authMethod == AUTH_IN_HTTP_HEADER) {
                 String token = user + ":" + pwd;
                 String authToken = new String(Base64.encode(token.getBytes()));
