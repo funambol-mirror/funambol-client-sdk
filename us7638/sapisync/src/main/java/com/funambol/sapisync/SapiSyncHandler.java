@@ -150,17 +150,12 @@ public class SapiSyncHandler {
         }
     }
 
-    protected class ChangesSet {
-        public JSONArray added;
-        public JSONArray updated;
-        public JSONArray deleted;
-    }
-
     public ChangesSet getIncrementalChanges(Date from, String dataType) throws JSONException {
 
         Vector params = new Vector();
         params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
         params.addElement("type=" + dataType);
+        params.addElement("responsetime=true");
 
         JSONObject resp = null;
         boolean retry = true;
@@ -195,12 +190,17 @@ public class SapiSyncHandler {
                     }
                 }
             }
+
+            // Get the timestamp if available
+            if (data.has("responsetime")) {
+                res.timeStamp = data.getLong("responsetime");
+            }
         }
 
         return res;
     }
 
-    public JSONArray getItems(String remoteUri, String dataTag, JSONArray ids,
+    public FullSet getItems(String remoteUri, String dataTag, JSONArray ids,
                               String limit, String offset, Date from) throws JSONException {
 
         Vector params = new Vector();
@@ -219,6 +219,7 @@ public class SapiSyncHandler {
         if (from != null) {
             params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
         }
+        params.addElement("responsetime=true");
         params.addElement("exif=none");
 
         JSONObject resp = null;
@@ -237,15 +238,19 @@ public class SapiSyncHandler {
         } while(retry);
 
         if (resp != null) {
+            FullSet res = new FullSet();
             JSONObject data = resp.getJSONObject("data");
             if (data != null) {
                 if (data.has(dataTag)) {
                     JSONArray items = data.getJSONArray(dataTag);
-                    return items;
+                    res.items = items;
                 }
+                if (data.has("responsetime")) {
+                    res.timeStamp = data.getLong("responsetime");
+                }
+                return res;
             }
         }
-
         return null;
     }
 
@@ -311,6 +316,18 @@ public class SapiSyncHandler {
                 Log.debug(TAG_LOG, "Failed to retrieve error json object");
             }
         }
+    }
+
+    protected class ChangesSet {
+        public JSONArray added     = null;
+        public JSONArray updated   = null;
+        public JSONArray deleted   = null;
+        public long      timeStamp = -1;
+    }
+
+    protected class FullSet {
+        public JSONArray items     = null;
+        public long      timeStamp = -1;
     }
 
     /**

@@ -187,6 +187,7 @@ public class SapiSyncManager implements SyncManagerI {
                 anchor.setDownloadAnchor(newDownloadAnchor);
             }
 
+            /*
             if(isUploadPhaseNeeded(syncMode)) {
                 long newUploadAnchor = (new Date()).getTime();
                 performUploadPhase(src, getActualUploadSyncMode(src), resume);
@@ -194,6 +195,7 @@ public class SapiSyncManager implements SyncManagerI {
                 SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
                 anchor.setUploadAnchor(newUploadAnchor);
             }
+            */
 
             performFinalizationPhase(src);
 
@@ -360,26 +362,31 @@ public class SapiSyncManager implements SyncManagerI {
             int offset = 0;
             boolean done = false;
             try {
+                long newDownloadAnchor = -1;
                 do {
                     // Update the download limit given the total amount of items
                     // to download
                     if((offset + downloadLimit) > totalCount) {
                         downloadLimit = totalCount - offset;
                     }
-                    JSONArray items = sapiSyncHandler.getItems(remoteUri, dataTag, null,
+                    SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(remoteUri, dataTag, null,
                             Integer.toString(downloadLimit),
                             Integer.toString(offset), filterFrom);
-                    if (items != null && items.length() > 0) {
-                        done = applyNewUpdToSyncSource(src, items, SyncItem.STATE_NEW,
+                    if (newDownloadAnchor == -1) {
+                        newDownloadAnchor = fullSet.timeStamp;
+                    }
+                    if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
+                        done = applyNewUpdToSyncSource(src, fullSet.items, SyncItem.STATE_NEW,
                                 filterMaxCount, offset, mapping, true);
-                        offset += items.length();
-                        if ((items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
+                        offset += fullSet.items.length();
+                        if ((fullSet.items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
                             done = true;
                         }
                     } else {
                         done = true;
                     }
                 } while(!done);
+                // Update the anchor
             } catch (JSONException je) {
                 Log.error(TAG_LOG, "Cannot parse server data", je);
             } catch (ItemDownloadInterruptionException ide) {
@@ -399,7 +406,10 @@ public class SapiSyncManager implements SyncManagerI {
                 SapiSyncHandler.ChangesSet changesSet =
                         sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
 
+
                 if (changesSet != null) {
+
+
                     // Count the number of items to be received and notify the
                     // listener
                     int total = 0;
@@ -427,6 +437,11 @@ public class SapiSyncManager implements SyncManagerI {
                     }
                     if (changesSet.deleted != null) {
                         applyDelItems(src, changesSet.deleted, mapping);
+                    }
+
+                    // Update the anchor if everything went well
+                    if (changesSet.timeStamp != -1) {
+                        sapiAnchor.setDownloadAnchor(changesSet.timeStamp);
                     }
                 }
             } catch (JSONException je) {
@@ -457,12 +472,13 @@ public class SapiSyncManager implements SyncManagerI {
             }
             if (itemsId.length() > 0) {
                 // Ask for these items
-                JSONArray items = sapiSyncHandler.getItems(
+                SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(
                         src.getConfig().getRemoteUri(), dataTag,
                         itemsId, null, null, null);
-
-                if (items != null) {
-                    applyNewUpdToSyncSource(src, items, state, -1, -1, mapping, false);
+                if (fullSet != null) {
+                    if (fullSet.items != null) {
+                        applyNewUpdToSyncSource(src, fullSet.items, state, -1, -1, mapping, false);
+                    }
                 }
             }
         }
