@@ -406,10 +406,7 @@ public class SapiSyncManager implements SyncManagerI {
                 SapiSyncHandler.ChangesSet changesSet =
                         sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
 
-
                 if (changesSet != null) {
-
-
                     // Count the number of items to be received and notify the
                     // listener
                     int total = 0;
@@ -507,17 +504,40 @@ public class SapiSyncManager implements SyncManagerI {
         // Apply these changes into the sync source
         Vector sourceItems = new Vector();
         for(int k=0; k<items.length() && !done; ++k) {
+
             JSONObject item = items.getJSONObject(k);
             String     guid = item.getString("id");
             long       size = Long.parseLong(item.getString("size"));
+
+            String luid;
+            if (state == SyncItem.STATE_UPDATED) {
+                luid = mapping.get(guid);
+            } else {
+                luid = guid;
+            }
+
+            // Notify the listener
+            if (state == SyncItem.STATE_NEW) {
+                getSyncListenerFromSource(src).itemAddReceivingStarted(luid, null, size);
+            } else if(state == SyncItem.STATE_UPDATED) {
+                getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
+            }
+            
+            // If the client doesn't have the luid we change the state to new
+            if(StringUtil.isNullOrEmpty(luid)) {
+                state = SyncItem.STATE_NEW;
+            }
+
+            // Create the item
+            SyncItem syncItem = createSyncItem(src, luid, state, size, item);
+            syncItem.setGuid(guid);
 
             if (deepTwinSearch) {
                 // In this case we cannot rely on mappings to detect twins, we
                 // rather perform a content analysis to determine twins
                 if (src instanceof TwinDetectionSource) {
                     TwinDetectionSource twinSource = (TwinDetectionSource)src;
-                    SyncItem sourceItem = createSyncItem(src, guid, state, size, item);
-                    SyncItem twinItem = twinSource.findTwin(sourceItem);
+                    SyncItem twinItem = twinSource.findTwin(syncItem);
                     if (twinItem != null) {
                         if (Log.isLoggable(Log.INFO)) {
                             Log.info(TAG_LOG, "Found twin for item: " + guid);
@@ -542,26 +562,6 @@ public class SapiSyncManager implements SyncManagerI {
                 }
             }
 
-            String luid;
-            if (state == SyncItem.STATE_UPDATED) {
-                luid = mapping.get(guid);
-            } else {
-                luid = guid;
-            }
-            // If the client doesn't have the luid we change the state to new
-            if(StringUtil.isNullOrEmpty(luid)) {
-                state = SyncItem.STATE_NEW;
-            }
-
-            if (state == SyncItem.STATE_NEW) {
-                getSyncListenerFromSource(src).itemAddReceivingStarted(luid, null, size);
-            } else if(state == SyncItem.STATE_UPDATED) {
-                getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
-            }
-
-            SyncItem syncItem = createSyncItem(src, luid, state, size, item);
-            syncItem.setGuid(guid);
-            
             // Filter downloaded items for JSONSyncSources only
             if(src instanceof JSONSyncSource) {
                 if(((JSONSyncSource)src).filterSyncItem(syncItem)) {
@@ -574,6 +574,7 @@ public class SapiSyncManager implements SyncManagerI {
             } else {
                 sourceItems.addElement(syncItem);
             }
+            
             // Apply items count filter
             if(maxItemsCount > 0) {
                 if((appliedItemsCount + sourceItems.size()) >= maxItemsCount) {
@@ -583,6 +584,8 @@ public class SapiSyncManager implements SyncManagerI {
                     done = true;
                 }
             }
+
+            // Notify the listener
             if (state == SyncItem.STATE_NEW) {
                 getSyncListenerFromSource(src).itemAddReceivingEnded(luid, null);
             } else if(state == SyncItem.STATE_UPDATED) {
@@ -591,6 +594,7 @@ public class SapiSyncManager implements SyncManagerI {
         }
         // Apply the items in the sync source
         sourceItems = src.applyChanges(sourceItems);
+        
         // The sourceItems returned by the call contains the LUID,
         // so we can create the luid/guid map here
         try {
@@ -665,7 +669,6 @@ public class SapiSyncManager implements SyncManagerI {
             src.applyChanges(delItems);
         }
     }
-
 
     private void performFinalizationPhase(SyncSource src) {
         sapiSyncHandler.logout();
