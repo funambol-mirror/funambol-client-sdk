@@ -549,25 +549,27 @@ public class SapiSyncManager implements SyncManagerI {
                 syncItem = ((JSONSyncSource)src).createSyncItem(
                         luid, src.getType(), state, null, item);
             } else {
+                // A generic sync item needs to be filled with the json item content
                 syncItem = src.createSyncItem(luid, src.getType(), state, null, size);
-            }
-            syncItem.setGuid(guid);
-            OutputStream os = null;
-            try {
-                os = syncItem.getOutputStream();
-                os.write(item.toString().getBytes());
-                os.close();
-            } catch (IOException ioe) {
-                Log.error(TAG_LOG, "Cannot write into sync item stream", ioe);
-                // Ignore this item and continue
-            } finally {
+                OutputStream os = null;
                 try {
-                    if (os != null) {
-                        os.close();
-                    }
+                    os = syncItem.getOutputStream();
+                    os.write(item.toString().getBytes());
+                    os.close();
                 } catch (IOException ioe) {
+                    Log.error(TAG_LOG, "Cannot write into sync item stream", ioe);
+                    // Ignore this item and continue
+                } finally {
+                    try {
+                        if (os != null) {
+                            os.close();
+                        }
+                    } catch (IOException ioe) {
+                    }
                 }
             }
+            syncItem.setGuid(guid);
+            
             // Filter downloaded items for JSONSyncSources only
             if(src instanceof JSONSyncSource) {
                 if(((JSONSyncSource)src).filterSyncItem(syncItem)) {
