@@ -420,8 +420,12 @@ public class HttpConnectionAdapter {
         url = url.substring(addressStartIndex);
 
         String address = url.substring(0, url.indexOf('/'));
-        if(url.indexOf(';') >= 0) {
-            resourceName = url.substring(url.indexOf('/'), url.indexOf(';'));
+
+        // Search for the BB specific options and remove them 
+        if (url.indexOf(";deviceside=") >= 0) {
+            resourceName = url.substring(url.indexOf('/'), url.indexOf(";deviceside="));
+        } else if (url.indexOf(";interface=") >= 0) {
+            resourceName = url.substring(url.indexOf('/'), url.indexOf(";interface="));
         } else {
             resourceName = url.substring(url.indexOf('/'));
         }
