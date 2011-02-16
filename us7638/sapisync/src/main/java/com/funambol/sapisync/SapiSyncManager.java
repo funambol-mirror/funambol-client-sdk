@@ -516,8 +516,7 @@ public class SapiSyncManager implements SyncManagerI {
                 // rather perform a content analysis to determine twins
                 if (src instanceof TwinDetectionSource) {
                     TwinDetectionSource twinSource = (TwinDetectionSource)src;
-                    SyncItem sourceItem = new SyncItem(guid, src.getType(), state, null);
-                    sourceItem.setContent(item.toString().getBytes());
+                    SyncItem sourceItem = createSyncItem(src, guid, state, size, item);
                     SyncItem twinItem = twinSource.findTwin(sourceItem);
                     if (twinItem != null) {
                         if (Log.isLoggable(Log.INFO)) {
@@ -560,30 +559,7 @@ public class SapiSyncManager implements SyncManagerI {
                 getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
             }
 
-            SyncItem syncItem = null;
-            if(src instanceof JSONSyncSource) {
-                syncItem = ((JSONSyncSource)src).createSyncItem(
-                        luid, src.getType(), state, null, item);
-            } else {
-                // A generic sync item needs to be filled with the json item content
-                syncItem = src.createSyncItem(luid, src.getType(), state, null, size);
-                OutputStream os = null;
-                try {
-                    os = syncItem.getOutputStream();
-                    os.write(item.toString().getBytes());
-                    os.close();
-                } catch (IOException ioe) {
-                    Log.error(TAG_LOG, "Cannot write into sync item stream", ioe);
-                    // Ignore this item and continue
-                } finally {
-                    try {
-                        if (os != null) {
-                            os.close();
-                        }
-                    } catch (IOException ioe) {
-                    }
-                }
-            }
+            SyncItem syncItem = createSyncItem(src, luid, state, size, item);
             syncItem.setGuid(guid);
             
             // Filter downloaded items for JSONSyncSources only
@@ -639,6 +615,35 @@ public class SapiSyncManager implements SyncManagerI {
         return done;
     }
 
+    private SyncItem createSyncItem(SyncSource src, String luid, char state, 
+            long size, JSONObject item) throws JSONException {
+
+        SyncItem syncItem = null;
+        if(src instanceof JSONSyncSource) {
+            syncItem = ((JSONSyncSource)src).createSyncItem(
+                    luid, src.getType(), state, null, item);
+        } else {
+            // A generic sync item needs to be filled with the json item content
+            syncItem = src.createSyncItem(luid, src.getType(), state, null, size);
+            OutputStream os = null;
+            try {
+                os = syncItem.getOutputStream();
+                os.write(item.toString().getBytes());
+                os.close();
+            } catch (IOException ioe) {
+                Log.error(TAG_LOG, "Cannot write into sync item stream", ioe);
+                // Ignore this item and continue
+            } finally {
+                try {
+                    if (os != null) {
+                        os.close();
+                    }
+                } catch (IOException ioe) {
+                }
+            }
+        }
+        return syncItem;
+    }
 
     private void applyDelItems(SyncSource src, JSONArray removed, 
             StringKeyValueStore mapping) throws SyncException, JSONException {
