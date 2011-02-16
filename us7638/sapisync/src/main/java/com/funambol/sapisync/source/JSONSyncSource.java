@@ -72,8 +72,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     private SyncConfig syncConfig = null;
     private String dataTag = null;
 
-    private SyncListener proxyListener = null;
-    
     //------------------------------------------------------------- Constructors
 
     /**
@@ -168,7 +166,8 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             OutputStream fileos = null;
             fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
 
-            downloader.setDownloadListener(new DownloadSyncListener(item, getListener()));
+            downloader.setDownloadListener(new DownloadSyncListener(item, 
+                    super.getListener()));
             long actualSize = downloader.download(composeUrl(baseUrl), fileos, size);
             if (size != actualSize) {
                 // The download was interrupted. We shall keep track of this interrupted download
@@ -247,10 +246,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     }
 
     public SyncListener getListener() {
-        if(proxyListener == null) {
-            proxyListener = new ProxySyncListener(super.getListener());
-        }
-        return proxyListener;
+        return new ProxySyncListener(super.getListener());
     }
 
     /**
