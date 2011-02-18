@@ -52,6 +52,9 @@ public class UsbAppender implements Appender {
     //private OutputStream os = null;
     private static final String CHANNEL = "funambol";
 
+    private static final int MAX_TX_SIZE = 4096;
+    private static final int MAX_RX_SIZE = 4096;
+
 
     private String msg = "";
     private LowLevelUsbThread usbThread = new LowLevelUsbThread();
@@ -147,18 +150,26 @@ public class UsbAppender implements Appender {
         public void writeMsg(String msg) throws IOException {
 
             if (_port != null) {
-                write(msg);
-            }
-
-            /*
-            synchronized(msgQueue) {
-                msgQueue.addElement(msg);
-                if (msgQueue.size() > 100) {
-                    msgQueue.removeElementAt(0);
+                if (msg.length() > MAX_TX_SIZE) {
+                    boolean done = false;
+                    int first = 0;
+                    do {
+                        int last;
+                        // Write in blocks
+                        if (first + MAX_TX_SIZE < msg.length()) {
+                            last = first + MAX_TX_SIZE;
+                        } else {
+                            last = msg.length();
+                            done = true;
+                        }
+                        String block = msg.substring(first, first + MAX_TX_SIZE);
+                        write(block);
+                        first += MAX_TX_SIZE;
+                    } while(!done);
+                } else {
+                    write(msg);
                 }
-                msgQueue.notify();
             }
-            */
         }
 
         
@@ -174,8 +185,7 @@ public class UsbAppender implements Appender {
             app.addIOPortListener(this);
             
             // Register the channel.
-            _channel = USBPort.registerChannel(CHANNEL, 1024, 1024);
-            //message("Registering channel: " + CHANNEL);
+            _channel = USBPort.registerChannel(CHANNEL, MAX_RX_SIZE, MAX_TX_SIZE);
             
             synchronized(this)
             {
