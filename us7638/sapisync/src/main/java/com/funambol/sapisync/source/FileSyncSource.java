@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.funambol.sync.SyncItem;
+import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
@@ -54,7 +55,7 @@ import com.funambol.platform.FileAdapter;
 import com.funambol.util.Log;
 import com.funambol.util.Base64;
 
-public class FileSyncSource extends JSONSyncSource {
+public class FileSyncSource extends JSONSyncSource implements TwinDetectionSource {
 
     private static final String TAG_LOG = "FileSyncSource";
 
@@ -70,6 +71,47 @@ public class FileSyncSource extends JSONSyncSource {
 
         super(config, syncConfig, tracker);
         this.directory = directory;
+    }
+
+    /**
+     * Twin detection implementation
+     * @param item
+     * @return
+     */
+    public SyncItem findTwin(SyncItem item) {
+
+        if(item instanceof JSONSyncItem) {
+
+            JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
+            String fileName = json.getName();
+
+            // Does this existing in our directory?
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Checking for twin for: " + fileName);
+            }
+            FileAdapter fa = null;
+            try {
+                fa = new FileAdapter(directory + fileName);
+                if (fa.exists()) {
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Twin found");
+                    }
+                    return item;
+                }
+                fa.close();
+            } catch (IOException ioe) {
+                Log.error(TAG_LOG, "Cannot check for twins", ioe);
+            } finally {
+                if (fa != null) {
+                    try {
+                        fa.close();
+                    } catch (IOException ioe) {
+                    }
+                }
+            }
+        }
+        // No twin found
+        return null;
     }
 
     protected Enumeration getAllItemsKeys() throws SyncException {
