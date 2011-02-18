@@ -190,16 +190,19 @@ public class SapiSyncHandler {
                     }
                 }
             }
+        }
 
-            // Get the timestamp if available
-            if (data.has("responsetime")) {
-                String ts = data.getString("responsetime");
-                try {
-                    res.timeStamp = Long.parseLong(ts);
-                } catch (Exception e) {
-                    Log.error(TAG_LOG, "Cannot parse server responsetime");
-                    res.timeStamp = -1;
-                }
+        // Get the timestamp if available
+        if (resp.has("responsetime")) {
+            String ts = resp.getString("responsetime");
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
+            }
+            try {
+                res.timeStamp = Long.parseLong(ts);
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot parse server responsetime");
+                res.timeStamp = -1;
             }
         }
 
@@ -214,7 +217,7 @@ public class SapiSyncHandler {
             JSONObject request = new JSONObject();
             request.put("ids", ids);
 
-            params.addElement(request.toString());
+            params.addElement("id=" + request.toString());
         }
         if (limit != null) {
             params.addElement("limit=" + limit);
@@ -251,17 +254,20 @@ public class SapiSyncHandler {
                     JSONArray items = data.getJSONArray(dataTag);
                     res.items = items;
                 }
-                if (data.has("responsetime")) {
-                    String ts = data.getString("responsetime");
-                    try {
-                        res.timeStamp = Long.parseLong(ts);
-                    } catch (Exception e) {
-                        Log.error(TAG_LOG, "Cannot parse server responsetime");
-                        res.timeStamp = -1;
-                    }
-                }
-                return res;
             }
+            if (resp.has("responsetime")) {
+                String ts = resp.getString("responsetime");
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
+                }
+                try {
+                    res.timeStamp = Long.parseLong(ts);
+                } catch (Exception e) {
+                    Log.error(TAG_LOG, "Cannot parse server responsetime");
+                    res.timeStamp = -1;
+                }
+            }
+            return res;
         }
         return null;
     }
