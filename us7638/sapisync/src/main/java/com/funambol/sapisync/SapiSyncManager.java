@@ -165,14 +165,27 @@ public class SapiSyncManager implements SyncManagerI {
                 Log.info(TAG_LOG, "Cannot load sync status, use an empty one");
             }
         }
+
+        // If we are not resuming, then we can reset the status
+        if (!resume) {
+            try {
+                syncStatus.reset();
+            } catch (IOException ioe) {
+                Log.error(TAG_LOG, "Cannot reset status", ioe);
+            }
+        }
  
         try {
             // Set the basic properties in the sync status
             syncStatus.setRemoteUri(src.getConfig().getRemoteUri());
             syncStatus.setInterrupted(true);
+            syncStatus.setLocUri(src.getName());
+            syncStatus.setRequestedSyncMode(syncMode);
+            syncStatus.setStartTime(System.currentTimeMillis());
             syncStatus.save();
 
             getSyncListenerFromSource(src).startSession();
+            getSyncListenerFromSource(src).startConnecting();
 
             performInitializationPhase(src, getActualSyncMode(src, syncMode), resume);
 
@@ -180,11 +193,7 @@ public class SapiSyncManager implements SyncManagerI {
 
             if(isDownloadPhaseNeeded(syncMode)) {
                 // Get ready to update the download anchor
-                long newDownloadAnchor = (new Date()).getTime();
                 performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
-                // If we had no error so far, then we update the anchor
-                SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
-                anchor.setDownloadAnchor(newDownloadAnchor);
             }
 
             /*
@@ -205,11 +214,6 @@ public class SapiSyncManager implements SyncManagerI {
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Error while synchronizing", t);
             syncStatus.setSyncException(t);
-            try {
-                syncStatus.save();
-            } catch (IOException ioe) {
-                Log.error(TAG_LOG, "Cannot save sync status", ioe);
-            }
             SyncException se;
             if (t instanceof SyncException) {
                 se = (SyncException)t;
@@ -218,6 +222,12 @@ public class SapiSyncManager implements SyncManagerI {
             }
             throw se;
         } finally {
+            syncStatus.setEndTime(System.currentTimeMillis());
+            try {
+                syncStatus.save();
+            } catch (IOException ioe) {
+                Log.error(TAG_LOG, "Cannot save sync status", ioe);
+            }
             // We must guarantee this method is invoked in all cases
             getSyncListenerFromSource(src).endSession(syncStatus);
         }
@@ -376,8 +386,13 @@ public class SapiSyncManager implements SyncManagerI {
                         newDownloadAnchor = fullSet.timeStamp;
                     }
                     if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
+
+                        if (Log.isLoggable(Log.TRACE)) {
+                            Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
+                        }
+
                         done = applyNewUpdToSyncSource(src, fullSet.items, SyncItem.STATE_NEW,
-                                filterMaxCount, offset, mapping, true);
+                                                       filterMaxCount, offset, mapping, true);
                         offset += fullSet.items.length();
                         if ((fullSet.items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
                             done = true;
@@ -386,7 +401,12 @@ public class SapiSyncManager implements SyncManagerI {
                         done = true;
                     }
                 } while(!done);
-                // Update the anchor
+                // Update the download anchor
+                SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "Updating download anchor to " + newDownloadAnchor);
+                }
+                sapiAnchor.setDownloadAnchor(newDownloadAnchor);
             } catch (JSONException je) {
                 Log.error(TAG_LOG, "Cannot parse server data", je);
             } catch (ItemDownloadInterruptionException ide) {
@@ -397,11 +417,18 @@ public class SapiSyncManager implements SyncManagerI {
                 // TODO FIXME: handle the suspend/resume
             }
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "Performing incremental download");
+            }
             if(syncFilter != null && syncFilter.getIncrementalDownloadFilter() != null) {
                 throw new UnsupportedOperationException("Not implemented yet");
             }
             SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "Last download anchor is: " + sapiAnchor.getDownloadAnchor());
+            }
             Date anchor = new Date(sapiAnchor.getDownloadAnchor());
+
             try {
                 SapiSyncHandler.ChangesSet changesSet =
                         sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
@@ -438,6 +465,9 @@ public class SapiSyncManager implements SyncManagerI {
 
                     // Update the anchor if everything went well
                     if (changesSet.timeStamp != -1) {
+                        if (Log.isLoggable(Log.TRACE)) {
+                            Log.trace(TAG_LOG, "Updating download anchor to " + changesSet.timeStamp);
+                        }
                         sapiAnchor.setDownloadAnchor(changesSet.timeStamp);
                     }
                 }
@@ -458,6 +488,9 @@ public class SapiSyncManager implements SyncManagerI {
         // download their complete meta information. We get the new items in
         // pages to make sure we don't use too much memory. Each page of items
         // is then passed to the sync source
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "apply new update items " + state);
+        }
         int i = 0;
         String dataTag = getDataTag(src);
         while(i < added.length()) {
@@ -472,10 +505,12 @@ public class SapiSyncManager implements SyncManagerI {
                 SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(
                         src.getConfig().getRemoteUri(), dataTag,
                         itemsId, null, null, null);
-                if (fullSet != null) {
-                    if (fullSet.items != null) {
-                        applyNewUpdToSyncSource(src, fullSet.items, state, -1, -1, mapping, false);
+                if (fullSet != null && fullSet.items != null) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
                     }
+
+                    applyNewUpdToSyncSource(src, fullSet.items, state, -1, -1, mapping, false);
                 }
             }
         }
@@ -498,6 +533,11 @@ public class SapiSyncManager implements SyncManagerI {
             char state, int maxItemsCount, int appliedItemsCount,
             StringKeyValueStore mapping, boolean deepTwinSearch)
             throws SyncException, JSONException {
+
+
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "apply new update items to source" + state);
+        }
 
         boolean done = false;
         
