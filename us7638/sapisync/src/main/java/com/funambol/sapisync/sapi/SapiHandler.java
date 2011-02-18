@@ -232,6 +232,9 @@ public class SapiHandler {
                 // Read until we have data
                 int responseLength = conn.getLength();
                 if(responseLength > 0) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "response length is known " + responseLength);
+                    }
                     // Read the input stream according to the response
                     // content-length header
                     int b;
@@ -248,6 +251,9 @@ public class SapiHandler {
                     }
 
                 } else if(responseLength < 0) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "response length is unknown (probably chunked encoding)");
+                    }
                     try {
                         int b;
                         do {
@@ -266,26 +272,31 @@ public class SapiHandler {
                 throw new IOException("HTTP error code: " + conn.getResponseCode());
             }
 
-            // This code handles JSESSION ID authentication but it is currently
-            // disabled because we don't hanlde auth errors at the moment
-            String cookies = conn.getHeaderField(COOKIE_HEADER);
-            if (cookies != null) {
-                int jsidx = cookies.indexOf(JSESSIONID_HEADER);
-                if (jsidx >= 0) {
-                    jsessionId = cookies.substring(jsidx);
-                    int idx = jsessionId.indexOf(";");
-                    if (idx >= 0) {
-                        if (Log.isLoggable(Log.DEBUG)) {
-                            Log.debug(TAG_LOG, "Found jsessionid = " + jsessionId);
-                        }
-                        jsessionId = jsessionId.substring(0, idx);
-                    }
-                }
-            }
             String r = response.toString();
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "response is:" + r);
             }
+
+            // This code handles JSESSION ID authentication
+            try {
+                String cookies = conn.getHeaderField(COOKIE_HEADER);
+                if (cookies != null) {
+                    int jsidx = cookies.indexOf(JSESSIONID_HEADER);
+                    if (jsidx >= 0) {
+                        jsessionId = cookies.substring(jsidx);
+                        int idx = jsessionId.indexOf(";");
+                        if (idx >= 0) {
+                            if (Log.isLoggable(Log.DEBUG)) {
+                                Log.debug(TAG_LOG, "Found jsessionid = " + jsessionId);
+                            }
+                            jsessionId = jsessionId.substring(0, idx);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot get jsessionid", e);
+            }
+
             if(listener != null) {
                 listener.queryEnded();
             }
@@ -298,7 +309,7 @@ public class SapiHandler {
         } catch (IOException ioe) {
             // If we get a non authorized error and we used a jsession id, then
             // we invalidate the jsessionId and throw the exception
-            Log.error(TAG_LOG, "Error while uploading", ioe);
+            Log.error(TAG_LOG, "Error while performing SAPI", ioe);
 
             if (conn != null) {
                 try {
