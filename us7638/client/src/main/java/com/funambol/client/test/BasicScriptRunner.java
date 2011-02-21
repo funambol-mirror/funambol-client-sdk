@@ -36,7 +36,6 @@
 package com.funambol.client.test;
 
 import com.funambol.util.Log;
-import com.funambol.util.CodedException;
 import com.funambol.util.HttpTransportAgent;
 import com.funambol.util.StringUtil;
 
@@ -134,7 +133,7 @@ public class BasicScriptRunner extends CommandRunner {
                 String script = TestFileManager.getInstance().getFile(scriptUrl);
                 runScript(script, scriptUrl);
             } catch (Exception e) {
-                report.append("Cannot load script at:\n" + scriptUrl);
+                report.append("Cannot load script at:\n").append(scriptUrl);
                 Log.error(TAG_LOG, "Cannot load script at " + scriptUrl + " because " + e);
                 throw new Exception("Cannot load script " + scriptUrl + " because " + e);
             }
@@ -151,7 +150,6 @@ public class BasicScriptRunner extends CommandRunner {
         
         int idx = 0;
         int lineNumber = 0;
-        int nextLine = -1;
         boolean onExecuted = false;
 
         //If an exception is catched the remaining lines of this script are
@@ -344,10 +342,11 @@ public class BasicScriptRunner extends CommandRunner {
                 errorCode = CLIENT_TEST_EXCEPTION_STATUS;
 
                 StringBuffer msg = new StringBuffer();
-                msg.append("\nTEST FAILED: " + mainTestName);
-                msg.append("\n\tException: " + t);
+                msg.append("\nTEST FAILED: ").append(mainTestName);
+                msg.append("\n\tException: ").append(t);
                 msg.append(syntaxError != null ? "\n\t" + syntaxError : "");
-                msg.append("\n\t(" + scriptUrl + ": " + lineNumber + ")");
+                msg.append("\n\t(").append(scriptUrl).append(": ")
+                        .append(lineNumber).append(")");
 
                 Log.error(msg.toString());
                 Log.error(TAG_LOG, "Exception details", t);
