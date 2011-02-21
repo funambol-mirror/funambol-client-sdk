@@ -53,6 +53,17 @@ public interface ContactsUserCommands {
     public static final String CREATE_EMPTY_CONTACT_COMMAND = "CreateEmptyContact";
 
     /**
+     * This command can be used to simulate a contact addition on the server.
+     * It creates an empty contact in memory which will be saved as soon as the
+     * SaveContactOnServer command is called.
+     * Once this command is called you shall set the contact's FirstName and
+     * LastName fields via the SetContactField command before saving it.
+     *
+     * @example CreateEmptyContactOnServer()
+     */
+    public static final String CREATE_EMPTY_CONTACT_ON_SERVER_COMMAND = "CreateEmptyContactOnServer";
+    
+    /**
      * This command can be used to simulate a contact update. It loads an existing
      * contact identified by the given FirstName and LastName fields. If such a
      * contact is not found, then the test fails.
@@ -63,6 +74,18 @@ public interface ContactsUserCommands {
      * @example LoadContact("Foo", "Bar")
      */
     public static final String LOAD_CONTACT_COMMAND = "LoadContact";
+
+    /**
+     * This command can be used to simulate a contact update on the server. It
+     * loads an existing contact identified by the given FirstName and LastName
+     * fields. If such a contact does not exist on server, then the test fails.
+     *
+     * @param firstName is the contact firstname
+     * @param lastName is the contact lastname
+     *
+     * @example LoadContactOnServer("Foo", "Bar")
+     */
+    public static final String LOAD_CONTACT_ON_SERVER_COMMAND = "LoadContactOnServer";
 
     /**
      * This command can used while simulating a contact additon or update. It
@@ -136,6 +159,15 @@ public interface ContactsUserCommands {
     public static final String SAVE_CONTACT_COMMAND = "SaveContact";
 
     /**
+     * This command can be used to simulate a contact addition or update on the
+     * server. It saves the contact actually created or loaded through the
+     * CreateEmptyContactOnServer and LoadContactOnServer respectively.
+     *
+     * @example SaveContactOnServer()
+     */
+    public static final String SAVE_CONTACT_ON_SERVER_COMMAND = "SaveContactOnServer";
+
+    /**
      * This command can be used to simulate a contact deletion. It removes from the
      * device store the contact identified by the given firstname and lastname.
      * If a contact with the given first name and last name is not found, then
@@ -149,132 +181,6 @@ public interface ContactsUserCommands {
     public static final String DELETE_CONTACT_COMMAND = "DeleteContact";
 
     /**
-     * This command can be used to simulate the deletion of all the contacts stored
-     * in the device.
-     *
-     * @example DeleteAllContacts()
-     */
-    public static final String DELETE_ALL_CONTACTS_COMMAND = "DeleteAllContacts";
-
-    /**
-     * This command can be used to check that a new contact created on the server
-     * has been correctly received by the client and has the same content of the
-     * server's contact as expected.
-     *
-     * Remember to run RefreshServer before running check commands.
-     *
-     * @param firstName is the contact firstname
-     * @param lastName is the contact lastname
-     * @param checkContent set as true if you want to check the item content.
-     *
-     * @example CheckNewContact("Foo", "Bar", true)
-     */
-    public static final String CHECK_NEW_CONTACT_COMMAND = "CheckNewContact";
-
-    /**
-     * This command can be used to check that an updated contact on the server has
-     * been correctly received by the client and has the same content of the
-     * server's contact as expected.
-     *
-     * Remember to run RefreshServer before running check commands.
-     *
-     * @param firstName is the contact firstname
-     * @param lastName is the contact lastname
-     * @param checkContent set as true if you want to check the item content.
-     *
-     * @example CheckUpdatedContact("Foo", "Bar", true)
-     */
-    public static final String CHECK_UPDATED_CONTACT_COMMAND = "CheckUpdatedContact";
-
-    /**
-     * This command can be used to check that a deleted contact on the server has
-     * been correctly deleted in the client.
-     *
-     * Remember to run RefreshServer before running check commands.
-     *
-     * @param firstName is the contact firstname
-     * @param lastName is the contact lastname
-     *
-     * @example CheckDeletedContact("Foo", "Bar")
-     */
-    public static final String CHECK_DELETED_CONTACT_COMMAND = "CheckDeletedContact";
-
-    /**
-     * This command can be used to check that a new contact sent to the server has
-     * been correctly received and has the same content of the device's contact
-     * as expected.
-     *
-     * Remember to run RefreshServer before running check commands.
-     *
-     * @param firstName is the contact firstname
-     * @param lastName is the contact lastname
-     * @param checkContent set as true if you want to check the item content.
-     *
-     * @example CheckNewContactOnServer("Foo", "Bar", true)
-     */
-    public static final String CHECK_NEW_CONTACT_ON_SERVER_COMMAND = "CheckNewContactOnServer";
-
-    /**
-     * This command can used to check that an updated contact sent to the server
-     * has been correctly received and has the same content of the device's
-     * contact as expected.
-     *
-     * Remember to run RefreshServer before running check commands.
-     *
-     * @param firstName is the contact firstname
-     * @param lastName is the contact lastname
-     * @param checkContent set as true if you want to check the item content.
-     *
-     * @example CheckUpdatedContactOnServer("Foo", "Bar", true)
-     */
-    public static final String CHECK_UPDATED_CONTACT_ON_SERVER_COMMAND = "CheckUpdatedContactOnServer";
-
-    /**
-     * This command can be used to check that a deleted contact sent to the server
-     * has been correctly deleted by the server.
-     *
-     * Remember to run RefreshServer before running check commands.
-     *
-     * @param firstName is the contact firstname
-     * @param lastName is the contact lastname
-     *
-     * @example CheckDeletedContactOnServer("Foo", "Bar")
-     */
-    public static final String CHECK_DELETED_CONTACT_ON_SERVER_COMMAND = "CheckDeletedContactsOnServer";
-
-    /**
-     * This command can be used to simulate a contact addition on the server.
-     * It creates an empty contact in memory which will be saved as soon as the
-     * SaveContactOnServer command is called.
-     * Once this command is called you shall set the contact's FirstName and
-     * LastName fields via the SetContactField command before saving it.
-     *
-     * @example CreateEmptyContactOnServer()
-     */
-    public static final String CREATE_EMPTY_CONTACT_ON_SERVER_COMMAND = "CreateEmptyContactOnServer";
-
-    /**
-     * This command can be used to simulate a contact update on the server. It
-     * loads an existing contact identified by the given FirstName and LastName
-     * fields. If such a contact does not exist on server, then the test fails.
-     *
-     * @param firstName is the contact firstname
-     * @param lastName is the contact lastname
-     *
-     * @example LoadContactOnServer("Foo", "Bar")
-     */
-    public static final String LOAD_CONTACT_ON_SERVER_COMMAND = "LoadContactOnServer";
-
-    /**
-     * This command can be used to simulate a contact addition or update on the 
-     * server. It saves the contact actually created or loaded through the
-     * CreateEmptyContactOnServer and LoadContactOnServer respectively.
-     *
-     * @example SaveContactOnServer()
-     */
-    public static final String SAVE_CONTACT_ON_SERVER_COMMAND = "SaveContactOnServer";
-
-    /**
      * This command can be used to simulate a contact deletion on the server. It
      * removes from the server the contact identified by the given firstname and
      * lastname. If such a contact does not exist on server, then the test
@@ -286,6 +192,14 @@ public interface ContactsUserCommands {
      * @example DeleteContactOnServer("Foo", "Bar")
      */
     public static final String DELETE_CONTACT_ON_SERVER_COMMAND = "DeleteContactOnServer";
+
+    /**
+     * This command can be used to simulate the deletion of all the contacts stored
+     * in the device.
+     *
+     * @example DeleteAllContacts()
+     */
+    public static final String DELETE_ALL_CONTACTS_COMMAND = "DeleteAllContacts";
 
     /**
      * This command can used to simulate the deletion of all the contacts stored
@@ -307,28 +221,6 @@ public interface ContactsUserCommands {
      *          SaveContactOnServer()
      */
     public static final String SET_CONTACT_AS_VCARD_COMMAND = "SetContactAsVCard";
-
-    /**
-     * This command allows to import a vCard content form a file on the server.
-     * Useful to generate a test set on the server for a particular test or to
-     * automatically reproduce the server vCard test set for a bug. The file
-     * must be compliant with the "\r\n" policy (can be edited from a standard
-     * text editor using multiple lines ("return" key) in place of "\r\n" chars).
-     * @param vCard is the file that contains the vCard representation of the contact
-     *
-     * @example CreateEmptyContactOnServer() <br>
-     *          ImportContactOnServer(vCardStub.txt) <br>
-     *          SaveContactOnServer()
-     */
-    public static final String IMPORT_CONTACT_ON_SERVER_COMMAND = "ImportContactOnServer";
-
-    /**
-     * This command resets contacts client/server side and guarantees client and
-     * server are in sync.
-     *
-     * @example ResetContacts()
-     */
-    public static final String RESET_CONTACTS_COMMAND = "ResetContacts";
 
     /**
      * This command formats the current contact (current in the robot) and

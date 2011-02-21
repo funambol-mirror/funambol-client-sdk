@@ -332,46 +332,19 @@ public abstract class ContactsRobot extends Robot {
 
     public abstract void createEmptyContact() throws Throwable;
     public abstract void setContactField(String field, String value) throws Throwable;
-
     public abstract void loadContact(String firstName, String lastName) throws Throwable;
     public abstract void saveContact() throws Throwable;
     public abstract void deleteContact(String firstname, String lastname) throws Throwable;
     public abstract void deleteAllContacts() throws Throwable;
-
-    public abstract void checkNewContact(String firstname, String lastname,
-            CheckSyncClient client, boolean checkContent) throws Throwable;
-
-    public abstract void checkUpdatedContact(String firstname, String lastname,
-            CheckSyncClient client, boolean checkContent) throws Throwable;
-
-    public abstract void checkDeletedContact(String firstname, String lastname,
-            CheckSyncClient client) throws Throwable;
-
-    public abstract void checkNewContactOnServer(String firstname, String lastname,
-            CheckSyncClient client, boolean checkContent) throws Throwable;
-
-    public abstract void checkUpdatedContactOnServer(String firstname, String lastname,
-            CheckSyncClient client, boolean checkContent) throws Throwable;
-
-    public abstract void checkDeletedContactOnServer(String firstname, String lastname,
-            CheckSyncClient client) throws Throwable;
-
     public abstract void loadContactOnServer(String firstName, String lastName,
             CheckSyncClient client) throws Throwable;
-
     protected abstract String getCurrentContactVCard() throws Throwable;
-
     protected abstract String findContactKeyOnServer(String firstName, String lastName,
             CheckSyncClient client) throws Throwable;
-
     public abstract void createEmptyRawContact() throws Throwable;
-
     public abstract void setRawContactData(String mimeType, Vector dataValues) throws Throwable;
-
     public abstract void saveRawContact() throws Throwable;
-
     public abstract void checkRawContactData(String mimeType, Vector dataValues) throws Throwable;
-
     public abstract void checkRawContactAsVCard(String vcal) throws Throwable;
 
 }
