@@ -104,4 +104,8 @@ public class DeviceInfo implements DeviceInfoInterface {
     public boolean isRoaming() {
         return false;
     }
+    
+    public boolean isTablet() {
+        return false;
+    }
 }

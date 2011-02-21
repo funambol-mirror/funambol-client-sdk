@@ -194,4 +194,9 @@ public class DeviceInfo implements DeviceInfoInterface {
         }
         osVersion = version;
     }
+    
+    public boolean isTablet() {
+        // TODO: FIXME
+        return false;
+    }
 }

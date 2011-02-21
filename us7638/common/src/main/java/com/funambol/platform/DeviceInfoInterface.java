@@ -76,4 +76,9 @@ public interface DeviceInfoInterface {
      * Returns the A2 country code, or null if not available.
      */
     public String getCountryCode();
+
+    /**
+     * Returns whether the device is a tablet
+     */
+    public boolean isTablet();
 }

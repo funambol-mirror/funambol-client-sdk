@@ -39,11 +39,15 @@ import android.content.Context;
 import android.telephony.TelephonyManager;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.util.DisplayMetrics;
+import com.funambol.util.Log;
 
 import java.util.TimeZone;
 
 public class DeviceInfo implements DeviceInfoInterface {
 
+    private static final String TAG_LOG = "DeviceInfo";
+    
     private Context context;
 
     private TelephonyManager tm;
@@ -136,5 +140,21 @@ public class DeviceInfo implements DeviceInfoInterface {
 
     public boolean isRoaming() {
         return tm.isNetworkRoaming();
+    }
+
+    public boolean isTablet() {
+        try {
+            // Compute screen size
+            DisplayMetrics dm = context.getResources().getDisplayMetrics();
+            float screenWidth  = dm.widthPixels / dm.xdpi;
+            float screenHeight = dm.heightPixels / dm.ydpi;
+            double size = Math.sqrt(Math.pow(screenWidth, 2) +
+                                    Math.pow(screenHeight, 2));
+            // Tablet devices should have a screen size greater than 6 inches
+            return size >= 6;
+        } catch(Throwable t) {
+            Log.error(TAG_LOG, "Failed to compute screen size", t);
+            return false;
+        }
     }
 }
