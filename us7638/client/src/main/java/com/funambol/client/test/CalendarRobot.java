@@ -40,14 +40,13 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
 
-import com.funambol.client.test.*;
-
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
+
 
 public abstract class CalendarRobot extends Robot {
    
@@ -71,10 +70,6 @@ public abstract class CalendarRobot extends Robot {
     }
 
     public CalendarRobot() {
-    }
-
-    public void importEventOnServer(String filename) throws Throwable {
-        this.eventAsVcal = TestFileManager.getInstance().getFile(BasicScriptRunner.getBaseUrl() + "/" + filename);
     }
 
     public void saveEventOnServer(CheckSyncClient client) throws Throwable {
@@ -106,17 +101,6 @@ public abstract class CalendarRobot extends Robot {
         CheckSyncSource source = client.getSyncSource(
                 CheckSyncClient.SOURCE_NAME_CALENDAR);
         source.deleteAllFromOutside();
-    }
-
-    public void resetEvents(CheckSyncClient client) throws Throwable {
-        CheckSyncSource source = client.getSyncSource(
-                CheckSyncClient.SOURCE_NAME_CALENDAR);
-
-        // Remove everything locally
-        deleteAllEvents();
-        // Clean the sync client and perform a refresh from client to server
-        basicRobot.reapplySyncConfig(client);
-        client.clear(source);
     }
 
     public void setEventAsVCal(String vCal) throws Throwable{
@@ -161,44 +145,54 @@ public abstract class CalendarRobot extends Robot {
     }
 
     public abstract void createEmptyEvent() throws Throwable;
+
+    /**
+     * Parse the value for events' fields input by the script.
+     * @param field the field to be set
+     * @param value the value related to the field to be set
+     * @throws Throwable
+     */
     public abstract void setEventField(String field, String value) throws Throwable;
 
-    public abstract void setEventRecurrenceField(String recField, String value) throws Throwable;
-
+    /**
+     * Load an event on the device
+     * @param summary the summary of the event to be loaded
+     * @throws Throwable
+     */
     public abstract void loadEvent(String summary) throws Throwable;
 
-    /** TODO FIXME */
+    /**
+     * Finishes the vcal formatting and saves the event
+     * @throws Throwable
+     */
     public abstract void saveEvent() throws Throwable;
     public void saveEvent(boolean save) throws Throwable { }
-    
+
+    /**
+     * Delete one events from the device
+     * @param summary the summary of the event
+     * @throws Throwable
+     */
     public abstract void deleteEvent(String summary) throws Throwable;
+
+    /**
+     * Delete all events from the device
+     * @throws Throwable
+     */
     public abstract void deleteAllEvents() throws Throwable;
 
-    public abstract void checkNewEvent(String summary,
-            CheckSyncClient client, boolean checkContent) throws Throwable;
-
-    public abstract void checkUpdatedEvent(String summary,
-            CheckSyncClient client, boolean checkContent) throws Throwable;
-
-    public abstract void checkDeletedEvent(String summary,
-            CheckSyncClient client) throws Throwable;
-
-    public abstract void checkNewEventOnServer(String summary,
-            CheckSyncClient client, boolean checkContent) throws Throwable;
-
-    public abstract void checkUpdatedEventOnServer(String summary,
-            CheckSyncClient client, boolean checkContent) throws Throwable;
-
-    public abstract void checkDeletedEventOnServer(String summary,
-            CheckSyncClient client) throws Throwable;
-
-    public abstract void checkEventRecRule(String summary, String rrule) throws Throwable;
-    public abstract void checkEventAsVCal(String summary, String rrule) throws Throwable;
-    public abstract void checkEventExceptions(String summary, String exceptions) throws Throwable;
-
+    /**
+     * Load an event on the server
+     * @param summary the summary of the event to be found
+     * @param client the CheckSyncClient object
+     * @throws Throwable
+     */
     public abstract void loadEventOnServer(String summary,
             CheckSyncClient client) throws Throwable;
 
+    /**
+     * Create an empty event filling the event vcal
+     */
     public abstract void createEmptyRawEvent() throws Throwable;
 
     public abstract void setRawEventField(String fieldName, String fieldValue) throws Throwable;
@@ -213,9 +207,19 @@ public abstract class CalendarRobot extends Robot {
     
     public abstract void checkRawEventAsVCal(String vcal) throws Throwable;
 
+    /**
+     * Find a key related to an event on the server
+     * @param summary the summary of the event to be found
+     * @param client the CheckSyncClient object
+     * @throws Throwable
+     */
     protected abstract String findEventKeyOnServer(String summary,
             CheckSyncClient client) throws Throwable;
 
+    /**
+     * Returns a string representation of the current event
+     * @return String the vCal formatted String
+     */
     protected abstract String getCurrentEventVCal() throws Throwable;
 
     private String cleanField(String fieldName, String value, Hashtable supportedValues) {
@@ -259,7 +263,7 @@ public abstract class CalendarRobot extends Robot {
     private Vector getFieldsVector(String vcard) {
 
         String sep[] = {"\r\n"};
-        String lines[] = StringUtil.split(new String(vcard), sep);
+        String lines[] = StringUtil.split(vcard, sep);
 
         Vector fieldsAl = new Vector();
         String field = "";
