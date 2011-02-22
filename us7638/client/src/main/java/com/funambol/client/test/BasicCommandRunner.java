@@ -35,6 +35,8 @@
 
 package com.funambol.client.test;
 
+import java.util.Vector;
+
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
@@ -58,14 +60,38 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
 
     public String currentTestName;
 
+    private String globalFilterByName = null;
+    private String globalFilterBySourceType = null;
+    private String globalFilterByDirection = null;
+    private String globalFilterByLocality = null;
+
     /**
      * Constructor
      * @param robot the BasicRobot object that runs the commands on the given
      * client implementation. This robot should be defined into the high level
      * as it is architecture specific.
      */
-    public BasicCommandRunner(BasicRobot robot) {
+    public BasicCommandRunner(BasicRobot robot, String filterByName, String filterBySourceType,
+                              String filterByDirection, String filterByLocality)
+    {
         super(robot);
+        globalFilterByName = filterByName;
+        globalFilterBySourceType = filterBySourceType;
+        globalFilterByDirection = filterByDirection;
+        globalFilterByLocality = filterByLocality;
+
+        if (globalFilterByName == null) {
+            globalFilterByName = "*";
+        }
+        if (globalFilterBySourceType == null) {
+            globalFilterBySourceType = "*";
+        }
+        if (globalFilterByDirection == null) {
+            globalFilterByDirection = "*";
+        }
+        if (globalFilterByLocality == null) {
+            globalFilterByLocality = "*";
+        }
     }
 
     /**
@@ -114,6 +140,8 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             checkItemsCountOnServer(command, pars);
         } else if (INTERRUPT_SYNC_AFTER_PHASE_COMMAND.equals(command)) {
             interruptSyncAfterPhase(command, pars);
+        } else if (SET_DEVICE_TIME.equals(command)) {
+            setDeviceTime(command, pars);
         } else {
             return false;
         }
@@ -241,6 +269,76 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
                 Log.info(TAG_LOG, "Starting test " + currentTestName);
             }
         }
+
+        // Grab the test filters if they are set
+        Vector testFilters = new Vector();
+        String filter;
+        int i = 1;
+        do {
+            filter = getParameter(args, i++);
+            if (filter != null) {
+                testFilters.addElement(filter);
+            }
+        } while(filter != null);
+
+        // Now check if this test shall be executed
+        // The filters are defined this way:
+        // 1) filter by name
+        // 2) filter by source type
+        // 3) filter by direction
+        // 4) filter by locality type
+        if (testFilters.size() == 4) {
+            String byName = ((String)testFilters.elementAt(0)).trim();
+            String bySourceType = ((String)testFilters.elementAt(1)).trim();
+            String byDirection = ((String)testFilters.elementAt(2)).trim();
+            String byLocality = ((String)testFilters.elementAt(3)).trim();
+
+            if (!globalFilterByName.equals("*") && !byName.equals("*")) {
+                if (!globalFilterByName.equals(byName)) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Ignoring script " + currentTestName);
+                        Log.info(TAG_LOG, "because byName is " + byName + " and globalFilterByName is " + globalFilterByName);
+                    }
+                    throw new IgnoreScriptException();
+                }
+            }
+
+            if (!globalFilterBySourceType.equals("*") && !bySourceType.equals("*")) {
+                if (!globalFilterBySourceType.equals(bySourceType)) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Ignoring script " + currentTestName);
+                        Log.info(TAG_LOG, "because bySourceType is " + bySourceType + " and globalFilterBySourceType is " + globalFilterBySourceType);
+                    }
+                    throw new IgnoreScriptException();
+                }
+            }
+
+            if (!globalFilterByDirection.equals("*") && !byDirection.equals("*")) {
+                if (!globalFilterByDirection.equals(byDirection)) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Ignoring script " + currentTestName);
+                        Log.info(TAG_LOG, "because byDirection is " + byDirection + " and globalFilterByDirection is " + globalFilterByDirection);
+                    }
+                    throw new IgnoreScriptException();
+                }
+            }
+
+            if (!globalFilterByLocality.equals("*") && !byLocality.equals("*")) {
+                if (!globalFilterByLocality.equals(byLocality)) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Ignoring script " + currentTestName);
+                        Log.info(TAG_LOG, "because byLocality is " + byLocality + " and globalFilterByLocality is " + globalFilterByLocality);
+                    }
+                    throw new IgnoreScriptException();
+                }
+            }
+        } else {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Test has invalid filters, execute it " + currentTestName);
+            }
+        }
+
+
     }
 
     /**

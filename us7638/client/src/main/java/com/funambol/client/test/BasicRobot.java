@@ -50,6 +50,16 @@ public abstract class BasicRobot extends Robot {
    
     private static final String TAG_LOG = "BasicRobot";
 
+    protected TestFileManager fileManager;
+
+    public BasicRobot(TestFileManager fileManager) {
+        this.fileManager = fileManager;
+    }
+
+    public TestFileManager getTestFileManager() {
+        return fileManager;
+    }
+
     public void waitForSyncToComplete(int minStart, int max,
             SyncMonitor syncMonitor) throws Throwable {
         

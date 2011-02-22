@@ -45,6 +45,7 @@ import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncException;
+import com.funambol.syncml.spds.SyncMLAnchor;
 import com.funambol.storage.StringKeyValueMemoryStore;
 import com.funambol.util.Log;
 
@@ -63,6 +64,7 @@ public class CheckSyncSource extends TrackableSyncSource {
 
     public CheckSyncSource(String name, String type, String remoteUri) {
         super(new SourceConfig(name, type, remoteUri), fakeTracker);
+        setSyncAnchor(new SyncMLAnchor());
         setTracker(tracker);
         config.setEncoding(SyncSource.ENCODING_NONE);
     }

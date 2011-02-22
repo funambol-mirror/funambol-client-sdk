@@ -267,6 +267,16 @@ public interface BasicUserCommands {
      */
     public static final String INTERRUPT_SYNC_AFTER_PHASE_COMMAND = "InterruptSyncAfterPhase";
 
+    /**
+     * This command allows to set device date/time
+     *
+     * @param date specifies date time in the format yyyyMMddTHHmmssZ
+     *
+     * @example SetDeviceDate("20101001");
+
+     */
+    public static final String SET_DEVICE_DATE = "SetDeviceDate";
+
 }
     
 

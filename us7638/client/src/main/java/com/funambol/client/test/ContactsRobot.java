@@ -68,7 +68,7 @@ public abstract class ContactsRobot extends Robot {
     }
 
     public void importContactOnServer(String filename) throws Exception {
-        this.contactAsVcard = TestFileManager.getInstance().getFile(BasicScriptRunner.getBaseUrl() + "/" + filename);
+        this.contactAsVcard = basicRobot.getTestFileManager().getFile(BasicScriptRunner.getBaseUrl() + "/" + filename);
     }
 
     public void saveContactOnServer(CheckSyncClient client) throws Throwable {

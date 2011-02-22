@@ -54,24 +54,10 @@ public class TestFileManager {
     /** Tag log entry name */
     public static final String TAG_LOG = "TestFileManager";
 
-    HttpTransportAgent ta = null;
-    SyncConfig config = null;
+    protected HttpTransportAgent ta = null;
+    protected SyncConfig config = null;
 
-    private static TestFileManager instance = null;
-
-    private TestFileManager() {
-    }
-
-    /**
-     * Core method to retireve the single instance of this class.
-     * Uses the Singleton pattern.
-     * @return TestFileManager the TestFileManager singleton instance
-     */
-    protected static TestFileManager getInstance() {
-        if (instance == null) {
-            instance = new TestFileManager();
-        }
-        return instance;
+    public TestFileManager() {
     }
 
     /**
@@ -126,8 +112,8 @@ public class TestFileManager {
         }
     }
 
-    //TO-DO: use HttpConnectionAdapter in place of HttpTransportAgent
-    private String getScriptViaHttp(String url) throws CodedException {
+    //TODO: use HttpConnectionAdapter in place of HttpTransportAgent
+    protected String getScriptViaHttp(String url) throws CodedException {
         //Create the transport agent with the given url and encoding
         //compression and cookie usage are set to false
         //the user agent is null
@@ -139,7 +125,7 @@ public class TestFileManager {
         return response;
     }
 
-    private String getScriptViaFile(String url) throws IOException {
+    protected String getScriptViaFile(String url) throws IOException {
         FileAdapter fa = new FileAdapter(url, true);
         int size = (int) fa.getSize();
         byte data[] = new byte[size];

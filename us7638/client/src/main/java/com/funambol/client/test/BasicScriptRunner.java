@@ -77,11 +77,14 @@ public class BasicScriptRunner extends CommandRunner {
 
     private boolean stopOnFailure = false;
 
+    private TestFileManager fileManager = null;
+
     /**
      * Default constructor
      */
-    public BasicScriptRunner() {
+    public BasicScriptRunner(TestFileManager fileManager) {
         super(null);
+        this.fileManager = fileManager;
     }
 
     /**
@@ -94,7 +97,7 @@ public class BasicScriptRunner extends CommandRunner {
     }
 
     /**
-     * This method is responsible to interprete the file (being it on the device
+     * This method is responsible to interpret the file (being it on the device
      * storage or taken via http), interpreting and running the commands defined
      * by the tester. First of all the it loads the script given the remote or
      * local url. Once the script is loaded it is parsed and the commands given
@@ -124,13 +127,13 @@ public class BasicScriptRunner extends CommandRunner {
      * This is the only case in which the test suite is entirely aborted.
      */
     public void runScriptFile(String scriptUrl, boolean mainScript) throws Throwable {
-        baseUrl = TestFileManager.getInstance().getBaseUrl(scriptUrl);
+        baseUrl = fileManager.getBaseUrl(scriptUrl);
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Running script at URL = " + scriptUrl);
         }
         if (scriptUrl != null) {
             try {
-                String script = TestFileManager.getInstance().getFile(scriptUrl);
+                String script = fileManager.getFile(scriptUrl);
                 runScript(script, scriptUrl);
             } catch (Exception e) {
                 report.append("Cannot load script at:\n").append(scriptUrl);
@@ -338,6 +341,8 @@ public class BasicScriptRunner extends CommandRunner {
                         runCommand(command, pars);
                     }
                 }
+            } catch (IgnoreScriptException ise) {
+                ignoreCurrentScript = true;
             } catch (Throwable t) {
                 errorCode = CLIENT_TEST_EXCEPTION_STATUS;
 
