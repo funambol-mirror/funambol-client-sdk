@@ -509,8 +509,8 @@ public class SapiSyncManager implements SyncManagerI {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
                     }
-
-                    applyNewUpdToSyncSource(src, fullSet.items, state, -1, -1, mapping, false);
+                    applyNewUpdToSyncSource(src, fullSet.items, state, -1, -1,
+                            mapping, true);
                 }
             }
         }
