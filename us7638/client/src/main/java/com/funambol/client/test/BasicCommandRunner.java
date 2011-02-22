@@ -140,8 +140,8 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             checkItemsCountOnServer(command, pars);
         } else if (INTERRUPT_SYNC_AFTER_PHASE_COMMAND.equals(command)) {
             interruptSyncAfterPhase(command, pars);
-        } else if (SET_DEVICE_TIME.equals(command)) {
-            setDeviceTime(command, pars);
+        //} else if (SET_DEVICE_TIME.equals(command)) {
+        //    setDeviceTime(command, pars);
         } else {
             return false;
         }
