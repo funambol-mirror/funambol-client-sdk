@@ -33,7 +33,7 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.media;
 
 /**
  * This component lists all the media-related commands available in the automatic test

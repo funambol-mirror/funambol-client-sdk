@@ -33,7 +33,7 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.calendar;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Hashtable;
@@ -42,6 +42,10 @@ import java.util.Enumeration;
 
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
+import com.funambol.client.test.Robot;
+import com.funambol.client.test.basic.BasicRobot;
+import com.funambol.client.test.util.CheckSyncClient;
+import com.funambol.client.test.util.CheckSyncSource;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.StringUtil;

@@ -35,6 +35,8 @@
 
 package com.funambol.client.test;
 
+import com.funambol.client.test.util.CheckSyncClient;
+import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 

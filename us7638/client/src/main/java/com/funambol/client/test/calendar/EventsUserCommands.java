@@ -33,7 +33,7 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.calendar;
 
 /**
  * This component lists all the contacts-related commands available in the automatic test

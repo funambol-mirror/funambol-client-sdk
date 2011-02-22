@@ -33,7 +33,9 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.media;
+
+import com.funambol.client.test.CommandRunner;
 
 
 public class MediaCommandRunner extends CommandRunner implements MediaUserCommands {

@@ -33,18 +33,22 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.basic;
 
+import com.funambol.client.test.ClientTestException;
+import com.funambol.client.test.CommandRunner;
+import com.funambol.client.test.IgnoreScriptException;
+import com.funambol.client.test.Robot;
 import java.util.Vector;
 
-import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
 /**
  * Implementation of the CommandRunner class that define the full commands set
  * available to the tester in order to create automatic test script.
  */
-public abstract class BasicCommandRunner extends CommandRunner implements BasicUserCommands {
+public abstract class BasicCommandRunner extends CommandRunner
+        implements BasicUserCommands {
 
     private static final String TAG_LOG = "BasicCommandRunner";
     

@@ -33,7 +33,9 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.calendar;
+
+import com.funambol.client.test.CommandRunner;
 
 
 public class CalendarCommandRunner extends CommandRunner implements EventsUserCommands {

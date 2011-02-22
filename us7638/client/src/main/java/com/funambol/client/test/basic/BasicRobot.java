@@ -33,8 +33,13 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.basic;
 
+import com.funambol.client.test.ClientTestException;
+import com.funambol.client.test.Robot;
+import com.funambol.client.test.util.CheckSyncClient;
+import com.funambol.client.test.util.SyncMonitor;
+import com.funambol.client.test.util.TestFileManager;
 import java.util.Vector;
 
 import com.funambol.syncml.protocol.SyncML;

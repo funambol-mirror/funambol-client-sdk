@@ -33,8 +33,9 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.contact;
 
+import com.funambol.client.test.CommandRunner;
 import java.util.Vector;
 
 

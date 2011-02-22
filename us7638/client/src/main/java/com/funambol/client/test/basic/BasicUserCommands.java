@@ -33,7 +33,7 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.test;
+package com.funambol.client.test.basic;
 
 /**
  * This component lists all the commands available in the Android automatic test
