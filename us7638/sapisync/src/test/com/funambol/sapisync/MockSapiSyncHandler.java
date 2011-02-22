@@ -98,7 +98,7 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         this.changesSet = res;
     }
 
-    public JSONArray getItems(String remoteUri, String dataTag, JSONArray ids,
+    public FullSet getItems(String remoteUri, String dataTag, JSONArray ids,
             String limit, String offset, Date from) throws JSONException {
 
         // Save this information to be checked later
@@ -114,12 +114,12 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         if (ids != null) {
             idsRequests.addElement(ids);
         }
+        FullSet res = new FullSet();
         // Return the proper value
-        if (fullSyncItems == null) {
-            return null;
-        } else {
-            return fullSyncItems[fullSyncItemsIdx++];
+        if (fullSyncItems != null) {
+            res.items = fullSyncItems[fullSyncItemsIdx++];
         }
+        return res;
     }
 
     public void setItems(JSONArray fullSyncItems[]) {
