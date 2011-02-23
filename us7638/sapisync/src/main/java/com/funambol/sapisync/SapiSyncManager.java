@@ -357,7 +357,7 @@ public class SapiSyncManager implements SyncManagerI {
             try {
                 totalCount = sapiSyncHandler.getItemsCount(remoteUri, filterFrom);
                 if (totalCount != -1) {
-                    if(filterMaxCount > 0) {
+                    if(filterMaxCount > 0 && filterMaxCount < totalCount) {
                         getSyncListenerFromSource(src).startReceiving(filterMaxCount);
                     } else {
                         getSyncListenerFromSource(src).startReceiving(totalCount);
