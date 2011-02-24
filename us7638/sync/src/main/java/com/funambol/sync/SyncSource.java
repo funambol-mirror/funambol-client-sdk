@@ -88,11 +88,35 @@ public interface SyncSource {
     public static final int STATUS_CONNECTION_ERROR = 8;
 
     // A sync can be configured in different modes
+    /**
+     * A full two way sync (download and upload), only {@link SyncManager} can
+     * use this value
+     */
     public static final int FULL_SYNC = 0;
+    /**
+     * A full upload from client to server sync, only {@link SyncManager} can
+     * use this value
+     */
     public static final int FULL_UPLOAD = 1;
+    /**
+     * A full download from server to client sync, only {@link SyncManager} can
+     * use this value
+     */
     public static final int FULL_DOWNLOAD = 2;
+    /**
+     * A "fast" two way sync, only newer item are exchanged between client and
+     * server, user can choose this value in sync source settings
+     */
     public static final int INCREMENTAL_SYNC = 3;
+    /**
+     * Upload only newer item from client to server, user can choose this value
+     * in sync source settings
+     */
     public static final int INCREMENTAL_UPLOAD = 4;
+    /**
+     * Download only newer item from server to client sync, user can choose this
+     * value in sync source settings
+     */
     public static final int INCREMENTAL_DOWNLOAD = 5;
     public static final int NO_SYNC = 6;
 
