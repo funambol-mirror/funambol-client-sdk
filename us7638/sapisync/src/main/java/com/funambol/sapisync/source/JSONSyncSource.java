@@ -282,24 +282,20 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             syncListener.startReceiving(number);
         }
         public void itemAddReceivingStarted(String key, String parent, long size) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
+            syncListener.itemAddReceivingStarted(key, parent, size);
         }
         public void itemAddReceivingEnded(String key, String parent) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
+            syncListener.itemAddReceivingEnded(key, parent);
         }
         public void itemAddReceivingProgress(String key, String parent, long size) {
             // Do nothing
             // This is actually called by the DownloadSyncListener
         }
         public void itemReplaceReceivingStarted(String key, String parent, long size) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
+            syncListener.itemReplaceReceivingStarted(key, parent, size);
         }
         public void itemReplaceReceivingEnded(String key, String parent) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
+            syncListener.itemReplaceReceivingEnded(key, parent);
         }
         public void itemReplaceReceivingProgress(String key, String parent, long size) {
             // Do nothing
@@ -367,13 +363,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         }
 
         public void downloadStarted(long totalSize) {
-            if(syncListener != null) {
-                if(itemState == SyncItem.STATE_NEW) {
-                    syncListener.itemAddReceivingStarted(itemKey, itemParent, totalSize);
-                } else {
-                    syncListener.itemReplaceReceivingStarted(itemKey, itemParent, totalSize);
-                }
-            }
+            // do nothing, this is actually called by the SapiSyncManager
         }
 
         public void downloadProgress(long size) {
@@ -387,13 +377,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         }
 
         public void downloadEnded() {
-            if(syncListener != null) {
-                if(itemState == SyncItem.STATE_NEW) {
-                    syncListener.itemAddReceivingEnded(itemKey, itemParent);
-                } else {
-                    syncListener.itemReplaceReceivingEnded(itemKey, itemParent);
-                }
-            }
+            // do nothing, this is actually called by the SapiSyncManager
         }
     }
 }
