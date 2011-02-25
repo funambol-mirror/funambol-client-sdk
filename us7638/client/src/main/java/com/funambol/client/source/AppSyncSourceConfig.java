@@ -42,7 +42,6 @@ import java.io.DataInputStream;
 
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.customization.Customization;
-import com.funambol.client.source.AppSyncSource;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncListener;
@@ -61,6 +60,7 @@ public class AppSyncSourceConfig {
 
     protected static final String CONF_KEY_CONFIG_VERSION         = "SYNC_SOURCE_CONFIG_VERSION";
     protected static final String CONF_KEY_SYNC_URI               = "SYNC_SOURCE_URI";
+    /** It should be called SYNC_MODE but it is SYNC_TYPE for historical reasons */
     protected static final String CONF_KEY_SYNC_TYPE              = "SYNC_TYPE";
     protected static final String CONF_KEY_SOURCE_FULL            = "SYNC_SOURCE_FULL";
     protected static final String CONF_KEY_SOURCE_SYNCED          = "SYNC_SOURCE_SYNCED";
@@ -79,7 +79,9 @@ public class AppSyncSourceConfig {
     protected boolean enabled = true;
     protected boolean active;
     protected AppSyncSource appSource;
-    protected int syncType = -1;
+    public static final int UNDEFINED_SYNC_MODE = -1;
+    /** It should be called syncMode but it is syncType for historical reasons */
+    protected int syncType = UNDEFINED_SYNC_MODE;
     protected boolean deviceFullShown = false;
     protected boolean sourceSynced;
     protected int lastSyncStatus = SyncListener.SUCCESS;
@@ -156,12 +158,32 @@ public class AppSyncSourceConfig {
         return sourceSynced;
     }
 
+    /**
+     * @deprecated use {@link #setSyncMode} instead
+     */
     public int getSyncType() {
+        return getSyncMode();
+    }
+
+    /**
+     * @return the sync mode (direction)
+     */
+    public int getSyncMode() {
         return syncType;
     }
 
+    /**
+     * @deprecated use {@link #setSyncMode} instead
+     */
     public void setSyncType(int syncType) {
-        this.syncType = syncType;
+        setSyncMode(syncType);
+    }
+
+    /**
+     * @param syncType the sync mode (direction)
+     */
+    public void setSyncMode(int syncMode) {
+        this.syncType = syncMode;
         dirty = true;
     }
 
@@ -226,7 +248,7 @@ public class AppSyncSourceConfig {
      *
      * @param pendingSyncType can be null to cancel any pending sync, or one of
      * the values in MANUAL, SCHEDULED, PUSH
-     * @param syncMode the SyncML alert code, or -1 to cancel any pending sync
+     * @param syncType the SyncML alert code, or -1 to cancel any pending sync
      */
     public void setPendingSync(String pendingSyncType, int pendingSyncMode) {
         if (pendingSyncType == null) {
