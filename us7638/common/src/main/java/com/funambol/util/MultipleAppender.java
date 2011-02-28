@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public class MultipleAppender implements Appender {
 
-    Vector appenders = new Vector();
+    private Vector appenders = new Vector();
 
     /**
      * ad an appender to the list of appenders
@@ -37,7 +37,11 @@ public class MultipleAppender implements Appender {
      */
     public void removeAllAppenders() {
         appenders.removeAllElements();
-    } 
+    }
+
+    public int getNumAppenders() {
+        return appenders.size();
+    }
     
     public void initLogFile() {
         for (int i = 0; i < appenders.size(); i++) {
