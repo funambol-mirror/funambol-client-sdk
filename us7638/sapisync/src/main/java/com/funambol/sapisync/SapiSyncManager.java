@@ -195,8 +195,6 @@ public class SapiSyncManager implements SyncManagerI {
                 // Get ready to update the download anchor
                 performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
             }
-
-            /*
             if(isUploadPhaseNeeded(syncMode)) {
                 long newUploadAnchor = (new Date()).getTime();
                 performUploadPhase(src, getActualUploadSyncMode(src), resume);
@@ -204,7 +202,6 @@ public class SapiSyncManager implements SyncManagerI {
                 SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
                 anchor.setUploadAnchor(newUploadAnchor);
             }
-            */
 
             performFinalizationPhase(src);
 
@@ -250,12 +247,24 @@ public class SapiSyncManager implements SyncManagerI {
         
         boolean incremental = isIncrementalSync(syncMode);
 
+        String remoteUri = src.getConfig().getRemoteUri();
+
+        // TODO: FIXME apply filter
+        int totalSending;
+        if (incremental) {
+            totalSending = src.getClientAddNumber() + src.getClientReplaceNumber();
+        } else {
+            totalSending = src.getClientItemsNumber();
+        }
+        getSyncListenerFromSource(src).startSending(totalSending, 0, 0);
+
         int uploadedCount = 0;
         SyncItem item = getNextItemToUpload(src, incremental, uploadedCount);
         while(item != null) {
             try {
                 // Upload the item to the server
-                sapiSyncHandler.uploadItem(item, getSyncListenerFromSource(src));
+                sapiSyncHandler.uploadItem(item, remoteUri,
+                        getSyncListenerFromSource(src));
                 
                 // Set the item status
                 sourceStatus.addElement(new ItemStatus(item.getKey(),

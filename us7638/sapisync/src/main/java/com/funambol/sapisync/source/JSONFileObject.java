@@ -52,11 +52,16 @@ public class JSONFileObject {
     private String id;
     private String name;
     private String url;
+    private String mimetype;
     
-    private long date;
+    private long creationDate;
+    private long lastModifiedDate;
     private long size;
 
     private Vector thumbnails;
+
+    public JSONFileObject() throws JSONException {
+    }
 
     public JSONFileObject(String json) throws JSONException {
         this(new JSONObject(json));
@@ -70,7 +75,8 @@ public class JSONFileObject {
         this.name = jsonObject.getString("name");
         this.url  = jsonObject.getString("url");
 
-        this.date = jsonObject.getLong("date");
+        this.creationDate = jsonObject.getLong("date");
+        this.lastModifiedDate = jsonObject.getLong("date");
         this.size = jsonObject.getLong("size");
 
         if (jsonObject.has("thumbnails")) {
@@ -89,20 +95,56 @@ public class JSONFileObject {
         return id;
     }
 
+    public void setId(String value) {
+        id = value;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String value) {
+        name = value;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public long getDate() {
-        return date;
+    public void setUrl(String value) {
+        url = value;
+    }
+
+    public String getMimetype() {
+        return mimetype;
+    }
+
+    public void setMimetype(String value) {
+        mimetype = value;
+    }
+
+    public long getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationdate(long value) {
+        creationDate = value;
+    }
+
+    public long getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(long value) {
+        lastModifiedDate = value;
     }
 
     public long getSize() {
         return size;
+    }
+
+    public void setSize(long value) {
+        size = value;
     }
 
     public Vector getThumbnails() {

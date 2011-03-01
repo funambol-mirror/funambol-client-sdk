@@ -236,7 +236,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
                     long dateFilter = df.getDate();
                     JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
                     // Reject the item if it doesn't respect the date filter
-                    if(json.getDate() < dateFilter) {
+                    if(json.getCreationDate() < dateFilter) {
                         return false;
                     }
                 }

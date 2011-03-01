@@ -118,7 +118,9 @@ public class SapiHandler {
     }
 
     public JSONObject query(String name, String action, Vector params,
-            Hashtable headers, JSONObject request) throws IOException, JSONException {
+            Hashtable headers, JSONObject request)
+            throws IOException, JSONException {
+
         ByteArrayInputStream s = null;
         int contentLength = 0;
         if (request != null) {
@@ -129,10 +131,17 @@ public class SapiHandler {
         return query(name, action, params, headers, s, contentLength);
     }
 
-
-    public JSONObject query(String name, String action, Vector params, 
+    public JSONObject query(String name, String action, Vector params,
             Hashtable headers, InputStream requestIs, long contentLength)
             throws IOException, JSONException {
+
+        return query(name, action, params, headers, requestIs,
+                "application/octet-stream", contentLength);
+    }
+    public JSONObject query(String name, String action, Vector params, 
+            Hashtable headers, InputStream requestIs, String contentType,
+            long contentLength) throws IOException, JSONException {
+        
         String url = createUrl(name, action, params);
         HttpConnectionAdapter conn;
         
@@ -144,12 +153,11 @@ public class SapiHandler {
             }
             conn = connectionManager.openHttpConnection(url, null);
             conn.setRequestMethod(HttpConnectionAdapter.POST);
-            //conn.setChunkedStreamingMode(4096);
             if(contentLength > 0) {
                 if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Setting content type to application/octet-stream");
+                    Log.debug(TAG_LOG, "Setting content type to: " + contentType);
                 }
-                conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/octet-stream");
+                conn.setRequestProperty(CONTENT_TYPE_HEADER, contentType);
             }
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Setting content length to " + contentLength);

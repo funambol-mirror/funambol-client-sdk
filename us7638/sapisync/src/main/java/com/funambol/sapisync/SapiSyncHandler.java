@@ -44,11 +44,14 @@ import org.json.me.JSONObject;
 import org.json.me.JSONArray;
 
 import com.funambol.sapisync.sapi.SapiHandler;
+import com.funambol.sapisync.source.JSONFileObject;
+import com.funambol.sapisync.source.JSONSyncItem;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.util.DateUtil;
+import java.util.Hashtable;
 
 public class SapiSyncHandler {
 
@@ -131,20 +134,51 @@ public class SapiSyncHandler {
      * Upload the given item to the server
      * @param item
      */
-    public void uploadItem(SyncItem item, SyncListener listener) throws SyncException {
-        // TODO FIXME
+    public void uploadItem(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
+        if(!(item instanceof JSONSyncItem)) {
+            throw new UnsupportedOperationException("Not implemented.");
+        }
         try {
+            JSONObject metadata = new JSONObject();
+            JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
+            metadata.put("name",             json.getName());
+            metadata.put("creationdate",     DateUtil.formatDateTimeUTC(json.getCreationDate()));
+            metadata.put("modificationdate", DateUtil.formatDateTimeUTC(json.getLastModifiedDate()));
+            metadata.put("contenttype",      json.getMimetype());
+            metadata.put("size",             json.getSize());
+
+            JSONObject addRequest = new JSONObject();
+            addRequest.put("data", metadata);
+
+            // Send the meta data request
+            sapiHandler.setSapiRequestListener(null);
+            JSONObject addResponse = sapiHandler.query("upload/" + remoteUri,
+                "add-metadata", null, null, addRequest);
+
+            if(!addResponse.has("success")) {
+                Log.error(TAG_LOG, "Failed to upload item");
+                throw new SyncException(SyncException.SERVER_ERROR,
+                    "Failed to upload item");
+            }
+
+            String id = addResponse.getString("id");
+            
+            Hashtable headers = new Hashtable();
+            headers.put("x-funambol-id", id);
+            headers.put("x-funambol-file-size", Long.toString(json.getSize()));
+
             SapiUploadSyncListener sapiListener = new SapiUploadSyncListener(
                     item, listener);
             sapiHandler.setSapiRequestListener(sapiListener);
 
-            sapiHandler.query("media/upload", "upload", null, null, 
-                    item.getInputStream(),
-                    item.getObjectSize());
+            // Send the upload request
+            sapiHandler.query("upload/" + remoteUri,
+                    "add", null, headers, item.getInputStream(),
+                    json.getSize());
+            
+            sapiHandler.setSapiRequestListener(null);
         } catch(Exception ex) {
-            if (Log.isLoggable(Log.ERROR)) {
-                Log.error(TAG_LOG, "Failed to upload item", ex);
-            }
+            Log.error(TAG_LOG, "Failed to upload item", ex);
             throw new SyncException(SyncException.CLIENT_ERROR,
                     "Cannot upload item");
         }

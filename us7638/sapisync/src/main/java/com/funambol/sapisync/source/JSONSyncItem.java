@@ -49,8 +49,13 @@ public class JSONSyncItem extends SyncItem {
 
     public JSONSyncItem(String key, String type, char state, String parent,
             JSONObject jsonObject) throws JSONException {
+        this(key, type, state, parent, new JSONFileObject(jsonObject));
+    }
+
+    public JSONSyncItem(String key, String type, char state, String parent,
+            JSONFileObject jsonFileObject) throws JSONException {
         super(key, type, state, parent);
-        fileObject = new JSONFileObject(jsonObject);
+        fileObject = jsonFileObject;
     }
 
     public JSONFileObject getJSONFileObject() {
