@@ -196,7 +196,15 @@ public class DeviceInfo implements DeviceInfoInterface {
     }
     
     public boolean isTablet() {
+        return DeviceRole.TABLET.equals(getDeviceRole());
+    }
+
+    public boolean isSmartphone() {
+        return DeviceRole.SMARTPHONE.equals(getDeviceRole());
+    }
+
+    public DeviceRole getDeviceRole() {
         // TODO: FIXME
-        return false;
+        return DeviceRole.SMARTPHONE;
     }
 }
