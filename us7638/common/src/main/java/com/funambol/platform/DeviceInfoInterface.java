@@ -35,7 +35,31 @@
 package com.funambol.platform;
 
 public interface DeviceInfoInterface {
-
+    /**
+     * The way the device is used in media sync context
+     */
+    public static class DeviceRole { // poor man's enum
+        /** Unable to compute the device type */
+        public static final DeviceRole UNDEFINED = new DeviceRole(0);
+        /** Device is a smartphone */
+        public static final DeviceRole SMARTPHONE = new DeviceRole(1);
+        /** Device is a tablet */
+        public static final DeviceRole TABLET = new DeviceRole(2);
+        
+        private int role;
+        
+        private DeviceRole(int role) {
+            this.role = role;
+        }
+        
+        public boolean equals(Object o) {
+            if (o == null || !(o instanceof DeviceRole)) {
+                return false;
+            }
+            return this.role == ((DeviceRole) o).role;
+        }
+    }
+  
     /**
      * Returns the phone number or null if not available.
      */
@@ -81,4 +105,14 @@ public interface DeviceInfoInterface {
      * Returns whether the device is a tablet
      */
     public boolean isTablet();
+
+    /**
+     * Returns whether the device is a smartphone
+     */
+    public boolean isSmartphone();
+
+    /**
+     * Returns the device role (tablet, smartphone, tv etc)
+     */
+    public DeviceRole getDeviceRole();
 }

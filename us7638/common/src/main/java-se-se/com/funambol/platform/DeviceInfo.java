@@ -108,4 +108,13 @@ public class DeviceInfo implements DeviceInfoInterface {
     public boolean isTablet() {
         return false;
     }
+
+    public boolean isSmartphone() {
+        return false;
+    }
+
+    public DeviceRole getDeviceRole() {
+        return DeviceRole.UNDEFINED;
+    }
+
 }

@@ -143,6 +143,14 @@ public class DeviceInfo implements DeviceInfoInterface {
     }
 
     public boolean isTablet() {
+        return DeviceRole.TABLET == getDeviceRole();
+    }
+    
+    public boolean isSmartphone() {
+        return DeviceRole.SMARTPHONE == getDeviceRole();
+    }
+    
+    public DeviceRole getDeviceRole() {
         try {
             // Compute screen size
             DisplayMetrics dm = context.getResources().getDisplayMetrics();
@@ -151,10 +159,10 @@ public class DeviceInfo implements DeviceInfoInterface {
             double size = Math.sqrt(Math.pow(screenWidth, 2) +
                                     Math.pow(screenHeight, 2));
             // Tablet devices should have a screen size greater than 6 inches
-            return size >= 6;
+            return size >= 6 ? DeviceRole.TABLET : DeviceRole.SMARTPHONE;
         } catch(Throwable t) {
             Log.error(TAG_LOG, "Failed to compute screen size", t);
-            return false;
+            return DeviceRole.UNDEFINED;
         }
     }
 }

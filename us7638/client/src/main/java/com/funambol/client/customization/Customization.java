@@ -36,6 +36,8 @@
 package com.funambol.client.customization;
 
 import com.funambol.client.ui.Bitmap;
+import com.funambol.platform.DeviceInfoInterface;
+
 import java.util.Enumeration;
 
 /**
@@ -70,8 +72,28 @@ public interface Customization {
     public String   getDefaultSourceUri(int id);
     public boolean  isSourceActive(int id);
     public boolean  isSourceEnabledByDefault(int id);
+    /**
+     * Gets default sync source available direction modes
+     * @deprecated use {@link Customization#getDefaultSourceSyncModes(int, DeviceInfoInterface.DeviceRole)} instead 
+     */
     public int[]    getDefaultSourceSyncModes(int id);
+    /**
+     * Gets default sync source available direction modes, based on device information
+     * @param id
+     * @param one of the predefined values of {@link DeviceInfoInterface.DeviceRole}
+     */
+    public int[]    getDefaultSourceSyncModes(int id, DeviceInfoInterface.DeviceRole deviceRole);
+    /**
+     * Gets default sync source direction mode
+     * @deprecated use {@link Customization#getDefaultSourceSyncMode(int, DeviceInfoInterface.DeviceRole)} instead 
+     */
     public int      getDefaultSourceSyncMode(int id);
+    /**
+     * Gets default sync source direction mode, based on device information
+     * @param id
+     * @param one of the predefined values of {@link DeviceInfoInterface.DeviceRole}
+     */
+    public int      getDefaultSourceSyncMode(int id, DeviceInfoInterface.DeviceRole deviceRole);
     public Bitmap   getSourceIcon(int id);
     public Bitmap   getSourceDisabledIcon(int id);
     public Enumeration getAvailableSources();
