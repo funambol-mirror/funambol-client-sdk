@@ -81,7 +81,7 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         logoutCount++;
     }
 
-    public void uploadItem(SyncItem item, SyncListener listener)
+    public void uploadItem(SyncItem item, String remoteUri, SyncListener listener)
             throws SyncException {
         uploadedItems.addElement(item);
     }
