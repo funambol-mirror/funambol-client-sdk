@@ -345,7 +345,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
                 // If the source is not in quota error or this is the first sync
                 // in this session, then we include the source, otherwise we
                 // skip it
-                boolean toBeSynced = appSource.getConfig().getLastSyncStatus() != SyncListener.DEVICE_FULL_ERROR ||
+                boolean toBeSynced = appSource.getConfig().getLastSyncStatus() != SyncListener.SERVER_FULL_ERROR ||
                                      !appSource.getSyncedInSession();
                 // We still need to check if the source requires to be synced
                 // only in WiFi and this connection is available

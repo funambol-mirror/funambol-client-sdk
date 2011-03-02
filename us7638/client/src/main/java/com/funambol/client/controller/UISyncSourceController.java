@@ -800,7 +800,7 @@ public class UISyncSourceController implements SyncListener {
             case SyncListener.CANCELLED:
                 res = localization.getLanguage("status_cancelled");
                 break;
-            case SyncListener.DEVICE_FULL_ERROR:
+            case SyncListener.SERVER_FULL_ERROR:
                 res = localization.getLanguage("status_quota_exceeded");
             case SyncListener.LOCAL_DEVICE_FULL_ERROR:
                 res = localization.getLanguage("status_no_space_on_device");

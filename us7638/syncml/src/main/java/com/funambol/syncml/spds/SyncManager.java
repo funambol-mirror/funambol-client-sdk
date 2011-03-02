@@ -2858,7 +2858,7 @@ public class SyncManager implements SyncManagerI {
                 syncStatus = SyncListener.COMPRESSED_RESPONSE_ERROR;
                 break;
             case SyncException.DEVICE_FULL:
-                syncStatus = SyncListener.DEVICE_FULL_ERROR;
+                syncStatus = SyncListener.SERVER_FULL_ERROR;
                 break;
             case SyncException.LOCAL_DEVICE_FULL:
                 syncStatus = SyncListener.LOCAL_DEVICE_FULL_ERROR;
@@ -3033,7 +3033,7 @@ public class SyncManager implements SyncManagerI {
             }
         } else {
             if (syncMLStatusCode == SyncMLStatus.DEVICE_FULL) {
-                return SyncSource.DEVICE_FULL_ERROR_STATUS;
+                return SyncSource.SERVER_FULL_ERROR_STATUS;
             } else {
                 return SyncSource.ERROR_STATUS;
             }

@@ -97,7 +97,7 @@ public interface SyncListener {
     public static final int ERROR_SENDING_ITEMS             = 150;
     public static final int ERROR_RECEIVING_ITEMS           = 151;
     public static final int COMPRESSED_RESPONSE_ERROR       = 152;
-    public static final int DEVICE_FULL_ERROR               = 153;
+    public static final int SERVER_FULL_ERROR               = 153;
     public static final int LOCAL_DEVICE_FULL_ERROR         = 154;
    
     /**

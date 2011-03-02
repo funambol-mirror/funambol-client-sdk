@@ -1386,7 +1386,7 @@ class SyncSourceLOHandler {
             case SyncSource.CHUNK_SUCCESS_STATUS:
                 ret = SyncMLStatus.CHUNKED_ITEM_ACCEPTED;
                 break;
-            case SyncSource.DEVICE_FULL_ERROR_STATUS:
+            case SyncSource.SERVER_FULL_ERROR_STATUS:
                 ret = SyncMLStatus.DEVICE_FULL;
                 break;
             default:

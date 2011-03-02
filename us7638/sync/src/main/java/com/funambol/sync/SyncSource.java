@@ -123,7 +123,7 @@ public interface SyncSource {
     // These are the status that sync source operations can return
     public static final int SUCCESS_STATUS           = 0;
     public static final int ERROR_STATUS             = 1;
-    public static final int DEVICE_FULL_ERROR_STATUS = 2;
+    public static final int SERVER_FULL_ERROR_STATUS = 2;
     public static final int CHUNK_SUCCESS_STATUS     = 3;
 
     //--------------------------------------------------------------- Methods
