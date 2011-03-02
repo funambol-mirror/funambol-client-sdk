@@ -42,11 +42,11 @@ import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.client.test.util.TestFileManager;
 import java.util.Vector;
 
-import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.spds.SyncStatus;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.ItemStatus;
+import com.funambol.sync.SyncReport;
 import com.funambol.sync.SyncSource;
+import com.funambol.syncml.spds.SyncStatus;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
@@ -104,7 +104,7 @@ public abstract class BasicRobot extends Robot {
             Log.debug(TAG_LOG, "check last sync requested sync mode");
         }
 
-        SyncStatus sr = (SyncStatus)syncMonitor.getSyncStatus(source);
+        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
         assertTrue(sr != null, "source has no report associated");
         assertTrue(sr.getRequestedSyncMode() == mode, "Requested sync mode mismatch");
     }
@@ -115,9 +115,11 @@ public abstract class BasicRobot extends Robot {
             Log.debug(TAG_LOG, "check last sync alerted sync mode");
         }
 
-        SyncStatus sr = (SyncStatus)syncMonitor.getSyncStatus(source);
+        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
         assertTrue(sr != null, "source has no report associated");
-        assertTrue(sr.getAlertedSyncMode() == mode, "Alerted sync mode mismatch");
+
+        assertTrue(sr instanceof SyncStatus, "Invalid sync report format");
+        assertTrue(((SyncStatus)sr).getAlertedSyncMode() == mode, "Alerted sync mode mismatch");
     }
 
     public void checkLastSyncRemoteUri(String source, String uri,
@@ -126,7 +128,7 @@ public abstract class BasicRobot extends Robot {
             Log.debug(TAG_LOG, "check last sync remote URI");
         }
 
-        SyncStatus sr = (SyncStatus)syncMonitor.getSyncStatus(source);
+        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
         assertTrue(sr != null, "source has no report associated");
         assertTrue(sr.getRemoteUri(), uri, "Requested remote URI mismatch");
     }
@@ -140,7 +142,7 @@ public abstract class BasicRobot extends Robot {
             Log.debug(TAG_LOG, "check last sync exchanged data");
         }
 
-        SyncStatus sr = (SyncStatus)syncMonitor.getSyncStatus(source);
+        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
         assertTrue(sr != null, "source has no report associated");
 
         assertTrue(receivedAdd, sr.getReceivedAddNumber(),
@@ -186,7 +188,7 @@ public abstract class BasicRobot extends Robot {
 
         SyncSource source = getSyncSource(sourceName);
 
-        source.beginSync(SyncML.ALERT_CODE_SLOW, false); // Resets the tracker status
+        source.beginSync(SyncSource.FULL_SYNC, false); // Resets the tracker status
         int itemsCount = 0;
         SyncItem item = source.getNextItem();
         Vector items = new Vector();

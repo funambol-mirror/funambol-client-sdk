@@ -200,7 +200,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
      * @param isThumbnail
      * @return
      */
-    protected abstract OutputStream getDownloadOutputStream(String name,
+    public abstract OutputStream getDownloadOutputStream(String name,
             long size, boolean isUpdate, boolean isThumbnail) throws IOException;
 
     /**

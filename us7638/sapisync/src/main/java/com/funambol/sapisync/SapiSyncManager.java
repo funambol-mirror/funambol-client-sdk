@@ -321,6 +321,9 @@ public class SapiSyncManager implements SyncManagerI {
                 // Set the item status
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
                         SyncSource.SUCCESS_STATUS));
+
+                syncStatus.addSentItem(item.getKey(), item.getState());
+                
             } catch(Exception ex) {
                 if(Log.isLoggable(Log.ERROR)) {
                     Log.error(TAG_LOG, "Failed to upload item with key: " +
@@ -662,24 +665,19 @@ public class SapiSyncManager implements SyncManagerI {
         
         // The sourceItems returned by the call contains the LUID,
         // so we can create the luid/guid map here
-        try {
-            for(int l=0;l<sourceItems.size();++l) {
-                SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
-                // Update the sync status
-                syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
-                        newItem.getState(), newItem.getSyncStatus());
-                // and the mapping table
-                if (state == SyncItem.STATE_NEW) {
-                    if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "Updating mapping info for: " +
-                                newItem.getGuid() + "," + newItem.getKey());
-                    }
-                    mapping.add(newItem.getGuid(), newItem.getKey());
+        for(int l=0;l<sourceItems.size();++l) {
+            SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
+            // Update the sync status
+            syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
+                    newItem.getState(), newItem.getSyncStatus());
+            // and the mapping table
+            if (state == SyncItem.STATE_NEW) {
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "Updating mapping info for: " +
+                            newItem.getGuid() + "," + newItem.getKey());
                 }
+                mapping.add(newItem.getGuid(), newItem.getKey());
             }
-            syncStatus.save();
-        } catch (Exception e) {
-            Log.error(TAG_LOG, "Cannot save mappings", e);
         }
         return done;
     }

@@ -37,9 +37,7 @@ package com.funambol.sapisync.source;
 
 import java.util.Enumeration;
 import java.util.Vector;
-import java.util.Date;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.funambol.sync.SyncItem;
@@ -47,13 +45,11 @@ import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
-import com.funambol.sync.SyncAnchor;
-import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.ChangesTracker;
 
 import com.funambol.platform.FileAdapter;
 import com.funambol.util.Log;
-import com.funambol.util.Base64;
+
 
 public class FileSyncSource extends JSONSyncSource implements TwinDetectionSource {
 
@@ -142,15 +138,13 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
         return item;
     }
 
-
-    protected OutputStream getDownloadOutputStream(String name, long size, boolean isUpdate, boolean isThumbnail)
+    public OutputStream getDownloadOutputStream(String name, long size, boolean isUpdate, boolean isThumbnail)
     throws IOException {
 
         // TODO FIXME: hanlde the resume
         FileAdapter file = new FileAdapter(directory + name);
         return file.openOutputStream();
     }
-
 
     protected void deleteAllItems()
     {

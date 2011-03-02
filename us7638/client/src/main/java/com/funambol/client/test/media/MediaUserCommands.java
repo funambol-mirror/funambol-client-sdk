@@ -42,13 +42,100 @@ package com.funambol.client.test.media;
 public interface MediaUserCommands {
 
     /**
-     * This command adds a new media item on server, given the local filename.
+     * This command adds a new picture locally, given the local filename.
      *
-     * @example AddMediaOnServer("picture.jpg");
+     * @example AddPicture("picture.jpg");
      *
      */
-    public static final String ADD_MEDIA_ON_SERVER = "AddMediaOnServer";
+    public static final String ADD_PICTURE = "AddPicture";
+
+    /**
+     * This command adds a new video locally, given the local filename.
+     *
+     * @example AddVideo("video.3gp");
+     *
+     */
+    public static final String ADD_VIDEO = "AddVideo";
     
+    /**
+     * This command adds a new picture on the server, given the local filename.
+     *
+     * @example AddPictureOnServer("picture.jpg");
+     *
+     */
+    public static final String ADD_PICTURE_ON_SERVER = "AddPictureOnServer";
+
+    /**
+     * This command adds a new video on the server, given the local filename.
+     *
+     * @example AddVideoOnServer("video.3gp");
+     *
+     */
+    public static final String ADD_VIDEO_ON_SERVER = "AddVideoOnServer";
+
+    /**
+     * This command deletes a local picture, given the filename.
+     *
+     * @example DeletePicture("picture.jpg");
+     *
+     */
+    public static final String DELETE_PICTURE = "DeletePicture";
+
+    /**
+     * This command deletes a local video, given the filename.
+     *
+     * @example DeleteVideo("video.3gp");
+     *
+     */
+    public static final String DELETE_VIDEO = "DeleteVideo";
+
+    /**
+     * This command deletes a picture from the server, given the filename.
+     *
+     * @example DeletePictureOnServer("picture.jpg");
+     *
+     */
+    public static final String DELETE_PICTURE_ON_SERVER = "DeletePictureOnServer";
+
+    /**
+     * This command deletes a video from the server, given the filename.
+     *
+     * @example DeleteVideoOnServer("video.3gp");
+     *
+     */
+    public static final String DELETE_VIDEO_ON_SERVER = "DeleteVideoOnServer";
+
+    /**
+     * This command deletes all the local pictures.
+     *
+     * @example DeleteAllPictures();
+     *
+     */
+    public static final String DELETE_ALL_PICTURES = "DeleteAllPictures";
+
+    /**
+     * This command deletes all the local videos.
+     *
+     * @example DeleteAllVideos();
+     *
+     */
+    public static final String DELETE_ALL_VIDEOS = "DeleteAllVideos";
+
+    /**
+     * This command deletes all the pictures from the server.
+     *
+     * @example DeleteAllPicturesOnServer();
+     *
+     */
+    public static final String DELETE_ALL_PICTURES_ON_SERVER = "DeleteAllPicturesOnServer";
+
+    /**
+     * This command deletes all the videos from the server.
+     *
+     * @example DeleteAllVideosOnServer();
+     *
+     */
+    public static final String DELETE_ALL_VIDEOS_ON_SERVER = "DeleteAllVideosOnServer";
 }
     
 

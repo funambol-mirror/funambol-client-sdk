@@ -42,6 +42,31 @@ package com.funambol.client.test.basic;
 public interface BasicUserCommands {
 
     /**
+     * This is the source name to use for contacts related commands.
+     */
+    public static final String SOURCE_NAME_CONTACTS = "Contacts";
+
+    /**
+     * This is the source name to use for calendar related commands.
+     */
+    public static final String SOURCE_NAME_CALENDAR = "Calendar";
+
+    /**
+     * This is the source name to use for pictures related commands.
+     */
+    public static final String SOURCE_NAME_PICTURES = "Pictures";
+
+    /**
+     * This is the source name to use for videos related commands.
+     */
+    public static final String SOURCE_NAME_VIDEOS   = "Videos";
+
+    /**
+     * This is the source name to use for files related commands.
+     */
+    public static final String SOURCE_NAME_FILES    = "Files";
+
+    /**
      * This instruction must be the first one at the beginning of a test.
      * For a single test script there is only one of such instruction, while a 
      * multi test script may contain several instances.

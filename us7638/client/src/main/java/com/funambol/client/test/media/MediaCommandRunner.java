@@ -36,6 +36,7 @@
 package com.funambol.client.test.media;
 
 import com.funambol.client.test.CommandRunner;
+import com.funambol.client.test.basic.BasicUserCommands;
 
 
 public class MediaCommandRunner extends CommandRunner implements MediaUserCommands {
@@ -47,9 +48,30 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
     }
 
     public boolean runCommand(String command, String pars) throws Throwable {
-
-        if (ADD_MEDIA_ON_SERVER.equals(command)) {
-            addMediaOnServer(command, pars);
+        if (ADD_PICTURE.equals(command)) {
+            addMedia(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (ADD_VIDEO.equals(command)) {
+            addMedia(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (ADD_PICTURE_ON_SERVER.equals(command)) {
+            addMediaOnServer(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (ADD_VIDEO_ON_SERVER.equals(command)) {
+            addMediaOnServer(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (DELETE_PICTURE.equals(command)) {
+            deleteMedia(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (DELETE_VIDEO.equals(command)) {
+            deleteMedia(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (DELETE_PICTURE_ON_SERVER.equals(command)) {
+            deleteMediaOnServer(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (DELETE_PICTURE_ON_SERVER.equals(command)) {
+            deleteMediaOnServer(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (DELETE_ALL_PICTURES.equals(command)) {
+            deleteAllMedia(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (DELETE_ALL_VIDEOS.equals(command)) {
+            deleteAllMedia(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (DELETE_ALL_PICTURES_ON_SERVER.equals(command)) {
+            deleteAllMediaOnServer(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (DELETE_ALL_VIDEOS_ON_SERVER.equals(command)) {
+            deleteAllMediaOnServer(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
         } else {
             return false;
         }
@@ -60,8 +82,36 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         return (MediaRobot)robot;
     }
 
-    private void addMediaOnServer(String command, String args) throws Throwable {
-        // TBD
+    private void addMedia(String type, String command, String args) throws Throwable {
+        String filename = getParameter(args, 0);
+        checkArgument(filename, "Missing filename in " + command);
+        getMediaRobot().addMedia(type, filename);
+    }
+
+    private void addMediaOnServer(String type, String command, String args) throws Throwable {
+        String filename = getParameter(args, 0);
+        checkArgument(filename, "Missing filename in " + command);
+        getMediaRobot().addMedia(type, filename);
+    }
+
+    private void deleteMedia(String type, String command, String args) throws Throwable {
+        String filename = getParameter(args, 0);
+        checkArgument(filename, "Missing filename in " + command);
+        getMediaRobot().deleteMedia(type, filename);
+    }
+    
+    private void deleteMediaOnServer(String type, String command, String args) throws Throwable {
+        String filename = getParameter(args, 0);
+        checkArgument(filename, "Missing filename in " + command);
+        getMediaRobot().deleteMediaOnServer(type, filename);
+    }
+
+    private void deleteAllMedia(String type, String command, String args) throws Throwable {
+        getMediaRobot().deleteAllMedia(type);
+    }
+
+    private void deleteAllMediaOnServer(String type, String command, String args) throws Throwable {
+        getMediaRobot().deleteAllMediaOnServer(type);
     }
     
 }

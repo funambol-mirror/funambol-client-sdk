@@ -35,11 +35,115 @@
 
 package com.funambol.client.test.media;
 
+import com.funambol.client.source.AppSyncSource;
+import com.funambol.client.source.AppSyncSourceManager;
+import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
+import com.funambol.client.test.util.CheckSyncClient;
+import com.funambol.platform.HttpConnectionAdapter;
+import com.funambol.sapisync.source.JSONSyncSource;
+import com.funambol.sync.SyncSource;
+import com.funambol.util.ConnectionManager;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 
 public abstract class MediaRobot extends Robot {
    
     private static final String TAG_LOG = "MediaRobot";
 
+    protected AppSyncSourceManager appSourceManager;
+
+    public MediaRobot(AppSyncSourceManager appSourceManager) {
+        this.appSourceManager = appSourceManager;
+    }
+
+    public MediaRobot() {
+    }
+
+    protected AppSyncSourceManager getAppSyncSourceManager() {
+        return appSourceManager;
+    }
+    
+    protected AppSyncSource getAppSyncSource(String type) {
+        if(CheckSyncClient.SOURCE_NAME_PICTURES.equals(type)) {
+            return getAppSyncSourceManager().getSource(AppSyncSourceManager.PICTURES_ID);
+        } else if(CheckSyncClient.SOURCE_NAME_VIDEOS.equals(type)) {
+            return getAppSyncSourceManager().getSource(AppSyncSourceManager.VIDEOS_ID);
+        } else {
+            throw new IllegalArgumentException("Invalid type: " + type);
+        }
+    }
+    
+    public void addMedia(String type, String filename) throws Throwable {
+
+        SyncSource source = getAppSyncSource(type).getSyncSource();
+        
+        assertTrue(source instanceof JSONSyncSource, "Sync source format not supported");
+
+        downloadMediaFile(filename, ((JSONSyncSource)source).getDownloadOutputStream(
+                getAppSyncSource(type).getName(), 0, false, false));
+    }
+    
+    public abstract void addMediaOnServer(String type, String filename) throws Throwable;
+
+    public abstract void deleteMedia(String type, String filename) throws Throwable;
+    public abstract void deleteMediaOnServer(String type, String filename) throws Throwable;
+
+    public abstract void deleteAllMedia(String type) throws Throwable;
+    public abstract void deleteAllMediaOnServer(String type) throws Throwable;
+
+    /**
+     * Downloads a media file to the given output stream
+     * @param filename
+     * @param output
+     * @throws Throwable
+     */
+    protected void downloadMediaFile(String filename, OutputStream output) throws Throwable {
+        String baseUrl = BasicScriptRunner.getBaseUrl();
+        String url = baseUrl + "/" + filename;
+        HttpConnectionAdapter conn = null;
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            conn = ConnectionManager.getInstance().openHttpConnection(url, null);
+            conn.setRequestMethod(HttpConnectionAdapter.GET);
+            os = conn.openOutputStream();
+            os.flush();
+            if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
+                is = conn.openInputStream();
+                int b;
+                do {
+                    b = is.read();
+                    if (b != -1) {
+                        output.write(b);
+                    }
+                } while(b != -1);
+                output.flush();
+                output.close();
+            }
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {}
+                os = null;
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {}
+                is = null;
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (IOException ioe) {}
+                conn = null;
+            }
+        }
+    }
     
 }

@@ -37,6 +37,7 @@ package com.funambol.client.test.util;
 
 import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.ClientTestException;
+import com.funambol.client.test.basic.BasicUserCommands;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -54,9 +55,11 @@ public class CheckSyncClient extends SyncMonitor {
 
     private static final String TAG_LOG = "CheckSyncClient";
 
-    public static final String SOURCE_NAME_CONTACTS = "Contacts";
-    public static final String SOURCE_NAME_CALENDAR = "Calendar";
-    public static final String SOURCE_NAME_PICTURES = "Pictures";
+    public static final String SOURCE_NAME_CONTACTS = BasicUserCommands.SOURCE_NAME_CONTACTS;
+    public static final String SOURCE_NAME_CALENDAR = BasicUserCommands.SOURCE_NAME_CALENDAR;
+    public static final String SOURCE_NAME_PICTURES = BasicUserCommands.SOURCE_NAME_PICTURES;
+    public static final String SOURCE_NAME_VIDEOS   = BasicUserCommands.SOURCE_NAME_VIDEOS;
+    public static final String SOURCE_NAME_FILES    = BasicUserCommands.SOURCE_NAME_FILES;
 
     private Hashtable syncSources = new Hashtable();
 
@@ -74,8 +77,6 @@ public class CheckSyncClient extends SyncMonitor {
                 SOURCE_NAME_CONTACTS, "text/x-vcard", "card"));
         syncSources.put(SOURCE_NAME_CALENDAR, new CheckSyncSource(
                 SOURCE_NAME_CALENDAR, "text/x-vcalendar", "event"));
-        syncSources.put(SOURCE_NAME_PICTURES, new CheckSyncSource(
-                SOURCE_NAME_PICTURES, "application/vnd.omads-file+xml", "pictures"));
     }
 
     public class CheckDeviceConfig extends DeviceConfig {
