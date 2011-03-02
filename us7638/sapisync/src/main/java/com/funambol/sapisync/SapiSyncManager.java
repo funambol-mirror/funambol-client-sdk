@@ -62,8 +62,6 @@ import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
-import java.util.Enumeration;
-
 
 /**
  * <code>SapiSyncManager</code> represents the synchronization engine performed
@@ -79,6 +77,10 @@ public class SapiSyncManager implements SyncManagerI {
     private SyncConfig syncConfig = null;
     private SapiSyncHandler sapiSyncHandler = null;
     private SapiSyncStatus syncStatus = null;
+
+    // Holds the list of twins found during the download phase, those items must
+    // not be uploaded to the server later in the upload phase
+    private Vector twins = null;
 
     /**
      * Unique instance of a BasicSyncListener which is used when the user does
@@ -187,6 +189,8 @@ public class SapiSyncManager implements SyncManagerI {
                 Log.info(TAG_LOG, "The mapping store does not exist, use an empty one");
             }
         }
+        // Init twins vector
+        twins = new Vector();
         try {
             // Set the basic properties in the sync status
             syncStatus.setRemoteUri(src.getConfig().getRemoteUri());
@@ -204,6 +208,7 @@ public class SapiSyncManager implements SyncManagerI {
             getSyncListenerFromSource(src).syncStarted(getActualSyncMode(src, syncMode));
 
             if(isDownloadPhaseNeeded(syncMode)) {
+                // The download anchor is updated once it is received from the server
                 performDownloadPhase(src, getActualDownloadSyncMode(src), resume, mapping);
             }
             if(isUploadPhaseNeeded(syncMode)) {
@@ -287,12 +292,25 @@ public class SapiSyncManager implements SyncManagerI {
             }
         }
 
+        // Exclude twins from total items count
+        totalSending -= twins.size();
+
         getSyncListenerFromSource(src).startSending(totalSending, 0, 0);
 
         int uploadedCount = 0;
         SyncItem item = getNextItemToUpload(src, incremental);
         while(item != null && uploadedCount < totalSending) {
             try {
+                // Exclude twins
+                if(twins.contains(item.getKey())) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Exclude twin item to be uploaded: "
+                                + item.getKey());
+                    }
+                    sourceStatus.addElement(new ItemStatus(item.getKey(),
+                        SyncSource.SUCCESS_STATUS));
+                    continue;
+                }
                 // Upload the item to the server
                 String remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
                         getSyncListenerFromSource(src));
@@ -588,6 +606,7 @@ public class SapiSyncManager implements SyncManagerI {
                         if (Log.isLoggable(Log.INFO)) {
                             Log.info(TAG_LOG, "Found twin for item: " + guid);
                         }
+                        twins.addElement(twinItem.getKey());
                         // Skip the processing of this item
                         continue;
                     }

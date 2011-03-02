@@ -35,19 +35,13 @@
 
 package com.funambol.sapisync;
 
-import java.util.Hashtable;
-import java.util.Vector;
-
-import org.json.me.JSONException;
 import org.json.me.JSONObject;
 import org.json.me.JSONArray;
 
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncConfig;
-import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncFilter;
 import com.funambol.sync.Filter;
-import com.funambol.sync.BasicSyncListener;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.util.ConsoleAppender;
@@ -61,50 +55,7 @@ public class SapiSyncManagerTest extends TestCase {
     private SapiSyncManager syncManager = null;
     private MockSapiSyncHandler sapiSyncHandler = null;
     private MockSyncSource syncSource = null;
-    private TestSyncListener syncSourceListener = null;
-
-    private class TestSyncListener extends BasicSyncListener {
-
-        private int numReceiving;
-        private int numAdd;
-        private int numUpd;
-        private int numDel;
-
-        public void startReceiving(int number) {
-            numReceiving = number;
-        }
-
-        public void endReceiving() {
-        }
-
-        public void itemAddReceivingStarted(String key, String parent, long size) {
-            numAdd++;
-        }
-
-        public void itemDeleted(SyncItem item) {
-            numDel++;
-        }
-
-        public void itemReplaceReceivingStarted(String key, String parent, long size) {
-            numUpd++;
-        }
-
-        public int getNumAdd() {
-            return numAdd;
-        }
-
-        public int getNumUpd() {
-            return numUpd;
-        }
-
-        public int getNumDel() {
-            return numDel;
-        }
-
-        public int getNumReceiving() {
-            return numReceiving;
-        }
-    }
+    private MockSyncListener syncSourceListener = null;
 
     public SapiSyncManagerTest(String name) {
         super(name);
@@ -120,14 +71,13 @@ public class SapiSyncManagerTest extends TestCase {
         
         syncSource = new MockSyncSource(new SourceConfig(
                 "test", "application/*", "test"));
-        syncSourceListener = new TestSyncListener();
+        syncSourceListener = new MockSyncListener();
         syncSource.setListener(syncSourceListener);
 
         try {
             StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
             StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
             mapping.reset();
-            mapping.load();
         } catch (Exception e) {
         }
     }
@@ -152,6 +102,8 @@ public class SapiSyncManagerTest extends TestCase {
 
         Vector items = sapiSyncHandler.getUploadedItems();
         assertEquals(items.size(), 100);
+
+        assertEquals(syncSourceListener.getNumSending(), 100);
         
         // Check mapping table
         StringKeyValueStore mapping = null;
@@ -193,6 +145,8 @@ public class SapiSyncManagerTest extends TestCase {
 
         Hashtable status = syncSource.getStatusTable();
         assertEquals(status.size(), 8);
+
+        assertEquals(syncSourceListener.getNumSending(), 8);
         
         // Check mapping table
         StringKeyValueStore mapping = null;
