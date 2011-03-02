@@ -74,6 +74,8 @@ public class SapiHandler {
     private static final String JSESSIONID_HEADER = "JSESSIONID";
     private static final String COOKIE_HEADER     = "Set-Cookie";
 
+    private static final int DEFAULT_CHUNK_SIZE = 4096;
+
     private String baseUrl;
     private String user;
     private String pwd;
@@ -195,6 +197,9 @@ public class SapiHandler {
             throw ioe;
         }
 
+        // Set cunked streaming mode
+        conn.setChunkedStreamingMode(DEFAULT_CHUNK_SIZE);
+        
         OutputStream os = null;
         InputStream  is = null;
 
@@ -210,7 +215,7 @@ public class SapiHandler {
             if (requestIs != null) {
                 int total = 0;
                 int read  = 0;
-                byte chunk[] = new byte[4096];
+                byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
                 do {
                     read = requestIs.read(chunk);
                     if (read > 0) {
