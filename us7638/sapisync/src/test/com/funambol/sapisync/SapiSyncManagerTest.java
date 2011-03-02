@@ -52,8 +52,8 @@ import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Log;
-import java.util.Date;
 
+import java.util.*;
 import junit.framework.*;
 
 public class SapiSyncManagerTest extends TestCase {
@@ -127,9 +127,9 @@ public class SapiSyncManagerTest extends TestCase {
             StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
             StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
             mapping.reset();
+            mapping.load();
         } catch (Exception e) {
         }
-
     }
 
     public void tearDown() {
@@ -152,6 +152,26 @@ public class SapiSyncManagerTest extends TestCase {
 
         Vector items = sapiSyncHandler.getUploadedItems();
         assertEquals(items.size(), 100);
+        
+        // Check mapping table
+        StringKeyValueStore mapping = null;
+        try {
+            StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
+            mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
+            mapping.load();
+        } catch (Exception e) { }
+        
+        assertTrue(mapping != null);
+        
+        int mCount = 0;
+        Enumeration keys = mapping.keys();
+        while(keys.hasMoreElements()) {
+            mCount++;
+            String guid = (String)keys.nextElement();
+            String luid = mapping.get(guid);
+            assertEquals(guid, "guid_"+luid);
+        }
+        assertEquals(mCount, 100);
     }
 
     public void testIncrementalUpload() throws Exception {
@@ -161,8 +181,7 @@ public class SapiSyncManagerTest extends TestCase {
         anchor.setUploadAnchor(100);
 
         syncSource.setSyncAnchor(anchor);
-        syncSource.setInitialNewItemsCount(5);
-        syncSource.setInitialUpdatedItemsCount(3);
+        syncSource.setInitialNewItemsCount(8);
 
         syncManager.sync(syncSource);
 
@@ -174,6 +193,26 @@ public class SapiSyncManagerTest extends TestCase {
 
         Hashtable status = syncSource.getStatusTable();
         assertEquals(status.size(), 8);
+        
+        // Check mapping table
+        StringKeyValueStore mapping = null;
+        try {
+            StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
+            mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
+            mapping.load();
+        } catch (Exception e) { }
+        
+        assertTrue(mapping != null);
+        
+        int mCount = 0;
+        Enumeration keys = mapping.keys();
+        while(keys.hasMoreElements()) {
+            mCount++;
+            String guid = (String)keys.nextElement();
+            String luid = mapping.get(guid);
+            assertEquals(guid, "guid_"+luid);
+        }
+        assertEquals(mCount, 8);
     }
 
     public void testFullDownload1() throws Exception {

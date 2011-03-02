@@ -132,9 +132,10 @@ public class SapiSyncHandler {
 
     /**
      * Upload the given item to the server
+     * @return the remote item key
      * @param item
      */
-    public void uploadItem(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
+    public String uploadItem(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
         if(!(item instanceof JSONSyncItem)) {
             throw new UnsupportedOperationException("Not implemented.");
         }
@@ -161,10 +162,10 @@ public class SapiSyncHandler {
                     "Failed to upload item");
             }
 
-            String id = addResponse.getString("id");
+            String remoteKey = addResponse.getString("id");
             
             Hashtable headers = new Hashtable();
-            headers.put("x-funambol-id", id);
+            headers.put("x-funambol-id", remoteKey);
             headers.put("x-funambol-file-size", Long.toString(json.getSize()));
 
             SapiUploadSyncListener sapiListener = new SapiUploadSyncListener(
@@ -177,6 +178,8 @@ public class SapiSyncHandler {
                     json.getSize());
             
             sapiHandler.setSapiRequestListener(null);
+
+            return remoteKey;
         } catch(Exception ex) {
             Log.error(TAG_LOG, "Failed to upload item", ex);
             throw new SyncException(SyncException.CLIENT_ERROR,

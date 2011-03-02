@@ -62,6 +62,7 @@ import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
+import java.util.Enumeration;
 
 
 /**
@@ -174,7 +175,18 @@ public class SapiSyncManager implements SyncManagerI {
                 Log.error(TAG_LOG, "Cannot reset status", ioe);
             }
         }
- 
+
+        StringKeyValueStoreFactory mappingFactory =
+                StringKeyValueStoreFactory.getInstance();
+        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore(
+                "mapping_" + src.getName());
+        try {
+            mapping.load();
+        } catch (Exception e) {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "The mapping store does not exist, use an empty one");
+            }
+        }
         try {
             // Set the basic properties in the sync status
             syncStatus.setRemoteUri(src.getConfig().getRemoteUri());
@@ -192,12 +204,11 @@ public class SapiSyncManager implements SyncManagerI {
             getSyncListenerFromSource(src).syncStarted(getActualSyncMode(src, syncMode));
 
             if(isDownloadPhaseNeeded(syncMode)) {
-                // Get ready to update the download anchor
-                performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
+                performDownloadPhase(src, getActualDownloadSyncMode(src), resume, mapping);
             }
             if(isUploadPhaseNeeded(syncMode)) {
                 long newUploadAnchor = (new Date()).getTime();
-                performUploadPhase(src, getActualUploadSyncMode(src), resume);
+                performUploadPhase(src, getActualUploadSyncMode(src), resume, mapping);
                 // If we had no error so far, then we update the anchor
                 SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
                 anchor.setUploadAnchor(newUploadAnchor);
@@ -219,6 +230,11 @@ public class SapiSyncManager implements SyncManagerI {
             }
             throw se;
         } finally {
+            try {
+                mapping.save();
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot save mapping store", e);
+            }
             syncStatus.setEndTime(System.currentTimeMillis());
             try {
                 syncStatus.save();
@@ -241,7 +257,8 @@ public class SapiSyncManager implements SyncManagerI {
         sapiSyncHandler.login();
     }
 
-    private void performUploadPhase(SyncSource src, int syncMode, boolean resume) {
+    private void performUploadPhase(SyncSource src, int syncMode, 
+            boolean resume, StringKeyValueStore mapping) {
 
         Vector sourceStatus = new Vector();
         
@@ -249,22 +266,39 @@ public class SapiSyncManager implements SyncManagerI {
 
         String remoteUri = src.getConfig().getRemoteUri();
 
-        // TODO: FIXME apply filter
-        int totalSending;
+        int totalSending = 0;
         if (incremental) {
             totalSending = src.getClientAddNumber() + src.getClientReplaceNumber();
         } else {
             totalSending = src.getClientItemsNumber();
         }
+
+        // Apply upload filter to the total items count
+        SyncFilter syncFilter = src.getFilter();
+        if(syncFilter != null) {
+            Filter uploadFilter = incremental ? 
+                syncFilter.getIncrementalUploadFilter() :
+                syncFilter.getFullUploadFilter();
+            if(uploadFilter != null && uploadFilter.getType() == Filter.ITEMS_COUNT_TYPE) {
+                int maxCount = uploadFilter.getCount();
+                if(totalSending > maxCount) {
+                    totalSending = maxCount;
+                }
+            }
+        }
+
         getSyncListenerFromSource(src).startSending(totalSending, 0, 0);
 
         int uploadedCount = 0;
-        SyncItem item = getNextItemToUpload(src, incremental, uploadedCount);
-        while(item != null) {
+        SyncItem item = getNextItemToUpload(src, incremental);
+        while(item != null && uploadedCount < totalSending) {
             try {
                 // Upload the item to the server
-                sapiSyncHandler.uploadItem(item, remoteUri,
+                String remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
                         getSyncListenerFromSource(src));
+
+                item.setGuid(remoteKey);
+                mapping.add(remoteKey, item.getKey());
                 
                 // Set the item status
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
@@ -278,35 +312,15 @@ public class SapiSyncManager implements SyncManagerI {
                         SyncSource.STATUS_SEND_ERROR));
             }
             uploadedCount++;
-            item = getNextItemToUpload(src, incremental, uploadedCount);
+            item = getNextItemToUpload(src, incremental);
         }
         
         src.applyItemsStatus(sourceStatus);
     }
 
-    private SyncItem getNextItemToUpload(SyncSource src, boolean incremental,
-            int uploadedCount) {
-        SyncItem nextItem = getNextItem(src, incremental);
-        SyncFilter syncFilter = src.getFilter();
-        if(syncFilter != null) {
-            Filter filter = incremental ? syncFilter.getIncrementalUploadFilter() :
-                syncFilter.getFullUploadFilter();
-            if(filter != null) {
-                if(filter.getType() == Filter.ITEMS_COUNT_TYPE) {
-                    if(uploadedCount >= filter.getCount()) {
-                        // No further items shall be uploaded
-                        nextItem = null;
-                    }
-                } else {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            }
-        }
-        return nextItem;
-    }
-
-    private SyncItem getNextItem(SyncSource src, boolean incremental) {
+    private SyncItem getNextItemToUpload(SyncSource src, boolean incremental) {
         if(incremental) {
+            // Propagate adds and updates
             SyncItem next = src.getNextNewItem();
             if(next == null) {
                 next = src.getNextUpdatedItem();
@@ -318,23 +332,12 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private void performDownloadPhase(SyncSource src, int syncMode,
-            boolean resume) throws SyncException {
+            boolean resume, StringKeyValueStore mapping) throws SyncException {
 
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Starting download phase " + syncMode);
         }
-
-        StringKeyValueStoreFactory mappingFactory =
-                StringKeyValueStoreFactory.getInstance();
-        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore(
-                "mapping_" + src.getName());
-        try {
-            mapping.load();
-        } catch (Exception e) {
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "The mapping store does not exist, use an empty one");
-            }
-        }
+        
         String remoteUri = src.getConfig().getRemoteUri();
 
         SyncFilter syncFilter = src.getFilter();
@@ -484,11 +487,6 @@ public class SapiSyncManager implements SyncManagerI {
                 Log.error(TAG_LOG, "Cannot apply changes", je);
             }
         }
-        try {
-            mapping.save();
-        } catch (Exception e) {
-            Log.error(TAG_LOG, "Cannot save mapping store", e);
-        }
     }
 
     private void applyNewUpdItems(SyncSource src, JSONArray added, char state, 
@@ -542,7 +540,6 @@ public class SapiSyncManager implements SyncManagerI {
             char state, int maxItemsCount, int appliedItemsCount,
             StringKeyValueStore mapping, boolean deepTwinSearch)
             throws SyncException, JSONException {
-
 
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "apply new update items to source" + state);

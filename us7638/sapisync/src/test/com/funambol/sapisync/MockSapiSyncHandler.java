@@ -81,9 +81,10 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         logoutCount++;
     }
 
-    public void uploadItem(SyncItem item, String remoteUri, SyncListener listener)
+    public String uploadItem(SyncItem item, String remoteUri, SyncListener listener)
             throws SyncException {
         uploadedItems.addElement(item);
+        return "guid_" + item.getKey();
     }
 
     public ChangesSet getIncrementalChanges(Date from, String dataType) throws JSONException {
