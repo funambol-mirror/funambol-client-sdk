@@ -91,7 +91,7 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
     private void addMediaOnServer(String type, String command, String args) throws Throwable {
         String filename = getParameter(args, 0);
         checkArgument(filename, "Missing filename in " + command);
-        getMediaRobot().addMedia(type, filename);
+        getMediaRobot().addMediaOnServer(type, filename);
     }
 
     private void deleteMedia(String type, String command, String args) throws Throwable {
