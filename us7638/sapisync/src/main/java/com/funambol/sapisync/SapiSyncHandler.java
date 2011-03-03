@@ -51,6 +51,7 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.util.DateUtil;
+import java.io.InputStream;
 import java.util.Hashtable;
 
 public class SapiSyncHandler {
@@ -92,7 +93,7 @@ public class SapiSyncHandler {
     public void login() throws SyncException {
         try {
             sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_IN_QUERY_STRING);
-            JSONObject res = sapiHandler.query("login", "login", null, null, null);
+            JSONObject res = sapiQueryWithRetries("login", "login", null, null, null);
             JSONObject resData = res.getJSONObject(JSON_OBJECT_DATA);
             if(resData != null) {
                 String jsessionid = resData.getString(JSON_OBJECT_DATA_FIELD_JSESSIONID);
@@ -118,7 +119,7 @@ public class SapiSyncHandler {
      */
     public void logout() throws SyncException {
         try {
-            sapiHandler.query("login", "logout", null, null, null);
+            sapiQueryWithRetries("login", "logout", null, null, null);
         } catch(Exception ex) {
             if (Log.isLoggable(Log.ERROR)) {
                 Log.error(TAG_LOG, "Failed to logout", ex);
@@ -136,6 +137,9 @@ public class SapiSyncHandler {
      * @param item
      */
     public String uploadItem(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Uploading item: " + item.getKey());
+        }
         if(!(item instanceof JSONSyncItem)) {
             throw new UnsupportedOperationException("Not implemented.");
         }
@@ -153,7 +157,7 @@ public class SapiSyncHandler {
 
             // Send the meta data request
             sapiHandler.setSapiRequestListener(null);
-            JSONObject addResponse = sapiHandler.query("upload/" + remoteUri,
+            JSONObject addResponse = sapiQueryWithRetries("upload/" + remoteUri,
                 "add-metadata", null, null, addRequest);
 
             if(!addResponse.has("success")) {
@@ -173,9 +177,9 @@ public class SapiSyncHandler {
             sapiHandler.setSapiRequestListener(sapiListener);
 
             // Send the upload request
-            sapiHandler.query("upload/" + remoteUri,
+            sapiQueryWithRetries("upload/" + remoteUri,
                     "add", null, headers, item.getInputStream(),
-                    json.getSize());
+                    json.getMimetype(), json.getSize());
             
             sapiHandler.setSapiRequestListener(null);
 
@@ -188,6 +192,9 @@ public class SapiSyncHandler {
     }
 
     public void deleteItem(String key, String remoteUri) throws SyncException {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Deleting item: " + key);
+        }
         try {
             JSONArray pictures = new JSONArray();
             pictures.put(key);
@@ -195,7 +202,7 @@ public class SapiSyncHandler {
             data.put("pictures", pictures);
             JSONObject request = new JSONObject();
             request.put("data", data);
-            sapiHandler.query("media/" + remoteUri, "delete", null, null, request);
+            sapiQueryWithRetries("media/" + remoteUri, "delete", null, null, request);
         } catch(Exception ex) {
             Log.error(TAG_LOG, "Failed to delete item: " + key, ex);
             throw new SyncException(SyncException.CLIENT_ERROR,
@@ -204,6 +211,9 @@ public class SapiSyncHandler {
     }
 
     public void deleteAllItems(String remoteUri) throws SyncException {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Deleting all items");
+        }
         try {
             sapiHandler.query("media/" + remoteUri, "reset", null, null, null);
         } catch(Exception ex) {
@@ -220,20 +230,8 @@ public class SapiSyncHandler {
         params.addElement("type=" + dataType);
         params.addElement("responsetime=true");
 
-        JSONObject resp = null;
-        boolean retry = true;
-        int attempt = 0;
-        do {
-            try {
-                attempt++;
-                resp = sapiHandler.query("profile/changes", "get", params, null, null);
-                retry = false;
-            } catch (IOException ioe) {
-                if (attempt >= MAX_RETRIES) {
-                    retry = false;
-                }
-            }
-        } while(retry);
+        JSONObject resp = sapiQueryWithRetries("profile/changes", "get",
+                params, null, null);
 
         ChangesSet res = new ChangesSet();
 
@@ -294,20 +292,8 @@ public class SapiSyncHandler {
         params.addElement("responsetime=true");
         params.addElement("exif=none");
 
-        JSONObject resp = null;
-        boolean retry = true;
-        int attempt = 0;
-        do {
-            try {
-                attempt++;
-                resp = sapiHandler.query("media/" + remoteUri, "get", params, null, null);
-                retry = false;
-            } catch (IOException ioe) {
-                if (attempt >= MAX_RETRIES) {
-                    retry = false;
-                }
-            }
-        } while(retry);
+        JSONObject resp = sapiQueryWithRetries("media/" + remoteUri, "get",
+                params, null, null);
 
         if (resp != null) {
             FullSet res = new FullSet();
@@ -341,22 +327,8 @@ public class SapiSyncHandler {
         if (from != null) {
             params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
         }
-
-        JSONObject resp = null;
-        boolean retry = true;
-        int attempt = 0;
-        do {
-            try {
-                attempt++;
-                resp = sapiHandler.query("media/" + remoteUri, "count", params, null, null);
-                retry = false;
-            } catch (IOException ioe) {
-                if (attempt >= MAX_RETRIES) {
-                    retry = false;
-                }
-            }
-        } while(retry);
-
+        JSONObject resp = sapiQueryWithRetries("media/" + remoteUri, "count",
+                params, null, null);
         if (resp != null) {
             JSONObject data = resp.getJSONObject("data");
             if (data != null) {
@@ -397,6 +369,55 @@ public class SapiSyncHandler {
                 Log.debug(TAG_LOG, "Failed to retrieve error json object");
             }
         }
+    }
+
+    /**
+     * Send a SAPI query with a retry mechanism.
+     * @param name
+     * @param action
+     * @param params
+     * @param headers
+     * @param request
+     * @return
+     * @throws JSONException
+     */
+    private JSONObject sapiQueryWithRetries(String name, String action, Vector params,
+            Hashtable headers, JSONObject request) throws JSONException {
+        JSONObject resp = null;
+        boolean retry = true;
+        int attempt = 0;
+        do {
+            try {
+                attempt++;
+                resp = sapiHandler.query(name, action, params, headers, request);
+                retry = false;
+            } catch (IOException ioe) {
+                if (attempt >= MAX_RETRIES) {
+                    retry = false;
+                }
+            }
+        } while(retry);
+        return resp;
+    }
+    
+    private JSONObject sapiQueryWithRetries(String name, String action, Vector params,
+            Hashtable headers, InputStream requestIs, String contentType, long contentLength) throws JSONException {
+        JSONObject resp = null;
+        boolean retry = true;
+        int attempt = 0;
+        do {
+            try {
+                attempt++;
+                resp = sapiHandler.query(name, action, params, headers,
+                        requestIs, contentType, contentLength);
+                retry = false;
+            } catch (IOException ioe) {
+                if (attempt >= MAX_RETRIES) {
+                    retry = false;
+                }
+            }
+        } while(retry);
+        return resp;
     }
 
     protected class ChangesSet {

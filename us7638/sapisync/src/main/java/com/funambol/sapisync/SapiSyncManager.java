@@ -265,19 +265,23 @@ public class SapiSyncManager implements SyncManagerI {
     private void performUploadPhase(SyncSource src, int syncMode, 
             boolean resume, StringKeyValueStore mapping) {
 
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Starting upload phase with mode: " + syncMode);
+        }
         Vector sourceStatus = new Vector();
         
         boolean incremental = isIncrementalSync(syncMode);
 
         String remoteUri = src.getConfig().getRemoteUri();
 
-        int totalSending = 0;
+        int totalSending = -1;
         if (incremental) {
             totalSending = src.getClientAddNumber() + src.getClientReplaceNumber();
         } else {
             totalSending = src.getClientItemsNumber();
         }
 
+        int maxSending = -1;
         // Apply upload filter to the total items count
         SyncFilter syncFilter = src.getFilter();
         if(syncFilter != null) {
@@ -285,21 +289,24 @@ public class SapiSyncManager implements SyncManagerI {
                 syncFilter.getIncrementalUploadFilter() :
                 syncFilter.getFullUploadFilter();
             if(uploadFilter != null && uploadFilter.getType() == Filter.ITEMS_COUNT_TYPE) {
-                int maxCount = uploadFilter.getCount();
-                if(totalSending > maxCount) {
-                    totalSending = maxCount;
-                }
+                maxSending = uploadFilter.getCount();
             }
         }
 
         // Exclude twins from total items count
         totalSending -= twins.size();
 
-        getSyncListenerFromSource(src).startSending(totalSending, 0, 0);
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Uploading items count: " + totalSending);
+        }
+
+        if(totalSending > 0) {
+            getSyncListenerFromSource(src).startSending(totalSending, 0, 0);
+        }
 
         int uploadedCount = 0;
         SyncItem item = getNextItemToUpload(src, incremental);
-        while(item != null && uploadedCount < totalSending) {
+        while(item != null && itemsCountFilter(maxSending, uploadedCount)) {
             try {
                 // Exclude twins
                 if(twins.contains(item.getKey())) {
@@ -339,6 +346,14 @@ public class SapiSyncManager implements SyncManagerI {
         src.applyItemsStatus(sourceStatus);
     }
 
+    private boolean itemsCountFilter(int max, int current) {
+        if(max >= 0) {
+            return current < max;
+        } else {
+            return true;
+        }
+    }
+
     private SyncItem getNextItemToUpload(SyncSource src, boolean incremental) {
         if(incremental) {
             // Propagate adds and updates
@@ -356,7 +371,7 @@ public class SapiSyncManager implements SyncManagerI {
             boolean resume, StringKeyValueStore mapping) throws SyncException {
 
         if (Log.isLoggable(Log.INFO)) {
-            Log.info(TAG_LOG, "Starting download phase " + syncMode);
+            Log.info(TAG_LOG, "Starting download phase with mode: " + syncMode);
         }
         
         String remoteUri = src.getConfig().getRemoteUri();

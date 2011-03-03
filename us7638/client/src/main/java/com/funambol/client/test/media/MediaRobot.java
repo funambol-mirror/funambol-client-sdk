@@ -40,7 +40,7 @@ import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.CheckSyncClient;
-import com.funambol.platform.HttpConnectionAdapter;
+import com.funambol.client.test.util.TestFileManager;
 import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.source.JSONFileObject;
 import com.funambol.sapisync.source.JSONSyncItem;
@@ -48,7 +48,7 @@ import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
-import com.funambol.util.ConnectionManager;
+import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
 import java.io.ByteArrayInputStream;
@@ -65,12 +65,15 @@ public abstract class MediaRobot extends Robot {
     private static final String TAG_LOG = "MediaRobot";
 
     protected AppSyncSourceManager appSourceManager;
+    protected TestFileManager fileManager;
 
-    public MediaRobot(AppSyncSourceManager appSourceManager) {
+    public MediaRobot(AppSyncSourceManager appSourceManager, TestFileManager fileManager) {
         this.appSourceManager = appSourceManager;
+        this.fileManager = fileManager;
     }
 
-    public MediaRobot() {
+    public MediaRobot(TestFileManager fileManager) {
+        this.fileManager = fileManager;
     }
     
     public void addMedia(String type, String filename) throws Throwable {
@@ -79,8 +82,8 @@ public abstract class MediaRobot extends Robot {
         
         assertTrue(source instanceof JSONSyncSource, "Sync source format not supported");
 
-        downloadMediaFile(filename, ((JSONSyncSource)source).getDownloadOutputStream(
-                getAppSyncSource(type).getName(), 0, false, false));
+        getMediaFile(filename, ((JSONSyncSource)source).getDownloadOutputStream(
+                filename, -1, false, false));
     }
 
     public abstract void deleteMedia(String type, String filename) throws Throwable;
@@ -90,7 +93,7 @@ public abstract class MediaRobot extends Robot {
     public void addMediaOnServer(String type, String filename) throws Throwable {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        String contentType = downloadMediaFile(filename, os);
+        String contentType = getMediaFile(filename, os);
 
         byte[] fileContent = os.toByteArray();
         int size = fileContent.length;
@@ -192,58 +195,9 @@ public abstract class MediaRobot extends Robot {
         }
     }
 
-    /**
-     * Downloads a media file to the given output stream.
-     * 
-     * @param filename
-     * @param output
-     * @return the downloaded content type
-     * @throws Throwable
-     */
-    protected String downloadMediaFile(String filename, OutputStream output) throws Throwable {
+    protected String getMediaFile(String filename, OutputStream output) throws Throwable {
         String baseUrl = BasicScriptRunner.getBaseUrl();
         String url = baseUrl + "/" + filename;
-        HttpConnectionAdapter conn = null;
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            conn = ConnectionManager.getInstance().openHttpConnection(url, null);
-            conn.setRequestMethod(HttpConnectionAdapter.GET);
-            os = conn.openOutputStream();
-            os.flush();
-            if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
-                is = conn.openInputStream();
-                int b;
-                do {
-                    b = is.read();
-                    if (b != -1) {
-                        output.write(b);
-                    }
-                } while(b != -1);
-                output.flush();
-                output.close();
-            }
-            return conn.getHeaderField("Content-Type");
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {}
-                os = null;
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {}
-                is = null;
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (IOException ioe) {}
-                conn = null;
-            }
-        }
+        return fileManager.getFile(url, output);
     }
-    
 }

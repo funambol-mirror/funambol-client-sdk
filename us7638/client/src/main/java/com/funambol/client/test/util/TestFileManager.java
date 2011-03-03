@@ -36,12 +36,15 @@
 package com.funambol.client.test.util;
 
 import com.funambol.platform.FileAdapter;
+import com.funambol.platform.HttpConnectionAdapter;
 import com.funambol.sync.SyncConfig;
 import com.funambol.util.CodedException;
+import com.funambol.util.ConnectionManager;
 import com.funambol.util.HttpTransportAgent;
 import com.funambol.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Singleton implementation of the test files core management logic. Use the
@@ -51,8 +54,7 @@ import java.io.InputStream;
  */
 public class TestFileManager {
 
-    /** Tag log entry name */
-    public static final String TAG_LOG = "TestFileManager";
+    private static final String TAG_LOG = "TestFileManager";
 
     protected HttpTransportAgent ta = null;
     protected SyncConfig config = null;
@@ -125,7 +127,7 @@ public class TestFileManager {
         return response;
     }
 
-    protected String getScriptViaFile(String url) throws IOException {
+    protected String getScriptViaFile(String url) throws Exception {
         FileAdapter fa = new FileAdapter(url, true);
         int size = (int) fa.getSize();
         byte data[] = new byte[size];
@@ -136,5 +138,96 @@ public class TestFileManager {
         return new String(data);
     }
 
+    /**
+     * Download a file to the given OutputStream and return a proper mime type.
+     * @param url
+     * @param output
+     * @return the mimetype of the downloaded file
+     * @throws Throwable
+     */
+    public String getFile(String url, OutputStream output) throws Exception {
+        if (url.startsWith("http")) {
+            return getFileViaHttp(url, output);
+        } else if (url.startsWith("file")) {
+            return getFileViaFile(url, output);
+        } else {
+            throw new IllegalArgumentException("Invalid protocol");
+        }
+    }
+    
+    protected String getFileViaHttp(String url, OutputStream output) throws Exception {
+        HttpConnectionAdapter conn = null;
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            conn = ConnectionManager.getInstance().openHttpConnection(url, null);
+            conn.setRequestMethod(HttpConnectionAdapter.GET);
+            os = conn.openOutputStream();
+            os.flush();
+            if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
+                is = conn.openInputStream();
+                int b;
+                do {
+                    b = is.read();
+                    if (b != -1) {
+                        output.write(b);
+                    }
+                } while(b != -1);
+                output.flush();
+                output.close();
+            }
+            return conn.getHeaderField("Content-Type");
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {}
+                os = null;
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {}
+                is = null;
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (IOException ioe) {}
+                conn = null;
+            }
+        }
+    }
 
+    protected String getFileViaFile(String url, OutputStream output) throws Exception {
+        FileAdapter fa = new FileAdapter(url, true);
+        int size = (int) fa.getSize();
+        byte data[] = new byte[size];
+        InputStream is = fa.openInputStream();
+        is.read(data);
+        is.close();
+        fa.close();
+        output.write(data);
+        return getMimeTypeFromUrl(url);
+    }
+
+    protected String getMimeTypeFromUrl(String url) {
+        if(url.endsWith(".jpg") || url.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else if(url.endsWith(".gif")) {
+            return "image/gif";
+        } else if(url.endsWith(".png")) {
+            return "image/png";
+        } else if(url.endsWith(".svg")) {
+            return "image/svg+xml";
+        } else if(url.endsWith(".3gp")) {
+            return "video/3gpp";
+        } else if(url.endsWith(".mp4")) {
+            return "video/mp4";
+        } else if(url.endsWith(".avi")) {
+            return "video/avi";
+        } else {
+            return "application/*";
+        }
+    }
 }

@@ -220,7 +220,7 @@ public class SapiHandler {
                     read = requestIs.read(chunk);
                     if (read > 0) {
                         if (Log.isLoggable(Log.TRACE)) {
-                            Log.trace(TAG_LOG, "Writing chunk: " + (new String(chunk)));
+                            Log.trace(TAG_LOG, "Writing chunk size: " + read);
                         }
                         total += read;
                         os.write(chunk, 0, read);
