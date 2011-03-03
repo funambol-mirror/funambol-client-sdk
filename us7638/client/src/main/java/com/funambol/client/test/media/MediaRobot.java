@@ -112,7 +112,7 @@ public abstract class MediaRobot extends Robot {
 
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
         sapiHandler.login();
-        sapiHandler.uploadItem(item, getDataTag(type), null);
+        sapiHandler.uploadItem(item, getRemoteUri(type), null);
         sapiHandler.logout();
     }
     
@@ -123,7 +123,7 @@ public abstract class MediaRobot extends Robot {
     public void deleteAllMediaOnServer(String type) throws Throwable {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
         sapiHandler.login();
-        sapiHandler.deleteAllItems(getDataTag(type));
+        sapiHandler.deleteAllItems(getRemoteUri(type));
         sapiHandler.logout();
     }
 
@@ -153,14 +153,8 @@ public abstract class MediaRobot extends Robot {
      * @param type
      * @return
      */
-    private String getDataTag(String type) {
-        String dataTag = null;
-        SyncSource src = getAppSyncSource(type).getSyncSource();
-        if (src instanceof JSONSyncSource) {
-            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
-            dataTag = jsonSyncSource.getDataTag();
-        }
-        return dataTag;
+    private String getRemoteUri(String type) {
+        return getAppSyncSource(type).getSyncSource().getConfig().getRemoteUri();
     }
 
     private SapiSyncHandler getSapiSyncHandler() {
