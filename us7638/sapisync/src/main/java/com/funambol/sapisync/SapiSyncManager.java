@@ -501,13 +501,11 @@ public class SapiSyncManager implements SyncManagerI {
                     // item we need to retrieve the complete information
                     if (changesSet.added != null) {
                         applyNewUpdItems(src, changesSet.added,
-                                SyncItem.STATE_NEW, changesSet.serverUrl,
-                                mapping);
+                                SyncItem.STATE_NEW, mapping);
                     }
                     if (changesSet.updated != null) {
                         applyNewUpdItems(src, changesSet.updated,
-                                SyncItem.STATE_UPDATED, changesSet.serverUrl,
-                                mapping);
+                                SyncItem.STATE_UPDATED, mapping);
                     }
                     if (changesSet.deleted != null) {
                         applyDelItems(src, changesSet.deleted, mapping);
@@ -528,8 +526,7 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private void applyNewUpdItems(SyncSource src, JSONArray added, char state,
-            String serverUrl, StringKeyValueStore mapping)
-            throws SyncException, JSONException {
+            StringKeyValueStore mapping) throws SyncException, JSONException {
         // The JSONArray contains the "id" of the new items, we still need to
         // download their complete meta information. We get the new items in
         // pages to make sure we don't use too much memory. Each page of items
@@ -556,7 +553,7 @@ public class SapiSyncManager implements SyncManagerI {
                         Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
                     }
                     applyNewUpdToSyncSource(src, fullSet.items, state, -1, -1,
-                            serverUrl, mapping, true);
+                            fullSet.serverUrl, mapping, true);
                 }
             }
         }

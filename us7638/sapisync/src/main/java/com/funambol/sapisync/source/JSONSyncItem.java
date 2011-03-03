@@ -48,8 +48,8 @@ public class JSONSyncItem extends SyncItem {
     private JSONFileObject fileObject = null;
 
     public JSONSyncItem(String key, String type, char state, String parent,
-            JSONObject jsonObject, String baseUrl) throws JSONException {
-        this(key, type, state, parent, new JSONFileObject(jsonObject, baseUrl));
+            JSONObject jsonObject, String serverUrl) throws JSONException {
+        this(key, type, state, parent, new JSONFileObject(jsonObject, serverUrl));
     }
 
     public JSONSyncItem(String key, String type, char state, String parent,
