@@ -183,6 +183,32 @@ public class SapiSyncHandler {
         } catch(Exception ex) {
             Log.error(TAG_LOG, "Failed to upload item", ex);
             throw new SyncException(SyncException.CLIENT_ERROR,
+                    "Cannot delete all items");
+        }
+    }
+
+    public void deleteItem(String key, String remoteUri) throws SyncException {
+        try {
+            JSONArray pictures = new JSONArray();
+            pictures.put(key);
+            JSONObject data = new JSONObject();
+            data.put("pictures", pictures);
+            JSONObject request = new JSONObject();
+            request.put("data", data);
+            sapiHandler.query("media/" + remoteUri, "delete", null, null, request);
+        } catch(Exception ex) {
+            Log.error(TAG_LOG, "Failed to delete item: " + key, ex);
+            throw new SyncException(SyncException.CLIENT_ERROR,
+                    "Cannot delete item");
+        }
+    }
+
+    public void deleteAllItems(String remoteUri) throws SyncException {
+        try {
+            sapiHandler.query("media/" + remoteUri, "reset", null, null, null);
+        } catch(Exception ex) {
+            Log.error(TAG_LOG, "Failed to delete all items", ex);
+            throw new SyncException(SyncException.CLIENT_ERROR,
                     "Cannot upload item");
         }
     }

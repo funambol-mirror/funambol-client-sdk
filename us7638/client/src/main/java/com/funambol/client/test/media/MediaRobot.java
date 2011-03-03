@@ -41,13 +41,23 @@ import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.CheckSyncClient;
 import com.funambol.platform.HttpConnectionAdapter;
+import com.funambol.sapisync.SapiSyncHandler;
+import com.funambol.sapisync.source.JSONFileObject;
+import com.funambol.sapisync.source.JSONSyncItem;
 import com.funambol.sapisync.source.JSONSyncSource;
+import com.funambol.sync.SyncConfig;
+import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.ConnectionManager;
+import com.funambol.util.StringUtil;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.json.me.JSONException;
 
 
 public abstract class MediaRobot extends Robot {
@@ -62,20 +72,6 @@ public abstract class MediaRobot extends Robot {
 
     public MediaRobot() {
     }
-
-    protected AppSyncSourceManager getAppSyncSourceManager() {
-        return appSourceManager;
-    }
-    
-    protected AppSyncSource getAppSyncSource(String type) {
-        if(CheckSyncClient.SOURCE_NAME_PICTURES.equals(type)) {
-            return getAppSyncSourceManager().getSource(AppSyncSourceManager.PICTURES_ID);
-        } else if(CheckSyncClient.SOURCE_NAME_VIDEOS.equals(type)) {
-            return getAppSyncSourceManager().getSource(AppSyncSourceManager.VIDEOS_ID);
-        } else {
-            throw new IllegalArgumentException("Invalid type: " + type);
-        }
-    }
     
     public void addMedia(String type, String filename) throws Throwable {
 
@@ -86,22 +82,125 @@ public abstract class MediaRobot extends Robot {
         downloadMediaFile(filename, ((JSONSyncSource)source).getDownloadOutputStream(
                 getAppSyncSource(type).getName(), 0, false, false));
     }
-    
-    public abstract void addMediaOnServer(String type, String filename) throws Throwable;
 
     public abstract void deleteMedia(String type, String filename) throws Throwable;
-    public abstract void deleteMediaOnServer(String type, String filename) throws Throwable;
 
     public abstract void deleteAllMedia(String type) throws Throwable;
-    public abstract void deleteAllMediaOnServer(String type) throws Throwable;
+    
+    public void addMediaOnServer(String type, String filename) throws Throwable {
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        String contentType = downloadMediaFile(filename, os);
+
+        byte[] fileContent = os.toByteArray();
+        int size = fileContent.length;
+
+        // Prepare json item to upload
+        JSONFileObject jsonFileObject = new JSONFileObject();
+        jsonFileObject.setName(filename);
+        jsonFileObject.setSize(size);
+        jsonFileObject.setCreationdate(System.currentTimeMillis());
+        jsonFileObject.setLastModifiedDate(System.currentTimeMillis());
+        jsonFileObject.setMimetype(contentType);
+
+        MediaSyncItem item = new MediaSyncItem("fake_key",
+                "fake_type", SyncItem.STATE_NEW, null, jsonFileObject,
+                new ByteArrayInputStream(fileContent), size);
+
+        SapiSyncHandler sapiHandler = getSapiSyncHandler();
+        sapiHandler.login();
+        sapiHandler.uploadItem(item, getDataTag(type), null);
+        sapiHandler.logout();
+    }
+    
+    public void deleteMediaOnServer(String type, String filename) throws Throwable {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    public void deleteAllMediaOnServer(String type) throws Throwable {
+        SapiSyncHandler sapiHandler = getSapiSyncHandler();
+        sapiHandler.login();
+        sapiHandler.deleteAllItems(getDataTag(type));
+        sapiHandler.logout();
+    }
+
+    protected abstract SyncConfig getSyncConfig();
+
+    protected AppSyncSourceManager getAppSyncSourceManager() {
+        return appSourceManager;
+    }
 
     /**
-     * Downloads a media file to the given output stream
+     * Returns the AppSyncSource related to the given data type
+     * @param type
+     * @return
+     */
+    protected AppSyncSource getAppSyncSource(String type) {
+        if(CheckSyncClient.SOURCE_NAME_PICTURES.equals(type)) {
+            return getAppSyncSourceManager().getSource(AppSyncSourceManager.PICTURES_ID);
+        } else if(CheckSyncClient.SOURCE_NAME_VIDEOS.equals(type)) {
+            return getAppSyncSourceManager().getSource(AppSyncSourceManager.VIDEOS_ID);
+        } else {
+            throw new IllegalArgumentException("Invalid type: " + type);
+        }
+    }
+
+    /**
+     * Returns the SAPI data tag related to the given data type.
+     * @param type
+     * @return
+     */
+    private String getDataTag(String type) {
+        String dataTag = null;
+        SyncSource src = getAppSyncSource(type).getSyncSource();
+        if (src instanceof JSONSyncSource) {
+            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
+            dataTag = jsonSyncSource.getDataTag();
+        }
+        return dataTag;
+    }
+
+    private SapiSyncHandler getSapiSyncHandler() {
+        SyncConfig syncConfig = getSyncConfig();
+        return new SapiSyncHandler(
+                StringUtil.extractAddressFromUrl(syncConfig.getSyncUrl()),
+                syncConfig.getUserName(),
+                syncConfig.getPassword());
+    }
+
+    /**
+     * This is used to override the item input stream
+     */
+    private class MediaSyncItem extends JSONSyncItem {
+
+        private InputStream stream;
+        private long size;
+
+        public MediaSyncItem(String key, String type, char state, String parent,
+            JSONFileObject jsonFileObject, InputStream stream, long size) throws JSONException {
+            super(key, type, state, parent, jsonFileObject);
+            this.stream = stream;
+            this.size = size;
+        }
+
+        public InputStream getInputStream() throws IOException {
+            return stream;
+        }
+
+        public long getObjectSize() {
+            return size;
+        }
+    }
+
+    /**
+     * Downloads a media file to the given output stream.
+     * 
      * @param filename
      * @param output
+     * @return the downloaded content type
      * @throws Throwable
      */
-    protected void downloadMediaFile(String filename, OutputStream output) throws Throwable {
+    protected String downloadMediaFile(String filename, OutputStream output) throws Throwable {
         String baseUrl = BasicScriptRunner.getBaseUrl();
         String url = baseUrl + "/" + filename;
         HttpConnectionAdapter conn = null;
@@ -124,6 +223,7 @@ public abstract class MediaRobot extends Robot {
                 output.flush();
                 output.close();
             }
+            return conn.getHeaderField("Content-Type");
         } finally {
             if (os != null) {
                 try {

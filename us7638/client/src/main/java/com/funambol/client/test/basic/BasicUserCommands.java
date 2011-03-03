@@ -298,9 +298,15 @@ public interface BasicUserCommands {
      * @param date specifies date time in the format yyyyMMddTHHmmssZ
      *
      * @example SetDeviceDate("20101001");
-
      */
     public static final String SET_DEVICE_DATE = "SetDeviceDate";
+
+    /**
+     * This command allows to reset the first run timestamp to the current date/time.
+     * 
+     * @example ResetFirstRunTimestamp();
+     */
+    public static final String RESET_FIRST_RUN_TIMESTAMP = "ResetFirstRunTimestamp";
 
 }
     

@@ -602,6 +602,10 @@ public abstract class Configuration {
         return firstRunTimestamp;
     }
 
+    public void setFirstRunTimestamp(long value) {
+        firstRunTimestamp = value;
+    }
+
     public boolean getCredentialsCheckPending() {
         return credentialsCheckPending;
     }

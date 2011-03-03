@@ -35,6 +35,7 @@
 
 package com.funambol.client.test.basic;
 
+import com.funambol.client.configuration.Configuration;
 import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.CheckSyncClient;
@@ -208,6 +209,12 @@ public abstract class BasicRobot extends Robot {
                 "Server items count mismatch for source: " + sourceName);
     }
 
+    public void resetFirstRunTimestamp() throws Throwable {
+        Configuration configuration = getConfiguration();
+        configuration.setFirstRunTimestamp(System.currentTimeMillis());
+        configuration.save();
+    }
+
     public abstract void waitForAuthToComplete(int minStart, int max, SyncMonitor syncMonitor) throws Throwable;
 
     public abstract void keyPress(String keyName, int count) throws Throwable;
@@ -217,5 +224,7 @@ public abstract class BasicRobot extends Robot {
     public abstract void saveSourceConfig(SyncSource source);
 
     public abstract void reapplySyncConfig(CheckSyncClient client) throws Throwable;
+
+    protected abstract Configuration getConfiguration();
     
 }

@@ -144,8 +144,10 @@ public abstract class BasicCommandRunner extends CommandRunner
             checkItemsCountOnServer(command, pars);
         } else if (INTERRUPT_SYNC_AFTER_PHASE_COMMAND.equals(command)) {
             interruptSyncAfterPhase(command, pars);
-        //} else if (SET_DEVICE_TIME.equals(command)) {
-        //    setDeviceTime(command, pars);
+        } else if (SET_DEVICE_DATE.equals(command)) {
+            //setDeviceTime(command, pars);
+        } else if (RESET_FIRST_RUN_TIMESTAMP.equals(command)) {
+            resetFirstRunTimestamp(command, pars);
         } else {
             return false;
         }
@@ -584,6 +586,10 @@ public abstract class BasicCommandRunner extends CommandRunner
 
         getBasicRobot().checkItemsCountOnServer(source, checkSyncClient,
                 Integer.parseInt(count));
+    }
+
+    private void resetFirstRunTimestamp(String command, String args) throws Throwable {
+        getBasicRobot().resetFirstRunTimestamp();
     }
 }
  
