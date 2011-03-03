@@ -94,6 +94,79 @@ public class DialogController {
     }
 
     /**
+     * This creates a 2-button generic dialog box and waits for the user to
+     * select either option.
+     *
+     * @param message The message for the dialog box
+     * @param confirmMessage The label for the confirmation button
+     * @param cancelMessage The label for the cancel button
+     * @return true if the confirmation button has been chosen
+     *
+     * @deprecated EXPERIMENTAL
+     */
+    public boolean askConfirmCancelQuestion(String message, String confirmMessage, String cancelMessage) {
+
+        Screen homeScreen = controller.getHomeScreenController().getHomeScreen();
+        GenericDialogOption yesOption = new GenericDialogOption(homeScreen, confirmMessage, 1);
+        GenericDialogOption noOption = new GenericDialogOption(yesOption, cancelMessage, 0);
+        displayManager.promptSelection(
+                homeScreen,
+                message,
+                noOption.getChain(),
+                1,
+                DisplayManager.GENERIC_DIALOG_ID);
+        try {
+            yesOption.wait();
+        } catch (InterruptedException e) {
+            // Carries on
+        }
+        return yesOption.isChosen();
+    }
+
+    /**
+     * This creates an N-button generic dialog box and waits for the user to
+     * select one option.
+     *
+     * @param message The message for the dialog box
+     * @param labels The labels for the buttons
+     * @return the index of the chosen option or -1 if something goes wrong
+     *
+     * @deprecated EXPERIMENTAL
+     */
+    public int askGenericQuestion(String message, String[] labels) {
+
+        if (labels.length == 0) {
+            return -1;
+        }
+
+        Screen homeScreen = controller.getHomeScreenController().getHomeScreen();
+        GenericDialogOption firstOption = new GenericDialogOption(homeScreen, labels[0], 0);
+        GenericDialogOption lastOption = firstOption;
+        for (int i = 1; i < labels.length; i++) {
+            lastOption = new GenericDialogOption(lastOption, labels[i], i);
+        }
+        GenericDialogOption[] allOptions = lastOption.getChain();
+
+        displayManager.promptSelection(
+                homeScreen,
+                message,
+                allOptions,
+                0,
+                DisplayManager.GENERIC_DIALOG_ID);
+        try {
+            firstOption.wait();
+        } catch (InterruptedException e) {
+            return -1;
+        }
+        for (int i = 0; i < allOptions.length; i++) {
+            if (allOptions[i].isChosen()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Prompt a message alert on the screen
      * @param message is the String to be displayed on the screen
      * @return boolean true if the alert was displayed.
@@ -735,6 +808,48 @@ public class DialogController {
                 //User selected the cancel option
                 controller.getHomeScreenController().redraw();
             }
+        }
+    }
+
+    /**
+     * NB: Check askGenericQuestion and askConfirmCancelQuestion to find out how
+     * to use this class.
+     *
+     * @deprecated EXPERIMENTAL
+     */
+    protected class GenericDialogOption extends DialogOption {
+
+        protected boolean chosen = false;
+        protected GenericDialogOption[] chain = new GenericDialogOption[1];
+
+        public GenericDialogOption(Screen screen, String description, int value) {
+            super(screen, description, value);
+            chain[0] = this;
+        }
+
+        public GenericDialogOption(GenericDialogOption link, String description, int value) {
+            this(link.screen, description, value);
+            chain = new GenericDialogOption[link.chain.length + 1];
+            for (int i = 0; i < link.chain.length; i++) {
+                chain[i] = link.chain[i];
+            }
+            chain[link.chain.length] = this;
+        }
+
+        public void run() {
+            displayManager.dismissSelectionDialog(DisplayManager.GENERIC_DIALOG_ID);
+            this.chosen = true;
+            for (int i = 0; i < chain.length; i++) {
+                chain[i].notify(); // includes this.notify()
+            }
+        }
+        
+        public GenericDialogOption[] getChain() {
+            return chain;
+        }
+
+        public boolean isChosen() {
+            return chosen;
         }
     }
 }

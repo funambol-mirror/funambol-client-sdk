@@ -69,6 +69,7 @@ public interface Customization {
     public String   getContactType();
     public String   getCalendarType();
     public String   getTaskType();
+    public String   getNoteType();
     public String   getDefaultSourceUri(int id);
     public boolean  isSourceActive(int id);
     public boolean  isSourceEnabledByDefault(int id);

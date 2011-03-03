@@ -552,6 +552,9 @@ public abstract class BaseFormatter {
      * @param value the value in which replaced the ; and the \
      */
     public String escapeSeparator(String value) {
+        if(value == null) {
+            return null;
+        }
         String tmp = value.replaceAll("\\\\", "\\\\\\\\");
         tmp = tmp.replaceAll(";", "\\\\;");
         return tmp;

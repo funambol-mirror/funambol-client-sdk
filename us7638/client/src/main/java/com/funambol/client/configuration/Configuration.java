@@ -66,14 +66,20 @@ public abstract class Configuration {
      * 2) push
      * 3) scheduled
      */
-    public static int SYNC_MODE_PUSH      = 0;
-    public static int SYNC_MODE_MANUAL    = 1;
-    public static int SYNC_MODE_SCHEDULED = 2;
+    public static final int SYNC_MODE_PUSH      = 0;
+    public static final int SYNC_MODE_MANUAL    = 1;
+    public static final int SYNC_MODE_SCHEDULED = 2;
 
-    public static int S2C_PUSH_MODE_DISABLED    = 0;
-    public static int S2C_PUSH_MODE_SMS         = 1;
-    public static int S2C_PUSH_MODE_WAP         = 2;
-    public static int S2C_PUSH_MODE_SMS_AND_WAP = 3;
+    public static final int S2C_PUSH_MODE_DISABLED    = 0;
+    public static final int S2C_PUSH_MODE_SMS         = 1;
+    public static final int S2C_PUSH_MODE_WAP         = 2;
+    public static final int S2C_PUSH_MODE_SMS_AND_WAP = 3;
+
+    public static final int FIRST_SYNC_NOT_YET        = 0;
+    public static final int FIRST_SYNC_SIGN_UP        = 1;
+    public static final int FIRST_SYNC_LOG_IN         = 2;
+    /** Dialog already shown */
+    public static final int FIRST_SYNC_DONE           = 3;
 
     public static final int CONF_OK      = 0;
     public static final int CONF_NOTSET  = -1;
@@ -86,6 +92,7 @@ public abstract class Configuration {
     protected static final String CONF_KEY_PASSWORD  = "PASSWORD";
 
     protected static final String CONF_KEY_SIGNUP_ACC_CREATED  = "SIGNUP_ACCOUNT_CREATED";
+    protected static final String CONF_KEY_FIRST_SYNC_FROM_SCRATCH = "FIRST_SYNC_FROM_SCRATCH";
 
     protected static final String CONF_KEY_BANDWIDTH_SAVER     = "BANDWIDTH_SAVER";
 
@@ -123,6 +130,7 @@ public abstract class Configuration {
     protected String       password;
 
     protected boolean      signupAccountCreated      = false;
+    protected int          firstSyncFromScratch      = FIRST_SYNC_NOT_YET;
     
     protected int          syncMode;
     protected String       clientNonce;
@@ -263,6 +271,7 @@ public abstract class Configuration {
             password = loadStringKey(CONF_KEY_PASSWORD, customization.getPasswordDefault());
 
             signupAccountCreated = loadBooleanKey(CONF_KEY_SIGNUP_ACC_CREATED, false);
+            firstSyncFromScratch = loadIntKey(CONF_KEY_FIRST_SYNC_FROM_SCRATCH, FIRST_SYNC_NOT_YET);
 
             syncMode = loadIntKey(CONF_KEY_SYNC_MODE, customization.getDefaultSyncMode());
             
@@ -412,6 +421,7 @@ public abstract class Configuration {
         saveStringKey(CONF_KEY_PASSWORD, password);
 
         saveBooleanKey(CONF_KEY_SIGNUP_ACC_CREATED, signupAccountCreated);
+        saveIntKey(CONF_KEY_FIRST_SYNC_FROM_SCRATCH, firstSyncFromScratch);
 
         saveStringKey(CONF_KEY_CLIENT_NONCE, clientNonce);
         saveBooleanKey(CONF_KEY_CRED_CHECK_PENDING, credentialsCheckPending);
@@ -565,6 +575,34 @@ public abstract class Configuration {
 
     public void setSignupAccountCreated(boolean signupAccountCreated) {
         this.signupAccountCreated = signupAccountCreated;
+    }
+
+    /**
+     * Gets the state of the application as far as the display of the first-sync
+     * dialog is concerned.
+     *
+     * @return a value among FIRST_SYNC_* constants
+     */
+    public int getFirstSyncFromScratch() {
+        return firstSyncFromScratch;
+    }
+
+    /**
+     * Changes the configuration state in order to keep track of whether the
+     * first-sync dialog has been already shown or has to be shown. In the
+     * latter case, it discriminates also between the sign-up and the log-in
+     * cases.
+     * If the configuration state is already set to {@link #FIRST_SYNC_DONE},
+     * it means that the first sync dialog has already been shown and the
+     * setting will not be changed.
+     *
+     * @param firstSyncFromScratch either {@link #FIRST_SYNC_LOG_IN} or
+     *                             {@link #FIRST_SYNC_SIGN_UP}
+     */
+    public void setFirstSyncFromScratch(int firstSyncFromScratch) {
+        if (this.firstSyncFromScratch != FIRST_SYNC_DONE) {
+            this.firstSyncFromScratch = firstSyncFromScratch;
+        }
     }
 
     public String getClientNonce() {

@@ -44,6 +44,8 @@ import com.funambol.client.controller.DialogOption;
  */
 public interface DisplayManager {
 
+    /** Generic dialog id*/
+    public static final int GENERIC_DIALOG_ID = 0;
     /** Refresh direction alert dialog id*/
     public static final int REFRESH_DIRECTION_DIALOG_ID = 1;
     /** Refresh type alert dialog id*/
@@ -52,7 +54,6 @@ public interface DisplayManager {
     public static final int FIRST_SYNC_DIALOG_ID = 3;
     /** wi-fi not available alert dialog id*/
     public static final int NO_WIFI_AVAILABLE_ID = 4;
-
 
     /**
      * int value related to the infinitive time to wait before dismissing a
@@ -166,7 +167,7 @@ public interface DisplayManager {
      * @param question the message that describe the selection
      * @param options An array of DialogOption objects
      * @param defaultValue The default value for this selection
-     * @param dialogId the dialog id related to the type of scelection dialog
+     * @param dialogId the dialog id related to the type of selection dialog
      * to be prompted
      */
     public void promptSelection(Screen screen,
