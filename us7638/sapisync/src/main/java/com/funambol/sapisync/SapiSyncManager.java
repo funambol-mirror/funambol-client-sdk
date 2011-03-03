@@ -434,13 +434,13 @@ public class SapiSyncManager implements SyncManagerI {
                         newDownloadAnchor = fullSet.timeStamp;
                     }
                     if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
-
                         if (Log.isLoggable(Log.TRACE)) {
                             Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
                         }
-
-                        done = applyNewUpdToSyncSource(src, fullSet.items, SyncItem.STATE_NEW,
-                                                       filterMaxCount, offset, mapping, true);
+                        done = applyNewUpdToSyncSource(src, fullSet.items, 
+                                SyncItem.STATE_NEW, filterMaxCount, offset,
+                                fullSet.serverUrl, mapping, true);
+                        
                         offset += fullSet.items.length();
                         if ((fullSet.items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
                             done = true;
@@ -501,11 +501,13 @@ public class SapiSyncManager implements SyncManagerI {
                     // item we need to retrieve the complete information
                     if (changesSet.added != null) {
                         applyNewUpdItems(src, changesSet.added,
-                                SyncItem.STATE_NEW, mapping);
+                                SyncItem.STATE_NEW, changesSet.serverUrl,
+                                mapping);
                     }
                     if (changesSet.updated != null) {
                         applyNewUpdItems(src, changesSet.updated,
-                                SyncItem.STATE_UPDATED, mapping);
+                                SyncItem.STATE_UPDATED, changesSet.serverUrl,
+                                mapping);
                     }
                     if (changesSet.deleted != null) {
                         applyDelItems(src, changesSet.deleted, mapping);
@@ -525,8 +527,9 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void applyNewUpdItems(SyncSource src, JSONArray added, char state, 
-            StringKeyValueStore mapping) throws SyncException, JSONException {
+    private void applyNewUpdItems(SyncSource src, JSONArray added, char state,
+            String serverUrl, StringKeyValueStore mapping)
+            throws SyncException, JSONException {
         // The JSONArray contains the "id" of the new items, we still need to
         // download their complete meta information. We get the new items in
         // pages to make sure we don't use too much memory. Each page of items
@@ -553,7 +556,7 @@ public class SapiSyncManager implements SyncManagerI {
                         Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
                     }
                     applyNewUpdToSyncSource(src, fullSet.items, state, -1, -1,
-                            mapping, true);
+                            serverUrl, mapping, true);
                 }
             }
         }
@@ -573,7 +576,7 @@ public class SapiSyncManager implements SyncManagerI {
      * @throws JSONException
      */
     private boolean applyNewUpdToSyncSource(SyncSource src, JSONArray items,
-            char state, int maxItemsCount, int appliedItemsCount,
+            char state, int maxItemsCount, int appliedItemsCount, String serverUrl,
             StringKeyValueStore mapping, boolean deepTwinSearch)
             throws SyncException, JSONException {
 
@@ -611,7 +614,7 @@ public class SapiSyncManager implements SyncManagerI {
             }
 
             // Create the item
-            SyncItem syncItem = createSyncItem(src, luid, state, size, item);
+            SyncItem syncItem = createSyncItem(src, luid, state, size, item, serverUrl);
             syncItem.setGuid(guid);
 
             if (deepTwinSearch) {
@@ -698,12 +701,12 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private SyncItem createSyncItem(SyncSource src, String luid, char state, 
-            long size, JSONObject item) throws JSONException {
+            long size, JSONObject item, String serverUrl) throws JSONException {
 
         SyncItem syncItem = null;
         if(src instanceof JSONSyncSource) {
             syncItem = ((JSONSyncSource)src).createSyncItem(
-                    luid, src.getType(), state, null, item);
+                    luid, src.getType(), state, null, item, serverUrl);
         } else {
             // A generic sync item needs to be filled with the json item content
             syncItem = src.createSyncItem(luid, src.getType(), state, null, size);

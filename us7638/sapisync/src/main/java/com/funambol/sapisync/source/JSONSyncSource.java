@@ -86,8 +86,9 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     }
 
     public SyncItem createSyncItem(String key, String type, char state,
-                                   String parent, JSONObject json) throws JSONException {
-        JSONSyncItem item = new JSONSyncItem(key, type, state, parent, json);
+                                   String parent, JSONObject json,
+                                   String serverUrl) throws JSONException {
+        JSONSyncItem item = new JSONSyncItem(key, type, state, parent, json, serverUrl);
         return item;
     }
 
@@ -138,7 +139,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             jsonFile = ((JSONSyncItem)item).getJSONFileObject();
         } else {
             String itemContent = new String(item.getContent());
-            jsonFile = new JSONFileObject(itemContent);
+            jsonFile = new JSONFileObject(itemContent, null);
         }
         return jsonFile;
     }
@@ -165,10 +166,10 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             long size = jsonFile.getSize();
             OutputStream fileos = null;
             fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
-
-            downloader.setDownloadListener(new DownloadSyncListener(item, 
-                    super.getListener()));
-            long actualSize = downloader.download(composeUrl(baseUrl), fileos, size);
+            downloader.setDownloadListener(
+                    new DownloadSyncListener(item, super.getListener()));
+            String url = composeUrl(jsonFile.getServerUrl(), baseUrl);
+            long actualSize = downloader.download(url, fileos, size);
             if (size != actualSize) {
                 // The download was interrupted. We shall keep track of this interrupted download
                 // so that it can be resumed
@@ -205,14 +206,16 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
 
     /**
      * Composes the url to use for the download operation.
-     * 
+     *
+     * @param serverUrl
      * @param baseUrl
      * @param filename
      * @return
      */
-    private String composeUrl(String baseUrl) {
-        String serverUrl = StringUtil.extractAddressFromUrl(
-                syncConfig.getSyncUrl());
+    private String composeUrl(String serverUrl, String baseUrl) {
+        if(StringUtil.isNullOrEmpty(serverUrl)) {
+            serverUrl = StringUtil.extractAddressFromUrl(syncConfig.getSyncUrl());
+        }
         StringBuffer res = new StringBuffer();
         res.append(serverUrl);
         res.append(baseUrl);

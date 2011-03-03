@@ -251,6 +251,7 @@ public class SapiSyncHandler {
                     }
                 }
             }
+            
         }
 
         // Get the timestamp if available
@@ -265,6 +266,9 @@ public class SapiSyncHandler {
                 Log.error(TAG_LOG, "Cannot parse server responsetime");
                 res.timeStamp = -1;
             }
+        }
+        if (data.has("portalurl")) {
+            res.serverUrl = resp.getString("portalurl");
         }
 
         return res;
@@ -315,6 +319,9 @@ public class SapiSyncHandler {
                     Log.error(TAG_LOG, "Cannot parse server responsetime");
                     res.timeStamp = -1;
                 }
+            }
+            if (data.has("portalurl")) {
+                res.serverUrl = resp.getString("portalurl");
             }
             return res;
         }
@@ -425,11 +432,13 @@ public class SapiSyncHandler {
         public JSONArray updated   = null;
         public JSONArray deleted   = null;
         public long      timeStamp = -1;
+        public String    serverUrl = null;
     }
 
     protected class FullSet {
         public JSONArray items     = null;
         public long      timeStamp = -1;
+        public String    serverUrl = null;
     }
 
     /**

@@ -52,6 +52,7 @@ public class JSONFileObject {
     private String id;
     private String name;
     private String url;
+    private String serverUrl;
     private String mimetype;
     
     private long creationDate;
@@ -63,17 +64,19 @@ public class JSONFileObject {
     public JSONFileObject() throws JSONException {
     }
 
-    public JSONFileObject(String json) throws JSONException {
-        this(new JSONObject(json));
+    public JSONFileObject(String json, String serverUrl) throws JSONException {
+        this(new JSONObject(json), serverUrl);
     }
 
-    public JSONFileObject(JSONObject jsonObject) throws JSONException {
+    public JSONFileObject(JSONObject jsonObject, String serverUrl) throws JSONException {
 
         this.jsonObject = jsonObject;
         
         this.id   = jsonObject.getString("id");
         this.name = jsonObject.getString("name");
         this.url  = jsonObject.getString("url");
+        
+        this.serverUrl = serverUrl;
 
         this.creationDate = jsonObject.getLong("date");
         this.lastModifiedDate = jsonObject.getLong("date");
@@ -113,6 +116,14 @@ public class JSONFileObject {
 
     public void setUrl(String value) {
         url = value;
+    }
+
+    public String getServerUrl() {
+        return serverUrl;
+    }
+
+    public void setServerUrl(String value) {
+        serverUrl = value;
     }
 
     public String getMimetype() {
