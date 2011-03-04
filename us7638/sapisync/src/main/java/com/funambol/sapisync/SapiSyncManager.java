@@ -343,19 +343,21 @@ public class SapiSyncManager implements SyncManagerI {
             item = getNextItemToUpload(src, incremental);
         }
 
-        // Updates and deletes are not propagated, return a success status for
-        // each item anyway
-        SyncItem update = src.getNextUpdatedItem();
-        while(update != null) {
-            sourceStatus.addElement(new ItemStatus(update.getKey(),
-                        SyncSource.SUCCESS_STATUS));
-            update = src.getNextUpdatedItem();
-        }
-        SyncItem delete = src.getNextDeletedItem();
-        while(delete != null) {
-            sourceStatus.addElement(new ItemStatus(delete.getKey(),
-                        SyncSource.SUCCESS_STATUS));
-            delete = src.getNextDeletedItem();
+        if(incremental) {
+            // Updates and deletes are not propagated, return a success status 
+            // for each item anyway
+            SyncItem update = src.getNextUpdatedItem();
+            while(update != null) {
+                sourceStatus.addElement(new ItemStatus(update.getKey(),
+                            SyncSource.SUCCESS_STATUS));
+                update = src.getNextUpdatedItem();
+            }
+            SyncItem delete = src.getNextDeletedItem();
+            while(delete != null) {
+                sourceStatus.addElement(new ItemStatus(delete.getKey(),
+                            SyncSource.SUCCESS_STATUS));
+                delete = src.getNextDeletedItem();
+            }
         }
         
         src.applyItemsStatus(sourceStatus);
