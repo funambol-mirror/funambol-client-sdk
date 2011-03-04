@@ -50,6 +50,8 @@ import junit.framework.*;
 
 public class SapiSyncManagerTwinTest extends TestCase {
 
+    private static final String TAG_LOG = "SapiSyncManagerTwinTest";
+    
     private SapiSyncManager syncManager = null;
     private MockSapiSyncHandler sapiSyncHandler = null;
     private MockTwinSyncSource syncSource = null;
@@ -73,6 +75,13 @@ public class SapiSyncManagerTwinTest extends TestCase {
 
         public void setTwins(Vector items) {
             twins = items;
+        }
+        
+        protected void initAllItems() {
+            allItems = new SyncItem[initialItemsCount];
+            for(int i=0; i<initialItemsCount; i++) {
+                allItems[i] = new SyncItem("Twin"+i);
+            }
         }
     }
 
@@ -100,6 +109,8 @@ public class SapiSyncManagerTwinTest extends TestCase {
 
     public void testTwinDetection() throws Exception {
         
+        Log.info(TAG_LOG, "testTwinDetection start");
+        
         SapiSyncAnchor anchor = new SapiSyncAnchor();
         anchor.setDownloadAnchor(0);
         anchor.setUploadAnchor(0);
@@ -116,10 +127,10 @@ public class SapiSyncManagerTwinTest extends TestCase {
         Vector twins = new Vector();
         for(int i=0;i<20;++i) {
             JSONObject item = new JSONObject();
-            item.put("id", "" + i);
-            item.put("size", "" + i);
+            item.put("id", "Twin"+i);
+            item.put("size", "1230");
             items.put(item);
-            twins.add(Integer.toString(i));
+            twins.add("Twin"+i);
         }
         JSONArray allItems[] = new JSONArray[1];
         allItems[0] = items;
@@ -139,5 +150,6 @@ public class SapiSyncManagerTwinTest extends TestCase {
         assertEquals(syncSourceListener.getNumReceiving(), 20);
         assertEquals(syncSourceListener.getNumSending(), 30);
         
+        Log.info(TAG_LOG, "testTwinDetection end");
     }
 }

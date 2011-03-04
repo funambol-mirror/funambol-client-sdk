@@ -301,7 +301,7 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         if(totalSending > 0) {
-            if(maxSending > totalSending) {
+            if(maxSending > 0 && totalSending > maxSending) {
                 totalSending = maxSending;
             }
             getSyncListenerFromSource(src).startSending(totalSending, 0, 0);
@@ -333,6 +333,7 @@ public class SapiSyncManager implements SyncManagerI {
                         SyncSource.SUCCESS_STATUS));
 
                 syncStatus.addSentItem(item.getKey(), item.getState());
+                uploadedCount++;
                 
             } catch(Exception ex) {
                 if(Log.isLoggable(Log.ERROR)) {
@@ -341,9 +342,9 @@ public class SapiSyncManager implements SyncManagerI {
                 }
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
                         SyncSource.STATUS_SEND_ERROR));
+            } finally {
+                item = getNextItemToUpload(src, incremental);
             }
-            uploadedCount++;
-            item = getNextItemToUpload(src, incremental);
         }
 
         if(incremental) {
