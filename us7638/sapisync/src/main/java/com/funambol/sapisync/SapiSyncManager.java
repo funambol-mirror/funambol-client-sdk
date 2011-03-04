@@ -276,7 +276,7 @@ public class SapiSyncManager implements SyncManagerI {
 
         int totalSending = -1;
         if (incremental) {
-            totalSending = src.getClientAddNumber() + src.getClientReplaceNumber();
+            totalSending = src.getClientAddNumber();
         } else {
             totalSending = src.getClientItemsNumber();
         }
@@ -342,6 +342,21 @@ public class SapiSyncManager implements SyncManagerI {
             uploadedCount++;
             item = getNextItemToUpload(src, incremental);
         }
+
+        // Updates and deletes are not propagated, return a success status for
+        // each item anyway
+        SyncItem update = src.getNextUpdatedItem();
+        while(update != null) {
+            sourceStatus.addElement(new ItemStatus(update.getKey(),
+                        SyncSource.SUCCESS_STATUS));
+            update = src.getNextUpdatedItem();
+        }
+        SyncItem delete = src.getNextDeletedItem();
+        while(delete != null) {
+            sourceStatus.addElement(new ItemStatus(delete.getKey(),
+                        SyncSource.SUCCESS_STATUS));
+            delete = src.getNextDeletedItem();
+        }
         
         src.applyItemsStatus(sourceStatus);
     }
@@ -356,12 +371,7 @@ public class SapiSyncManager implements SyncManagerI {
 
     private SyncItem getNextItemToUpload(SyncSource src, boolean incremental) {
         if(incremental) {
-            // Propagate adds and updates
-            SyncItem next = src.getNextNewItem();
-            if(next == null) {
-                next = src.getNextUpdatedItem();
-            }
-            return next;
+            return src.getNextNewItem();
         } else {
             return src.getNextItem();
         }
