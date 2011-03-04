@@ -301,6 +301,9 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         if(totalSending > 0) {
+            if(maxSending > totalSending) {
+                totalSending = maxSending;
+            }
             getSyncListenerFromSource(src).startSending(totalSending, 0, 0);
         }
 
