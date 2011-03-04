@@ -341,7 +341,7 @@ public class SapiSyncManager implements SyncManagerI {
                             item.getKey(), ex);
                 }
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
-                        SyncSource.STATUS_SEND_ERROR));
+                        SyncSource.ERROR_STATUS));
             } finally {
                 item = getNextItemToUpload(src, incremental);
             }
