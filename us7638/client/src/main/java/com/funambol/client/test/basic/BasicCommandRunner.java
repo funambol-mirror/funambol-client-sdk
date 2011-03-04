@@ -138,6 +138,8 @@ public abstract class BasicCommandRunner extends CommandRunner
             refreshServer(command, pars);
         } else if (START_MAIN_APP_COMMAND.equals(command)) {
             startMainApp(command, pars);
+        } else if (CLOSE_MAIN_APP_COMMAND.equals(command)) {
+            closeMainApp(command, pars);
         } else if (CHECK_ITEMS_COUNT_COMMAND.equals(command)) {
             checkItemsCount(command, pars);
         } else if (CHECK_ITEMS_COUNT_ON_SERVER_COMMAND.equals(command)) {
@@ -179,6 +181,15 @@ public abstract class BasicCommandRunner extends CommandRunner
      */
     protected abstract void startMainApp(String command, String args) throws Throwable;
 
+    /**
+     * The automatic test common method to close the main application.
+     * See implementation for further details.
+     * @param command the String formatted command to be executed
+     * @param args the command related and String formatted arguments
+     * @throws Throwable if anything goes wrong when the application starts.
+     */
+    protected abstract void closeMainApp(String command, String args) throws Throwable;
+    
     /**
      * Uses the SyncMonitor object to wait that for specific sync action and
      * validate it as completed after a given amount of time. Use the BasicRobot

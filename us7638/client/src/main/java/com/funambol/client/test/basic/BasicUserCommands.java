@@ -106,6 +106,13 @@ public interface BasicUserCommands {
      * @example StartMainApp()
      */
     public static final String START_MAIN_APP_COMMAND = "StartMainApp";
+
+    /**
+     * This command stops the main application. 
+     *
+     * @example CloseMainApp()
+     */
+    public static final String CLOSE_MAIN_APP_COMMAND = "CloseMainApp";
     
     /**
      * This command suspends the test execution for the given amount of time.
