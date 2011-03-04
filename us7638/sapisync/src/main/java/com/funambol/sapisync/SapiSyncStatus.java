@@ -166,9 +166,9 @@ public class SapiSyncStatus implements SyncReport {
     }
 
     public Enumeration getSentItems() {
-        if (pendingSentItems.size() == 0) {
+        if (pendingSentItems.isEmpty()) {
             return sentItems.keys();
-        } else if (sentItems.size() == 0) {
+        } else if (sentItems.isEmpty()) {
             return pendingSentItems.keys();
         } else {
             // This should never happen with our SyncManager, but we support the
@@ -416,7 +416,7 @@ public class SapiSyncStatus implements SyncReport {
             oldRequestedSyncMode = requestedSyncMode;
         }
 
-        if (locUri != oldLocUri) {
+        if (!locUri.equals(oldLocUri)) {
             if (oldLocUri == null) {
                 store.add(LOC_URI_KEY, locUri);
             } else {
@@ -425,7 +425,7 @@ public class SapiSyncStatus implements SyncReport {
             oldLocUri = locUri;
         }
 
-        if (remoteUri != oldRemoteUri) {
+        if (!remoteUri.equals(oldRemoteUri)) {
             if (oldRemoteUri == null) {
                 store.add(REMOTE_URI_KEY, remoteUri);
             } else {
