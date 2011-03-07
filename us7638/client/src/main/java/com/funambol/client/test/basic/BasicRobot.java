@@ -221,7 +221,7 @@ public abstract class BasicRobot extends Robot {
     public abstract void writeString(String text) throws Throwable;
 
     public abstract SyncSource getSyncSource(String sourceName) throws Exception;
-    public abstract void saveSourceConfig(SyncSource source);
+    public abstract void saveSourceConfig(SyncSource source) throws Exception;
 
     public abstract void reapplySyncConfig(CheckSyncClient client) throws Throwable;
 
