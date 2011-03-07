@@ -76,18 +76,6 @@ public interface ContactsUserCommands {
     public static final String LOAD_CONTACT_COMMAND = "LoadContact";
 
     /**
-     * This command can be used to simulate a contact update on the server. It
-     * loads an existing contact identified by the given FirstName and LastName
-     * fields. If such a contact does not exist on server, then the test fails.
-     *
-     * @param firstName is the contact firstname
-     * @param lastName is the contact lastname
-     *
-     * @example LoadContactOnServer("Foo", "Bar")
-     */
-    public static final String LOAD_CONTACT_ON_SERVER_COMMAND = "LoadContactOnServer";
-
-    /**
      * This command can used while simulating a contact additon or update. It
      * sets the given field to the given value.
      *
@@ -246,6 +234,16 @@ public interface ContactsUserCommands {
      *
      */
     public static final String SET_CONTACT_FROM_SERVER = "SetContactFromServer";
+
+    /**
+     * This command checks the number of contacts on the server.
+     *
+     * @param count the number of expected contacts
+     *
+     * @example CheckContactsCountOnServer(10);
+     */
+    public static final String CHECK_CONTACTS_COUNT_ON_SERVER_COMMAND = "CheckContactsCountOnServer";
+
 
     
     // These commands are used by automatically generated scripts

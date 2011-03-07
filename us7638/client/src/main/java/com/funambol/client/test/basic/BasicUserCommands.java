@@ -256,7 +256,7 @@ public interface BasicUserCommands {
     public static final String CHECK_REMOTE_URI_COMMAND = "CheckRemoteUri";
 
     /**
-     * This command checks the number of items on the client for a specific type
+     * This command checks the number of contacts on the client for a specific type
      * of data. For example it is possible to count the number of contacts,
      * events and so on.
      *
@@ -267,17 +267,6 @@ public interface BasicUserCommands {
      */
     public static final String CHECK_ITEMS_COUNT_COMMAND = "CheckItemsCount";
 
-    /**
-     * This command checks the number of items on the server for a specific type
-     * of data. For example it is possible to count the number of contacts,
-     * events and so on.
-     *
-     * @param source the source name as it appears in the home screen
-     * @param count the number of items
-     *
-     * @example CheckItemsCountOnServer("Calendar", 10)
-     */
-    public static final String CHECK_ITEMS_COUNT_ON_SERVER_COMMAND = "CheckItemsCountOnServer";
 
     /**
      * This command allows to interrupt the synchronization in some specific

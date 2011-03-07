@@ -40,12 +40,15 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
 
+import org.json.me.JSONObject;
+import org.json.me.JSONArray;
+import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.basic.BasicRobot;
-import com.funambol.client.test.util.CheckSyncClient;
-import com.funambol.client.test.util.CheckSyncSource;
+import com.funambol.client.test.ClientTestException;
+import com.funambol.client.configuration.Configuration;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.StringUtil;
@@ -68,6 +71,8 @@ public abstract class CalendarRobot extends Robot {
 
     protected AppSyncSourceManager appSourceManager;
 
+    protected SapiHandler sapiHandler;
+
     public CalendarRobot(BasicRobot basicRobot, AppSyncSourceManager appSourceManager) {
         this.basicRobot = basicRobot;
         this.appSourceManager = appSourceManager;
@@ -76,35 +81,151 @@ public abstract class CalendarRobot extends Robot {
     public CalendarRobot() {
     }
 
-    public void saveEventOnServer(CheckSyncClient client) throws Throwable {
-        CheckSyncSource source = client.getSyncSource(
-                CheckSyncClient.SOURCE_NAME_CALENDAR);
-        SyncItem item = new SyncItem(Long.toString(incrementalServerItemkey++));
-        item.setContent(getCurrentEventVCal().getBytes());
-        
-        if(currentEventId != -1) {
-            item.setKey(Long.toString(currentEventId));
-            source.updateItemFromOutside(item);
+
+
+    public void saveEventOnServer(String summary) throws Throwable {
+
+        SapiHandler sapiHandler = getSapiHandler();
+        Vector params = new Vector();
+
+        // Is this an add or an update?
+        boolean add;
+        String id = findEventIdOnServer(summary);
+
+        StringBuffer jsonEvent = new StringBuffer();
+        jsonEvent.append("{");
+        if (id != null) {
+            jsonEvent.append("\"id\":\"").append(id).append("\",");
+            add = false;
         } else {
-            source.addItemFromOutside(item);
+            add = true;
+        }
+        jsonEvent.append("\"summary\":\"").append(summary).append("\",")
+                 .append("\"privacy\":\"public\",")
+                 .append("\"dtstart\":\"20090310T160000\",")
+                 .append("\"dtend\":\"20090310T170000\",")
+                 .append("\"tzdtstart\":\"Europe/London\",")
+                 .append("\"tzdtend\":\"Europe/London\"")
+                 .append("}");
+        params.add("event=" + jsonEvent.toString());
+        Log.trace(TAG_LOG, "Save event: " + jsonEvent.toString());
+        JSONObject resp;
+        if (add) {
+            resp = sapiHandler.query("calendar","eventcreate",params,null,null);
+        } else {
+            resp = sapiHandler.query("calendar","eventmodify",params,null,null);
         }
 
-        // Reset current event
-        currentEventId = -1;
-        eventAsVcal = null;
+        if (id == null) {
+            id = resp.getString("id");
+            Log.debug(TAG_LOG, "The new event has id=" + id);
+        }
     }
 
-    public void deleteEventOnServer(String summary, CheckSyncClient client) throws Throwable {
-        CheckSyncSource source = client.getSyncSource(
-                CheckSyncClient.SOURCE_NAME_CALENDAR);
-        String itemKey = findEventKeyOnServer(summary, client);
-        source.deleteItemFromOutside(itemKey);
+    public void saveEventOnServerAsJSON(String jsonObj) throws Throwable {
+
+        // Unescape the parameter
+        jsonObj = StringUtil.replaceAll(jsonObj, "&quot;","\"");
+        jsonObj = StringUtil.replaceAll(jsonObj, "&comma;",",");
+
+        Log.trace(TAG_LOG, "JSON event is: " + jsonObj); 
+
+        JSONObject jsonEvent = new JSONObject(jsonObj);
+        // If the values are not available, an excpetion is thrown
+        String summary = jsonEvent.getString("summary");
+
+        Log.trace(TAG_LOG, "summary=" + summary);
+
+        SapiHandler sapiHandler = getSapiHandler();
+        Vector params = new Vector();
+
+        // Is this an add or an update?
+        String id = findEventIdOnServer(summary);
+
+        Log.trace(TAG_LOG, "Server id=" + id);
+        boolean add;
+
+        if (id != null) {
+            jsonEvent.put("id",id);
+            add = false;
+        } else {
+            add = true;
+        }
+
+        params.add("data=" + jsonEvent.toString());
+        JSONObject resp;
+        if (add) {
+            resp = sapiHandler.query("calendar","eventcreate",params,null,null);
+        } else {
+            resp = sapiHandler.query("calendar","eventmodify",params,null,null);
+        }
+
+        if (id == null) {
+            id = resp.getString("id");
+            Log.debug(TAG_LOG, "The new event has id=" + id);
+        }
     }
 
-    public void deleteAllEventsOnServer(CheckSyncClient client) throws Throwable {
-        CheckSyncSource source = client.getSyncSource(
-                CheckSyncClient.SOURCE_NAME_CALENDAR);
-        source.deleteAllFromOutside();
+    private String findEventIdOnServer(String summary) throws Throwable {
+        SapiHandler sapiHandler = getSapiHandler();
+
+        Vector params = new Vector();
+        JSONObject range = new JSONObject();
+        range.put("from","20080101");
+        range.put("to","20120101");
+        params.addElement("range="+range.toString());
+        JSONObject resp = sapiHandler.query("calendar","get",params,null,null);
+        if (resp.has("calendars")) {
+            JSONArray calendars = resp.getJSONArray("calendars");
+
+            for(int j=0;j<calendars.length();++j) {
+                JSONObject calendar = calendars.getJSONObject(j);
+                if (calendar.has("events")) {
+                    JSONArray events = calendar.getJSONArray("events");
+                    for(int i=0;i<events.length();++i) {
+                        JSONObject e = events.getJSONObject(i);
+                        String s = e.getString("summary");
+
+                        if (summary.equals(s)) {
+                            String id = e.getString("id");
+                            return id;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
+    public void deleteEventOnServer(String summary) throws Throwable {
+
+        String id = findEventIdOnServer(summary);
+        if (id == null) {
+            throw new ClientTestException("Event not available on server");
+        }
+        Log.trace(TAG_LOG, "Deleting event on server with key: " + id);
+        SapiHandler sapiHandler = getSapiHandler();
+        Vector params = new Vector();
+        JSONObject param = new JSONObject();
+        param.put("id", id);
+        params.add("event="+param.toString());
+        sapiHandler.query("calendar","eventdelete",params,null,null);
+    }
+
+    public void deleteAllEventsOnServer() throws Throwable {
+
+        // Do this via SAPI to increase performance
+        SapiHandler sapiHandler = getSapiHandler();
+        sapiHandler.query("calendar","reset",null,null,null);
+    }
+
+    public void checkItemsCountOnServer(int count) throws Throwable {
+
+        SapiHandler sapiHandler = getSapiHandler();
+        JSONObject resp = sapiHandler.query("calendar","count",null,null,null);
+        int serverCount = resp.getInt("count");
+        assertTrue(count, serverCount, "Server events count mismatch");
     }
 
     public void setEventAsVCal(String vCal) throws Throwable{
@@ -143,26 +264,6 @@ public abstract class CalendarRobot extends Robot {
     protected AppSyncSourceManager getAppSyncSourceManager() {
         return appSourceManager;
     }
-
-    public abstract void createEmptyEvent() throws Throwable;
-    public abstract void setEventField(String field, String value) throws Throwable;
-    public abstract void loadEvent(String summary) throws Throwable;
-    public abstract void saveEvent() throws Throwable;
-    public void saveEvent(boolean save) throws Throwable { }
-    public abstract void deleteEvent(String summary) throws Throwable;
-    public abstract void deleteAllEvents() throws Throwable;
-    public abstract void loadEventOnServer(String summary,
-            CheckSyncClient client) throws Throwable;
-    public abstract void createEmptyRawEvent() throws Throwable;
-    public abstract void setRawEventField(String fieldName, String fieldValue) throws Throwable;
-    public abstract void setRawReminderField(String fieldName, String fieldValue) throws Throwable;
-    public abstract void saveRawEvent() throws Throwable;
-    public abstract void checkRawEventField(String fieldName, String fieldValue) throws Throwable;
-    public abstract void checkRawReminderField(String fieldName, String fieldValue) throws Throwable;
-    public abstract void checkRawEventAsVCal(String vcal) throws Throwable;
-    protected abstract String findEventKeyOnServer(String summary,
-            CheckSyncClient client) throws Throwable;
-    protected abstract String getCurrentEventVCal() throws Throwable;
 
     private String cleanField(String fieldName, String value, Hashtable supportedValues) {
         String filter = (String)supportedValues.get(fieldName); 
@@ -227,83 +328,35 @@ public abstract class CalendarRobot extends Robot {
         return fieldsAl;
     }
 
+    private SapiHandler getSapiHandler() {
+        if (sapiHandler == null) {
+            Configuration configuration = getConfiguration();
+            sapiHandler = new SapiHandler(StringUtil.extractAddressFromUrl(configuration.getSyncUrl()),
+                                          configuration.getUsername(),
+                                          configuration.getPassword());
 
-    protected String orderVCal(String vcal, String supportedFields[], Hashtable supportedValues) {
-
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Ordering vcal: " + vcal);
         }
-        Vector fieldsAl = getFieldsVector(vcal);
-
-        // order the fields array list
-        String result = "";
-        String[] fields = StringUtil.getStringArray(fieldsAl);
-        for(int i=0; i<fields.length; i++) {
-            for(int j=fields.length-1; j>i; j--) {
-                if(fields[j].compareTo(fields[j-1])<0) {
-                    String temp = fields[j];
-                    fields[j] = fields[j-1];
-                    fields[j-1] = temp;
-                }
-            }
-
-            // Trim any leading/trailing white space
-            fields[i] = fields[i].trim();
-
-            // Exclude last occurrence of ";" from all fields
-            while (fields[i].endsWith(";")) {
-                fields[i] = new String(fields[i].substring(0, fields[i].length()-1));
-            }
-            
-            // Order ENCODING and CHARSET parameters
-            int index = fields[i].indexOf("ENCODING=QUOTED-PRINTABLE;CHARSET=UTF-8");
-            int length = "ENCODING=QUOTED-PRINTABLE;CHARSET=UTF-8".length();
-            if(index != -1) {
-                StringBuffer field = new StringBuffer();
-                field.append(fields[i].substring(0, index));
-                field.append("CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE");
-                field.append(fields[i].substring(index+length));
-                fields[i] = field.toString();
-            }
-            
-            // Exclude empty fields and fields which are not supported by the
-            // device
-            if(!fields[i].endsWith(":")) {
-                if (supportedFields != null) {
-                    int fieldNameIdx = fields[i].indexOf(":");
-                    if (fieldNameIdx != -1) {
-                        String fieldName = fields[i].substring(0, fieldNameIdx);
-
-                        for(int j=0;j<supportedFields.length;++j) {
-                            if (fieldName.equals(supportedFields[j])) {
-
-                                if (fieldNameIdx + 1 < fields[i].length()) {
-                                    String value = fields[i].substring(fieldNameIdx + 1);
-                                    value = cleanField(fieldName, value, supportedValues);
-
-                                    // Exclude last occurrence of ";" from all fields
-                                    while (value.endsWith(";")) {
-                                        value = new String(value.substring(0, value.length()-1));
-                                    }
-
-                                    result += fieldName + ":" + value + "\r\n";
-                                } else {
-                                    result += fields[i] + "\r\n";
-                                }
-                                break;
-                            }
-                        }
-                    } else {
-                        result += fields[i] + "\r\n";
-                    }
-                } else {
-                    result += fields[i] + "\r\n";
-                }
-            }
-        }
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Ordered vcal: " + result);
-        }
-        return result;
+        return sapiHandler;
     }
+
+
+
+    public abstract void createEmptyEvent() throws Throwable;
+    public abstract void setEventField(String field, String value) throws Throwable;
+    public abstract void loadEvent(String summary) throws Throwable;
+    public abstract void saveEvent() throws Throwable;
+    public void saveEvent(boolean save) throws Throwable { }
+    public abstract void deleteEvent(String summary) throws Throwable;
+    public abstract void deleteAllEvents() throws Throwable;
+    public abstract void createEmptyRawEvent() throws Throwable;
+    public abstract void setRawEventField(String fieldName, String fieldValue) throws Throwable;
+    public abstract void setRawReminderField(String fieldName, String fieldValue) throws Throwable;
+    public abstract void saveRawEvent() throws Throwable;
+    public abstract void checkRawEventField(String fieldName, String fieldValue) throws Throwable;
+    public abstract void checkRawReminderField(String fieldName, String fieldValue) throws Throwable;
+    public abstract void checkRawEventAsVCal(String vcal) throws Throwable;
+    protected abstract String getCurrentEventVCal() throws Throwable;
+    protected abstract Configuration getConfiguration();
+
+
 }

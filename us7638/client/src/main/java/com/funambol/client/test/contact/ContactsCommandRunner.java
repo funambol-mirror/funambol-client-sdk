@@ -35,8 +35,9 @@
 
 package com.funambol.client.test.contact;
 
-import com.funambol.client.test.CommandRunner;
 import java.util.Vector;
+
+import com.funambol.client.test.CommandRunner;
 
 
 public class ContactsCommandRunner extends CommandRunner implements ContactsUserCommands {
@@ -84,7 +85,7 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         super(robot);
     }
 
-    public boolean runCommand(String command, String pars) throws Throwable {
+    public boolean runCommand(String command, Vector pars) throws Throwable {
         if (CREATE_EMPTY_CONTACT_COMMAND.equals(command)) {
             createEmptyContact(command, pars);
         } else if (LOAD_CONTACT_COMMAND.equals(command)) {
@@ -101,8 +102,6 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
             deleteAllContacts(command, pars);
         } else if (CREATE_EMPTY_CONTACT_ON_SERVER_COMMAND.equals(command)) {
             createEmptyContactOnServer(command, pars);
-        } else if (LOAD_CONTACT_ON_SERVER_COMMAND.equals(command)) {
-            loadContactOnServer(command, pars);
         } else if (SAVE_CONTACT_ON_SERVER_COMMAND.equals(command)) {
             saveContactOnServer(command, pars);
         } else if (DELETE_CONTACT_ON_SERVER_COMMAND.equals(command)) {
@@ -125,6 +124,8 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
             checkRawContactAsVCard(command, pars);
         } else if (CHECK_RAW_CONTACT_DATA.equals(command)) {
             checkRawContactData(command, pars);
+        } else if (CHECK_CONTACTS_COUNT_ON_SERVER_COMMAND.equals(command)) {
+            checkContactsCountOnServer(command, pars);
         } else {
             return false;
         }
@@ -135,15 +136,15 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         return (ContactsRobot)robot;
     }
 
-    private void createEmptyContact(String command, String args) throws Throwable {
+    private void createEmptyContact(String command, Vector args) throws Throwable {
         getContactsRobot().createEmptyContact();
     }
 
-    private void createEmptyContactOnServer(String command, String args) throws Throwable {
+    private void createEmptyContactOnServer(String command, Vector args) throws Throwable {
         getContactsRobot().createEmptyContact();
     }
 
-    private void setContactField(String command, String args) throws Throwable {
+    private void setContactField(String command, Vector args) throws Throwable {
         String field = getParameter(args, 0);
         String value = getParameter(args, 1);
         checkArgument(field, "Missing field name in " + command);
@@ -151,13 +152,13 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         getContactsRobot().setContactField(field, value);
     }
 
-    private void setContactAsVCard (String command, String args) throws Throwable {
+    private void setContactAsVCard (String command, Vector args) throws Throwable {
         String VCard = getParameter(args, 0);
         checkArgument(VCard, "Missing field name in " + command);
         getContactsRobot().setContactAsVCard(VCard);
     }
 
-    private void emptyContactField(String command, String args) throws Throwable {
+    private void emptyContactField(String command, Vector args) throws Throwable {
         String field = getParameter(args, 0);
         checkArgument(field, "Missing field in " + command);
         String empty = "";
@@ -169,19 +170,11 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         getContactsRobot().setContactField(field, empty);
     }
 
-    private void loadContact(String command, String args) throws Throwable {
-        String firstname = getParameter(args, 0);
-        String lastname  = getParameter(args, 1);
-        checkArgument(lastname, "Missing lastname in " + command);
-        checkArgument(lastname, "Missing lastname in " + command);
-        getContactsRobot().loadContact(firstname, lastname);
-    }
-
-    private void saveContact(String command, String args) throws Throwable {
+    private void saveContact(String command, Vector args) throws Throwable {
         getContactsRobot().saveContact();
     }
 
-    private void deleteContact(String command, String args) throws Throwable {
+    private void deleteContact(String command, Vector args) throws Throwable {
         String firstname = getParameter(args, 0);
         String lastname  = getParameter(args, 1);
         checkArgument(firstname, "Missing firstname in " + command);
@@ -189,37 +182,47 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         getContactsRobot().deleteContact(firstname, lastname);
     }
 
-    private void deleteAllContacts(String command, String args) throws Throwable {
+    private void deleteAllContacts(String command, Vector args) throws Throwable {
         getContactsRobot().deleteAllContacts();
     }
 
-    private void checkContactAsVCard(String command, String args) throws Throwable {
+    private void checkContactAsVCard(String command, Vector args) throws Throwable {
         String vcard     = getParameter(args, 0);
         checkArgument(vcard, "Missing vcard in " + command);
         getContactsRobot().checkContactAsVCard(vcard);
     }
 
-    private void setContactFromServer(String command, String args) throws Throwable {
+    private void setContactFromServer(String command, Vector args) throws Throwable {
         String vcard     = getParameter(args, 0);
         checkArgument(vcard, "Missing vcard in " + command);
         getContactsRobot().setContactFromServer(vcard);
     }
 
-    private void loadContactOnServer(String command, String args) throws Throwable {
+    private void loadContact(String command, Vector args) throws Throwable {
         String firstname = getParameter(args, 0);
         String lastname  = getParameter(args, 1);
-        checkArgument(firstname, "Missing firstname in " + command);
         checkArgument(lastname, "Missing lastname in " + command);
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        getContactsRobot().loadContactOnServer(firstname, lastname, checkSyncClient);
+        checkArgument(lastname, "Missing lastname in " + command);
+        getContactsRobot().loadContact(firstname, lastname);
     }
 
-    private void saveContactOnServer(String command, String args) throws Throwable {
+    private void saveContactOnServer(String command, Vector args) throws Throwable {
         checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        getContactsRobot().saveContactOnServer(checkSyncClient);
+
+        // If there is only one par, this is the JSON object directly
+        // otherwise it is first and last name
+        String firstname = getParameter(args, 0);
+        String lastname  = getParameter(args, 1);
+        checkArgument(firstname, "Missing firstname or JSON object in " + command);
+
+        if (lastname == null) {
+            getContactsRobot().saveContactOnServer(firstname);
+        } else {
+            getContactsRobot().saveContactOnServer(firstname, lastname);
+        }
     }
 
-    private void deleteContactOnServer(String command, String args) throws Throwable {
+    private void deleteContactOnServer(String command, Vector args) throws Throwable {
         String firstname = getParameter(args, 0);
         String lastname  = getParameter(args, 1);
         checkArgument(firstname, "Missing firstname in " + command);
@@ -228,16 +231,16 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         getContactsRobot().deleteContactOnServer(firstname, lastname, checkSyncClient);
     }
 
-    private void deleteAllContactsOnServer(String command, String args) throws Throwable {
+    private void deleteAllContactsOnServer(String command, Vector args) throws Throwable {
         checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
         getContactsRobot().deleteAllContactsOnServer(checkSyncClient);
     }
 
-    private void createEmptyRawContact(String command, String args) throws Throwable {
+    private void createEmptyRawContact(String command, Vector args) throws Throwable {
         getContactsRobot().createEmptyRawContact();
     }
 
-   private void setRawContactData(String command, String args) throws Throwable {
+   private void setRawContactData(String command, Vector args) throws Throwable {
         String mimeType  = getParameter(args, 0);
         Vector dataFields = new Vector();
         String data = null;
@@ -249,17 +252,17 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         getContactsRobot().setRawContactData(mimeType, dataFields);
     }
 
-    private void saveRawContact(String command, String args) throws Throwable {
+    private void saveRawContact(String command, Vector args) throws Throwable {
         getContactsRobot().saveRawContact();
     }
 
-    private void checkRawContactAsVCard(String command, String args) throws Throwable {
+    private void checkRawContactAsVCard(String command, Vector args) throws Throwable {
         String vcard= getParameter(args, 0);
         checkArgument(vcard, "Missing vcard in " + command);
         getContactsRobot().checkRawContactAsVCard(vcard);
     }
 
-    private void checkRawContactData(String command, String args) throws Throwable {
+    private void checkRawContactData(String command, Vector args) throws Throwable {
         String mimeType  = getParameter(args, 0);
         Vector dataFields = new Vector();
         String data = null;
@@ -269,5 +272,21 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         }
         checkArgument(mimeType, "Missing field mimeType in " + command);
         getContactsRobot().checkRawContactData(mimeType, dataFields);
+    }
+
+    /**
+     * Command to check the items count on server
+     * @param command the String formatted command to check the server's items
+     * count
+     * @param args the command's String formatted arguments
+     * @throws Throwable if anything went wrong
+     */
+    private void checkContactsCountOnServer(String command, Vector args) throws Throwable {
+
+        String count =  getParameter(args, 0);
+
+        checkArgument(count, "Missing count in " + command);
+
+        getContactsRobot().checkItemsCountOnServer(Integer.parseInt(count));
     }
 }

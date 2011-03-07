@@ -35,6 +35,15 @@
 
 package com.funambol.client.test;
 
+import java.util.Vector;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParser;
+//import org.xmlpull.v1.XmlPullParserFactory;
+import com.funambol.org.kxml2.io.KXmlParser;
+
 import com.funambol.client.test.basic.BasicCommandRunner;
 import com.funambol.client.test.util.CheckSyncClient;
 import com.funambol.client.test.util.SyncMonitor;
@@ -42,10 +51,8 @@ import com.funambol.client.test.util.TestFileManager;
 import com.funambol.util.Log;
 import com.funambol.util.HttpTransportAgent;
 import com.funambol.util.StringUtil;
-
 import com.funambol.sync.SyncConfig;
 
-import java.util.Vector;
 
 /**
  * The CommandRunner container implementation to run commands that are common to
@@ -138,7 +145,12 @@ public class BasicScriptRunner extends CommandRunner {
         if (scriptUrl != null) {
             try {
                 String script = fileManager.getFile(scriptUrl);
-                runScript(script, scriptUrl);
+
+                if (scriptUrl.endsWith("xml")) {
+                    runXmlScript(script, scriptUrl);
+                } else {
+                    runScript(script, scriptUrl);
+                }
             } catch (Exception e) {
                 report.append("Cannot load script at:\n").append(scriptUrl);
                 Log.error(TAG_LOG, "Cannot load script at " + scriptUrl + " because " + e);
@@ -149,6 +161,121 @@ public class BasicScriptRunner extends CommandRunner {
             throw new ClientTestException("The script url is NULL");
         }
     }
+
+    public void runXmlScript(String script, String scriptUrl) throws Throwable {
+        // Start parsing the XML script file
+        XmlPullParser parser = new KXmlParser();
+
+        try {
+            ByteArrayInputStream is = new ByteArrayInputStream(script.getBytes("UTF-8"));
+            parser.setInput(is, "UTF-8");
+
+            // Begin parsing
+            nextSkipSpaces(parser);
+            // If the first tag is not the SyncML start tag, then this is an
+            // invalid message
+            require(parser, parser.START_TAG, null, "Script");
+            nextSkipSpaces(parser);
+
+            String currentCommand = null;
+            boolean condition = false;
+            Vector args = null;
+
+            while (parser.getEventType() != parser.END_DOCUMENT) {
+
+                // Each tag here is a command. All commands have the same
+                // format:
+                // <command>
+                //   <arg>arg1</arg>
+                //   <arg>arg2</arg>
+                // </command>
+                //
+                // The only exception is for conditional statements 
+                // <condition>
+                //   <if>condition</if>
+                //   <then><command>...</command></then>
+                //   <else><command>...</command>/else>
+                // </condition>
+
+                if (parser.getEventType() == parser.START_TAG) {
+                    String tagName = parser.getName();
+
+                    if ("Condition".equals(tagName)) {
+                        // TODO FIXME
+                        condition = true;
+                    } else {
+                        if (currentCommand == null) {
+                            currentCommand = tagName;
+                            args = new Vector();
+                            Log.trace(TAG_LOG, "Found command " + currentCommand);
+                        } else {
+                            // This can only be an <arg> tag
+                            if ("Arg".equals(tagName)) {
+                                parser.next();
+                                if (parser.getEventType() == parser.TEXT) {
+                                    String arg = parser.getText();
+                                    Log.trace(TAG_LOG, "Found argument " + arg);
+                                    args.addElement(arg);
+                                } else {
+                                    // Error, what kind of argument is this?
+                                }
+                                parser.next();
+                                require(parser, parser.END_TAG, null, "Arg");
+                            }
+                        }
+                    }
+                } else if (parser.getEventType() == parser.END_TAG) {
+                    String tagName = parser.getName();
+                    if ("Condition".equals(tagName)) {
+                        condition = false;
+                        currentCommand = null;
+                    } else if (tagName.equals(currentCommand)) {
+                        runCommand(currentCommand, args);
+                        currentCommand = null;
+                    } else if ("Script".equals(tagName)) {
+                        // end script found
+                    }
+                }
+                nextSkipSpaces(parser);
+            }
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Error parsing command", e);
+            throw new ClientTestException("Script syntax error");
+        }
+    }
+
+    private void nextSkipSpaces(XmlPullParser parser) throws ClientTestException,
+                                                             XmlPullParserException,
+                                                             IOException {
+        int eventType = parser.next();
+
+        if (eventType == parser.TEXT) {
+            if (!parser.isWhitespace()) {
+                String t = parser.getText();
+
+                if (t.length() > 0) {
+                    Log.error(TAG_LOG, "Unexpected text: " + t);
+                    throw new ClientTestException("Unexpected text: " + t);
+                }
+            }
+            parser.next();
+        }
+    }
+
+    private void require(XmlPullParser parser, int type, String namespace,
+                         String name) throws XmlPullParserException
+    {
+        if (type != parser.getEventType()
+            || (namespace != null && !namespace.equals(parser.getNamespace()))
+            || (name != null &&  !name.equals(parser.getName())))
+        {
+            StringBuffer desc = new StringBuffer();
+            desc.append("Expected ").append(parser.TYPES[ type ]).append(parser.getPositionDescription())
+                .append(" -- Found ").append(parser.TYPES[parser.getEventType()]);
+            throw new XmlPullParserException(desc.toString());
+        }
+    }
+
 
     /**
      * Execute the given script by interpreting it
@@ -342,7 +469,17 @@ public class BasicScriptRunner extends CommandRunner {
                     }
 
                     if (!ignoreCurrentScript) {
-                        runCommand(command, pars);
+                        // Extract parameters and put them into a vector
+                        Vector args = new Vector();
+                        int i = 0;
+                        String arg;
+                        do {
+                            arg = getParameter(pars, i++);
+                            if (arg != null) {
+                                args.addElement(arg);
+                            }
+                        } while(arg != null);
+                        runCommand(command, args);
                     }
                 }
             } catch (IgnoreScriptException ise) {
@@ -405,7 +542,7 @@ public class BasicScriptRunner extends CommandRunner {
      * given command with the given parameters, false otherwise.
      * @throws Throwable if an error occurred executing the command.
      */
-    public boolean runCommand(String command, String pars) throws Throwable {
+    public boolean runCommand(String command, Vector pars) throws Throwable {
 
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "command=" + command);
@@ -440,9 +577,8 @@ public class BasicScriptRunner extends CommandRunner {
      * @param args the command's related String formatted arguments
      * @throws Throwable if an error occurs
      */
-    private void includeScript(String command, String args) throws Throwable {
-        String scriptUrl = getParameter(args, 0);
-
+    private void includeScript(String command, Vector args) throws Throwable {
+        String scriptUrl = (String)args.elementAt(0);
         checkArgument(scriptUrl, "Missing script url in " + command);
 
         if (!scriptUrl.startsWith("http") && !scriptUrl.startsWith("file")) {

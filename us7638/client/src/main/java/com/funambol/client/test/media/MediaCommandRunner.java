@@ -35,6 +35,8 @@
 
 package com.funambol.client.test.media;
 
+import java.util.Vector;
+
 import com.funambol.client.test.CommandRunner;
 import com.funambol.client.test.basic.BasicUserCommands;
 
@@ -47,7 +49,7 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         super(robot);
     }
 
-    public boolean runCommand(String command, String pars) throws Throwable {
+    public boolean runCommand(String command, Vector pars) throws Throwable {
         if (ADD_PICTURE.equals(command)) {
             addMedia(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
         } else if (ADD_VIDEO.equals(command)) {
@@ -82,35 +84,35 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         return (MediaRobot)robot;
     }
 
-    private void addMedia(String type, String command, String args) throws Throwable {
+    private void addMedia(String type, String command, Vector args) throws Throwable {
         String filename = getParameter(args, 0);
         checkArgument(filename, "Missing filename in " + command);
         getMediaRobot().addMedia(type, filename);
     }
 
-    private void addMediaOnServer(String type, String command, String args) throws Throwable {
+    private void addMediaOnServer(String type, String command, Vector args) throws Throwable {
         String filename = getParameter(args, 0);
         checkArgument(filename, "Missing filename in " + command);
         getMediaRobot().addMediaOnServer(type, filename);
     }
 
-    private void deleteMedia(String type, String command, String args) throws Throwable {
+    private void deleteMedia(String type, String command, Vector args) throws Throwable {
         String filename = getParameter(args, 0);
         checkArgument(filename, "Missing filename in " + command);
         getMediaRobot().deleteMedia(type, filename);
     }
     
-    private void deleteMediaOnServer(String type, String command, String args) throws Throwable {
+    private void deleteMediaOnServer(String type, String command, Vector args) throws Throwable {
         String filename = getParameter(args, 0);
         checkArgument(filename, "Missing filename in " + command);
         getMediaRobot().deleteMediaOnServer(type, filename);
     }
 
-    private void deleteAllMedia(String type, String command, String args) throws Throwable {
+    private void deleteAllMedia(String type, String command, Vector args) throws Throwable {
         getMediaRobot().deleteAllMedia(type);
     }
 
-    private void deleteAllMediaOnServer(String type, String command, String args) throws Throwable {
+    private void deleteAllMediaOnServer(String type, String command, Vector args) throws Throwable {
         getMediaRobot().deleteAllMediaOnServer(type);
     }
     

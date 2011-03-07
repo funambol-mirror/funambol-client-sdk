@@ -202,6 +202,8 @@ public interface EventsUserCommands {
      */
     public static final String SET_EVENT_FROM_SERVER = "SetEventFromServer";
 
+    public static final String CHECK_EVENTS_COUNT_ON_SERVER_COMMAND = "CheckEventsCountOnServer";
+
 
     // These commands are used by automatically generated scripts
     public static final String CREATE_EMPTY_RAW_EVENT   = "CreateEmptyRawEvent";

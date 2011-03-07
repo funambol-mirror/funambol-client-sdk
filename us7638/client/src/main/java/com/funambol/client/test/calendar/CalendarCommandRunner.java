@@ -35,6 +35,8 @@
 
 package com.funambol.client.test.calendar;
 
+import java.util.Vector;
+
 import com.funambol.client.test.CommandRunner;
 
 
@@ -58,7 +60,7 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
         super(robot);
     }
 
-    public boolean runCommand(String command, String pars) throws Throwable {
+    public boolean runCommand(String command, Vector pars) throws Throwable {
         if (CREATE_EMPTY_EVENT_COMMAND.equals(command)) {
             createEmptyEvent(command, pars);
         } else if (LOAD_EVENT_COMMAND.equals(command)) {
@@ -73,10 +75,6 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
             deleteEvent(command, pars);
         } else if (DELETE_ALL_EVENTS_COMMAND.equals(command)) {
             deleteAllEvents(command, pars);
-        } else if (CREATE_EMPTY_EVENT_ON_SERVER_COMMAND.equals(command)) {
-            createEmptyEventOnServer(command, pars);
-        } else if (LOAD_EVENT_ON_SERVER_COMMAND.equals(command)) {
-            loadEventOnServer(command, pars);
         } else if (SAVE_EVENT_ON_SERVER_COMMAND.equals(command)) {
             saveEventOnServer(command, pars);
         } else if (DELETE_EVENT_ON_SERVER_COMMAND.equals(command)) {
@@ -101,6 +99,8 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
             checkRawEventField(command, pars);
         } else if (CHECK_RAW_REMINDER_FIELD.equals(command)) {
             checkRawReminderField(command, pars);
+        } else if (CHECK_EVENTS_COUNT_ON_SERVER_COMMAND.equals(command)) {
+            checkEventsCountOnServer(command, pars);
         } else {
             return false;
         }
@@ -111,15 +111,11 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
         return (CalendarRobot)robot;
     }
 
-    private void createEmptyEvent(String command, String args) throws Throwable {
+    private void createEmptyEvent(String command, Vector args) throws Throwable {
         getCalendarRobot().createEmptyEvent();
     }
 
-    private void createEmptyEventOnServer(String command, String args) throws Throwable {
-        getCalendarRobot().createEmptyEvent();
-    }
-
-    private void setEventField(String command, String args) throws Throwable {
+    private void setEventField(String command, Vector args) throws Throwable {
         String field = getParameter(args, 0);
         String value = getParameter(args, 1);
         checkArgument(field, "Missing field name in " + command);
@@ -127,19 +123,19 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
         getCalendarRobot().setEventField(field, value);
     }
 
-    private void emptyEventField(String command, String args) throws Throwable {
+    private void emptyEventField(String command, Vector args) throws Throwable {
         String field = getParameter(args, 0);
         checkArgument(field, "Missing field in " + command);
         getCalendarRobot().setEventField(field, "");
     }
 
-    private void loadEvent(String command, String args) throws Throwable {
+    private void loadEvent(String command, Vector args) throws Throwable {
         String summary = getParameter(args, 0);
         checkArgument(summary, "Missing summary in " + command);
         getCalendarRobot().loadEvent(summary);
     }
 
-    private void saveEvent(String command, String args) throws Throwable {
+    private void saveEvent(String command, Vector args) throws Throwable {
         String useNativeApp = getParameter(args, 0);
         if("true".equals(useNativeApp)) {
             getCalendarRobot().saveEvent(true);
@@ -148,57 +144,52 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
         }
     }
 
-    private void deleteEvent(String command, String args) throws Throwable {
+    private void deleteEvent(String command, Vector args) throws Throwable {
         String summary = getParameter(args, 0);
         checkArgument(summary, "Missing summary in " + command);
         getCalendarRobot().deleteEvent(summary);
     }
 
-    private void deleteAllEvents(String command, String args) throws Throwable {
+    private void deleteAllEvents(String command, Vector args) throws Throwable {
         getCalendarRobot().deleteAllEvents();
     }
 
-    private void loadEventOnServer(String command, String args) throws Throwable {
+    private void saveEventOnServer(String command, Vector args) throws Throwable {
+        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
+        String summary = getParameter(args, 0);
+        checkArgument(summary, "Missing summary in " + command);
+        getCalendarRobot().saveEventOnServer(summary);
+    }
+
+    private void deleteEventOnServer(String command, Vector args) throws Throwable {
         String summary = getParameter(args, 0);
         checkArgument(summary, "Missing summary in " + command);
         checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        getCalendarRobot().loadEventOnServer(summary, checkSyncClient);
+        getCalendarRobot().deleteEventOnServer(summary);
     }
 
-    private void saveEventOnServer(String command, String args) throws Throwable {
+    private void deleteAllEventsOnServer(String command, Vector args) throws Throwable {
         checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        getCalendarRobot().saveEventOnServer(checkSyncClient);
+        getCalendarRobot().deleteAllEventsOnServer();
     }
 
-    private void deleteEventOnServer(String command, String args) throws Throwable {
-        String summary = getParameter(args, 0);
-        checkArgument(summary, "Missing summary in " + command);
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        getCalendarRobot().deleteEventOnServer(summary, checkSyncClient);
-    }
-
-    private void deleteAllEventsOnServer(String command, String args) throws Throwable {
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        getCalendarRobot().deleteAllEventsOnServer(checkSyncClient);
-    }
-
-    private void setEventAsVCal(String command, String args) throws Throwable {
+    private void setEventAsVCal(String command, Vector args) throws Throwable {
         String vcal = getParameter(args, 0);
         checkArgument(vcal, "Missing vcal in " + command);
         getCalendarRobot().setEventAsVCal(vcal);
     }
 
-    private void setEventFromServer(String command, String args) throws Throwable {
+    private void setEventFromServer(String command, Vector args) throws Throwable {
         String vcal = getParameter(args, 0);
         checkArgument(vcal, "Missing vcal in " + command);
         getCalendarRobot().setEventFromServer(vcal);
     }
 
-    private void createEmptyRawEvent(String command, String args) throws Throwable {
+    private void createEmptyRawEvent(String command, Vector args) throws Throwable {
         getCalendarRobot().createEmptyRawEvent();
     }
 
-    private void setRawEventField(String command, String args) throws Throwable {
+    private void setRawEventField(String command, Vector args) throws Throwable {
         String fieldName  = getParameter(args, 0);
         String fieldValue = getParameter(args, 1);
         checkArgument(fieldName,  "Missing field name in " + command);
@@ -206,7 +197,7 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
         getCalendarRobot().setRawEventField(fieldName, fieldValue);
     }
 
-    private void setRawReminderField(String command, String args) throws Throwable {
+    private void setRawReminderField(String command, Vector args) throws Throwable {
         String fieldName  = getParameter(args, 0);
         String fieldValue = getParameter(args, 1);
         checkArgument(fieldName,  "Missing field name in " + command);
@@ -214,17 +205,17 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
         getCalendarRobot().setRawReminderField(fieldName, fieldValue);
     }
 
-    private void saveRawEvent(String command, String args) throws Throwable {
+    private void saveRawEvent(String command, Vector args) throws Throwable {
         getCalendarRobot().saveRawEvent();
     }
 
-    private void checkRawEventAsVCal(String command, String args) throws Throwable {
+    private void checkRawEventAsVCal(String command, Vector args) throws Throwable {
         String vcal = getParameter(args, 0);
         checkArgument(vcal, "Missing vcal in " + command);
         getCalendarRobot().checkRawEventAsVCal(vcal);
     }
 
-    private void checkRawReminderField(String command, String args) throws Throwable {
+    private void checkRawReminderField(String command, Vector args) throws Throwable {
         String fieldName  = getParameter(args, 0);
         String fieldValue = getParameter(args, 1);
         checkArgument(fieldName,  "Missing field name in " + command);
@@ -232,12 +223,26 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
         getCalendarRobot().checkRawReminderField(fieldName, fieldValue);
     }
 
-    private void checkRawEventField(String command, String args) throws Throwable {
+    private void checkRawEventField(String command, Vector args) throws Throwable {
         String fieldName  = getParameter(args, 0);
         String fieldValue = getParameter(args, 1);
         checkArgument(fieldName,  "Missing field name in " + command);
         checkArgument(fieldValue, "Missing field value in " + command);
         getCalendarRobot().checkRawEventField(fieldName, fieldValue);
+    }
+
+    /**
+     * Command to check the items count on server
+     * @param command the String formatted command to check the server's items
+     * count
+     * @param args the command's String formatted arguments
+     * @throws Throwable if anything went wrong
+     */
+    private void checkEventsCountOnServer(String command, Vector args) throws Throwable {
+
+        String count =  getParameter(args, 0);
+        checkArgument(count, "Missing count in " + command);
+        getCalendarRobot().checkItemsCountOnServer(Integer.parseInt(count));
     }
 }
  

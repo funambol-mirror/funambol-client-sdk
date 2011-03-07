@@ -35,11 +35,12 @@
 
 package com.funambol.client.test.basic;
 
+import java.util.Vector;
+
 import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.CommandRunner;
 import com.funambol.client.test.IgnoreScriptException;
 import com.funambol.client.test.Robot;
-import java.util.Vector;
 
 import com.funambol.util.Log;
 
@@ -47,8 +48,7 @@ import com.funambol.util.Log;
  * Implementation of the CommandRunner class that define the full commands set
  * available to the tester in order to create automatic test script.
  */
-public abstract class BasicCommandRunner extends CommandRunner
-        implements BasicUserCommands {
+public abstract class BasicCommandRunner extends CommandRunner implements BasicUserCommands {
 
     private static final String TAG_LOG = "BasicCommandRunner";
     
@@ -108,7 +108,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @return boolean true if the command is valid, false otherwise
      * @throws Throwable if anything goes wrong when the command is run
      */
-    public boolean runCommand(String command, String pars) throws Throwable {
+    public boolean runCommand(String command, Vector pars) throws Throwable {
 
         if (WAIT_COMMAND.equals(command)) {
             wait(command, pars);
@@ -142,8 +142,6 @@ public abstract class BasicCommandRunner extends CommandRunner
             closeMainApp(command, pars);
         } else if (CHECK_ITEMS_COUNT_COMMAND.equals(command)) {
             checkItemsCount(command, pars);
-        } else if (CHECK_ITEMS_COUNT_ON_SERVER_COMMAND.equals(command)) {
-            checkItemsCountOnServer(command, pars);
         } else if (INTERRUPT_SYNC_AFTER_PHASE_COMMAND.equals(command)) {
             interruptSyncAfterPhase(command, pars);
         } else if (SET_DEVICE_DATE.equals(command)) {
@@ -179,7 +177,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command related and String formatted arguments
      * @throws Throwable if anything goes wrong when the application starts.
      */
-    protected abstract void startMainApp(String command, String args) throws Throwable;
+    protected abstract void startMainApp(String command, Vector args) throws Throwable;
 
     /**
      * The automatic test common method to close the main application.
@@ -188,7 +186,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command related and String formatted arguments
      * @throws Throwable if anything goes wrong when the application starts.
      */
-    protected abstract void closeMainApp(String command, String args) throws Throwable;
+    protected abstract void closeMainApp(String command, Vector args) throws Throwable;
     
     /**
      * Uses the SyncMonitor object to wait that for specific sync action and
@@ -200,7 +198,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * the maximum time for the sync to be completed.
      * @throws Throwable if anything went wrong during the sync
      */
-    protected void waitForSyncToComplete(String command, String args) throws Throwable {
+    protected void waitForSyncToComplete(String command, Vector args) throws Throwable {
 
         String minStart = getParameter(args, 0);
         String maxWait  = getParameter(args, 1);
@@ -222,7 +220,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command related and String formatted arguments
      * @throws Throwable if an error occurred
      */
-    private void interruptSyncAfterPhase(String command, String args) throws Throwable {
+    private void interruptSyncAfterPhase(String command, Vector args) throws Throwable {
 
         String phase  = getParameter(args, 0);
         String num    = getParameter(args, 1);
@@ -251,7 +249,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * the tester in the input script.
      * @throws Throwable if an error occurred
      */
-    private void waitForAuthToComplete(String command, String args) throws Throwable {
+    private void waitForAuthToComplete(String command, Vector args) throws Throwable {
 
         String minStart = getParameter(args, 0);
         String maxWait  = getParameter(args, 1);
@@ -275,7 +273,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * tester must provide the test name when declaring the begin of a test
      * @throws Throwable if an error occurred
      */
-    private void beginTest(String command, String args) throws Throwable {
+    private void beginTest(String command, Vector args) throws Throwable {
 
         currentTestName = getParameter(args, 0);
         if (currentTestName == null) {
@@ -365,7 +363,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * command
      * @throws Throwable if an error occurred
      */
-    private void endTest(String command, String args) throws Throwable {
+    private void endTest(String command, Vector args) throws Throwable {
         currentTestName = null;
     }
 
@@ -376,7 +374,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's related String arguments.
      * @throws Throwable if an error occurred
      */
-    private void checkExchangedData(String command, String args) throws Throwable {
+    private void checkExchangedData(String command, Vector args) throws Throwable {
 
         String source          = getParameter(args, 0);
         String sentAdd         = getParameter(args, 1);
@@ -410,7 +408,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's related String arguments.
      * @throws Throwable if an error occurred
      */
-    private void checkLastSyncRequestedSyncMode(String command, String args) throws Throwable {
+    private void checkLastSyncRequestedSyncMode(String command, Vector args) throws Throwable {
 
         String source = getParameter(args, 0);
         String mode = getParameter(args, 1);
@@ -432,7 +430,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's related String arguments.
      * @throws Throwable if an error occurred
      */
-    private void checkLastSyncAlertedSyncMode(String command, String args) throws Throwable {
+    private void checkLastSyncAlertedSyncMode(String command, Vector args) throws Throwable {
 
         String source = getParameter(args, 0);
         String mode = getParameter(args, 1);
@@ -454,7 +452,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's related String arguments.
      * @throws Throwable if an error occurred
      */
-    private void checkLastSyncRemoteUri(String command, String args) throws Throwable {
+    private void checkLastSyncRemoteUri(String command, Vector args) throws Throwable {
 
         String source = getParameter(args, 0);
         String remoteUri = getParameter(args, 1);
@@ -474,7 +472,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's related String arguments.
      * @throws Throwable if an error occurred
      */
-    private void resetSourceAnchor(String command, String args) throws Throwable {
+    private void resetSourceAnchor(String command, Vector args) throws Throwable {
 
         String source = getParameter(args, 0);
 
@@ -489,7 +487,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's related String arguments.
      * @throws Throwable if an error occurred
      */
-    private void refreshServer(String command, String args) throws Throwable {
+    private void refreshServer(String command, Vector args) throws Throwable {
 
         String source = getParameter(args, 0);
 
@@ -504,7 +502,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's related String arguments.
      * @throws Throwable if an error occurred
      */
-    private void keyPress(String command, String args) throws Throwable {
+    private void keyPress(String command, Vector args) throws Throwable {
 
         String keyName = getParameter(args, 0);
         String count = getParameter(args, 1);
@@ -529,7 +527,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's arguments string formatted
      * @throws Throwable if anything goes wrong
      */
-    private void writeString(String command, String args) throws Throwable {
+    private void writeString(String command, Vector args) throws Throwable {
 
         String text = getParameter(args, 0);
 
@@ -545,7 +543,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's arguments string formatted
      * @throws Throwable if anything goes wrong
      */
-    private void wait(String command, String args) throws Throwable {
+    private void wait(String command, Vector args) throws Throwable {
 
         String delay = getParameter(args, 0);
 
@@ -568,7 +566,7 @@ public abstract class BasicCommandRunner extends CommandRunner
      * @param args the command's String formatted arguments
      * @throws Throwable if anything went wrong
      */
-    public void checkItemsCount(String command, String args) throws Throwable {
+    public void checkItemsCount(String command, Vector args) throws Throwable {
 
         String source = getParameter(args, 0);
         String count =  getParameter(args, 1);
@@ -579,27 +577,7 @@ public abstract class BasicCommandRunner extends CommandRunner
         getBasicRobot().checkItemsCount(source, Integer.parseInt(count));
     }
 
-    /**
-     * Command to check the items count on server
-     * @param command the String formatted command to check the server's items
-     * count
-     * @param args the command's String formatted arguments
-     * @throws Throwable if anything went wrong
-     */
-    public void checkItemsCountOnServer(String command, String args) throws Throwable {
-
-        String source = getParameter(args, 0);
-        String count =  getParameter(args, 1);
-
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        checkArgument(source, "Missing source name in " + command);
-        checkArgument(count, "Missing count in " + command);
-
-        getBasicRobot().checkItemsCountOnServer(source, checkSyncClient,
-                Integer.parseInt(count));
-    }
-
-    private void resetFirstRunTimestamp(String command, String args) throws Throwable {
+    private void resetFirstRunTimestamp(String command, Vector args) throws Throwable {
         getBasicRobot().resetFirstRunTimestamp();
     }
 }

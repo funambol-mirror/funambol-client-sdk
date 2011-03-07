@@ -40,13 +40,18 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
+import org.json.me.JSONObject;
+import org.json.me.JSONArray;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
+import com.funambol.client.configuration.Configuration;
 import com.funambol.client.test.BasicScriptRunner;
+import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.basic.BasicRobot;
 import com.funambol.client.test.util.CheckSyncClient;
 import com.funambol.client.test.util.CheckSyncSource;
+import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.StringUtil;
@@ -68,46 +73,127 @@ public abstract class ContactsRobot extends Robot {
 
     protected AppSyncSourceManager appSourceManager;
 
+    protected SapiHandler sapiHandler = null;
+
     public ContactsRobot(AppSyncSourceManager appSourceManager) {
         this.appSourceManager = appSourceManager;
     }
 
-    public void importContactOnServer(String filename) throws Exception {
-        this.contactAsVcard = basicRobot.getTestFileManager().getFile(
-                BasicScriptRunner.getBaseUrl() + "/" + filename);
+    private SapiHandler getSapiHandler() {
+        if (sapiHandler == null) {
+            Configuration configuration = getConfiguration();
+            sapiHandler = new SapiHandler(StringUtil.extractAddressFromUrl(configuration.getSyncUrl()),
+                                          configuration.getUsername(),
+                                          configuration.getPassword());
+
+        }
+        return sapiHandler;
     }
 
-    public void saveContactOnServer(CheckSyncClient client) throws Throwable {
+    public void saveContactOnServer(String firstName, String lastName) throws Throwable {
 
-        CheckSyncSource source = client.getSyncSource(
-                CheckSyncClient.SOURCE_NAME_CONTACTS);
-        SyncItem item = new SyncItem(Long.toString(incrementalServerItemkey++));
-        item.setContent(getCurrentContactVCard().getBytes());
-        
-        if(currentContactId != -1) {
-            item.setKey(Long.toString(currentContactId));
-            source.updateItemFromOutside(item);
-        } else {
-            source.addItemFromOutside(item);
+        SapiHandler sapiHandler = getSapiHandler();
+        Vector params = new Vector();
+
+        // Is this an add or an update?
+        String id = findContactIdOnServer(firstName, lastName);
+
+        StringBuffer jsonContact = new StringBuffer();
+        jsonContact.append("{");
+        if (id != null) {
+            jsonContact.append("\"id\":\"").append(id).append("\",");
+        }
+        jsonContact.append("\"firstname\":\"").append(firstName)
+                   .append("\",\"lastname\":\"").append(lastName).append("\"}");
+        params.add("data=" + jsonContact.toString());
+        Log.trace(TAG_LOG, "Save contact: " + jsonContact.toString());
+        JSONObject resp = sapiHandler.query("contacts","contactsave",params,null,null);
+
+        if (id == null) {
+            id = resp.getString("id");
+            Log.debug(TAG_LOG, "The new contact has id=" + id);
+        }
+    }
+
+    public void saveContactOnServer(String jsonObj) throws Throwable {
+
+        // Unescape the parameter
+        jsonObj = StringUtil.replaceAll(jsonObj, "&quot;","\"");
+        jsonObj = StringUtil.replaceAll(jsonObj, "&comma;",",");
+
+        Log.trace(TAG_LOG, "JSON contact is: " + jsonObj); 
+
+        JSONObject jsonContact = new JSONObject(jsonObj);
+        // If the values are not available, an excpetion is thrown
+        String firstName = jsonContact.getString("firstname");
+        String lastName = jsonContact.getString("lastname");
+
+        Log.trace(TAG_LOG, "firstName=" + firstName + ",lastName=" + lastName);
+
+        SapiHandler sapiHandler = getSapiHandler();
+        Vector params = new Vector();
+
+        // Is this an add or an update?
+        String id = findContactIdOnServer(firstName, lastName);
+
+        Log.trace(TAG_LOG, "Server id=" + id);
+
+        if (id != null) {
+            jsonContact.put("id",id);
         }
 
-        // Reset current contact
-        currentContactId = -1;
-        contactAsVcard = null;
+        params.add("data=" + jsonContact.toString());
+        JSONObject resp = sapiHandler.query("contact","contactsave",params,null,null);
+
+        if (id == null) {
+            id = resp.getString("id");
+            Log.debug(TAG_LOG, "The new contact has id=" + id);
+        }
     }
 
-    public void deleteContactOnServer(String firstname, String lastname,
+    private String findContactIdOnServer(String firstName, String lastName) throws Throwable {
+        SapiHandler sapiHandler = getSapiHandler();
+        JSONObject resp = sapiHandler.query("contact","get",null,null,null);
+        if (resp.has("contacts")) {
+            JSONArray contacts = resp.getJSONArray("contacts");
+            for(int i=0;i<contacts.length();++i) {
+                JSONObject c = contacts.getJSONObject(i);
+                String fName = c.getString("firstname");
+                String lName = c.getString("lastname");
+
+                if (firstName.equals(fName) && lastName.equals(lName)) {
+                    String id = c.getString("id");
+                    return id;
+                }
+            }
+        }
+        return null;
+    }
+
+
+    public void deleteContactOnServer(String firstName, String lastName,
             CheckSyncClient client) throws Throwable {
-        CheckSyncSource source = client.getSyncSource(
-                CheckSyncClient.SOURCE_NAME_CONTACTS);
-        String itemKey = findContactKeyOnServer(firstname, lastname, client);
-        source.deleteItemFromOutside(itemKey);
+
+        String id = findContactIdOnServer(firstName, lastName);
+        if (id == null) {
+            throw new ClientTestException("Contact not available on server");
+        }
+        Log.trace(TAG_LOG, "Deleting contact on server with key: " + id);
+        SapiHandler sapiHandler = getSapiHandler();
+        Vector params = new Vector();
+        JSONObject param = new JSONObject();
+        Vector ids = new Vector();
+        ids.addElement(id);
+        param.put("contacts", ids);
+        params.add("data="+param.toString());
+        sapiHandler.query("contacts","contactsdelete",params,null,null);
     }
 
     public void deleteAllContactsOnServer(CheckSyncClient client) throws Throwable {
-        CheckSyncSource source = client.getSyncSource(
-                CheckSyncClient.SOURCE_NAME_CONTACTS);
-        source.deleteAllFromOutside();
+
+        // Do this via SAPI to increase performance
+        SapiHandler sapiHandler = getSapiHandler();
+        sapiHandler.query("contacts","reset",null,null,null);
     }
 
     public void setContactAsVCard(String vCard) throws Throwable{
@@ -133,6 +219,13 @@ public abstract class ContactsRobot extends Robot {
         client.clear(source);
     }
 
+    public void checkItemsCountOnServer(int count) throws Throwable {
+
+        SapiHandler sapiHandler = getSapiHandler();
+        JSONObject resp = sapiHandler.query("contacts","count",null,null,null);
+        int serverCount = resp.getInt("count");
+        assertTrue(count, serverCount, "Server contacts count mismatch");
+    }
     
     public void setContactFromServer(String vCard) throws Throwable {
 
@@ -336,17 +429,15 @@ public abstract class ContactsRobot extends Robot {
         assertTrue(currentVCard, vcard, "VCard mismatch");
     }
 
+    protected abstract Configuration getConfiguration();
+
     public abstract void createEmptyContact() throws Throwable;
     public abstract void setContactField(String field, String value) throws Throwable;
-    public abstract void loadContact(String firstName, String lastName) throws Throwable;
     public abstract void saveContact() throws Throwable;
     public abstract void deleteContact(String firstname, String lastname) throws Throwable;
     public abstract void deleteAllContacts() throws Throwable;
-    public abstract void loadContactOnServer(String firstName, String lastName,
-            CheckSyncClient client) throws Throwable;
+    public abstract void loadContact(String firstName, String lastName) throws Throwable;
     protected abstract String getCurrentContactVCard() throws Throwable;
-    protected abstract String findContactKeyOnServer(String firstName, String lastName,
-            CheckSyncClient client) throws Throwable;
     public abstract void createEmptyRawContact() throws Throwable;
     public abstract void setRawContactData(String mimeType, Vector dataValues) throws Throwable;
     public abstract void saveRawContact() throws Throwable;
