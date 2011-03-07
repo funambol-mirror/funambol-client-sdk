@@ -642,6 +642,9 @@ public class SapiSyncManager implements SyncManagerI {
                         }
                         twins.addElement(twinItem.getKey());
                         // Skip the processing of this item
+                        if(src instanceof JSONSyncSource) {
+                            ((JSONSyncSource)src).skipItemDownload(syncItem);
+                        }
                         continue;
                     }
                 } else {

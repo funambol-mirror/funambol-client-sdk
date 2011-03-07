@@ -148,9 +148,26 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         this.syncConfig = syncConfig;
     }
 
-    // This method returns the tag name in the JSONobject for the specific
-    // type of data handled by this source. Refer to the SAPI documentation
-    // for more info.
+    public void skipItemDownload(SyncItem item) {
+        // If the download for a specific item has been skipped we notify the
+        // listener in order to be consistent with the total items count
+        String itemKey = item.getKey();
+        String itemParent = item.getParent();
+        long itemSize = item.getObjectSize();
+        if(item.getState() == SyncItem.STATE_NEW) {
+            super.getListener().itemAddReceivingStarted(itemKey, itemParent, itemSize);
+            super.getListener().itemAddReceivingEnded(itemKey, itemParent);
+        } else {
+            super.getListener().itemReplaceReceivingStarted(itemKey, itemParent, itemSize);
+            super.getListener().itemReplaceReceivingEnded(itemKey, itemParent);
+        }
+    }
+
+    /**
+     * This method returns the tag name in the JSONobject for the specific
+     * type of data handled by this source. Refer to the SAPI documentation
+     * for more info.
+     */
     public String getDataTag() {
         return dataTag;
     }
