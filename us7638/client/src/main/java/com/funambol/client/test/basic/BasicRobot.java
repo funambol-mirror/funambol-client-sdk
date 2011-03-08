@@ -167,7 +167,7 @@ public abstract class BasicRobot extends Robot {
 
         SyncSource source = getSyncSource(sourceName);
         source.getSyncAnchor().reset();
-        saveSourceConfig(source);
+        saveSourceConfig(sourceName);
     }
 
     public void refreshServer(String source, CheckSyncClient client) throws Throwable {
@@ -221,7 +221,7 @@ public abstract class BasicRobot extends Robot {
     public abstract void writeString(String text) throws Throwable;
 
     public abstract SyncSource getSyncSource(String sourceName) throws Exception;
-    public abstract void saveSourceConfig(SyncSource source) throws Exception;
+    public abstract void saveSourceConfig(String sourceName) throws Exception;
 
     public abstract void reapplySyncConfig(CheckSyncClient client) throws Throwable;
 
