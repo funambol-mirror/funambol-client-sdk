@@ -514,10 +514,19 @@ public class SapiSyncStatus implements SyncReport {
     public int getNumberOfReceivedItemsWithError() {
         return getNumberOfItemsWithError(receivedItems) + getNumberOfItemsWithError(pendingReceivedItems);
     }
-
+    
+    public int getNumberOfReceivedItemsWithSyncStatus(int syncStatus) {
+        return getNumberOfItemsWithSyncStatus(receivedItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingReceivedItems, syncStatus);
+    }
+    
     public int getNumberOfSentItemsWithError() {
         return getNumberOfItemsWithError(sentItems) + getNumberOfItemsWithError(pendingSentItems);
     }
+    
+    public int getNumberOfSentItemsWithSyncStatus(int syncStatus) {
+        return getNumberOfItemsWithSyncStatus(sentItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingSentItems, syncStatus);
+    }
+
 
     public String toString() {
         StringBuffer res = new StringBuffer();
@@ -610,6 +619,19 @@ public class SapiSyncStatus implements SyncReport {
             String key = (String)keys.nextElement();
             ItemStatus status = (ItemStatus)table.get(key);
             if (cmd == status.getCmd()) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    private int getNumberOfItemsWithSyncStatus(Hashtable table, int syncStatus) {
+        int count = 0;
+        Enumeration keys = table.keys();
+        while (keys.hasMoreElements()) {
+            String key = (String)keys.nextElement();
+            ItemStatus status = (ItemStatus)table.get(key);
+            if (syncStatus == status.getStatus()) {
                 count++;
             }
         }

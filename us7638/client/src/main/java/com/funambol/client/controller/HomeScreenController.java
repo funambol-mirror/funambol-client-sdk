@@ -73,7 +73,14 @@ public class HomeScreenController extends SynchronizationController {
     private boolean              updateAvailableSources = false;
 
     private boolean              syncAllButtonAdded = false;
-
+    
+    /**
+     *  This flag is to switch off the storage limit warning after
+     *  it is displayed once. The warning must be displayed also more
+     *  than once if an individual-source sync is fired, but not for
+     *  multiple-source sync, scheduled sync and push sync.
+     */
+    protected boolean dontDisplayStorageLimitWarning = false;
     private boolean homeScreenRegisteredAndInForeground = false;
 
 
@@ -148,10 +155,21 @@ public class HomeScreenController extends SynchronizationController {
         unlockHomeScreen();
         setSelected(getFirstActiveItemIndex(), false);
 
-        // To make sure the UI is properly updated, we force a sync termination
-        // for all sources
+        
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
+            
+            // If one of the sources has risked to break the storage limit,
+            // a warning message can have to be displayed
+            if (appSource.getConfig().getLastSyncStatus() == SyncListener.LOCAL_DEVICE_FULL_ERROR) {
+                if (!dontDisplayStorageLimitWarning) {
+                    displayStorageLimitWarning();
+                    dontDisplayStorageLimitWarning = true; // Once is enough
+                }
+            }
+        
+            // To make sure the UI is properly updated, we force a sync
+            // termination for each source
             SyncSource    source    = appSource.getSyncSource();
             if (source != null) {
                 SyncListener  listener  = source.getListener();
@@ -177,6 +195,7 @@ public class HomeScreenController extends SynchronizationController {
                 synchronize(com.funambol.client.controller.SynchronizationController.PUSH, sources);
             }
         }
+        
     }
 
     public void redraw() {
@@ -212,6 +231,7 @@ public class HomeScreenController extends SynchronizationController {
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
         if (source.isWorking() && source.isEnabled()) {
+            dontDisplayStorageLimitWarning = false;
             syncSource(MANUAL, source);
         } else {
             Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
@@ -350,12 +370,13 @@ public class HomeScreenController extends SynchronizationController {
     }
 
     protected void syncSource(String syncType, AppSyncSource appSource) {
-
+        
         Vector sources = new Vector();
         sources.addElement(appSource);
         synchronize(syncType, sources);
+        
     }
-
+    
     public void syncMenuSelected() {
         if (selectedIndex != -1) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(selectedIndex);
@@ -407,11 +428,14 @@ public class HomeScreenController extends SynchronizationController {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "syncAllSources");
         }
+        
+        dontDisplayStorageLimitWarning = false;        
         Vector sources = new Vector();
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
             if (appSource.isEnabled() && appSource.isWorking()) {
-                sources.addElement(appSource);
+                sources.addElement(appSource);                
+                dontDisplayStorageLimitWarningAgain(appSource);
             }
         }
         synchronize(syncType, sources);
@@ -707,5 +731,20 @@ public class HomeScreenController extends SynchronizationController {
         }
         setSelected(getFirstActiveItemIndex(), false);
         updateAvailableSources = false;
+    }
+    
+    protected void dontDisplayStorageLimitWarningAgain(AppSyncSource appSource) {
+    
+        if (appSource.getConfig().getLastSyncStatus() == SyncListener.LOCAL_DEVICE_FULL_ERROR) {
+            // If for at least one source the storage limit warning has
+            // already been shown, no warning should be displayed again
+            dontDisplayStorageLimitWarning = true;
+        }
+    }
+    
+    protected void displayStorageLimitWarning() {   
+        String message = localization.getLanguage("message_storage_limit");
+        String[] labels = new String[] { "OK" };
+        controller.getDialogController().askGenericQuestion(message, labels);
     }
 }

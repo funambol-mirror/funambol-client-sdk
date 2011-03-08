@@ -160,6 +160,13 @@ public interface Customization {
     public long     getCheckUpdtIntervalDefault();
     public long     getReminderUpdtIntervalDefault();
     public String   getHttpUploadPrefix();
+    /**
+     * Gets the percentage of device storage space that can be used to store sync items.
+     * No item that would exceed this limit can be downloaded onto the device.
+     *  
+     * @return a value > 0 and < 100
+     */
+    public int      getLocalStorageSafetyThreshold();
 
 }
 

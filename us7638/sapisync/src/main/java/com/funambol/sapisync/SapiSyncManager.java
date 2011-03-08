@@ -221,8 +221,13 @@ public class SapiSyncManager implements SyncManagerI {
 
             performFinalizationPhase(src);
 
-            syncStatus.setInterrupted(false);
-            syncStatus.setStatusCode(SyncListener.SUCCESS);
+            if (syncStatus.getNumberOfReceivedItemsWithSyncStatus(SyncSource.DEVICE_FULL_ERROR_STATUS) > 0) {
+                syncStatus.setInterrupted(true);
+                syncStatus.setStatusCode(SyncListener.LOCAL_DEVICE_FULL_ERROR);
+            } else {
+                syncStatus.setInterrupted(false);
+                syncStatus.setStatusCode(SyncListener.SUCCESS);
+            }
 
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Error while synchronizing", t);
@@ -465,20 +470,28 @@ public class SapiSyncManager implements SyncManagerI {
                         done = true;
                     }
                 } while(!done);
-                // Update the download anchor
-                SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
-                if (Log.isLoggable(Log.TRACE)) {
-                    Log.trace(TAG_LOG, "Updating download anchor to " + newDownloadAnchor);
-                }
-                sapiAnchor.setDownloadAnchor(newDownloadAnchor);
-            } catch (JSONException je) {
-                Log.error(TAG_LOG, "Cannot parse server data", je);
+
+                updateDownloadAnchor(
+                        (SapiSyncAnchor) src.getConfig().getSyncAnchor(), 
+                        newDownloadAnchor);
+                
+            // This case is distinct from the one above in that this is for download failures
+            // on individual items that disrupt the download while it is progress, while failures
+            // due to storage limit breach are "graceful" because they occur before the actual
+            // download of the item has started. In future implementations, we might decide to
+            // change the logics so that if an item is too large, the next ones can still be
+            // downloaded: in such a case, it is appropriate not to call it an interruption.
+            // To sum up, interruptions are to be dealt with in this catch block, graceful failures
+            // at the end of the try block above
             } catch (ItemDownloadInterruptionException ide) {
                 // An item could not be downloaded
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "");
                 }
                 // TODO FIXME: handle the suspend/resume
+            
+            } catch (JSONException je) {
+                Log.error(TAG_LOG, "Cannot parse server data", je);
             }
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
             if (Log.isLoggable(Log.TRACE)) {
@@ -527,12 +540,9 @@ public class SapiSyncManager implements SyncManagerI {
                         applyDelItems(src, changesSet.deleted, mapping);
                     }
 
-                    // Update the anchor if everything went well
+                    // Tries to update the anchor if everything went well
                     if (changesSet.timeStamp != -1) {
-                        if (Log.isLoggable(Log.TRACE)) {
-                            Log.trace(TAG_LOG, "Updating download anchor to " + changesSet.timeStamp);
-                        }
-                        sapiAnchor.setDownloadAnchor(changesSet.timeStamp);
+                        updateDownloadAnchor(sapiAnchor, changesSet.timeStamp);
                     }
                 }
             } catch (JSONException je) {
@@ -705,7 +715,7 @@ public class SapiSyncManager implements SyncManagerI {
             syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
                     newItem.getState(), newItem.getSyncStatus());
             // and the mapping table
-            if (state == SyncItem.STATE_NEW) {
+            if (state == SyncItem.STATE_NEW && newItem.getSyncStatus() != SyncSource.DEVICE_FULL_ERROR_STATUS) {
                 if (Log.isLoggable(Log.TRACE)) {
                     Log.trace(TAG_LOG, "Updating mapping info for: " +
                             newItem.getGuid() + "," + newItem.getKey());
@@ -868,5 +878,30 @@ public class SapiSyncManager implements SyncManagerI {
             dataTag = src.getConfig().getRemoteUri() + "s";
         }
         return dataTag;
+    }
+    
+    /**
+     * Checks for download failures on individual items due to storage limit breach
+     * and if they did not occur, updates the download anchor.
+     * 
+     * @param sapiAnchor the SAPI sync anchor to update
+     * @param newDownloadAnchor the new value
+     */
+    private void updateDownloadAnchor(SapiSyncAnchor sapiAnchor, long newDownloadAnchor) {
+        int itemsNotDownloaded = 
+            syncStatus.getNumberOfReceivedItemsWithSyncStatus(SyncSource.DEVICE_FULL_ERROR_STATUS);
+        if (itemsNotDownloaded > 0) {
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "The download anchor will not be updated because there are " + 
+                        itemsNotDownloaded + " items that could not be downloaded for lack of " +
+                        "storage space on the device");
+            }
+            
+        } else {
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "Updating download anchor to " + newDownloadAnchor);
+            }
+            sapiAnchor.setDownloadAnchor(newDownloadAnchor);
+        }
     }
 }

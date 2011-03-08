@@ -38,6 +38,7 @@ package com.funambol.sapisync.source;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import com.funambol.sync.StorageLimitException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
@@ -97,7 +98,12 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         // it can get a network error and this must be propagated
         try {
             JSONFileObject jsonFile = getJSONFileFromSyncItem(item);
-            int res = addUpdateItem(item, jsonFile, false);
+            int res;
+            try {
+                res = addUpdateItem(item, jsonFile, false);
+            } catch (StorageLimitException sle) {
+                throw sle.getCorrespondingSyncException();
+            }
             super.addItem(item);
             return res;
         } catch (IOException ioe) {
@@ -111,6 +117,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             return SyncSource.ERROR_STATUS;
         }
     }
+
 
     public int updateItem(SyncItem item) throws SyncException {
         // We consider IOException and other generic exception as non

@@ -145,16 +145,37 @@ public abstract class TrackableSyncSource implements SyncSource {
      * @throws SyncException
      */
     public Vector applyChanges(Vector syncItems) throws SyncException {
-        for(int i=0;i<syncItems.size();++i) {
+        
+        int status = -1; // outside of the loop because it's used at each step 
+                         // after the first one to keep track of the previous 
+                         // item's sync status
+        for(int i = 0; i < syncItems.size(); ++i) {
             SyncItem item = (SyncItem)syncItems.elementAt(i);
-            int status;
             try {
-                if (item.getState() == SyncItem.STATE_NEW) {
-                    status = addItem(item);
+                if (item.getState() == SyncItem.STATE_NEW) {                    
+                    // Doesn't even try to download another item if the 
+                    // previous one reached the storage limit
+                    if (status != DEVICE_FULL_ERROR_STATUS) {
+                        status = addItem(item);
+                    } // else just keeps the same status
+                
+                // TODO Change the logics when the update case is implemented
                 } else if (item.getState() == SyncItem.STATE_UPDATED) {
-                    status = updateItem(item);
-                } else {
+                
+                    // Doesn't even try to download another item if the 
+                    // previous one reached the storage limit
+                    if (status != DEVICE_FULL_ERROR_STATUS) {
+                        status = updateItem(item);
+                    } // else just keeps the same status
+                
+                } else { // STATE_DELETED
                     status = deleteItem(item.getKey());
+                }
+            } catch (SyncException se) {
+                if (se.getCode() == SyncException.LOCAL_DEVICE_FULL) {
+                    status = DEVICE_FULL_ERROR_STATUS;
+                } else {
+                    status = ERROR_STATUS;
                 }
             } catch (Exception e) {
                 status = ERROR_STATUS;
