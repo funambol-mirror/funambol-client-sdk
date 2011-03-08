@@ -74,6 +74,8 @@ public class HomeScreenController extends SynchronizationController {
 
     private boolean              syncAllButtonAdded = false;
 
+    private boolean homeScreenRegisteredAndInForeground = false;
+
 
      public HomeScreenController(Controller controller, HomeScreen homeScreen,NetworkStatus networkStatus) {
         super(controller, homeScreen,networkStatus);
@@ -488,6 +490,27 @@ public class HomeScreenController extends SynchronizationController {
             }
         }
     }
+    
+    /**
+     * Returns true when the associated screen is in foreground (visible
+     * to the user and with focus)
+     */
+    public boolean isInForeground() {
+        //first of all, if an HomeScreen is not associated with the controller
+        //it's impossible that the screen is in foreground
+        if (null == homeScreen) return false;
+        
+        //then, check for internal flag
+        return homeScreenRegisteredAndInForeground ;
+    }
+    
+    /**
+     * Sets foreground status of the screen
+     */
+    public void setForegroundStatus(boolean newValue) {
+        homeScreenRegisteredAndInForeground = newValue;
+    }
+    
 
     protected void unlockHomeScreen() {
         if (homeScreen == null) {

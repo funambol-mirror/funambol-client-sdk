@@ -36,10 +36,11 @@
 package com.funambol.client.ui;
 
 import com.funambol.client.controller.DialogOption;
+import com.funambol.client.controller.NotificationData;
 
 /**
  * Interface to manage the display of application screens and alert dialogs.
- * To be implemented on cient side. The calls to this class instance are usually
+ * To be implemented on client side. The calls to this class instance are usually
  * made by the DialogController Class.
  */
 public interface DisplayManager {
@@ -192,5 +193,12 @@ public interface DisplayManager {
      * @param url the url to be set on the browser
      */
     public void loadBrowser(String url);
+    
 
+    /**
+     * Display a notification
+     * @param screen with the data
+     * @param notificationData the notification data
+     */
+    public void showNotification(Screen screen, NotificationData notificationData);
 }

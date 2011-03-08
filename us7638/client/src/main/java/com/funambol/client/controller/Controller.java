@@ -74,6 +74,7 @@ public class Controller {
     private AdvancedSettingsScreenController advancedSettingsScreenController;
     private AboutScreenController            aboutScreenController;
     private DialogController                 dialogController;
+    private NotificationController           notificationController;
 
     protected Customization customization = null;
 
@@ -101,6 +102,7 @@ public class Controller {
         this.displayManager = fact.getDisplayManager();
 
         dialogController = new DialogController(displayManager, this);
+        notificationController = new NotificationController(displayManager, this);
     }
 
     /**
@@ -176,6 +178,13 @@ public class Controller {
      */
     public DialogController getDialogController() {
         return dialogController;
+    }
+
+    /**
+     * @return the NotificationController;
+     */
+    public NotificationController getNotificationController() {
+        return notificationController;
     }
 
     public DisplayManager getDisplayManager() {

@@ -740,7 +740,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         }
 
         // if we had a connectivity error, we bring the app to foreground
-        // iff the user started the sync by hand
+        // if the user started the sync by hand
         if (logConnectivityError) {
             // TODO FIXME MARCO
             /*
