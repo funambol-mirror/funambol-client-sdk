@@ -51,6 +51,7 @@ public class NotificationController {
     private static final String TAG_LOG = "NotificationController";
     
     private static final int NOTIFICATION_ID_SERVER_FULL = 10;
+    private static final int NOTIFICATION_ID_CLIENT_FULL = 11;
 
     //--- Local instance fields fed by the constructor
     private Localization localization;
@@ -79,6 +80,22 @@ public class NotificationController {
                 localization.getLanguage("notification_online_quota_full_server_ticker"),
                 localization.getLanguage("notification_online_quota_full_server_title"),
                 localization.getLanguage("notification_online_quota_full_server_message"),
+                null);
+        displayManager.showNotification(screen, notificationData);
+    }
+    
+    /**
+     * Display a notification when server has no more available storage for media upload
+     */
+    public void showNotificationClientFull(Screen screen){
+        //creates notification data
+        //TODO find a way to put android class to call
+        NotificationData notificationData = NotificationData.Factory.create(
+                NOTIFICATION_ID_CLIENT_FULL,
+                NotificationData.SEVERITY_WARNING,
+                localization.getLanguage("notification_device_full_ticker"),
+                localization.getLanguage("notification_device_full_title"),
+                localization.getLanguage("notification_device_full_message"),
                 null);
         displayManager.showNotification(screen, notificationData);
     }

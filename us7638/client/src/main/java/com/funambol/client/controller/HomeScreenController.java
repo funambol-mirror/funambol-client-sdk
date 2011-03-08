@@ -145,6 +145,25 @@ public class HomeScreenController extends SynchronizationController {
         attachToSource(appSource);
     }
 
+    @Override
+    public void endSync(Vector sources, boolean hadErrors) {
+        super.endSync(sources, hadErrors);
+    }
+    
+    protected void displayStorageLimitWarning() {
+        
+        if (isInForeground()) {        
+            if (!dontDisplayStorageLimitWarning) {            
+                String message = localization.getLanguage("message_storage_limit");
+                String[] labels = new String[] { "OK" };
+                controller.getDialogController().askGenericQuestion(message, labels);
+                dontDisplayStorageLimitWarning = true; // Once is enough
+            }
+        } else {
+            super.displayStorageLimitWarning();
+        }
+    }
+    
     public void syncEnded() {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "sync ended");
@@ -158,15 +177,6 @@ public class HomeScreenController extends SynchronizationController {
         
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
-            
-            // If one of the sources has risked to break the storage limit,
-            // a warning message can have to be displayed
-            if (appSource.getConfig().getLastSyncStatus() == SyncListener.LOCAL_DEVICE_FULL_ERROR) {
-                if (!dontDisplayStorageLimitWarning) {
-                    displayStorageLimitWarning();
-                    dontDisplayStorageLimitWarning = true; // Once is enough
-                }
-            }
         
             // To make sure the UI is properly updated, we force a sync
             // termination for each source
@@ -740,11 +750,5 @@ public class HomeScreenController extends SynchronizationController {
             // already been shown, no warning should be displayed again
             dontDisplayStorageLimitWarning = true;
         }
-    }
-    
-    protected void displayStorageLimitWarning() {   
-        String message = localization.getLanguage("message_storage_limit");
-        String[] labels = new String[] { "OK" };
-        controller.getDialogController().askGenericQuestion(message, labels);
     }
 }

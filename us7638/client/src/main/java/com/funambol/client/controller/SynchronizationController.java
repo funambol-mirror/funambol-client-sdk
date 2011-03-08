@@ -79,6 +79,8 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
     public static final int REFRESH_TO_SERVER   = 1;
 
     protected Controller controller;
+    
+    protected NotificationController notificator;
 
     protected Customization customization;
 
@@ -140,6 +142,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         configuration = controller.getConfiguration();
 
         initSyncScheduler();
+        initNotificator();
     }
 
     /**
@@ -164,6 +167,11 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         this.configuration = configuration;
 
         initSyncScheduler();
+        initNotificator();
+    }
+    
+    protected void initNotificator() {
+        this.notificator = new NotificationController(controller.getDisplayManager(), controller);
     }
 
     protected void initSyncScheduler() {
@@ -250,7 +258,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
 
     public void syncEnded() {
         syncType = null;
-
+        
         // TODO FIXME MARCO
         /*
         if(customization.enableUpdaterManager()){
@@ -784,11 +792,25 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
                 showMessage(msg, 10000);
             }
         }
+        
+        for (int i = 0; i < sources.size(); i++) {
+            AppSyncSource appSource = (AppSyncSource) sources.elementAt(i);
+            
+            // If one of the sources has risked to break the storage limit,
+            // a warning message can have to be displayed
+            if (appSource.getConfig().getLastSyncStatus() == SyncListener.LOCAL_DEVICE_FULL_ERROR) {
+                displayStorageLimitWarning();
+            }
+        }
 
         // We reset these errors because this sync is over (if we are retrying,
         // we must consider the new one with no errors)
         logConnectivityError = false;
         showTCPAlert = false;
+    }
+    
+    protected void displayStorageLimitWarning() {
+        notificator.showNotificationClientFull(screen);
     }
 
     public void sourceStarted(AppSyncSource appSource) {
