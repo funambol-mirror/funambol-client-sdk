@@ -38,7 +38,7 @@ package com.funambol.sync;
 /**
  * This class represents a generic Sync Listener, an object that listens to
  * the synchronization of a repository.
- * The synchronization is a sequence of events that occour in a certain order.
+ * The synchronization is a sequence of events that occur in a certain order.
  * There are three different phases:
  * <li>
  * * Connection set up
@@ -53,7 +53,7 @@ package com.funambol.sync;
  * The Modification exchange phase is the most interesting from the point of
  * view of the SyncListener, because it can be further split into more sub
  * events.
- * The modifications are exchanged with a sequence of send/receive sesssion.
+ * The modifications are exchanged with a sequence of send/receive session.
  * Each time modifications are about to be sent to the server a startSending
  * event is generated. Then we can have an arbitrary sequence of itemAddSent,
  * itemReplaceSent and itemDeleteSent. At the end of the sending step a
