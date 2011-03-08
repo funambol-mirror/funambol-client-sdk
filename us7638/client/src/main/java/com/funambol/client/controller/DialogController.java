@@ -101,26 +101,10 @@ public class DialogController {
      * @param confirmMessage The label for the confirmation button
      * @param cancelMessage The label for the cancel button
      * @return true if the confirmation button has been chosen
-     *
-     * @deprecated EXPERIMENTAL
      */
     public boolean askConfirmCancelQuestion(String message, String confirmMessage, String cancelMessage) {
 
-        Screen homeScreen = controller.getHomeScreenController().getHomeScreen();
-        GenericDialogOption yesOption = new GenericDialogOption(homeScreen, confirmMessage, 1);
-        GenericDialogOption noOption = new GenericDialogOption(yesOption, cancelMessage, 0);
-        displayManager.promptSelection(
-                homeScreen,
-                message,
-                noOption.getChain(),
-                1,
-                DisplayManager.GENERIC_DIALOG_ID);
-        try {
-            yesOption.wait();
-        } catch (InterruptedException e) {
-            // Carries on
-        }
-        return yesOption.isChosen();
+        return (0 == askGenericQuestion(cancelMessage, new String[] { confirmMessage, cancelMessage} ));
     }
 
     /**
@@ -130,8 +114,6 @@ public class DialogController {
      * @param message The message for the dialog box
      * @param labels The labels for the buttons
      * @return the index of the chosen option or -1 if something goes wrong
-     *
-     * @deprecated EXPERIMENTAL
      */
     public int askGenericQuestion(String message, String[] labels) {
 
@@ -153,10 +135,12 @@ public class DialogController {
                 allOptions,
                 0,
                 DisplayManager.GENERIC_DIALOG_ID);
-        try {
-            firstOption.wait();
-        } catch (InterruptedException e) {
-            return -1;
+        synchronized (firstOption) {
+            try {
+                firstOption.wait();
+            } catch (InterruptedException e) {
+                return -1;
+            }
         }
         for (int i = 0; i < allOptions.length; i++) {
             if (allOptions[i].isChosen()) {
@@ -814,8 +798,6 @@ public class DialogController {
     /**
      * NB: Check askGenericQuestion and askConfirmCancelQuestion to find out how
      * to use this class.
-     *
-     * @deprecated EXPERIMENTAL
      */
     protected class GenericDialogOption extends DialogOption {
 
@@ -840,7 +822,9 @@ public class DialogController {
             displayManager.dismissSelectionDialog(DisplayManager.GENERIC_DIALOG_ID);
             this.chosen = true;
             for (int i = 0; i < chain.length; i++) {
-                chain[i].notify(); // includes this.notify()
+                synchronized (chain[i]) {
+                    chain[i].notify(); // includes this.notify()
+                }
             }
         }
         
