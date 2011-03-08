@@ -267,7 +267,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
      * behavior
      *
      * @param syncType the caller type (SYNC_TYPE_MANUAL, SYNC_TYPE_SCHEDULED)
-     * @param syncSources is a vector of AppSyncSource to be synced
+     * @param syncSources is a vector of AppSyncSource to be synchronized
      *
      */
     public synchronized void synchronize(String syncType, Vector syncSources) {
