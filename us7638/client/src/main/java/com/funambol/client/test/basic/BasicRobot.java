@@ -38,7 +38,6 @@ package com.funambol.client.test.basic;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
-import com.funambol.client.test.util.CheckSyncClient;
 import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.client.test.util.TestFileManager;
 import java.util.Vector;
@@ -170,21 +169,6 @@ public abstract class BasicRobot extends Robot {
         saveSourceConfig(sourceName);
     }
 
-    public void refreshServer(String source, CheckSyncClient client) throws Throwable {
-
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "refreshServer " + source + "," + client);
-        }
-
-        reapplySyncConfig(client);
-
-        if(StringUtil.isNullOrEmpty(source)) {
-            client.sync();
-        } else {
-            client.sync(source);
-        } 
-    }
-
     public void checkItemsCount(String sourceName, int count) throws Throwable {
 
         SyncSource source = getSyncSource(sourceName);
@@ -203,12 +187,6 @@ public abstract class BasicRobot extends Robot {
         assertTrue(count, itemsCount, "Items count mismatch for source: " + sourceName);
     }
 
-    public void checkItemsCountOnServer(String sourceName,
-            CheckSyncClient client, int count) throws Throwable {
-        assertTrue(count, client.getItemsCount(sourceName),
-                "Server items count mismatch for source: " + sourceName);
-    }
-
     public void resetFirstRunTimestamp() throws Throwable {
         Configuration configuration = getConfiguration();
         configuration.setFirstRunTimestamp(System.currentTimeMillis());
@@ -222,8 +200,6 @@ public abstract class BasicRobot extends Robot {
 
     public abstract SyncSource getSyncSource(String sourceName) throws Exception;
     public abstract void saveSourceConfig(String sourceName) throws Exception;
-
-    public abstract void reapplySyncConfig(CheckSyncClient client) throws Throwable;
 
     protected abstract Configuration getConfiguration();
     

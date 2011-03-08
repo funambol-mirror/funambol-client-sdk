@@ -36,6 +36,8 @@
 package com.funambol.client.test;
 
 import java.util.Vector;
+import java.util.Hashtable;
+import java.util.Enumeration;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
@@ -82,13 +84,15 @@ public class BasicScriptRunner extends CommandRunner {
     // The list of command runners
     private Vector commandRunners = new Vector();
     private int chainedTestsCounter;
+    private int nestingDepth = 0;
     private String mainTestName = "";
-    private StringBuffer report = new StringBuffer();
     protected int errorCode = SUCCESS_STATUS;
 
     private boolean stopOnFailure = false;
 
     private TestFileManager fileManager = null;
+
+    private Hashtable testResults = null;
 
     /**
      * Default constructor
@@ -138,6 +142,18 @@ public class BasicScriptRunner extends CommandRunner {
      * This is the only case in which the test suite is entirely aborted.
      */
     public void runScriptFile(String scriptUrl, boolean mainScript) throws Throwable {
+        testResults = new Hashtable();
+        try {
+            runScriptFileI(scriptUrl, mainScript);
+        } finally {
+            Log.info(TAG_LOG, "***************************************");
+            Log.info(getResults());
+            Log.info(TAG_LOG, "***************************************");
+        }
+    }
+
+
+    protected void runScriptFileI(String scriptUrl, boolean mainScript) throws Throwable {
         baseUrl = fileManager.getBaseUrl(scriptUrl);
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Running script at URL = " + scriptUrl);
@@ -152,9 +168,7 @@ public class BasicScriptRunner extends CommandRunner {
                     runScript(script, scriptUrl);
                 }
             } catch (Exception e) {
-                report.append("Cannot load script at:\n").append(scriptUrl);
-                Log.error(TAG_LOG, "Cannot load script at " + scriptUrl + " because " + e);
-                throw new Exception("Cannot load script " + scriptUrl + " because " + e);
+                throw new Exception("Cannot run script " + scriptUrl + " because " + e);
             }
         } else {
             Log.error(TAG_LOG, "Cannot load script at " + scriptUrl);
@@ -162,7 +176,7 @@ public class BasicScriptRunner extends CommandRunner {
         }
     }
 
-    public void runXmlScript(String script, String scriptUrl) throws Throwable {
+    protected void runXmlScript(String script, String scriptUrl) throws Throwable {
         // Start parsing the XML script file
         XmlPullParser parser = new KXmlParser();
 
@@ -176,10 +190,14 @@ public class BasicScriptRunner extends CommandRunner {
             // invalid message
             require(parser, parser.START_TAG, null, "Script");
             nextSkipSpaces(parser);
+            // Keep track of the nesting level depth
+            nestingDepth++;
 
             String currentCommand = null;
             boolean condition = false;
             Vector args = null;
+
+            boolean ignoreCurrentScript = false;
 
             while (parser.getEventType() != parser.END_DOCUMENT) {
 
@@ -191,11 +209,11 @@ public class BasicScriptRunner extends CommandRunner {
                 // </command>
                 //
                 // The only exception is for conditional statements 
-                // <condition>
-                //   <if>condition</if>
-                //   <then><command>...</command></then>
-                //   <else><command>...</command>/else>
-                // </condition>
+                // <Condition>
+                //   <If>condition</If>
+                //   <Then><command>...</command></Then>
+                //   <Else><command>...</command>/Else>
+                // </Condition>
 
                 if (parser.getEventType() == parser.START_TAG) {
                     String tagName = parser.getName();
@@ -212,14 +230,17 @@ public class BasicScriptRunner extends CommandRunner {
                             // This can only be an <arg> tag
                             if ("Arg".equals(tagName)) {
                                 parser.next();
-                                if (parser.getEventType() == parser.TEXT) {
-                                    String arg = parser.getText();
-                                    Log.trace(TAG_LOG, "Found argument " + arg);
-                                    args.addElement(arg);
-                                } else {
-                                    // Error, what kind of argument is this?
+
+                                // Concatenate all the text tags until the end
+                                // of the argument
+                                StringBuffer arg = new StringBuffer();
+                                while(parser.getEventType() == parser.TEXT) {
+                                    arg.append(parser.getText());
+                                    parser.next();
                                 }
-                                parser.next();
+                                String a = arg.toString().trim();
+                                Log.trace(TAG_LOG, "Found argument " + a);
+                                args.addElement(a);
                                 require(parser, parser.END_TAG, null, "Arg");
                             }
                         }
@@ -230,15 +251,66 @@ public class BasicScriptRunner extends CommandRunner {
                         condition = false;
                         currentCommand = null;
                     } else if (tagName.equals(currentCommand)) {
-                        runCommand(currentCommand, args);
+                        try {
+                            Log.trace(TAG_LOG, "Executing accumulated command: " + currentCommand + "," + ignoreCurrentScript);
+                            if (!ignoreCurrentScript) {
+                                runCommand(currentCommand, args);
+                            }
+                        } catch (IgnoreScriptException ise) {
+                            // This script must be ignored
+                            ignoreCurrentScript = true;
+                            nestingDepth = 0;
+                            TestStatus status = new TestStatus(scriptUrl);
+                            status.setStatus("Skipped");
+                            testResults.put(scriptUrl, status);
+                        } catch (Throwable t) {
+
+                            Log.error(TAG_LOG, "Error running command", t);
+
+                            TestStatus status = new TestStatus(scriptUrl);
+                            status.setStatus("Failure");
+                            status.setDetailedError("Error " + t.toString() + " at line " + parser.getLineNumber());
+                            testResults.put(scriptUrl, status);
+
+                            if (stopOnFailure) {
+                                throw t;
+                            } else {
+                                ignoreCurrentScript = true;
+                                nestingDepth = 0;
+                            }
+                        }
                         currentCommand = null;
                     } else if ("Script".equals(tagName)) {
                         // end script found
+
+
+                        // If we get here and the current script is not being
+                        // ignored, then the execution has been successful
+                        if (!ignoreCurrentScript) {
+                            if (testResults.get(scriptUrl) == null) {
+                                // This test is not a utility test, save its
+                                // status
+                                TestStatus status = new TestStatus(scriptUrl);
+                                status.setStatus("Success");
+                                testResults.put(scriptUrl, status);
+                            }
+                        }
+
+                        if (nestingDepth == 0 && ignoreCurrentScript) {
+                            // The script to be ignored is completed. Start
+                            // execution again
+                            ignoreCurrentScript = false;
+                        }
                     }
                 }
                 nextSkipSpaces(parser);
             }
         } catch (Exception e) {
+            // This will block the entire execution
+            TestStatus status = new TestStatus(scriptUrl);
+            status.setStatus("Failure");
+            status.setDetailedError("Syntax error in file " + scriptUrl + " at line " + parser.getLineNumber());
+            testResults.put(scriptUrl, status);
             Log.error(TAG_LOG, "Error parsing command", e);
             throw new ClientTestException("Script syntax error");
         }
@@ -275,7 +347,6 @@ public class BasicScriptRunner extends CommandRunner {
             throw new XmlPullParserException(desc.toString());
         }
     }
-
 
     /**
      * Execute the given script by interpreting it
@@ -398,7 +469,6 @@ public class BasicScriptRunner extends CommandRunner {
                                 String msg = "Syntax error in script, missing ':' in: "
                                         + line + " at line " + lineNumber;
                                 Log.error(TAG_LOG, msg);
-                                report.append(msg);
                                 errorCode = CLIENT_TEST_EXCEPTION_STATUS;
                                 ignoreCurrentScript = true;
                                 //throw new ClientTestException("Script syntax error");
@@ -407,7 +477,6 @@ public class BasicScriptRunner extends CommandRunner {
                                 String msg = "Syntax error in script, missing command in: "
                                         + line + " at line " + lineNumber;
                                 Log.error(TAG_LOG, msg);
-                                report.append(msg);
                                 errorCode = CLIENT_TEST_EXCEPTION_STATUS;
                                 ignoreCurrentScript = true;
                                 //throw new ClientTestException("Script syntax error");
@@ -496,7 +565,6 @@ public class BasicScriptRunner extends CommandRunner {
 
                 Log.error(msg.toString());
                 Log.error(TAG_LOG, "Exception details", t);
-                report.append(msg);
 
                 //tell the scriptrunner to ignore all of the chained tests
                 //commands
@@ -597,7 +665,7 @@ public class BasicScriptRunner extends CommandRunner {
             }
         }
         String tmpBaseUrl = baseUrl; 
-        runScriptFile(scriptUrl, false);
+        runScriptFileI(scriptUrl, false);
         baseUrl = tmpBaseUrl;
     }
 
@@ -622,8 +690,32 @@ public class BasicScriptRunner extends CommandRunner {
      * Accessor method to retrieve the details of the failed tests
      * @return String the String formatted failed test report content.
      */
-    public String getResults() {
-        return report.toString();
+    private String getResults() {
+        if (testResults != null) {
+            StringBuffer res = new StringBuffer();
+            Enumeration testKeys = testResults.keys();
+            int tot = 0;
+            int failed = 0;
+            while(testKeys.hasMoreElements()) {
+                String url = (String)testKeys.nextElement();
+                TestStatus status = (TestStatus)testResults.get(url);
+
+                res.append("Script=").append(url)
+                    .append(" Result=").append(status.getStatus());
+                String detailedError = status.getDetailedError();
+                tot++;
+                if (detailedError != null) {
+                    res.append(" Error=").append(detailedError);
+                    failed++;
+                }
+                res.append("\n");
+            }
+            res.append("Total number of tests: ").append(tot).append("\n");
+            res.append("Total number of failures: ").append(failed).append("\n");
+            return res.toString();
+        } else {
+            return "No tests performed";
+        }
     }
 
     /**
@@ -670,7 +762,6 @@ public class BasicScriptRunner extends CommandRunner {
             if (!onOther) {
                 String msg = "Syntax error in On command, missing os versions" + command;
                 Log.error(TAG_LOG, msg);
-                report.append(msg);
                 throw new ClientTestException("Script syntax error");
             }
         }
@@ -707,7 +798,6 @@ public class BasicScriptRunner extends CommandRunner {
                 if (onExecuted) {
                     String msg = "Syntax error in On command, more conditions matching" + command;
                     Log.error(TAG_LOG, msg);
-                    report.append(msg);
                     throw new ClientTestException("Script syntax error");
                 }
                 return true;
@@ -745,18 +835,6 @@ public class BasicScriptRunner extends CommandRunner {
     }
 
     /**
-     * Set the CheckSyncClient object for this CommandRunner container
-     * @param client the CheckSyncClient to be set
-     */
-    public void setCheckSyncClient(CheckSyncClient client) {
-        super.setCheckSyncClient(client);
-        for (int i = 0; i < commandRunners.size(); i++) {
-            CommandRunner runner = (CommandRunner) commandRunners.elementAt(i);
-            runner.setCheckSyncClient(client);
-        }
-    }
-
-    /**
      * Create a transport agent useful for the tests framework
      * @param config the SyncConfig used to configure the TransportAgent
      * @return HttpTransportAgent the instance of the HTTPTransportAgent correctly configured
@@ -770,6 +848,36 @@ public class BasicScriptRunner extends CommandRunner {
         // Force messages to be resent in case of errors
         ta.setResendMessageOnErrors(true);
         return ta;
+    }
+
+    private class TestStatus {
+        private String scriptName;
+        private String status;
+        private String detailedError;
+
+        public TestStatus(String scriptName) {
+            this.scriptName = scriptName;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public void setDetailedError(String detailedError) {
+            this.detailedError = detailedError;
+        }
+
+        public String getScriptName() {
+            return scriptName;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getDetailedError() {
+            return detailedError;
+        }
     }
 }
 

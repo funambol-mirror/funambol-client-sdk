@@ -47,8 +47,6 @@ import com.funambol.client.configuration.Configuration;
 import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.basic.BasicRobot;
-import com.funambol.client.test.util.CheckSyncClient;
-import com.funambol.client.test.util.CheckSyncSource;
 import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
@@ -169,8 +167,7 @@ public abstract class ContactsRobot extends Robot {
         return null;
     }
 
-    public void deleteContactOnServer(String firstName, String lastName,
-            CheckSyncClient client) throws Throwable {
+    public void deleteContactOnServer(String firstName, String lastName) throws Throwable {
 
         String id = findContactIdOnServer(firstName, lastName);
         if (id == null) {
@@ -187,7 +184,7 @@ public abstract class ContactsRobot extends Robot {
         sapiHandler.query("contacts","contactsdelete",params,null,null);
     }
 
-    public void deleteAllContactsOnServer(CheckSyncClient client) throws Throwable {
+    public void deleteAllContactsOnServer() throws Throwable {
 
         // Do this via SAPI to increase performance
         SapiHandler sapiHandler = getSapiHandler();
@@ -207,14 +204,10 @@ public abstract class ContactsRobot extends Robot {
         ostream.close();
     }
 
-    public void resetContacts(CheckSyncClient client) throws Throwable {
-        CheckSyncSource source = client.getSyncSource(
-                CheckSyncClient.SOURCE_NAME_CONTACTS);
+    public void resetContacts() throws Throwable {
         // Remove locally
         deleteAllContacts();
-        // Clean the check sync client and perform a refresh from client to
-        // server
-        client.clear(source);
+        deleteAllContactsOnServer();
     }
 
     public void checkItemsCountOnServer(int count) throws Throwable {

@@ -134,8 +134,6 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             checkLastSyncRemoteUri(command, pars);
         } else if (FORCE_SLOW_SYNC_COMMAND.equals(command)) {
             resetSourceAnchor(command, pars);
-        } else if (REFRESH_SERVER_COMMAND.equals(command)) {
-            refreshServer(command, pars);
         } else if (START_MAIN_APP_COMMAND.equals(command)) {
             startMainApp(command, pars);
         } else if (CLOSE_MAIN_APP_COMMAND.equals(command)) {
@@ -479,21 +477,6 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(source, "Missing source in " + command);
 
         getBasicRobot().resetSourceAnchor(source);
-    }
-
-    /**
-     * Command to request a refresh from server action from a given source
-     * @param command the String formatted command to refresh the server
-     * @param args the command's related String arguments.
-     * @throws Throwable if an error occurred
-     */
-    private void refreshServer(String command, Vector args) throws Throwable {
-
-        String source = getParameter(args, 0);
-
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-
-        getBasicRobot().refreshServer(source, checkSyncClient);
     }
 
     /**

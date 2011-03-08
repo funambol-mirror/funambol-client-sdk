@@ -207,8 +207,6 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
     }
 
     private void saveContactOnServer(String command, Vector args) throws Throwable {
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-
         // If there is only one par, this is the JSON object directly
         // otherwise it is first and last name
         String firstname = getParameter(args, 0);
@@ -227,13 +225,11 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
         String lastname  = getParameter(args, 1);
         checkArgument(firstname, "Missing firstname in " + command);
         checkArgument(lastname, "Missing lastname in " + command);
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        getContactsRobot().deleteContactOnServer(firstname, lastname, checkSyncClient);
+        getContactsRobot().deleteContactOnServer(firstname, lastname);
     }
 
     private void deleteAllContactsOnServer(String command, Vector args) throws Throwable {
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
-        getContactsRobot().deleteAllContactsOnServer(checkSyncClient);
+        getContactsRobot().deleteAllContactsOnServer();
     }
 
     private void createEmptyRawContact(String command, Vector args) throws Throwable {
