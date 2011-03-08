@@ -107,7 +107,7 @@ public abstract class CalendarRobot extends Robot {
                  .append("\"tzdtstart\":\"Europe/London\",")
                  .append("\"tzdtend\":\"Europe/London\"")
                  .append("}");
-        params.add("event=" + jsonEvent.toString());
+        params.addElement("event=" + jsonEvent.toString());
         Log.trace(TAG_LOG, "Save event: " + jsonEvent.toString());
         JSONObject resp;
         if (add) {
@@ -152,7 +152,7 @@ public abstract class CalendarRobot extends Robot {
             add = true;
         }
 
-        params.add("data=" + jsonEvent.toString());
+        params.addElement("data=" + jsonEvent.toString());
         JSONObject resp;
         if (add) {
             resp = sapiHandler.query("calendar","eventcreate",params,null,null);
@@ -209,7 +209,7 @@ public abstract class CalendarRobot extends Robot {
         Vector params = new Vector();
         JSONObject param = new JSONObject();
         param.put("id", id);
-        params.add("event="+param.toString());
+        params.addElement("event="+param.toString());
         sapiHandler.query("calendar","eventdelete",params,null,null);
     }
 

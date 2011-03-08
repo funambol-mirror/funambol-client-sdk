@@ -105,7 +105,7 @@ public abstract class ContactsRobot extends Robot {
         }
         jsonContact.append("\"firstname\":\"").append(firstName)
                    .append("\",\"lastname\":\"").append(lastName).append("\"}");
-        params.add("data=" + jsonContact.toString());
+        params.addElement("data=" + jsonContact.toString());
         Log.trace(TAG_LOG, "Save contact: " + jsonContact.toString());
         JSONObject resp = sapiHandler.query("contacts","contactsave",params,null,null);
 
@@ -142,7 +142,7 @@ public abstract class ContactsRobot extends Robot {
             jsonContact.put("id",id);
         }
 
-        params.add("data=" + jsonContact.toString());
+        params.addElement("data=" + jsonContact.toString());
         JSONObject resp = sapiHandler.query("contact","contactsave",params,null,null);
 
         if (id == null) {
@@ -185,7 +185,7 @@ public abstract class ContactsRobot extends Robot {
         Vector ids = new Vector();
         ids.addElement(id);
         param.put("contacts", ids);
-        params.add("data="+param.toString());
+        params.addElement("data="+param.toString());
         sapiHandler.query("contacts","contactsdelete",params,null,null);
     }
 
