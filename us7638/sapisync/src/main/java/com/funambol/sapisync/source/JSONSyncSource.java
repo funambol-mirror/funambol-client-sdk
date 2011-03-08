@@ -144,6 +144,18 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         return jsonFile;
     }
 
+    public void setItemStatus(String key, int status) throws SyncException {
+
+        if (status == SyncSource.SERVER_FULL_ERROR_STATUS) {
+            // The user reached his quota on the server
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Server is full");
+            }
+            throw new SyncException(SyncException.DEVICE_FULL, "Server is full");
+        }
+        super.setItemStatus(key, status);
+    }
+
     public void updateSyncConfig(SyncConfig syncConfig) {
         this.syncConfig = syncConfig;
     }
