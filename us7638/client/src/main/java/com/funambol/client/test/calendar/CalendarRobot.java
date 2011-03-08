@@ -81,8 +81,6 @@ public abstract class CalendarRobot extends Robot {
     public CalendarRobot() {
     }
 
-
-
     public void saveEventOnServer(String summary) throws Throwable {
 
         SapiHandler sapiHandler = getSapiHandler();
@@ -197,7 +195,6 @@ public abstract class CalendarRobot extends Robot {
         return null;
     }
 
-
     public void deleteEventOnServer(String summary) throws Throwable {
 
         String id = findEventIdOnServer(summary);
@@ -264,82 +261,17 @@ public abstract class CalendarRobot extends Robot {
     protected AppSyncSourceManager getAppSyncSourceManager() {
         return appSourceManager;
     }
-
-    private String cleanField(String fieldName, String value, Hashtable supportedValues) {
-        String filter = (String)supportedValues.get(fieldName); 
-        if (filter != null) {
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "Found filter for field: " + fieldName + "," + filter);
-            }
-            String values[] = StringUtil.split(value, ";");
-            String filters[] = StringUtil.split(filter, ";");
-            String res = "";
-
-            for(int i=0;i<values.length;++i) {
-                String v = values[i];
-                boolean include;
-                if (i<filters.length) {
-                    String f = filters[i];
-                    if (f.length() > 0) {
-                        include = true;
-                    } else {
-                        include = false;
-                    }
-                } else {
-                    include = true;
-                }
-
-                if (include) {
-                    res = res + v;
-                }
-                if (i != values.length - 1) {
-                    res = res + ";";
-                }
-            }
-            return res;
-
-        } else {
-            return value;
-        }
-    }
-
-    private Vector getFieldsVector(String vcard) {
-
-        String sep[] = {"\r\n"};
-        String lines[] = StringUtil.split(vcard, sep);
-
-        Vector fieldsAl = new Vector();
-        String field = "";
-        for(int i=0;i<lines.length;++i) {
-            String line = lines[i];
-            if(line.length() > 0 && line.charAt(0) == FOLDING_INDENT_CHAR) {
-                // this is a multi line field
-                field += line.substring(1); // cut the indent char
-            } else {
-                if(!field.equals("")) {
-                    fieldsAl.addElement(field);
-                }
-                field = line;
-            }
-        }
-        // add the latest field
-        fieldsAl.addElement(field);
-
-        return fieldsAl;
-    }
-
+ 
     private SapiHandler getSapiHandler() {
         if (sapiHandler == null) {
             Configuration configuration = getConfiguration();
-            sapiHandler = new SapiHandler(StringUtil.extractAddressFromUrl(configuration.getSyncUrl()),
+            sapiHandler = new SapiHandler(StringUtil.extractAddressFromUrl(
+                                          configuration.getSyncUrl()),
                                           configuration.getUsername(),
                                           configuration.getPassword());
-
         }
         return sapiHandler;
     }
-
-
 
     public abstract void createEmptyEvent() throws Throwable;
     public abstract void setEventField(String field, String value) throws Throwable;
@@ -357,6 +289,5 @@ public abstract class CalendarRobot extends Robot {
     public abstract void checkRawEventAsVCal(String vcal) throws Throwable;
     protected abstract String getCurrentEventVCal() throws Throwable;
     protected abstract Configuration getConfiguration();
-
 
 }

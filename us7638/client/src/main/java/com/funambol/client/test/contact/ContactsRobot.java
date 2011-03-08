@@ -37,7 +37,6 @@ package com.funambol.client.test.contact;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
-import java.util.Hashtable;
 import java.util.Enumeration;
 
 import org.json.me.JSONObject;
@@ -45,7 +44,6 @@ import org.json.me.JSONArray;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.configuration.Configuration;
-import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.basic.BasicRobot;
@@ -56,6 +54,7 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
+
 
 public abstract class ContactsRobot extends Robot {
    
@@ -82,10 +81,10 @@ public abstract class ContactsRobot extends Robot {
     private SapiHandler getSapiHandler() {
         if (sapiHandler == null) {
             Configuration configuration = getConfiguration();
-            sapiHandler = new SapiHandler(StringUtil.extractAddressFromUrl(configuration.getSyncUrl()),
+            sapiHandler = new SapiHandler(StringUtil.extractAddressFromUrl(
+                                          configuration.getSyncUrl()),
                                           configuration.getUsername(),
                                           configuration.getPassword());
-
         }
         return sapiHandler;
     }
@@ -170,7 +169,6 @@ public abstract class ContactsRobot extends Robot {
         return null;
     }
 
-
     public void deleteContactOnServer(String firstName, String lastName,
             CheckSyncClient client) throws Throwable {
 
@@ -220,7 +218,6 @@ public abstract class ContactsRobot extends Robot {
     }
 
     public void checkItemsCountOnServer(int count) throws Throwable {
-
         SapiHandler sapiHandler = getSapiHandler();
         JSONObject resp = sapiHandler.query("contacts","count",null,null,null);
         int serverCount = resp.getInt("count");
@@ -251,167 +248,8 @@ public abstract class ContactsRobot extends Robot {
         source.applyChanges(items);
     }
 
-    /**
-     * Order the vCard item fields alphabetically.
-     * @param vcard
-     * @return
-     */
-    protected String orderVCard(String vcard) {
-        return orderVCard(vcard, null, null);
-    }
-
     protected AppSyncSourceManager getAppSyncSourceManager() {
         return appSourceManager;
-    }
-
-    protected String orderVCard(String vcard, String supportedFields[], Hashtable supportedValues) {
-
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Ordering vcard: " + vcard);
-        }
-        Vector fieldsAl = getFieldsVector(vcard);
-
-        // order the fields array list
-        String result = "";
-        String[] fields = StringUtil.getStringArray(fieldsAl);
-        for(int i=0; i<fields.length; i++) {
-            for(int j=fields.length-1; j>i; j--) {
-                if(fields[j].compareTo(fields[j-1])<0) {
-                    String temp = fields[j];
-                    fields[j] = fields[j-1];
-                    fields[j-1] = temp;
-                }
-            }
-
-            // Trim any leading/trailing white space
-            fields[i] = fields[i].trim();
-
-            // Exclude last occurrence of ";" from all fields
-            while (fields[i].endsWith(";")) {
-                fields[i] = new String(fields[i].substring(0, fields[i].length()-1));
-            }
-            
-            // Order ENCODING and CHARSET parameters
-            int index = fields[i].indexOf("ENCODING=QUOTED-PRINTABLE;CHARSET=UTF-8");
-            int length = "ENCODING=QUOTED-PRINTABLE;CHARSET=UTF-8".length();
-            if(index != -1) {
-                StringBuffer field = new StringBuffer();
-                field.append(fields[i].substring(0, index));
-                field.append("CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE");
-                field.append(fields[i].substring(index+length));
-                fields[i] = field.toString();
-            }
-            
-            // Exclude empty fields and fields which are not supported by the
-            // device
-            if(!fields[i].endsWith(":")) {
-                if (supportedFields != null) {
-                    int fieldNameIdx = fields[i].indexOf(":");
-                    if (fieldNameIdx != -1) {
-                        String fieldName = fields[i].substring(0, fieldNameIdx);
-
-                        for(int j=0;j<supportedFields.length;++j) {
-                        
-                            String supportedFieldWithEncoding = supportedFields[j] + 
-                                ";CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE";
-                            if (fieldName.equals(supportedFields[j]) || 
-                                fieldName.equals(supportedFieldWithEncoding)) {
-
-                                if (fieldNameIdx + 1 < fields[i].length()) {
-                                    String value = fields[i].substring(fieldNameIdx + 1);
-                                    value = cleanField(fieldName, value, supportedValues);
-
-                                    // Exclude last occurrence of ";" from all fields
-                                    while (value.endsWith(";")) {
-                                        value = new String(value.substring(0, value.length()-1));
-                                    }
-
-                                    result += fieldName + ":" + value + "\r\n";
-                                } else {
-                                    result += fields[i] + "\r\n";
-                                }
-                                break;
-                            }
-                        }
-                    } else {
-                        result += fields[i] + "\r\n";
-                    }
-                } else {
-                    result += fields[i] + "\r\n";
-                }
-            }
-        }
-        
-        // Replace all the encoded \r\n occurences with \n
-        result = StringUtil.replaceAll(result, "=0D=0A", "=0A");
-        
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Ordered vcard: " + result);
-        }
-        return result;
-    }
-
-    private String cleanField(String fieldName, String value, Hashtable supportedValues) {
-        String filter = (String)supportedValues.get(fieldName); 
-        if (filter != null) {
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "Found filter for field: " + fieldName + "," + filter);
-            }
-            String values[] = StringUtil.split(value, ";");
-            String filters[] = StringUtil.split(filter, ";");
-            String res = "";
-
-            for(int i=0;i<values.length;++i) {
-                String v = values[i];
-                boolean include;
-                if (i<filters.length) {
-                    String f = filters[i];
-                    if (f.length() > 0) {
-                        include = true;
-                    } else {
-                        include = false;
-                    }
-                } else {
-                    include = true;
-                }
-
-                if (include) {
-                    res = res + v;
-                }
-                if (i != values.length - 1) {
-                    res = res + ";";
-                }
-            }
-            return res;
-
-        } else {
-            return value;
-        }
-    }
-
-    private Vector getFieldsVector(String vcard) {
-
-        String sep[] = {"\r\n"};
-        String lines[] = StringUtil.split(new String(vcard), sep);
-
-        Vector fieldsAl = new Vector();
-        String field = "";
-        for(int i=0;i<lines.length;++i) {
-            String line = lines[i];
-            if(line.length() > 0 && line.charAt(0) == FOLDING_INDENT_CHAR) {
-                // this is a multi line field
-                field += line.substring(1); // cut the indent char
-            } else {
-                if(!field.equals("")) {
-                    fieldsAl.addElement(field);
-                }
-                field = line;
-            }
-        }
-        // add the latest field
-        fieldsAl.addElement(field);
-
-        return fieldsAl;
     }
 
     protected void checkContactAsVCard(String vcard) throws Throwable {

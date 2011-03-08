@@ -48,7 +48,6 @@ import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
-import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
 import java.io.ByteArrayInputStream;
