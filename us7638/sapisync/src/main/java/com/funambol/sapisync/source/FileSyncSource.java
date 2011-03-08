@@ -49,6 +49,8 @@ import com.funambol.sync.client.ChangesTracker;
 
 import com.funambol.platform.FileAdapter;
 import com.funambol.util.Log;
+import java.io.InputStream;
+import org.json.me.JSONException;
 
 
 public class FileSyncSource extends JSONSyncSource implements TwinDetectionSource {
@@ -57,14 +59,16 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
 
     protected String directory;
     protected String extensions[] = {};
+
+    private int totalItemsCount = -1;
     
     //------------------------------------------------------------- Constructors
 
     /**
      * FileSyncSource constructor: initialize source config
      */
-    public FileSyncSource(SourceConfig config, SyncConfig syncConfig, ChangesTracker tracker, String directory) {
-
+    public FileSyncSource(SourceConfig config, SyncConfig syncConfig,
+            ChangesTracker tracker, String directory) {
         super(config, syncConfig, tracker);
         this.directory = directory;
     }
@@ -113,6 +117,7 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "getAllItemsKeys");
         }
+        totalItemsCount = 0;
         // Scan the briefcase directory and return all keys
         try {
             FileAdapter dir = new FileAdapter(directory);
@@ -125,6 +130,7 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
                 String file = (String)files.nextElement();
                 if (filterFile(file)) {
                     keys.addElement(directory + file);
+                    totalItemsCount++;
                 }
             }
             return keys.elements();
@@ -134,20 +140,98 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
         }
     }
 
-    protected SyncItem getItemContent(SyncItem item) throws SyncException {
-        return item;
+    /**
+     * Returns the total items count. Please make sure to call getAllItemsKeys
+     * before.
+     * 
+     * @return
+     * @throws SyncException
+     */
+    protected int getAllItemsCount() throws SyncException {
+        return totalItemsCount;
     }
 
-    public OutputStream getDownloadOutputStream(String name, long size, boolean isUpdate, boolean isThumbnail)
-    throws IOException {
+    protected SyncItem getItemContent(SyncItem item) throws SyncException {
+        FileAdapter file = null;
+        try {
+            String fileName = item.getKey();
+            file = new FileAdapter(fileName);
 
+            long size     = file.getSize();
+            long modified = file.lastModified();
+
+            JSONFileObject jsonFileObject = new JSONFileObject();
+            jsonFileObject.setName(fileName);
+            jsonFileObject.setSize(size);
+            jsonFileObject.setCreationdate(modified);
+            jsonFileObject.setLastModifiedDate(modified);
+            jsonFileObject.setMimetype("application/octet-stream");
+
+            FileSyncItem syncItem = new FileSyncItem(fileName, item.getKey(),
+                    getConfig().getType(), item.getState(), item.getParent(),
+                    jsonFileObject);
+
+            return syncItem;
+            
+        } catch (Exception e) {
+            throw new SyncException(SyncException.CLIENT_ERROR,
+                                    "Cannot create SyncItem: " + e.toString());
+        } finally {
+            try {
+                if(file != null) {
+                    file.close();
+                }
+            } catch(IOException ex) {
+            }
+        }
+    }
+
+    private class FileSyncItem extends JSONSyncItem {
+
+        private String fileName;
+        
+        public FileSyncItem(String fileName, String key, String type, 
+                char state, String parent, JSONFileObject jsonFileObject)
+                throws JSONException {
+            super(key, type, state, parent, jsonFileObject);
+            this.fileName = fileName;
+        }
+
+        public OutputStream getOutputStream() throws IOException {
+            FileAdapter file = new FileAdapter(fileName);
+            OutputStream os = file.openOutputStream();
+            file.close();
+            return os;
+        }
+
+        public InputStream getInputStream() throws IOException {
+            FileAdapter file = new FileAdapter(fileName);
+            InputStream is = file.openInputStream();
+            file.close();
+            return is;
+        }
+
+        public long getObjectSize() {
+            try {
+                FileAdapter file = new FileAdapter(fileName);
+                long size = file.getSize();
+                file.close();
+                return size;
+            } catch(IOException ex) {
+                Log.error(TAG_LOG, "Failed to read file size", ex);
+                return 0;
+            }
+        }
+    }
+
+    public OutputStream getDownloadOutputStream(String name, long size, 
+            boolean isUpdate, boolean isThumbnail) throws IOException {
         // TODO FIXME: hanlde the resume
         FileAdapter file = new FileAdapter(directory + name);
         return file.openOutputStream();
     }
 
-    protected void deleteAllItems()
-    {
+    protected void deleteAllItems() {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "removeAllItems");
         }
@@ -164,7 +248,6 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
                 file.delete();
                 file.close();
             }
-
             //at the end, empty the tracker
             tracker.reset();
         }
