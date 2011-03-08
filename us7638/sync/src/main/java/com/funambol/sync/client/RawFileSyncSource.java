@@ -119,8 +119,8 @@ public class RawFileSyncSource extends TrackableSyncSource {
             return lastModified;
         }
 
-        // If we do not reimplement the getContent, it will return a null
-        // content, but this is not used in the ss, so there's no need to
+        // If we do not re-implement the getContent, it will return a null
+        // content, but this is not used in the SS, so there's no need to
         // redefine it
     }
 
