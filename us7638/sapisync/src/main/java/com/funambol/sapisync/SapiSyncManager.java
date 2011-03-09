@@ -90,6 +90,12 @@ public class SapiSyncManager implements SyncManagerI {
     private static SyncListener basicListener = null;
 
     /**
+     * This is the flag used to indicate that the sync shall be cancelled. Users
+     * can call the cancel (@see cancel) method to cancel the current sync
+     */
+    private boolean cancel;
+
+    /**
      * <code>SapiSyncManager</code> constructor
      * @param config
      */
@@ -145,6 +151,8 @@ public class SapiSyncManager implements SyncManagerI {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "Starting sync");
         }
+
+        cancel = false;
 
         if (basicListener == null) {
             basicListener = new BasicSyncListener();
@@ -203,7 +211,11 @@ public class SapiSyncManager implements SyncManagerI {
             getSyncListenerFromSource(src).startSession();
             getSyncListenerFromSource(src).startConnecting();
 
+            cancelSyncIfNeeded(src);
+
             performInitializationPhase(src, getActualSyncMode(src, syncMode), resume);
+
+            cancelSyncIfNeeded(src);
 
             getSyncListenerFromSource(src).syncStarted(getActualSyncMode(src, syncMode));
 
@@ -211,6 +223,9 @@ public class SapiSyncManager implements SyncManagerI {
                 // The download anchor is updated once it is received from the server
                 performDownloadPhase(src, getActualDownloadSyncMode(src), resume, mapping);
             }
+
+            cancelSyncIfNeeded(src);
+            
             if(isUploadPhaseNeeded(syncMode)) {
                 long newUploadAnchor = (new Date()).getTime();
                 performUploadPhase(src, getActualUploadSyncMode(src), resume, mapping);
@@ -219,9 +234,12 @@ public class SapiSyncManager implements SyncManagerI {
                 anchor.setUploadAnchor(newUploadAnchor);
             }
 
+            cancelSyncIfNeeded(src);
+
             performFinalizationPhase(src);
 
-            if (syncStatus.getNumberOfReceivedItemsWithSyncStatus(SyncSource.DEVICE_FULL_ERROR_STATUS) > 0) {
+            if (syncStatus.getNumberOfReceivedItemsWithSyncStatus(
+                    SyncSource.DEVICE_FULL_ERROR_STATUS) > 0) {
                 syncStatus.setInterrupted(true);
                 syncStatus.setStatusCode(SyncListener.LOCAL_DEVICE_FULL_ERROR);
             } else {
@@ -232,12 +250,15 @@ public class SapiSyncManager implements SyncManagerI {
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Error while synchronizing", t);
             syncStatus.setSyncException(t);
+            
             SyncException se;
             if (t instanceof SyncException) {
                 se = (SyncException)t;
             } else {
                 se = new SyncException(SyncException.CLIENT_ERROR, "Generic error");
             }
+            int syncStatusCode = getListenerStatusFromSyncException(se);
+            syncStatus.setStatusCode(syncStatusCode);
             throw se;
         } finally {
             try {
@@ -257,8 +278,19 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     public void cancel() {
-        // TODO FIXME
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Cancelling sync");
+        }
+        cancel = true;
+        sapiSyncHandler.cancel();
         performFinalizationPhase(null);
+    }
+
+    private void cancelSyncIfNeeded(SyncSource src) throws SyncException {
+        if(cancel) {
+            src.cancel();
+            throw new SyncException(SyncException.CANCELLED, "Sync got cancelled");
+        }
     }
 
     private void performInitializationPhase(SyncSource src, int syncMode,
@@ -316,6 +348,9 @@ public class SapiSyncManager implements SyncManagerI {
         SyncItem item = getNextItemToUpload(src, incremental);
         while(item != null && itemsCountFilter(maxSending, uploadedCount)) {
             try {
+
+                cancelSyncIfNeeded(src);
+                
                 // Exclude twins
                 if(twins.contains(item.getKey())) {
                     if (Log.isLoggable(Log.INFO)) {
@@ -613,6 +648,8 @@ public class SapiSyncManager implements SyncManagerI {
         Vector sourceItems = new Vector();
         for(int k=0; k<items.length() && !done; ++k) {
 
+            cancelSyncIfNeeded(src);
+
             JSONObject item = items.getJSONObject(k);
             String     guid = item.getString("id");
             long       size = Long.parseLong(item.getString("size"));
@@ -903,5 +940,81 @@ public class SapiSyncManager implements SyncManagerI {
             }
             sapiAnchor.setDownloadAnchor(newDownloadAnchor);
         }
+    }
+
+    private int getListenerStatusFromSyncException(SyncException se) {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "getting listener status for " + se.getCode());
+        }
+        int syncStatus;
+        switch (se.getCode()) {
+            case SyncException.AUTH_ERROR:
+                syncStatus = SyncListener.INVALID_CREDENTIALS;
+                break;
+            case SyncException.FORBIDDEN_ERROR:
+                syncStatus = SyncListener.FORBIDDEN_ERROR;
+                break;
+            case SyncException.CONN_NOT_FOUND:
+                syncStatus = SyncListener.CONN_NOT_FOUND;
+                break;
+            case SyncException.READ_SERVER_RESPONSE_ERROR:
+                syncStatus = SyncListener.READ_SERVER_RESPONSE_ERROR;
+                break;
+            case SyncException.WRITE_SERVER_REQUEST_ERROR:
+                syncStatus = SyncListener.WRITE_SERVER_REQUEST_ERROR;
+                break;
+            case SyncException.SERVER_CONNECTION_REQUEST_ERROR:
+                syncStatus = SyncListener.SERVER_CONNECTION_REQUEST_ERROR;
+                break;
+            case SyncException.BACKEND_AUTH_ERROR:
+                syncStatus = SyncListener.BACKEND_AUTH_ERROR;
+                break;
+            case SyncException.NOT_FOUND_URI_ERROR:
+                syncStatus = SyncListener.URI_NOT_FOUND_ERROR;
+                break;
+            case SyncException.CONNECTION_BLOCKED_BY_USER:
+                syncStatus = SyncListener.CONNECTION_BLOCKED_BY_USER;
+                break;
+            case SyncException.SMART_SLOW_SYNC_UNSUPPORTED:
+                syncStatus = SyncListener.SMART_SLOW_SYNC_UNSUPPORTED;
+                break;
+            case SyncException.CLIENT_ERROR:
+                syncStatus = SyncListener.CLIENT_ERROR;
+                break;
+            case SyncException.ACCESS_ERROR:
+                syncStatus = SyncListener.ACCESS_ERROR;
+                break;
+            case SyncException.DATA_NULL:
+                syncStatus = SyncListener.DATA_NULL;
+                break;
+            case SyncException.ILLEGAL_ARGUMENT:
+                syncStatus = SyncListener.ILLEGAL_ARGUMENT;
+                break;
+            case SyncException.SERVER_ERROR:
+                syncStatus = SyncListener.SERVER_ERROR;
+                break;
+            case SyncException.SERVER_BUSY:
+                syncStatus = SyncListener.SERVER_BUSY;
+                break;
+            case SyncException.BACKEND_ERROR:
+                syncStatus = SyncListener.BACKEND_ERROR;
+                break;
+            case SyncException.CANCELLED:
+                syncStatus = SyncListener.CANCELLED;
+                break;
+            case SyncException.ERR_READING_COMPRESSED_DATA:
+                syncStatus = SyncListener.COMPRESSED_RESPONSE_ERROR;
+                break;
+            case SyncException.DEVICE_FULL:
+                syncStatus = SyncListener.SERVER_FULL_ERROR;
+                break;
+            case SyncException.LOCAL_DEVICE_FULL:
+                syncStatus = SyncListener.LOCAL_DEVICE_FULL_ERROR;
+                break;
+            default:
+                syncStatus = SyncListener.GENERIC_ERROR;
+                break;
+        }
+        return syncStatus;
     }
 }

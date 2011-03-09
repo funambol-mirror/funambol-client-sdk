@@ -284,6 +284,14 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         return true;
     }
 
+    public void cancel() {
+        super.cancel();
+        // Cancel any pending download
+        if(downloader != null) {
+            downloader.cancel();
+        }
+    }
+
     public SyncListener getListener() {
         return new ProxySyncListener(super.getListener());
     }

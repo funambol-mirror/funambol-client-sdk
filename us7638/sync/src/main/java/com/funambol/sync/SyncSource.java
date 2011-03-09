@@ -207,6 +207,12 @@ public interface SyncSource {
      */
     public void applyItemsStatus(Vector itemsStatusList) throws SyncException;
 
+
+    /**
+     * Cancels any current or pending operations
+     */
+    public void cancel();
+
     /**
      * Returns the next item of the store (for slow sync).<p>
      * The method returns the set of items in the source. This set

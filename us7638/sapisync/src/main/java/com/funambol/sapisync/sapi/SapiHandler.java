@@ -88,6 +88,12 @@ public class SapiHandler {
 
     private SapiQueryListener listener = null;
 
+    /**
+     * This is the flag used to indicate that the current query shall be
+     * cancelled
+     */
+    private boolean cancel = false;
+
     public SapiHandler(String baseUrl, String user, String pwd) {
         this.baseUrl = baseUrl;
         this.user    = user;
@@ -228,7 +234,7 @@ public class SapiHandler {
                             listener.queryProgress(total);
                         }
                     }
-                } while(read != -1);
+                } while(read != -1 && !isQueryCancelled());
             }
             os.flush();
 
@@ -357,6 +363,20 @@ public class SapiHandler {
                 conn = null;
             }
         }
+    }
+
+    /**
+     * Cancels the current query
+     */
+    public void cancel() {
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "Cancelling current query");
+        }
+        cancel = true;
+    }
+
+    private boolean isQueryCancelled() {
+        return cancel;
     }
 
     protected String encodeURLString(String s) {

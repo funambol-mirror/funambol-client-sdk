@@ -104,6 +104,13 @@ public abstract class TrackableSyncSource implements SyncSource {
     /** Listener of the sync process */
     private SyncListener listener;
 
+    /**
+     * This is the flag used to indicate that any current operation shall be 
+     * cancelled. Users can call the cancel (@see cancel) method to cancel any
+     * current operation.
+     */
+    private boolean cancel = false;
+
     //------------------------------------------------------------- Constructors
 
     /**
@@ -150,6 +157,9 @@ public abstract class TrackableSyncSource implements SyncSource {
                          // after the first one to keep track of the previous 
                          // item's sync status
         for(int i = 0; i < syncItems.size(); ++i) {
+
+            cancelIfNeeded();
+            
             SyncItem item = (SyncItem)syncItems.elementAt(i);
             try {
                 if (item.getState() == SyncItem.STATE_NEW) {                    
@@ -191,6 +201,8 @@ public abstract class TrackableSyncSource implements SyncSource {
 
     public void beginSync(int syncMode, boolean resume) throws SyncException {
 
+        cancel = false;
+        
         if (tracker == null) {
             throw new SyncException(SyncException.CLIENT_ERROR, "Trackable source without tracker");
         }
@@ -649,8 +661,23 @@ public abstract class TrackableSyncSource implements SyncSource {
 
     protected abstract Enumeration getAllItemsKeys();
 
-
     protected abstract SyncItem getItemContent(SyncItem item) throws SyncException;
 
+    public void cancel() {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Cancelling any current operation");
+        }
+        cancel = true;
+    }
+
+    protected void cancelIfNeeded() throws SyncException {
+        if(cancel) {
+            throw new SyncException(SyncException.CANCELLED, "Cancelled");
+        }
+    }
+
+    protected boolean isCancelled() throws SyncException {
+        return cancel;
+    }
 }
 

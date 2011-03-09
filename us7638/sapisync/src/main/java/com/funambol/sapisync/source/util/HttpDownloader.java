@@ -52,6 +52,12 @@ public class HttpDownloader  {
     private static final int MAX_RETRY = 3;
 
     private DownloadListener listener = null;
+
+    /**
+     * This is the flag used to indicate that the current download shall be
+     * cancelled
+     */
+    private boolean cancel = false;
     
     //------------------------------------------------------------- Constructors
 
@@ -117,6 +123,20 @@ public class HttpDownloader  {
         download(url, os, size, startOffset, size - 1);
     }
 
+    /**
+     * Cancels the current download
+     */
+    public void cancel() {
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "Cancelling current download");
+        }
+        cancel = true;
+    }
+
+    private boolean isDownloadCancelled() {
+        return cancel;
+    }
+
     protected int download(String url, OutputStream os, long size, long startOffset, long endOffset)
     throws SyncException, IOException {
 
@@ -175,7 +195,7 @@ public class HttpDownloader  {
                 is = conn.openInputStream();
                 byte[] data = new byte[DEFAULT_CHUNK_SIZE];
                 int n = 0;
-                while ((n = is.read(data)) != -1) {
+                while ((n = is.read(data)) != -1 && !isDownloadCancelled()) {
                     // We intercept the IO exception during writing because this
                     // must generate a generic error for this specific item, but not
                     // interrupt the sync like a network error

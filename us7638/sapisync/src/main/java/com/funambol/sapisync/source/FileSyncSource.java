@@ -228,7 +228,9 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
             boolean isUpdate, boolean isThumbnail) throws IOException {
         // TODO FIXME: hanlde the resume
         FileAdapter file = new FileAdapter(directory + name);
-        return file.openOutputStream();
+        OutputStream os = file.openOutputStream();
+        file.close();
+        return os;
     }
 
     protected void deleteAllItems() {

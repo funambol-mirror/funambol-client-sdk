@@ -54,6 +54,7 @@ import com.funambol.util.DateUtil;
 import java.io.InputStream;
 import java.util.Hashtable;
 
+
 public class SapiSyncHandler {
 
     private static final String TAG_LOG = "SapiSyncHandler";
@@ -187,7 +188,7 @@ public class SapiSyncHandler {
         } catch(Exception ex) {
             Log.error(TAG_LOG, "Failed to upload item", ex);
             throw new SyncException(SyncException.CLIENT_ERROR,
-                    "Cannot delete all items");
+                    "Cannot upload item");
         }
     }
 
@@ -341,6 +342,18 @@ public class SapiSyncHandler {
             }
         }
         return -1;
+    }
+
+    /**
+     * Cancels the current operation
+     */
+    public void cancel() {
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "Cancelling any current operation");
+        }
+        if(sapiHandler != null) {
+            sapiHandler.cancel();
+        }
     }
 
     private void handleResponseError(JSONObject response) throws Exception {
