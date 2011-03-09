@@ -145,7 +145,6 @@ public class HomeScreenController extends SynchronizationController {
         attachToSource(appSource);
     }
 
-    @Override
     public void endSync(Vector sources, boolean hadErrors) {
         super.endSync(sources, hadErrors);
     }
