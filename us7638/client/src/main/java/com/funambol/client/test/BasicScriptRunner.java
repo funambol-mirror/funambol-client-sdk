@@ -92,7 +92,8 @@ public class BasicScriptRunner extends CommandRunner {
 
     private TestFileManager fileManager = null;
 
-    private Hashtable testResults = null;
+    private Hashtable testKeys    = null;
+    private Vector    testResults = null;
 
     /**
      * Default constructor
@@ -142,7 +143,8 @@ public class BasicScriptRunner extends CommandRunner {
      * This is the only case in which the test suite is entirely aborted.
      */
     public void runScriptFile(String scriptUrl, boolean mainScript) throws Throwable {
-        testResults = new Hashtable();
+        testResults = new Vector();
+        testKeys = new Hashtable();
         try {
             runScriptFileI(scriptUrl, mainScript);
         } finally {
@@ -261,16 +263,18 @@ public class BasicScriptRunner extends CommandRunner {
                             ignoreCurrentScript = true;
                             nestingDepth = 0;
                             TestStatus status = new TestStatus(scriptUrl);
-                            status.setStatus("Skipped");
-                            testResults.put(scriptUrl, status);
+                            status.setStatus(TestStatus.SKIPPED);
+                            testResults.addElement(status);
+                            testKeys.put(scriptUrl, status);
                         } catch (Throwable t) {
 
                             Log.error(TAG_LOG, "Error running command", t);
 
                             TestStatus status = new TestStatus(scriptUrl);
-                            status.setStatus("Failure");
+                            status.setStatus(TestStatus.FAILURE);
                             status.setDetailedError("Error " + t.toString() + " at line " + parser.getLineNumber());
-                            testResults.put(scriptUrl, status);
+                            testResults.addElement(status);
+                            testKeys.put(scriptUrl, status);
 
                             if (stopOnFailure) {
                                 throw t;
@@ -287,12 +291,13 @@ public class BasicScriptRunner extends CommandRunner {
                         // If we get here and the current script is not being
                         // ignored, then the execution has been successful
                         if (!ignoreCurrentScript) {
-                            if (testResults.get(scriptUrl) == null) {
+                            if (testKeys.get(scriptUrl) == null) {
                                 // This test is not a utility test, save its
                                 // status
                                 TestStatus status = new TestStatus(scriptUrl);
-                                status.setStatus("Success");
-                                testResults.put(scriptUrl, status);
+                                status.setStatus(TestStatus.SUCCESS);
+                                testResults.addElement(status);
+                                testKeys.put(scriptUrl, status);
                             }
                         }
 
@@ -308,9 +313,10 @@ public class BasicScriptRunner extends CommandRunner {
         } catch (Exception e) {
             // This will block the entire execution
             TestStatus status = new TestStatus(scriptUrl);
-            status.setStatus("Failure");
+            status.setStatus(TestStatus.FAILURE);
             status.setDetailedError("Syntax error in file " + scriptUrl + " at line " + parser.getLineNumber());
-            testResults.put(scriptUrl, status);
+            testResults.addElement(status);
+            testKeys.put(scriptUrl, status);
             Log.error(TAG_LOG, "Error parsing command", e);
             throw new ClientTestException("Script syntax error");
         }
@@ -693,25 +699,46 @@ public class BasicScriptRunner extends CommandRunner {
     private String getResults() {
         if (testResults != null) {
             StringBuffer res = new StringBuffer();
-            Enumeration testKeys = testResults.keys();
             int tot = 0;
             int failed = 0;
-            while(testKeys.hasMoreElements()) {
-                String url = (String)testKeys.nextElement();
-                TestStatus status = (TestStatus)testResults.get(url);
+            int success = 0;
+            int skipped = 0;
+            for(int i=0;i<testResults.size();++i)  {
+                TestStatus status = (TestStatus)testResults.elementAt(i);
+                String url = status.getScriptName();
 
-                res.append("Script=").append(url)
-                    .append(" Result=").append(status.getStatus());
+                res.append("Script=").append(url);
+                String r;
+                switch (status.getStatus()) {
+                    case TestStatus.SUCCESS:
+                        r = "SUCCESS";
+                        success++;
+                        break;
+                    case TestStatus.FAILURE:
+                        r = "FAILURE";
+                        failed++;
+                        break;
+                    case TestStatus.SKIPPED:
+                        r = "SKIPPED";
+                        skipped++;
+                        break;
+                    default:
+                        r = "UNDEFINED";
+                        break;
+                }
+
+                res.append(" Result=").append(r);
                 String detailedError = status.getDetailedError();
                 tot++;
                 if (detailedError != null) {
                     res.append(" Error=").append(detailedError);
-                    failed++;
                 }
                 res.append("\n");
             }
             res.append("Total number of tests: ").append(tot).append("\n");
+            res.append("Total number of success: ").append(success).append("\n");
             res.append("Total number of failures: ").append(failed).append("\n");
+            res.append("Total number of skipped: ").append(skipped).append("\n");
             return res.toString();
         } else {
             return "No tests performed";
@@ -851,15 +878,20 @@ public class BasicScriptRunner extends CommandRunner {
     }
 
     private class TestStatus {
+
+        public static final int SUCCESS = 0;
+        public static final int FAILURE = 1;
+        public static final int SKIPPED = 2;
+
         private String scriptName;
-        private String status;
+        private int status;
         private String detailedError;
 
         public TestStatus(String scriptName) {
             this.scriptName = scriptName;
         }
 
-        public void setStatus(String status) {
+        public void setStatus(int status) {
             this.status = status;
         }
 
@@ -871,7 +903,7 @@ public class BasicScriptRunner extends CommandRunner {
             return scriptName;
         }
 
-        public String getStatus() {
+        public int getStatus() {
             return status;
         }
 
