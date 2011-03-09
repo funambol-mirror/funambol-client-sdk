@@ -155,7 +155,6 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
     }
 
     private void saveEventOnServer(String command, Vector args) throws Throwable {
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
         String summary = getParameter(args, 0);
         checkArgument(summary, "Missing summary in " + command);
         getCalendarRobot().saveEventOnServer(summary);
@@ -164,12 +163,10 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
     private void deleteEventOnServer(String command, Vector args) throws Throwable {
         String summary = getParameter(args, 0);
         checkArgument(summary, "Missing summary in " + command);
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
         getCalendarRobot().deleteEventOnServer(summary);
     }
 
     private void deleteAllEventsOnServer(String command, Vector args) throws Throwable {
-        checkObject(checkSyncClient, "Run StartMainApp before command: " + command);
         getCalendarRobot().deleteAllEventsOnServer();
     }
 
