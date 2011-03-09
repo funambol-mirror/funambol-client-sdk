@@ -59,6 +59,7 @@ import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.sync.ItemDownloadInterruptionException;
 import com.funambol.sync.Filter;
+import com.funambol.sync.ItemUploadInterruptionException;
 import com.funambol.sync.SyncFilter;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
@@ -374,7 +375,13 @@ public class SapiSyncManager implements SyncManagerI {
 
                 syncStatus.addSentItem(item.getKey(), item.getState());
                 uploadedCount++;
-                
+            
+            } catch (ItemUploadInterruptionException ex) {
+                // An item could not be uploaded
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "");
+                }
+                // TODO FIXME: handle the suspend/resume
             } catch(Exception ex) {
                 if(Log.isLoggable(Log.ERROR)) {
                     Log.error(TAG_LOG, "Failed to upload item with key: " +

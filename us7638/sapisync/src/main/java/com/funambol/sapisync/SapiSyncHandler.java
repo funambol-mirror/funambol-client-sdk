@@ -46,6 +46,7 @@ import org.json.me.JSONArray;
 import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.sapisync.source.JSONFileObject;
 import com.funambol.sapisync.source.JSONSyncItem;
+import com.funambol.sync.ItemUploadInterruptionException;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
@@ -74,6 +75,7 @@ public class SapiSyncHandler {
     
     public static final String JSON_ERROR_CODE_SEC_1002 = "SEC-1002";
     public static final String JSON_ERROR_CODE_SEC_1004 = "SEC-1004";
+    public static final String JSON_ERROR_CODE_MED_1002 = "MED-1002";
 
     /**
      * SapiSyncHandler constructor
@@ -178,10 +180,24 @@ public class SapiSyncHandler {
             sapiHandler.setSapiRequestListener(sapiListener);
 
             // Send the upload request
-            sapiQueryWithRetries("upload/" + remoteUri,
+            JSONObject uploadResponse = sapiQueryWithRetries("upload/" + remoteUri,
                     "add", null, headers, item.getInputStream(),
                     json.getMimetype(), json.getSize());
-            
+
+            if(uploadResponse.has("error")) {
+                JSONObject error = uploadResponse.getJSONObject("error");
+                String msg = error.getString("message");
+                String code = error.getString("code");
+                if(JSON_ERROR_CODE_MED_1002.equals(code)) {
+                    // The size of the uploading media does not match the one declared
+                    // TODO: FIXME retrieve actual uploaded size
+                    throw new ItemUploadInterruptionException(item, 0);
+                }
+                Log.error(TAG_LOG, "Failed to upload item: " + msg);
+                throw new SyncException(SyncException.SERVER_ERROR,
+                    "Failed to upload item" + msg);
+            }
+
             sapiHandler.setSapiRequestListener(null);
 
             return remoteKey;
@@ -416,8 +432,9 @@ public class SapiSyncHandler {
         return resp;
     }
     
-    private JSONObject sapiQueryWithRetries(String name, String action, Vector params,
-            Hashtable headers, InputStream requestIs, String contentType, long contentLength) throws JSONException {
+    private JSONObject sapiQueryWithRetries(String name, String action, 
+            Vector params, Hashtable headers, InputStream requestIs,
+            String contentType, long contentLength) throws JSONException {
         JSONObject resp = null;
         boolean retry = true;
         int attempt = 0;
