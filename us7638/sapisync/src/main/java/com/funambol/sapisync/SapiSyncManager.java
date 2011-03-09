@@ -347,11 +347,12 @@ public class SapiSyncManager implements SyncManagerI {
 
         int uploadedCount = 0;
         SyncItem item = getNextItemToUpload(src, incremental);
+        
         while(item != null && itemsCountFilter(maxSending, uploadedCount)) {
-            try {
 
-                cancelSyncIfNeeded(src);
-                
+            cancelSyncIfNeeded(src);
+
+            try {
                 // Exclude twins
                 if(twins.contains(item.getKey())) {
                     if (Log.isLoggable(Log.INFO)) {
