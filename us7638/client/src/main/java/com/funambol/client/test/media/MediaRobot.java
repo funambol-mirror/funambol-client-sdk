@@ -55,8 +55,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.json.me.JSONArray;
 
 import org.json.me.JSONException;
+import org.json.me.JSONObject;
 
 
 public abstract class MediaRobot extends Robot {
@@ -65,6 +67,8 @@ public abstract class MediaRobot extends Robot {
 
     protected AppSyncSourceManager appSourceManager;
     protected TestFileManager fileManager;
+
+    protected SapiSyncHandler sapiSyncHandler = null;
 
     public MediaRobot(AppSyncSourceManager appSourceManager, TestFileManager fileManager) {
         this.appSourceManager = appSourceManager;
@@ -116,7 +120,27 @@ public abstract class MediaRobot extends Robot {
     }
     
     public void deleteMediaOnServer(String type, String filename) throws Throwable {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        SapiSyncHandler sapiHandler = getSapiSyncHandler();
+        String itemId = findMediaOnServer(type, filename);
+        sapiHandler.login();
+        sapiHandler.deleteItem(itemId, getRemoteUri(type));
+        sapiHandler.logout();
+    }
+
+    private String findMediaOnServer(String type, String filename) throws Throwable {
+        SapiSyncHandler sapiHandler = getSapiSyncHandler();
+        SapiSyncHandler.FullSet itemsSet = sapiHandler.getItems(
+                getRemoteUri(type), getDataTag(type), null, null, null, null);
+        JSONArray items = itemsSet.items;
+        for(int i=0;i<items.length();++i) {
+            JSONObject item = items.getJSONObject(i);
+            String aFilename = item.getString("name");
+            if (filename.equals(aFilename) ) {
+                String id = item.getString("id");
+                return id;
+            }
+        }
+        return null;
     }
 
     public void deleteAllMediaOnServer(String type) throws Throwable {
@@ -156,12 +180,25 @@ public abstract class MediaRobot extends Robot {
         return getAppSyncSource(type).getSyncSource().getConfig().getRemoteUri();
     }
 
+    private String getDataTag(String type) {
+        SyncSource src = getAppSyncSource(type).getSyncSource();
+        String dataTag = null;
+        if (src instanceof JSONSyncSource) {
+            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
+            dataTag = jsonSyncSource.getDataTag();
+        }
+        return dataTag;
+    }
+
     private SapiSyncHandler getSapiSyncHandler() {
-        SyncConfig syncConfig = getSyncConfig();
-        return new SapiSyncHandler(
-                StringUtil.extractAddressFromUrl(syncConfig.getSyncUrl()),
-                syncConfig.getUserName(),
-                syncConfig.getPassword());
+        if (sapiSyncHandler == null) {
+            SyncConfig syncConfig = getSyncConfig();
+            sapiSyncHandler = new SapiSyncHandler(StringUtil.extractAddressFromUrl(
+                                          syncConfig.getSyncUrl()),
+                                          syncConfig.getUserName(),
+                                          syncConfig.getPassword());
+        }
+        return sapiSyncHandler;
     }
 
     /**
