@@ -129,16 +129,21 @@ public abstract class MediaRobot extends Robot {
 
     private String findMediaOnServer(String type, String filename) throws Throwable {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
-        SapiSyncHandler.FullSet itemsSet = sapiHandler.getItems(
-                getRemoteUri(type), getDataTag(type), null, null, null, null);
-        JSONArray items = itemsSet.items;
-        for(int i=0;i<items.length();++i) {
-            JSONObject item = items.getJSONObject(i);
-            String aFilename = item.getString("name");
-            if (filename.equals(aFilename) ) {
-                String id = item.getString("id");
-                return id;
+        sapiHandler.login();
+        try {
+            SapiSyncHandler.FullSet itemsSet = sapiHandler.getItems(
+                    getRemoteUri(type), getDataTag(type), null, null, null, null);
+            JSONArray items = itemsSet.items;
+            for(int i=0;i<items.length();++i) {
+                JSONObject item = items.getJSONObject(i);
+                String aFilename = item.getString("name");
+                if (filename.equals(aFilename) ) {
+                    String id = item.getString("id");
+                    return id;
+                }
             }
+        }finally {
+            sapiHandler.logout();
         }
         return null;
     }
