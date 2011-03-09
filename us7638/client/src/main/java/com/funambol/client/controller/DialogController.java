@@ -149,7 +149,7 @@ public class DialogController {
         }
         return -1;
     }
-
+    
     /**
      * Prompt a message alert on the screen
      * @param message is the String to be displayed on the screen
@@ -213,9 +213,20 @@ public class DialogController {
 
 
     /**
+     * Show a message to the user, with a classic "Ok" button, and the user must press
+     * the button in order to dismiss the dialog
+     *  
+     * @param message text to display
+     */
+    public void showMessageAndWaitUserConfirmation(String message) {
+       String okMessage = localization.getLanguage("dialog_ok");
+       askGenericQuestion(message, new String[] { okMessage });
+    } 
+
+    /**
      * Use the localization field to build the reset direction alert dialog.
      * This dialog builds ResetDirectionDialogOption objects to refer to the
-     * dialog choiches.
+     * dialog choices.
      * @param screen the dialog alert owner Screen
      */
     public void showRefreshDirectionDialog(Screen screen) {
@@ -244,7 +255,7 @@ public class DialogController {
      /**
      * Use the localization field to build the wifi not available alert dialog.
      * This dialog builds WIFINotAvailableDialogOption objects to refer to the
-     * dialog choiches.
+     * dialog choices.
      * @param screen the dialog alert owner Screen
      */
     public void showNoWIFIAvailableDialog(Screen screen,
