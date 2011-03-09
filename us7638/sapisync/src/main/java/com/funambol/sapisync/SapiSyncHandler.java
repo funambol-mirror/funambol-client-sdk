@@ -423,14 +423,14 @@ public class SapiSyncHandler {
         return resp;
     }
 
-    protected class ChangesSet {
+    public class ChangesSet {
         public JSONArray added     = null;
         public JSONArray updated   = null;
         public JSONArray deleted   = null;
         public long      timeStamp = -1;
     }
 
-    protected class FullSet {
+    public class FullSet {
         public JSONArray items     = null;
         public long      timeStamp = -1;
         public String    serverUrl = null;
