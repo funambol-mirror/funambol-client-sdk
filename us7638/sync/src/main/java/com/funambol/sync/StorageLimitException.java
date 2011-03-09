@@ -36,7 +36,6 @@ public class StorageLimitException extends IOException {
                 "Downloading this " + getItemSize() + "-byte item would exceed " +
                 "the " + getThreshold() + "% safety limit on used storage space " +
                 "on the device");
-        syncException.initCause(this);
         return syncException;
     }
 
