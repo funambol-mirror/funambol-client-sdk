@@ -382,6 +382,8 @@ public class SapiSyncManager implements SyncManagerI {
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "");
                 }
+                sourceStatus.addElement(new ItemStatus(item.getKey(),
+                        SyncSource.ERROR_STATUS));
                 // TODO FIXME: handle the suspend/resume
             } catch(Exception ex) {
                 if(Log.isLoggable(Log.ERROR)) {
