@@ -80,9 +80,14 @@ public class SyncMonitor {
     }
 
     public void interruptSyncAfterPhase(String phaseName, int num, String reason) {
+        interruptSyncAfterPhase(phaseName, num, -1, reason);
+    }
+
+    public void interruptSyncAfterPhase(String phaseName, int num, int progress,
+            String reason) {
         for(int i=0;i<listeners.size();++i) {
             SyncMonitorListener lis = (SyncMonitorListener)listeners.elementAt(i);
-            lis.interruptAfterPhase(phaseName, num, reason);
+            lis.interruptAfterPhase(phaseName, num, progress, reason);
         }
     }
 }

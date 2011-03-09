@@ -46,44 +46,111 @@ public class SyncMonitorListener extends BasicSyncListener {
 
     private static final String TAG_LOG = "SyncMonitorListener";
 
+    public static final String SENDING_PHASE_NAME   = "Sending";
+    public static final String RECEIVING_PHASE_NAME = "Receiving";
+
     protected int receivingPhaseCounter = 0;
     protected int sendingPhaseCounter   = 0;
+
+    protected long currentItemSize = 0;
+    protected int currentItemProgress = 0;
 
     protected SyncListener lis;
 
     protected String interruptOnPhase = null;
     protected int    interruptOnPhaseNumber = -1;
+    protected int    interruptOnPhaseProgress = -1;
     protected String interruptReason = null;
 
     public SyncMonitorListener(SyncListener lis) {
         this.lis = lis;
     }
 
-    public void interruptAfterPhase(String phaseName, int num, String reason) {
+    /**
+     * Tells the SyncMonitorListener to interrupt the synchronization after the
+     * given phase
+     * @param phaseName SENDING_PHASE_NAME or RECEIVING_PHASE_NAME
+     * @param num the number of items (e.g. 2)
+     * @param progress the perecentage of the item (e.g. 90)
+     * @param reason
+     */
+    public void interruptAfterPhase(String phaseName, int num, int progress,
+            String reason) {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "interrupt after phase: " + phaseName + "," + num);
         }
         interruptOnPhase = phaseName;
         interruptOnPhaseNumber = num;
-        interruptReason  = reason;
+        interruptOnPhaseProgress = progress;
+        interruptReason = reason;
     }
 
     public void startSession() {
         lis.startSession();
         receivingPhaseCounter = 0;
-        sendingPhaseCounter    = 0;
+        sendingPhaseCounter = 0;
+        interruptOnPhaseNumber = -1;
+        interruptOnPhaseProgress = -1;
     }
 
     public void itemDeleted(SyncItem item) {
         lis.itemDeleted(item);
     }
 
+    public void itemAddSendingStarted(String key, String parent, long size) {
+        lis.itemAddSendingStarted(key, parent, size);
+        currentItemSize = size;
+    }
+
+    public void itemAddSendingProgress(String key, String parent, long size) {
+        lis.itemAddSendingProgress(key, parent, size);
+        if (SENDING_PHASE_NAME.equals(interruptOnPhase)) {
+            if(interruptOnPhaseProgress > 0) {
+                if (sendingPhaseCounter == (interruptOnPhaseNumber - 1)) {
+                    currentItemProgress = (int)(currentItemSize / size) * 100;
+                    if(currentItemProgress >= interruptOnPhaseProgress) {
+                        interruptSync();
+                    }
+                }
+            }
+        }
+    }
+
     public void itemAddSendingEnded(String key, String parent) {
         ++sendingPhaseCounter;
-        if ("Sending".equals(interruptOnPhase) && sendingPhaseCounter == interruptOnPhaseNumber) {
-            interruptSync(interruptReason);
+        if (SENDING_PHASE_NAME.equals(interruptOnPhase) &&
+                sendingPhaseCounter == interruptOnPhaseNumber) {
+            interruptSync();
         }
         lis.itemAddSendingEnded(key, parent);
+    }
+
+    public void itemAddReceivingStarted(String key, String parent, long size) {
+        lis.itemAddReceivingStarted(key, parent, size);
+        currentItemSize = size;
+    }
+
+    public void itemAddReceivingProgress(String key, String parent, long size) {
+        lis.itemAddReceivingProgress(key, parent, size);
+        if (RECEIVING_PHASE_NAME.equals(interruptOnPhase)) {
+            if(interruptOnPhaseProgress > 0) {
+                if (sendingPhaseCounter == (interruptOnPhaseNumber - 1)) {
+                    currentItemProgress = (int)(currentItemSize / size) * 100;
+                    if(currentItemProgress >= interruptOnPhaseProgress) {
+                        interruptSync();
+                    }
+                }
+            }
+        }
+    }
+
+    public void itemAddReceivingEnded(String key, String parent) {
+        ++receivingPhaseCounter;
+        if (RECEIVING_PHASE_NAME.equals(interruptOnPhase) &&
+                receivingPhaseCounter == interruptOnPhaseNumber) {
+            interruptSync();
+        }
+        lis.itemAddReceivingEnded(key, parent);
     }
 
     public void itemReplaceSendingEnded(String key, String parent) {
@@ -106,7 +173,6 @@ public class SyncMonitorListener extends BasicSyncListener {
         lis.endConnecting(action);
     }
 
-
     public void syncStarted(int alertCode) {
         lis.syncStarted(alertCode);
     }
@@ -125,14 +191,6 @@ public class SyncMonitorListener extends BasicSyncListener {
 
     public void startSending(int numNewItems, int numUpdItems, int numDelItems) {
         lis.startSending(numNewItems, numUpdItems, numDelItems);
-    }
-
-    public void itemAddSendingStarted(String key, String parent, long size) {
-        lis.itemAddSendingStarted(key, parent, size);
-    }
-
-    public void itemAddSendingProgress(String key, String parent, long size) {
-        lis.itemAddSendingProgress(key, parent, size);
     }
 
     public void itemReplaceSendingStarted(String key, String parent, long size) {
@@ -159,12 +217,14 @@ public class SyncMonitorListener extends BasicSyncListener {
         return lis.startSyncing(alertCode, devInf);
     }
 
-    protected void interruptSync(String reason) {
+    protected void interruptSync() {
         interruptOnPhase = null;
+        receivingPhaseCounter = 0;
+        sendingPhaseCounter = 0;
         interruptOnPhaseNumber = -1;
+        interruptOnPhaseProgress = -1;
         interruptReason = null;
-
-        throw new IllegalArgumentException("Simulating sync error " + reason);
+        throw new IllegalArgumentException("Simulating sync error " + interruptReason);
     }
 }
 
