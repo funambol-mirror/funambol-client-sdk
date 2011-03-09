@@ -77,7 +77,8 @@ public class SyncMonitorListener extends BasicSyncListener {
     public void interruptAfterPhase(String phaseName, int num, int progress,
             String reason) {
         if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "interrupt after phase: " + phaseName + "," + num);
+            Log.trace(TAG_LOG, "interrupt after phase: " + phaseName +
+                    "," + num + "," + progress);
         }
         interruptOnPhase = phaseName;
         interruptOnPhaseNumber = num;
@@ -89,8 +90,6 @@ public class SyncMonitorListener extends BasicSyncListener {
         lis.startSession();
         receivingPhaseCounter = 0;
         sendingPhaseCounter = 0;
-        interruptOnPhaseNumber = -1;
-        interruptOnPhaseProgress = -1;
     }
 
     public void itemDeleted(SyncItem item) {
@@ -107,7 +106,7 @@ public class SyncMonitorListener extends BasicSyncListener {
         if (SENDING_PHASE_NAME.equals(interruptOnPhase)) {
             if(interruptOnPhaseProgress > 0) {
                 if (sendingPhaseCounter == (interruptOnPhaseNumber - 1)) {
-                    currentItemProgress = (int)(currentItemSize / size) * 100;
+                    currentItemProgress = (int)((size * 100) / currentItemSize);
                     if(currentItemProgress >= interruptOnPhaseProgress) {
                         interruptSync();
                     }
