@@ -2861,7 +2861,7 @@ public class SyncManager implements SyncManagerI {
                 syncStatus = SyncListener.SERVER_FULL_ERROR;
                 break;
             case SyncException.LOCAL_DEVICE_FULL:
-                syncStatus = SyncListener.LOCAL_DEVICE_FULL_ERROR;
+                syncStatus = SyncListener.LOCAL_CLIENT_FULL_ERROR;
                 break;
             default:
                 syncStatus = SyncListener.GENERIC_ERROR;
