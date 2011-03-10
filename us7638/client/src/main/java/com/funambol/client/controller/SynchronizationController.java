@@ -59,6 +59,9 @@ import com.funambol.util.ConnectionListener;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 import com.funambol.platform.NetworkStatus;
+import com.funambol.sapisync.SapiSyncHandler;
+import com.funambol.sapisync.source.JSONSyncSource;
+import com.funambol.sync.SyncConfig;
 
 /**
  * This class provides a basic controller that can be used by any other
@@ -1032,5 +1035,72 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
             }
         }
         */
+    }
+
+    /**
+     * Check for server media capabilities.
+     * @return the server response timestamp
+     */
+    public long checkServerMediaCaps() {
+
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "Check server media capabilities");
+        }
+
+        long timestamp = -1;
+        
+        SyncConfig sc = configuration.getSyncConfig();
+        SapiSyncHandler sapiSyncHandler = new SapiSyncHandler(
+                sc.getSyncUrl(), sc.getUserName(), sc.getPassword());
+
+        Enumeration appSources = appSyncSourceManager.getRegisteredSources();
+        while(appSources.hasMoreElements()) {
+            AppSyncSource appSource = (AppSyncSource)appSources.nextElement();
+            if (appSource.getIsMedia()) {
+                boolean sourceFound = false;
+                try {
+                    String uri = appSource.getConfig().getUri();
+                    String dataTag = getDataTag(appSource.getSyncSource());
+                    SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(
+                            uri, dataTag, null, "0", null, null);
+                    if(fullSet != null) {
+                        timestamp = fullSet.timeStamp;
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Source found on server: " + appSource.getName());
+                        }
+                        sourceFound = true;
+                    }
+                } catch(Throwable t) {
+                    // Failed to retrieve source on server
+                }
+                if(!sourceFound) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Source not found on server: " + appSource.getName());
+                    }
+                }
+                AppSyncSourceConfig config = appSource.getConfig();
+                config.setActive(sourceFound);
+            }
+        }
+
+        // Update the home screen
+        if(controller.getHomeScreenController() != null) {
+            controller.getHomeScreenController().updateAvailableSources();
+        }
+
+        return timestamp;
+    }
+
+    private String getDataTag(SyncSource src) {
+        String dataTag = null;
+        if (src instanceof JSONSyncSource) {
+            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
+            dataTag = jsonSyncSource.getDataTag();
+        }
+        if (dataTag == null) {
+            // This is the default value
+            dataTag = src.getConfig().getRemoteUri() + "s";
+        }
+        return dataTag;
     }
 }

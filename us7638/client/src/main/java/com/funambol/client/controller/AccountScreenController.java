@@ -397,6 +397,9 @@ public class AccountScreenController extends SynchronizationController {
             Log.info(TAG_LOG, "Opening home screen");
         }
 
+        // Once the user is authenticated, check for media sources
+        checkServerMediaCaps();
+
         // An account has been created. So keep track of it in order to not 
         // display the signup screen again
         configuration.setSignupAccountCreated(true);
@@ -404,6 +407,16 @@ public class AccountScreenController extends SynchronizationController {
         configuration.save();
 
         screen.checkSucceeded();
+    }
+    
+    public long checkServerMediaCaps() {
+        long ts = super.checkServerMediaCaps();
+        if(ts > 0) {
+            // Update the server first run timestamp
+            configuration.setServerFirstRunTimestamp(ts);
+            configuration.save();
+        }
+        return ts;
     }
 
     public void switchToSignupScreen() {

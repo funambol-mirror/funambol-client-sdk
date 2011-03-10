@@ -50,6 +50,9 @@ import com.funambol.syncml.protocol.Ext;
 import com.funambol.syncml.protocol.DataStore;
 import com.funambol.util.Log;
 import com.funambol.client.localization.Localization;
+import com.funambol.sync.Filter;
+import com.funambol.sync.SyncFilter;
+import com.funambol.sync.SyncSource;
 
 public class Controller {
 
@@ -274,8 +277,37 @@ public class Controller {
     }
 
     public void reapplyMiscConfiguration() {
+
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "Reapply misc configuration");
+        }
+
         // Re-set the log level
         Log.setLogLevel(configuration.getLogLevel());
+
+        // Repply server first run timestamp to media sync filters
+        Enumeration appSources = appSyncSourceManager.getRegisteredSources();
+        while(appSources.hasMoreElements()) {
+            AppSyncSource appSource = (AppSyncSource)appSources.nextElement();
+            if (appSource.getIsMedia()) {
+                SyncSource ss = appSource.getSyncSource();
+                SyncFilter syncFilter = ss.getFilter();
+                if(syncFilter != null) {
+                    Filter filter = syncFilter.getFullDownloadFilter();
+                    if(filter != null && filter.getType() == Filter.DATE_RECENT_TYPE) {
+                        if (Log.isLoggable(Log.DEBUG)) {
+                            Log.debug(TAG_LOG, "Updating sync filter for source: " +
+                                    appSource.getName());
+                        }
+                        Filter newFilter = new Filter(
+                                Filter.DATE_RECENT_TYPE,
+                                configuration.getServerFirstRunTimestamp(),
+                                -1);
+                        syncFilter.setFullDownloadFilter(newFilter);
+                    }
+                }
+            }
+        }
 
         // Block incoming invites for events
         // TODO FIXME: MARCO
@@ -306,13 +338,8 @@ public class Controller {
             AppSyncSource appSource = (AppSyncSource)appSources.nextElement();
             // Search for a match for this source
 
-            // TODO FIXME: at the moment we search only for the picture, files and
-            // video sync sources and ignore all the other ones. This is just temporary, so
-            // we do not add a property to AppSyncSource
-            if (appSource.getId() != AppSyncSourceManager.PICTURES_ID &&
-                appSource.getId() != AppSyncSourceManager.VIDEOS_ID &&
-                appSource.getId() != AppSyncSourceManager.FILES_ID
-                ) {
+            // Media sources are enabled/disabled trough SAPI
+            if (appSource.getIsMedia()) {
                 continue;
             }
 

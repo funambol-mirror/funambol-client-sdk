@@ -104,6 +104,7 @@ public abstract class Configuration {
     protected static final String CONF_KEY_SYNC_MODE           = "SYNC_MODE";
     protected static final String CONF_KEY_S2C_PUSH_MODE       = "S2C_PUSH_MODE";
     protected static final String CONF_KEY_FIRST_RUN_TIMESTAMP = "FIRST_RUN_TIMESTAMP";
+    protected static final String CONF_KEY_SERVER_FIRST_RUN_TIMESTAMP = "CONF_KEY_SERVER_FIRST_RUN_TIMESTAMP";
 
     protected static final String CONF_KEY_UPDATE_URL        = "UPDATE_URL";
     protected static final String CONF_KEY_UPDATE_TYPE       = "UPDATE_TYPE";
@@ -154,6 +155,7 @@ public abstract class Configuration {
     protected boolean      skip                      = false;
 
     protected long         firstRunTimestamp         = 0;
+    protected long         serverFirstRunTimestamp   = 0;
     protected boolean      forceServerCapsRequest    = false;
 
     protected boolean      pimSourceSyncTypeChanged  = false;
@@ -303,6 +305,7 @@ public abstract class Configuration {
 
             Date now = new Date();
             firstRunTimestamp = loadLongKey(CONF_KEY_FIRST_RUN_TIMESTAMP, now.getTime());
+            serverFirstRunTimestamp = loadLongKey(CONF_KEY_SERVER_FIRST_RUN_TIMESTAMP, 0);
 
             String devInf = loadStringKey(CONF_KEY_SERVER_DEV_INF, null);
             if (devInf != null && devInf.length() > 0) {
@@ -428,6 +431,7 @@ public abstract class Configuration {
         saveBooleanKey(CONF_KEY_CRED_CHECK_REMEMBER, credentialsCheckRemember);
         saveIntKey(CONF_KEY_SYNC_MODE, syncMode);
         saveLongKey(CONF_KEY_FIRST_RUN_TIMESTAMP, firstRunTimestamp);
+        saveLongKey(CONF_KEY_SERVER_FIRST_RUN_TIMESTAMP, serverFirstRunTimestamp);
         saveIntKey(CONF_KEY_POLL_TIME, pollingInterval);
         saveLongKey(CONF_KEY_POLL_TIMESTAMP, pollingTimestamp);
 
@@ -642,6 +646,17 @@ public abstract class Configuration {
 
     public void setFirstRunTimestamp(long value) {
         firstRunTimestamp = value;
+    }
+
+    public long getServerFirstRunTimestamp() {
+        return serverFirstRunTimestamp;
+    }
+
+    public void setServerFirstRunTimestamp(long value) {
+        if(serverFirstRunTimestamp != value) {
+            serverFirstRunTimestamp = value;
+            dirtyMisc = true;
+        }
     }
 
     public boolean getCredentialsCheckPending() {

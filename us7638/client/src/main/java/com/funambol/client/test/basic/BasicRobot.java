@@ -36,6 +36,7 @@
 package com.funambol.client.test.basic;
 
 import com.funambol.client.configuration.Configuration;
+import com.funambol.client.controller.Controller;
 import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.SyncMonitor;
@@ -190,6 +191,7 @@ public abstract class BasicRobot extends Robot {
     public void resetFirstRunTimestamp() throws Throwable {
         Configuration configuration = getConfiguration();
         configuration.setFirstRunTimestamp(System.currentTimeMillis());
+        getController().getLoginScreenController().checkServerMediaCaps();
         configuration.save();
     }
 
@@ -202,5 +204,6 @@ public abstract class BasicRobot extends Robot {
     public abstract void saveSourceConfig(String sourceName) throws Exception;
 
     protected abstract Configuration getConfiguration();
+    protected abstract Controller getController();
     
 }
