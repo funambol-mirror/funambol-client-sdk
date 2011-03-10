@@ -98,8 +98,8 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
                     }
                     return item;
                 }
-            } catch (IOException ioe) {
-                Log.error(TAG_LOG, "Cannot check for twins", ioe);
+            } catch (Throwable t) {
+                Log.error(TAG_LOG, "Cannot check for twins", t);
             } finally {
                 if (fa != null) {
                     try {
