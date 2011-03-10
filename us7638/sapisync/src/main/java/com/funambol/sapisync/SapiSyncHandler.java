@@ -193,15 +193,18 @@ public class SapiSyncHandler {
                     // TODO: FIXME retrieve actual uploaded size
                     throw new ItemUploadInterruptionException(item, 0);
                 }
-                Log.error(TAG_LOG, "Failed to upload item: " + msg);
+                Log.error(TAG_LOG, "Error in SAPI response: " + msg);
                 throw new SyncException(SyncException.SERVER_ERROR,
-                    "Failed to upload item" + msg);
+                    "Error in SAPI response: " + msg);
             }
 
             sapiHandler.setSapiRequestListener(null);
 
             return remoteKey;
         } catch(Exception ex) {
+            if(ex instanceof SyncException) {
+                throw (SyncException)ex;
+            }
             Log.error(TAG_LOG, "Failed to upload item", ex);
             throw new SyncException(SyncException.CLIENT_ERROR,
                     "Cannot upload item");
