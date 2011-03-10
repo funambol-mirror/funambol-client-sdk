@@ -91,7 +91,7 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
             }
             FileAdapter fa = null;
             try {
-                fa = new FileAdapter(directory + fileName);
+                fa = new FileAdapter(fileName);
                 if (fa.exists()) {
                     if (Log.isLoggable(Log.DEBUG)) {
                         Log.debug(TAG_LOG, "Twin found");
