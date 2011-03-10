@@ -93,9 +93,9 @@ public class NotificationController {
         NotificationData notificationData = NotificationData.Factory.create(
                 NOTIFICATION_ID_CLIENT_FULL,
                 NotificationData.SEVERITY_WARNING,
-                localization.getLanguage("notification_device_full_ticker"),
-                localization.getLanguage("notification_device_full_title"),
-                localization.getLanguage("notification_device_full_message"),
+                localization.getLanguage("notification_storage_full_device_ticker"),
+                localization.getLanguage("notification_storage_full_device_title"),
+                localization.getLanguage("notification_storage_full_device_message"),
                 null);
         displayManager.showNotification(screen, notificationData);
     }
