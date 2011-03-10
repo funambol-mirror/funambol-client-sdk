@@ -78,7 +78,8 @@ public class SourceConfig {
     
     // This field contains a version number of the configuration data
     protected static final int VERSION_600 = 600 ;
-    protected static final int VERSION     = 602 ;
+    protected static final int VERSION_602 = 602 ;
+    protected static final int VERSION     = 603 ;
     
     //-------------------------------------------------------------- Attributes
     //Parameter to store the configuration version
@@ -244,13 +245,19 @@ public class SourceConfig {
         syncMode = in.readInt();
         remoteUri = in.readUTF();
 
-        if (savedVer != VERSION) {
-            Log.error(TAG_LOG, "Cannot load anchors");
+        if (savedVer < VERSION) {
+            long lastAnchor = in.readLong();
+            long nextAnchor = in.readLong();
+            StringBuffer newAnchor = new StringBuffer();
+            newAnchor.append(lastAnchor);
+            newAnchor.append(',');
+            newAnchor.append(nextAnchor);
+            syncAnchor.parse(newAnchor.toString());
         } else {
             String anchor = in.readUTF();
             syncAnchor.parse(anchor);
         }
-        if (savedVer >= VERSION) {
+        if (savedVer >= VERSION_602) {
             maxItemsPerMessageInSlowSync = in.readInt();
         }
         if (Log.isLoggable(Log.TRACE)) {
