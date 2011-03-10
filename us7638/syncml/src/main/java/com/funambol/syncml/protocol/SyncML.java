@@ -164,7 +164,9 @@ public class SyncML {
     public static final int ALERT_CODE_RESUME                        = 225;
 
     //Extended alert codes defined by Funambol for custom sync
-    public static final int ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW = 250     ;
+    public static final int ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW = 250;
+    public static final int ALERT_CODE_ONE_WAY_FROM_CLIENT_SLOW = 251;
+    public static final int ALERT_CODE_ONE_WAY_FROM_SERVER_SLOW = 252;
             
             
     //------------------------------------------------------------- Private Data
