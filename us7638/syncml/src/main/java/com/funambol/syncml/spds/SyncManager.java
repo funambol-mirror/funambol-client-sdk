@@ -687,7 +687,7 @@ public class SyncManager implements SyncManagerI {
                 }
             }
            
-            // TODO: following code must be run only for succesfull path or error reading inputstream
+            // TODO: following code must be run only for successfull path or error reading inputstream
             //       the other cases must skip the following code
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Notifying listener end mapping");

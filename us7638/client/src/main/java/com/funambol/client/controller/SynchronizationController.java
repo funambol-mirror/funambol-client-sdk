@@ -717,7 +717,10 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
     }
 
     public void endSync(Vector sources, boolean hadErrors) {
-
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "endSync reached");
+        }
+        
         setCancel(false);
 
         // Disable the retry poller if not null
@@ -754,7 +757,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
             */
         }
 
-        //TODO
         Vector localStorageFullSources = new Vector();
         Vector serverQuotaFullSources = new Vector();
         for (int i = 0; i < sources.size(); i++) {
@@ -772,9 +774,11 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
             }
         }
         if (localStorageFullSources != null && localStorageFullSources.size() > 0) {
+            Log.debug(TAG_LOG, "notification for storage limit warning");
             displayStorageLimitWarning(localStorageFullSources);
         }
         if (serverQuotaFullSources != null && serverQuotaFullSources.size() > 0) {
+            Log.debug(TAG_LOG, "notification for server quota warning");
             displayServerQuotaWarning(serverQuotaFullSources);
         }
 

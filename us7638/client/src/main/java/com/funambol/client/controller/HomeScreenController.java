@@ -157,8 +157,6 @@ public class HomeScreenController extends SynchronizationController {
 
     public void endSync(Vector sources, boolean hadErrors) {
         super.endSync(sources, hadErrors);
-        
-        
     }
     
     protected void displayStorageLimitWarning(Vector localStorageFullSources) {
@@ -487,7 +485,9 @@ public class HomeScreenController extends SynchronizationController {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
             if (appSource.getConfig().getEnabled() && appSource.isWorking()) {
                 sources.addElement(appSource);
-                //for manual sync, always show alert message
+                //for manual sync, always show alert message for storage/server
+                //quota limit. for other sync modes, don't display message if
+                //the previous sync ends with same errors
                 if (!MANUAL.equals(syncType)) {
                     switch (appSource.getConfig().getLastSyncStatus()) {
                     case SyncListener.LOCAL_CLIENT_FULL_ERROR:
@@ -834,7 +834,6 @@ public class HomeScreenController extends SynchronizationController {
                 break;
             }
         }
-        
     }
     
 }
