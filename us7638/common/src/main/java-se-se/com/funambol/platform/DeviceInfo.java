@@ -117,4 +117,8 @@ public class DeviceInfo implements DeviceInfoInterface {
         return DeviceRole.UNDEFINED;
     }
 
+    public String getOSVersion() {
+        return null;
+    }
+
 }

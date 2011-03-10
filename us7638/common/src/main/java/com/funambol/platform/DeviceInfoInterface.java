@@ -115,4 +115,9 @@ public interface DeviceInfoInterface {
      * Returns the device role (tablet, smartphone, tv etc)
      */
     public DeviceRole getDeviceRole();
+
+    /**
+     * Returns the device OS version
+     */
+    public String getOSVersion();
 }

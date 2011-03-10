@@ -34,6 +34,8 @@
  */
 package com.funambol.platform;
 
+import java.util.TimeZone;
+
 import android.os.Build;
 import android.content.Context;
 import android.telephony.TelephonyManager;
@@ -42,7 +44,6 @@ import android.accounts.AccountManager;
 import android.util.DisplayMetrics;
 import com.funambol.util.Log;
 
-import java.util.TimeZone;
 
 public class DeviceInfo implements DeviceInfoInterface {
 
@@ -164,5 +165,12 @@ public class DeviceInfo implements DeviceInfoInterface {
             Log.error(TAG_LOG, "Failed to compute screen size", t);
             return DeviceRole.UNDEFINED;
         }
+    }
+
+    /**
+     * Returns the device OS version
+     */
+    public String getOSVersion() {
+        return "" + android.os.Build.VERSION.SDK_INT;
     }
 }

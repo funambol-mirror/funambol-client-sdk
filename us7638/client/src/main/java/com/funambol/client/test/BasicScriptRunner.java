@@ -53,6 +53,7 @@ import com.funambol.util.Log;
 import com.funambol.util.HttpTransportAgent;
 import com.funambol.util.StringUtil;
 import com.funambol.sync.SyncConfig;
+import com.funambol.platform.DeviceInfo;
 
 
 /**
@@ -90,6 +91,7 @@ public class BasicScriptRunner extends CommandRunner {
     private boolean stopOnFailure = false;
 
     private TestFileManager fileManager = null;
+    private DeviceInfo devInfo;
 
     private Hashtable definedVars = new Hashtable();
 
@@ -99,9 +101,10 @@ public class BasicScriptRunner extends CommandRunner {
     /**
      * Default constructor
      */
-    public BasicScriptRunner(TestFileManager fileManager) {
+    public BasicScriptRunner(TestFileManager fileManager, DeviceInfo devInfo) {
         super(null);
         this.fileManager = fileManager;
+        this.devInfo = devInfo;
     }
 
     /**
@@ -149,7 +152,12 @@ public class BasicScriptRunner extends CommandRunner {
 
         // Set predefined variables
         definedVars = new Hashtable();
-        definedVars.put("devicetype", "phone");
+
+        if (devInfo.getDeviceRole() == DeviceInfo.DeviceRole.TABLET) {
+            definedVars.put("devicetype", "table");
+        } else {
+            definedVars.put("devicetype", "phone");
+        }
 
         try {
             runScriptFileI(scriptUrl, mainScript);
@@ -211,10 +219,10 @@ public class BasicScriptRunner extends CommandRunner {
 
                 // Each tag here is a command. All commands have the same
                 // format:
-                // <command>
-                //   <arg>arg1</arg>
-                //   <arg>arg2</arg>
-                // </command>
+                // <Command>
+                //   <Arg>arg1</Arg>
+                //   <Arg>arg2</Arg>
+                // </Command>
                 //
                 // The only exception is for conditional statements 
                 // <Condition>
@@ -388,7 +396,7 @@ public class BasicScriptRunner extends CommandRunner {
             arg1 = processArg(arg1);
             nextSkipSpaces(parser);
             require(parser, parser.END_TAG, null, "Arg");
-            // Now grabe the second arg
+            // Now grab the second arg
             nextSkipSpaces(parser);
             // Only an Arg tag is allowed here
             require(parser, parser.START_TAG, null, "Arg");
@@ -396,12 +404,58 @@ public class BasicScriptRunner extends CommandRunner {
             require(parser, parser.TEXT, null, null);
             String arg2 = parser.getText();
             arg2 = processArg(arg2);
+            nextSkipSpaces(parser);
             require(parser, parser.END_TAG, null, "Arg");
             nextSkipSpaces(parser);
             require(parser, parser.END_TAG, null, "Equals");
 
             Log.trace(TAG_LOG, "Found equals with arguments: " + arg1 + "," + arg2);
             return StringUtil.equalsIgnoreCase(arg1, arg2);
+        } else if ("CheckOS".equals(tagName)) {
+            // Grab the arguments
+            nextSkipSpaces(parser);
+            // Only an Arg tag is allowed here
+            require(parser, parser.START_TAG, null, "Arg");
+            parser.next();
+            String arg1 = null;
+            if (parser.getEventType() == parser.TEXT) {
+                arg1 = parser.getText();
+                arg1 = processArg(arg1);
+                nextSkipSpaces(parser);
+            }
+            require(parser, parser.END_TAG, null, "Arg");
+            // Now grab the second arg
+            nextSkipSpaces(parser);
+            // Only an Arg tag is allowed here
+            require(parser, parser.START_TAG, null, "Arg");
+            parser.next();
+            String arg2 = null;
+            if (parser.getEventType() == parser.TEXT) {
+                arg2 = parser.getText();
+                arg2 = processArg(arg2);
+                nextSkipSpaces(parser);
+            }
+            require(parser, parser.END_TAG, null, "Arg");
+            nextSkipSpaces(parser);
+            require(parser, parser.END_TAG, null, "CheckOS");
+
+            int osVersion = Integer.parseInt(devInfo.getOSVersion());
+            Log.trace(TAG_LOG, "Found CheckOS with arguments: " + arg1 + "," + arg2);
+            Log.trace(TAG_LOG, "OS version " + osVersion);
+
+            if (arg1 != null) {
+                int low = Integer.parseInt(arg1);
+                if (osVersion < low) {
+                    return false;
+                }
+            }
+            if (arg2 != null) {
+                int high = Integer.parseInt(arg2);
+                if (osVersion > high) {
+                    return false;
+                }
+            }
+            return true;
         } else {
             throw new ClientTestException("Syntax error: unknown condition " + tagName);
         }
@@ -961,7 +1015,7 @@ public class BasicScriptRunner extends CommandRunner {
             // Is this var defined?
             String value = (String)definedVars.get(varName);
             Log.trace(TAG_LOG, "Replacing variable " + varName + " with value " + value);
-            arg = StringUtil.replaceAll(arg, "{$" + varName + "}", value);
+            arg = StringUtil.replaceAll(arg, "${" + varName + "}", value);
             start = arg.indexOf("${");
             end = arg.indexOf("}");
         }
