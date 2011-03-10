@@ -238,13 +238,11 @@ public class SourceConfig {
      */
     public void deserialize(DataInputStream in) throws IOException {
         int savedVer = in.readInt();
-        version = savedVer;
         name = in.readUTF();
         type = in.readUTF();
         encoding = in.readUTF();
         syncMode = in.readInt();
         remoteUri = in.readUTF();
-
         if (savedVer < VERSION) {
             long lastAnchor = in.readLong();
             long nextAnchor = in.readLong();
@@ -263,6 +261,7 @@ public class SourceConfig {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Deserialized " + name);
         }
+        version = VERSION;
     }
 
 
