@@ -62,6 +62,7 @@ public class AppSyncSourceConfig {
     protected static final String CONF_KEY_SYNC_URI               = "SYNC_SOURCE_URI";
     /** It should be called SYNC_MODE but it is SYNC_TYPE for historical reasons */
     protected static final String CONF_KEY_SYNC_TYPE              = "SYNC_TYPE";
+    protected static final String CONF_KEY_SOURCE_FULL            = "SYNC_SOURCE_FULL";
     protected static final String CONF_KEY_SOURCE_SYNCED          = "SYNC_SOURCE_SYNCED";
     protected static final String CONF_KEY_SOURCE_ACTIVE          = "SYNC_SOURCE_ACTIVE";
     protected static final String CONF_KEY_SOURCE_ENABLED         = "SYNC_SOURCE_ENABLED";
@@ -81,6 +82,7 @@ public class AppSyncSourceConfig {
     public static final int UNDEFINED_SYNC_MODE = -1;
     /** It should be called syncMode but it is syncType for historical reasons */
     protected int syncType = UNDEFINED_SYNC_MODE;
+    protected boolean deviceFullShown = false;
     protected boolean sourceSynced;
     protected int lastSyncStatus = SyncListener.SUCCESS;
     protected long lastSyncTimestamp = 0;
@@ -135,6 +137,26 @@ public class AppSyncSourceConfig {
 
     public void setUri(String uri) {
         this.uri = uri;
+        dirty = true;
+    }
+
+    /**
+     * @deprecated Used only in Blackberry for retro-compatibility. In Android
+     * this property haven't be used. As techdebt, will be removed soon also in
+     * blackberry
+     * @return
+     */
+    public boolean getDeviceFullShown() {
+        return deviceFullShown;
+    }
+
+    /**
+     * @deprecated Used only in Blackberry for retro-compatibility. In Android
+     * this property haven't be used. As techdebt, will be removed soon also in
+     * blackberry
+     */
+    public void setDeviceFullShown(boolean value) {
+        this.deviceFullShown = value;
         dirty = true;
     }
 
@@ -329,6 +351,11 @@ public class AppSyncSourceConfig {
         key.append(CONF_KEY_SOURCE_ENABLED).append("-").append(sourceId);
         configuration.saveBooleanKey(key.toString(), enabled);
 
+        // Save if the source showed device full already
+        key = new StringBuffer();
+        key.append(CONF_KEY_SOURCE_FULL).append("-").append(sourceId);
+        configuration.saveBooleanKey(key.toString(), getDeviceFullShown());
+
         // Save if the source got synced at least once
         key = new StringBuffer();
         key.append(CONF_KEY_SOURCE_SYNCED).append("-").append(sourceId);
@@ -431,6 +458,11 @@ public class AppSyncSourceConfig {
         key = new StringBuffer();
         key.append(CONF_KEY_SOURCE_ACTIVE).append("-").append(sourceId);
         active = configuration.loadBooleanKey(key.toString(), customization.isSourceActive(sourceId));
+
+        // Load if the source showed device full warning already
+        key = new StringBuffer();
+        key.append(CONF_KEY_SOURCE_FULL).append("-").append(sourceId);
+        deviceFullShown = configuration.loadBooleanKey(key.toString(), deviceFullShown);
 
         // Load if the source got synced at least once
         key = new StringBuffer();
