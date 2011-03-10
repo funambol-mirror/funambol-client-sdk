@@ -345,8 +345,8 @@ public class CacheTracker implements ChangesTracker {
             Log.trace(TAG_LOG, "setItemStatus " + key + "," + itemStatus);
         }
 
-        if(syncMode == SyncSource.FULL_SYNC ||
-           syncMode == SyncSource.FULL_UPLOAD) {
+        if(isSuccess(itemStatus) && (syncMode == SyncSource.FULL_SYNC ||
+                syncMode == SyncSource.FULL_UPLOAD)) {
             SyncItem item = new SyncItem(key);
             try {
                 item = getItemContent(item);

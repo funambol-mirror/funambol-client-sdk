@@ -350,8 +350,6 @@ public class SapiSyncManager implements SyncManagerI {
         
         while(item != null && itemsCountFilter(maxSending, uploadedCount)) {
 
-            cancelSyncIfNeeded(src);
-
             try {
                 // Exclude twins
                 if(twins.contains(item.getKey())) {
@@ -394,6 +392,7 @@ public class SapiSyncManager implements SyncManagerI {
                         SyncSource.ERROR_STATUS));
             } finally {
                 item = getNextItemToUpload(src, incremental);
+                cancelSyncIfNeeded(src);
             }
         }
 
