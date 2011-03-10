@@ -37,6 +37,7 @@ package com.funambol.client.customization;
 
 import com.funambol.client.ui.Bitmap;
 import com.funambol.platform.DeviceInfoInterface;
+import com.funambol.sync.client.StorageLimit;
 
 import java.util.Enumeration;
 
@@ -160,13 +161,7 @@ public interface Customization {
     public long     getCheckUpdtIntervalDefault();
     public long     getReminderUpdtIntervalDefault();
     public String   getHttpUploadPrefix();
-    /**
-     * Gets the percentage of device storage space that can be used to store sync items.
-     * No item that would exceed this limit can be downloaded onto the device.
-     *  
-     * @return a value > 0 and < 100
-     */
-    public int      getLocalStorageSafetyThreshold();
+    public StorageLimit getStorageLimit();
 
 }
 

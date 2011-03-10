@@ -38,13 +38,13 @@ package com.funambol.sapisync.source;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.funambol.sync.StorageLimitException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.ItemDownloadInterruptionException;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.ChangesTracker;
+import com.funambol.sync.client.StorageLimitException;
 import com.funambol.sync.client.TrackableSyncSource;
 import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.sync.Filter;
