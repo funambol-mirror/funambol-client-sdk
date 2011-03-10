@@ -90,35 +90,48 @@ public interface SyncSource {
     // A sync can be configured in different modes
     /**
      * A full two way sync (download and upload), only {@link SyncManager} can
-     * use this value
+     * use this value.
+     *
+     * The value is the same as SyncML.ALERT_CODE_SLOW
      */
-    public static final int FULL_SYNC = 0;
+    public static final int FULL_SYNC = 201;
     /**
      * A full upload from client to server sync, only {@link SyncManager} can
-     * use this value
+     * use this value.
+     *
+     * The value is the same as SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT_SLOW
      */
-    public static final int FULL_UPLOAD = 1;
+    public static final int FULL_UPLOAD = 251; 
     /**
      * A full download from server to client sync, only {@link SyncManager} can
-     * use this value
+     * use this value.
+     *
+     * The value is the same as SyncML.ALERT_CODE_ONE_WAY_FROM_SERVER_SLOW
      */
-    public static final int FULL_DOWNLOAD = 2;
+    public static final int FULL_DOWNLOAD = 252;
     /**
      * A "fast" two way sync, only newer item are exchanged between client and
-     * server, user can choose this value in sync source settings
+     * server, user can choose this value in sync source settings.
+     *
+     * The value is the same as SyncML.ALERT_CODE_FAST
      */
-    public static final int INCREMENTAL_SYNC = 3;
+    public static final int INCREMENTAL_SYNC = 200; 
     /**
      * Upload only newer item from client to server, user can choose this value
-     * in sync source settings
+     * in sync source settings.
+     *
+     * The value is the same as SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT
      */
-    public static final int INCREMENTAL_UPLOAD = 4;
+    public static final int INCREMENTAL_UPLOAD = 202; 
     /**
      * Download only newer item from server to client sync, user can choose this
-     * value in sync source settings
+     * value in sync source settings.
+     *
+     * The value is the same as SyncML.ALERT_CODE_ONE_WAY_FROM_SERVER
      */
-    public static final int INCREMENTAL_DOWNLOAD = 5;
-    public static final int NO_SYNC = 6;
+    public static final int INCREMENTAL_DOWNLOAD = 204; 
+
+    public static final int NO_SYNC = 0;
 
     // These are the status that sync source operations can return
     public static final int SUCCESS_STATUS           = 0;
