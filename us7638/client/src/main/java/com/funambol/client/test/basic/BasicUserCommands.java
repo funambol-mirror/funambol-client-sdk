@@ -232,20 +232,6 @@ public interface BasicUserCommands {
     public static final String CHECK_ALERTED_SYNC_MODE_COMMAND = "CheckAlertedSyncMode";
 
     /**
-     * This command must used everytime the server shall be updated for both
-     * client or server side changes, and before any check command. It
-     * refreshes the server content for the specified source. If the source is not
-     * specified then it will refresh all the sources.
-     *
-     * @param sourceName is the name of the source. The value is what is displayed
-     * on the main screen for that source.
-     *
-     * @example RefreshServer("Calendar")
-     */
-    public static final String REFRESH_SERVER_COMMAND = "RefreshServer";
-
-
-    /**
      * This command checks that the last sync was performed on the given URI.
      *
      * @param source the source name as it appears in the home screen
