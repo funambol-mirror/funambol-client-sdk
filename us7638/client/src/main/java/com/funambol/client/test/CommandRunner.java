@@ -37,7 +37,6 @@ package com.funambol.client.test;
 
 import java.util.Vector;
 
-import com.funambol.client.test.util.CheckSyncClient;
 import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
@@ -49,7 +48,6 @@ public abstract class CommandRunner {
 
     protected Robot robot;
 
-    protected CheckSyncClient checkSyncClient = null;
     protected SyncMonitor     syncMonitor     = null;
     protected SyncMonitor     authSyncMonitor = null;
     
@@ -58,10 +56,6 @@ public abstract class CommandRunner {
     }
     
     public abstract boolean runCommand(String command, Vector args) throws Throwable;
-
-    public void setCheckSyncClient(CheckSyncClient client) {
-        this.checkSyncClient = client;
-    }
 
     public void setSyncMonitor(SyncMonitor monitor) {
         this.syncMonitor = monitor;

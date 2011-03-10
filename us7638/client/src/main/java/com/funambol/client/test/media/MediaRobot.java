@@ -39,8 +39,8 @@ import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
-import com.funambol.client.test.util.CheckSyncClient;
 import com.funambol.client.test.util.TestFileManager;
+import com.funambol.client.test.basic.BasicUserCommands;
 import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.source.JSONFileObject;
 import com.funambol.sapisync.source.JSONSyncItem;
@@ -167,9 +167,9 @@ public abstract class MediaRobot extends Robot {
      * @return
      */
     protected AppSyncSource getAppSyncSource(String type) {
-        if(CheckSyncClient.SOURCE_NAME_PICTURES.equals(type)) {
+        if(StringUtil.equalsIgnoreCase(BasicUserCommands.SOURCE_NAME_PICTURES,type)) {
             return getAppSyncSourceManager().getSource(AppSyncSourceManager.PICTURES_ID);
-        } else if(CheckSyncClient.SOURCE_NAME_VIDEOS.equals(type)) {
+        } else if(StringUtil.equalsIgnoreCase(BasicUserCommands.SOURCE_NAME_VIDEOS,type)) {
             return getAppSyncSourceManager().getSource(AppSyncSourceManager.VIDEOS_ID);
         } else {
             throw new IllegalArgumentException("Invalid type: " + type);

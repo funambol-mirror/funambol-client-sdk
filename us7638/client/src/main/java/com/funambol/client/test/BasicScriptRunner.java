@@ -47,7 +47,6 @@ import org.xmlpull.v1.XmlPullParser;
 import com.funambol.org.kxml2.io.KXmlParser;
 
 import com.funambol.client.test.basic.BasicCommandRunner;
-import com.funambol.client.test.util.CheckSyncClient;
 import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.util.Log;
@@ -91,6 +90,8 @@ public class BasicScriptRunner extends CommandRunner {
     private boolean stopOnFailure = false;
 
     private TestFileManager fileManager = null;
+
+    private Hashtable definedVars = new Hashtable();
 
     private Hashtable testKeys    = null;
     private Vector    testResults = null;
@@ -145,12 +146,15 @@ public class BasicScriptRunner extends CommandRunner {
     public void runScriptFile(String scriptUrl, boolean mainScript) throws Throwable {
         testResults = new Vector();
         testKeys = new Hashtable();
+
+        // Set predefined variables
+        definedVars = new Hashtable();
+        definedVars.put("devicetype", "phone");
+
         try {
             runScriptFileI(scriptUrl, mainScript);
         } finally {
-            Log.info(TAG_LOG, "***************************************");
-            Log.info(getResults());
-            Log.info(TAG_LOG, "***************************************");
+            dumpResults();
         }
     }
 
@@ -197,9 +201,11 @@ public class BasicScriptRunner extends CommandRunner {
 
             String currentCommand = null;
             boolean condition = false;
+            boolean evaluatedCondition = false;
             Vector args = null;
 
             boolean ignoreCurrentScript = false;
+            boolean ignoreCurrentBranch = false;
 
             while (parser.getEventType() != parser.END_DOCUMENT) {
 
@@ -223,6 +229,27 @@ public class BasicScriptRunner extends CommandRunner {
                     if ("Condition".equals(tagName)) {
                         // TODO FIXME
                         condition = true;
+                    } else if ("If".equals(tagName)) {
+                        // We just read the "<If>" tag, now we read the rest of the condition
+                        // until the </If>
+                        nextSkipSpaces(parser);
+                        evaluatedCondition = evaluateCondition(parser);
+                        nextSkipSpaces(parser);
+                        require(parser, parser.END_TAG, null, "If");
+                    } else if ("Then".equals(tagName)) {
+                        if (!condition) {
+                            throw new ClientTestException("Syntax error: found Then tag without Condition");
+                        }
+                        if (!evaluatedCondition) {
+                            ignoreCurrentBranch = true;
+                        }
+                    } else if ("Else".equals(tagName)) {
+                        if (!condition) {
+                            throw new ClientTestException("Syntax error: found Then tag without Condition");
+                        }
+                        if (evaluatedCondition) {
+                            ignoreCurrentBranch = true;
+                        }
                     } else {
                         if (currentCommand == null) {
                             currentCommand = tagName;
@@ -252,10 +279,11 @@ public class BasicScriptRunner extends CommandRunner {
                     if ("Condition".equals(tagName)) {
                         condition = false;
                         currentCommand = null;
+                        ignoreCurrentBranch = false;
                     } else if (tagName.equals(currentCommand)) {
                         try {
-                            Log.trace(TAG_LOG, "Executing accumulated command: " + currentCommand + "," + ignoreCurrentScript);
-                            if (!ignoreCurrentScript) {
+                            Log.trace(TAG_LOG, "Executing accumulated command: " + currentCommand + "," + ignoreCurrentScript + "," + ignoreCurrentBranch);
+                            if (!ignoreCurrentScript && !ignoreCurrentBranch) {
                                 runCommand(currentCommand, args);
                             }
                         } catch (IgnoreScriptException ise) {
@@ -319,6 +347,63 @@ public class BasicScriptRunner extends CommandRunner {
             testKeys.put(scriptUrl, status);
             Log.error(TAG_LOG, "Error parsing command", e);
             throw new ClientTestException("Script syntax error");
+        }
+    }
+
+    private boolean evaluateCondition(XmlPullParser parser) throws ClientTestException,
+                                                                   XmlPullParserException,
+                                                                   IOException
+    {
+        String tagName = parser.getName();
+        if ("And".equals(tagName)) {
+            nextSkipSpaces(parser);
+            boolean firstCond = evaluateCondition(parser);
+            nextSkipSpaces(parser);
+            boolean secondCond = evaluateCondition(parser);
+            nextSkipSpaces(parser);
+            require(parser, parser.END_TAG, null, "And");
+            return firstCond && secondCond;
+        } else if ("Or".equals(tagName)) {
+            nextSkipSpaces(parser);
+            boolean firstCond = evaluateCondition(parser);
+            nextSkipSpaces(parser);
+            boolean secondCond = evaluateCondition(parser);
+            nextSkipSpaces(parser);
+            require(parser, parser.END_TAG, null, "Or");
+            return firstCond || secondCond;
+        } else if ("Not".equals(tagName)) {
+            nextSkipSpaces(parser);
+            boolean firstCond = evaluateCondition(parser);
+            nextSkipSpaces(parser);
+            require(parser, parser.END_TAG, null, "Not");
+            return !firstCond;
+        } else if ("Equals".equals(tagName)) {
+            // Grab the arguments
+            nextSkipSpaces(parser);
+            // Only an Arg tag is allowed here
+            require(parser, parser.START_TAG, null, "Arg");
+            parser.next();
+            require(parser, parser.TEXT, null, null);
+            String arg1 = parser.getText();
+            arg1 = processArg(arg1);
+            nextSkipSpaces(parser);
+            require(parser, parser.END_TAG, null, "Arg");
+            // Now grabe the second arg
+            nextSkipSpaces(parser);
+            // Only an Arg tag is allowed here
+            require(parser, parser.START_TAG, null, "Arg");
+            parser.next();
+            require(parser, parser.TEXT, null, null);
+            String arg2 = parser.getText();
+            arg2 = processArg(arg2);
+            require(parser, parser.END_TAG, null, "Arg");
+            nextSkipSpaces(parser);
+            require(parser, parser.END_TAG, null, "Equals");
+
+            Log.trace(TAG_LOG, "Found equals with arguments: " + arg1 + "," + arg2);
+            return StringUtil.equalsIgnoreCase(arg1, arg2);
+        } else {
+            throw new ClientTestException("Syntax error: unknown condition " + tagName);
         }
     }
 
@@ -696,14 +781,18 @@ public class BasicScriptRunner extends CommandRunner {
      * Accessor method to retrieve the details of the failed tests
      * @return String the String formatted failed test report content.
      */
-    private String getResults() {
+    private void dumpResults() {
+
+        Log.info(TAG_LOG, "***************************************");
+
         if (testResults != null) {
-            StringBuffer res = new StringBuffer();
             int tot = 0;
             int failed = 0;
             int success = 0;
             int skipped = 0;
             for(int i=0;i<testResults.size();++i)  {
+                StringBuffer res = new StringBuffer();
+
                 TestStatus status = (TestStatus)testResults.elementAt(i);
                 String url = status.getScriptName();
 
@@ -733,16 +822,17 @@ public class BasicScriptRunner extends CommandRunner {
                 if (detailedError != null) {
                     res.append(" Error=").append(detailedError);
                 }
-                res.append("\n");
+                Log.info(TAG_LOG, res.toString());
             }
-            res.append("Total number of tests: ").append(tot).append("\n");
-            res.append("Total number of success: ").append(success).append("\n");
-            res.append("Total number of failures: ").append(failed).append("\n");
-            res.append("Total number of skipped: ").append(skipped).append("\n");
-            return res.toString();
+            Log.info(TAG_LOG, "---------------------------------------");
+            Log.info(TAG_LOG, "Total number of tests: " + tot);
+            Log.info(TAG_LOG, "Total number of success: " + success);
+            Log.info(TAG_LOG, "Total number of failures: " + failed);
+            Log.info(TAG_LOG, "Total number of skipped: " + skipped);
         } else {
-            return "No tests performed";
+            Log.info(TAG_LOG, "No tests performed");
         }
+        Log.info(TAG_LOG, "***************************************");
     }
 
     /**
@@ -859,6 +949,23 @@ public class BasicScriptRunner extends CommandRunner {
             CommandRunner runner = (CommandRunner) commandRunners.elementAt(i);
             runner.setAuthSyncMonitor(monitor);
         }
+    }
+
+    private String processArg(String arg) {
+        // We must replace any variable occurrence
+        // Variables are defined as ${name}
+        int start = arg.indexOf("${");
+        int end = arg.indexOf("}");
+        while (start >= 0 && end >= 0 && (start + 2 < arg.length())) {
+            String varName = arg.substring(start + 2, end);
+            // Is this var defined?
+            String value = (String)definedVars.get(varName);
+            Log.trace(TAG_LOG, "Replacing variable " + varName + " with value " + value);
+            arg = StringUtil.replaceAll(arg, "{$" + varName + "}", value);
+            start = arg.indexOf("${");
+            end = arg.indexOf("}");
+        }
+        return arg;
     }
 
     /**
