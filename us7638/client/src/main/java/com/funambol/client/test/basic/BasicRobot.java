@@ -191,7 +191,11 @@ public abstract class BasicRobot extends Robot {
     public void resetFirstRunTimestamp() throws Throwable {
         Configuration configuration = getConfiguration();
         configuration.setFirstRunTimestamp(System.currentTimeMillis());
-        getController().getLoginScreenController().checkServerMediaCaps();
+        long ts = getController().getHomeScreenController().checkServerMediaCaps();
+        if(ts > 0) {
+            // Update the server first run timestamp
+            configuration.setServerFirstRunTimestamp(ts);
+        }
         configuration.save();
     }
 
