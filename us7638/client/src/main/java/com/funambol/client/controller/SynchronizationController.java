@@ -80,8 +80,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
 
     protected Controller controller;
     
-    protected NotificationController notificator;
-
     protected Customization customization;
 
     protected Configuration configuration;
@@ -112,7 +110,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
 
     private AppSyncRequest appSyncRequestArr[] = new AppSyncRequest[1];
     private RequestHandler reqHandler;
-    private Vector         deviceFullSources = null;
 
     private int            RETRY_POLL_TIME = 1;
 
@@ -142,7 +139,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         configuration = controller.getConfiguration();
 
         initSyncScheduler();
-        initNotificator();
     }
 
     /**
@@ -167,13 +163,8 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         this.configuration = configuration;
 
         initSyncScheduler();
-        initNotificator();
     }
     
-    protected void initNotificator() {
-        this.notificator = new NotificationController(controller.getDisplayManager(), controller);
-    }
-
     protected void initSyncScheduler() {
         engine = createSyncEngine();
         syncScheduler = new SyncScheduler(engine);
@@ -644,10 +635,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         controller.getDialogController().showMessage(screen, msg);
     }
 
-    protected void showMessage(String msg, int delay) {
-        controller.getDialogController().showMessage(screen, msg, delay);
-    }
-
     // ConnectionListener implementation
     
     public boolean isConnectionConfigurationAllowed(final String apn) { 
@@ -764,43 +751,28 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
             */
         }
 
-        // if we had at least one device full error, we must show a popup error
-        if (deviceFullSources != null) {
-            StringBuffer sourceNames = new StringBuffer("");
-            for(int i=0;i<deviceFullSources.size();++i) {
-                AppSyncSource appSource = (AppSyncSource)deviceFullSources.elementAt(i);
-                Log.error(TAG_LOG, "Server full for source " + appSource.getName());
-
-                boolean shown = appSource.getConfig().getDeviceFullShown();
-                // The popup is always shown on manual syncs and only the first
-                // time if the sync is automatic
-                if (!shown || MANUAL.equals(syncType)) {
-                    if (sourceNames.length() > 0) {
-                        sourceNames.append(",");
-                    }
-                    sourceNames.append(appSource.getName().toLowerCase());
-                    // Remember that we have shown the error to the user. We
-                    // won't show this popup again until a sync succeeds
-                    appSource.getConfig().setDeviceFullShown(true);
-                    appSource.getConfig().commit();
-                }
-            }
-            if (sourceNames.length() > 0) {
-                controller.toForeground();
-                String msg = localization.getLanguage("dialog_server_full");
-                msg = StringUtil.replaceAll(msg, "__source__", sourceNames.toString());
-                showMessage(msg, 10000);
-            }
-        }
-        
+        //TODO
+        Vector localStorageFullSources = new Vector();
+        Vector serverQuotaFullSources = new Vector();
         for (int i = 0; i < sources.size(); i++) {
             AppSyncSource appSource = (AppSyncSource) sources.elementAt(i);
             
-            // If one of the sources has risked to break the storage limit,
-            // a warning message can have to be displayed
-            if (appSource.getConfig().getLastSyncStatus() == SyncListener.LOCAL_DEVICE_FULL_ERROR) {
-                displayStorageLimitWarning();
+            switch (appSource.getConfig().getLastSyncStatus()) {
+                case SyncListener.LOCAL_CLIENT_FULL_ERROR:
+                    // If one of the sources has risked to break the storage limit,
+                    // a warning message can have to be displayed
+                    localStorageFullSources.add(appSource);
+                break;
+                case SyncListener.SERVER_FULL_ERROR:
+                    serverQuotaFullSources.add(appSource);
+                break;
             }
+        }
+        if (localStorageFullSources != null && localStorageFullSources.size() > 0) {
+            displayStorageLimitWarning(localStorageFullSources);
+        }
+        if (serverQuotaFullSources != null && serverQuotaFullSources.size() > 0) {
+            displayServerQuotaWarning(serverQuotaFullSources);
         }
 
         // We reset these errors because this sync is over (if we are retrying,
@@ -809,8 +781,23 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         showTCPAlert = false;
     }
     
-    protected void displayStorageLimitWarning() {
-        notificator.showNotificationClientFull(screen);
+    /**
+     * Display a background notification when max storage limit on local device
+     * is reached. Children can override this method and implement
+     * a foreground behavior
+     * @param localStorageFullSources 
+     */
+    protected void displayStorageLimitWarning(Vector localStorageFullSources) {
+        controller.getNotificationController().showNotificationClientFull(screen);
+    }
+
+    /**
+     * Display a background notification when server quota is reached. Children
+     * can override this method and implement a foreground behavior
+     * @param serverQuotaFullSources 
+     */
+    protected void displayServerQuotaWarning(Vector serverQuotaFullSources) {
+        controller.getNotificationController().showNotificationServerFull(screen);
     }
 
     public void sourceStarted(AppSyncSource appSource) {
@@ -840,9 +827,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         // Set synced source
         appSource.getConfig().setSynced(true);
         
-        // If a source sync ends successfully we reset the device full property
-        appSource.getConfig().setDeviceFullShown(false);
-        
         saveSourceConfig(appSource);
         
         UISyncSourceController sourceController = appSource.getUISyncSourceController();
@@ -865,11 +849,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
             logConnectivityError = true;
         } else if (code == SyncException.CONNECTION_BLOCKED_BY_USER) {
             showTCPAlert = true;
-        } else if (code == SyncException.DEVICE_FULL) {
-            if (deviceFullSources == null) {
-                deviceFullSources = new Vector();
-            }
-            deviceFullSources.addElement(appSource);
         }
     }
 
@@ -891,7 +870,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         //controller.clearErrors();
         showTCPAlert = false;
         logConnectivityError = false;
-        deviceFullSources = null;
     }
 
     public void connectionOpened() {

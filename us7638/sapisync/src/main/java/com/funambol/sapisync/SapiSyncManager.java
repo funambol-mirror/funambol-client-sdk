@@ -242,7 +242,7 @@ public class SapiSyncManager implements SyncManagerI {
             if (syncStatus.getNumberOfReceivedItemsWithSyncStatus(
                     SyncSource.DEVICE_FULL_ERROR_STATUS) > 0) {
                 syncStatus.setInterrupted(true);
-                syncStatus.setStatusCode(SyncListener.LOCAL_DEVICE_FULL_ERROR);
+                syncStatus.setStatusCode(SyncListener.LOCAL_CLIENT_FULL_ERROR);
             } else {
                 syncStatus.setInterrupted(false);
                 syncStatus.setStatusCode(SyncListener.SUCCESS);
@@ -1019,7 +1019,7 @@ public class SapiSyncManager implements SyncManagerI {
                 syncStatus = SyncListener.SERVER_FULL_ERROR;
                 break;
             case SyncException.LOCAL_DEVICE_FULL:
-                syncStatus = SyncListener.LOCAL_DEVICE_FULL_ERROR;
+                syncStatus = SyncListener.LOCAL_CLIENT_FULL_ERROR;
                 break;
             default:
                 syncStatus = SyncListener.GENERIC_ERROR;

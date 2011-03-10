@@ -58,9 +58,9 @@ public class SyncException extends CodedException {
     public static final int DATA_NULL         = 407;
     /** Malformed URL error */
     public static final int ILLEGAL_ARGUMENT  = 409;
-    /** Remote device full */
+    /** Remote device (server in sapi sync) full */
     public static final int DEVICE_FULL       = 418;
-    /** Local device full */
+    /** Local device (client in sapi sync) full */
     public static final int LOCAL_DEVICE_FULL = 419;
     /** Generic server error */
     public static final int SERVER_ERROR      = 500;

@@ -50,6 +50,7 @@ import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.Log;
+import com.funambol.util.StringUtil;
 import com.funambol.platform.NetworkStatus;
 
 /**
@@ -79,8 +80,17 @@ public class HomeScreenController extends SynchronizationController {
      *  it is displayed once. The warning must be displayed also more
      *  than once if an individual-source sync is fired, but not for
      *  multiple-source sync, scheduled sync and push sync.
+     *  See US7498.
      */
     protected boolean dontDisplayStorageLimitWarning = false;
+    /**
+     *  This flag is to switch off the server quota warning after
+     *  it is displayed once. The warning must be displayed also more
+     *  than once if an individual-source sync is fired, but not for
+     *  multiple-source sync, scheduled sync and push sync.
+     *  See US7499.
+     */
+    protected boolean dontDisplayServerQuotaWarning = false;
     private boolean homeScreenRegisteredAndInForeground = false;
 
 
@@ -147,19 +157,46 @@ public class HomeScreenController extends SynchronizationController {
 
     public void endSync(Vector sources, boolean hadErrors) {
         super.endSync(sources, hadErrors);
+        
+        
     }
     
-    protected void displayStorageLimitWarning() {
-        
+    protected void displayStorageLimitWarning(Vector localStorageFullSources) {
+        logSyncSourceErrors(localStorageFullSources);
         if (isInForeground()) {        
             if (!dontDisplayStorageLimitWarning) {            
                 String message = localization.getLanguage("message_storage_limit");
-                String[] labels = new String[] { "OK" };
-                controller.getDialogController().askGenericQuestion(message, labels);
+                controller.getDialogController().showMessageAndWaitUserConfirmation(message);
                 dontDisplayStorageLimitWarning = true; // Once is enough
             }
         } else {
-            super.displayStorageLimitWarning();
+            super.displayStorageLimitWarning(localStorageFullSources);
+        }
+    }
+    
+    protected void displayServerQuotaWarning(Vector serverQuotaFullSources) {
+        logSyncSourceErrors(serverQuotaFullSources);
+
+        // if we had at least one device full error, we must choose how show
+        // these errors to the user, according to US7498 and US7499
+        if (isInForeground()) {
+            if (!dontDisplayServerQuotaWarning) {
+                StringBuffer sourceNames = new StringBuffer(""); 
+                for(int i=0; i<serverQuotaFullSources.size(); i++) {
+                    AppSyncSource appSource = (AppSyncSource)serverQuotaFullSources.elementAt(i);
+                    if (sourceNames.length() > 0) {
+                        sourceNames.append(",");
+                    }
+                    sourceNames.append(appSource.getName().toLowerCase());
+                }
+                String msg = localization.getLanguage("dialog_server_full");
+                msg = StringUtil.replaceAll(msg, "__source__", sourceNames.toString());
+                controller.getDialogController().showMessageAndWaitUserConfirmation(msg);
+            }
+        
+        //error in sync when activity is in background 
+        } else {
+            super.displayServerQuotaWarning(serverQuotaFullSources);
         }
     }
     
@@ -239,8 +276,7 @@ public class HomeScreenController extends SynchronizationController {
         }
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
-        if (source.isWorking() && source.isEnabled()) {
-            dontDisplayStorageLimitWarning = false;
+        if (source.isWorking() && source.getConfig().getEnabled()) {
             syncSource(MANUAL, source);
         } else {
             Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
@@ -379,6 +415,11 @@ public class HomeScreenController extends SynchronizationController {
     }
 
     protected void syncSource(String syncType, AppSyncSource appSource) {
+
+        //for manual sync source, always show a message to the user in case of
+        //storage limit or server quota exceeded
+        dontDisplayStorageLimitWarning = false;
+        dontDisplayServerQuotaWarning = false;
         
         Vector sources = new Vector();
         sources.addElement(appSource);
@@ -438,15 +479,32 @@ public class HomeScreenController extends SynchronizationController {
             Log.info(TAG_LOG, "syncAllSources");
         }
         
-        dontDisplayStorageLimitWarning = false;        
+        dontDisplayStorageLimitWarning = false;
+        dontDisplayServerQuotaWarning = false;
         Vector sources = new Vector();
+        
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
-            if (appSource.isEnabled() && appSource.isWorking()) {
-                sources.addElement(appSource);                
-                dontDisplayStorageLimitWarningAgain(appSource);
+            if (appSource.getConfig().getEnabled() && appSource.isWorking()) {
+                sources.addElement(appSource);
+                //for manual sync, always show alert message
+                if (!MANUAL.equals(syncType)) {
+                    switch (appSource.getConfig().getLastSyncStatus()) {
+                    case SyncListener.LOCAL_CLIENT_FULL_ERROR:
+                        // If for at least one source the storage limit warning has
+                        // already been shown, no warning should be displayed again
+                        dontDisplayStorageLimitWarning = true;
+                        break;
+                    case SyncListener.SERVER_FULL_ERROR:
+                        // If for at least one source the server full quota warning has
+                        // already been shown, no warning should be displayed again
+                        dontDisplayServerQuotaWarning = true;
+                        break;
+                    }
+                }
             }
         }
+        
         synchronize(syncType, sources);
     }
 
@@ -744,10 +802,39 @@ public class HomeScreenController extends SynchronizationController {
     
     protected void dontDisplayStorageLimitWarningAgain(AppSyncSource appSource) {
     
-        if (appSource.getConfig().getLastSyncStatus() == SyncListener.LOCAL_DEVICE_FULL_ERROR) {
+        if (appSource.getConfig().getLastSyncStatus() == SyncListener.LOCAL_CLIENT_FULL_ERROR) {
             // If for at least one source the storage limit warning has
             // already been shown, no warning should be displayed again
             dontDisplayStorageLimitWarning = true;
         }
     }
+    
+    protected void dontDisplayServerQuotaWarningAgain(AppSyncSource appSource) {
+        
+        if (appSource.getConfig().getLastSyncStatus() == SyncListener.SERVER_FULL_ERROR) {
+            // If for at least one source the server full quota warning has
+            // already been shown, no warning should be displayed again
+            dontDisplayServerQuotaWarning = true;
+        }
+    }
+    
+    /**
+     * Logs sync sources where server full quota or storage limit error happened 
+     * @param storageLimitOrserverQuotaFullSources
+     */
+    protected void logSyncSourceErrors(Vector storageLimitOrserverQuotaFullSources) {
+        for(int i=0; i<storageLimitOrserverQuotaFullSources.size(); i++) {
+            AppSyncSource appSource = (AppSyncSource)storageLimitOrserverQuotaFullSources.elementAt(i);
+            switch (appSource.getConfig().getLastSyncStatus()) {
+            case SyncListener.LOCAL_CLIENT_FULL_ERROR:
+                Log.error(TAG_LOG, "Storage limit reached for source " + appSource.getName());
+                break;
+            case SyncListener.SERVER_FULL_ERROR:
+                Log.error(TAG_LOG, "Server quota full for source " + appSource.getName());
+                break;
+            }
+        }
+        
+    }
+    
 }
