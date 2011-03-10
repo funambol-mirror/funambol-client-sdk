@@ -764,10 +764,10 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
                 case SyncListener.LOCAL_CLIENT_FULL_ERROR:
                     // If one of the sources has risked to break the storage limit,
                     // a warning message can have to be displayed
-                    localStorageFullSources.add(appSource);
+                    localStorageFullSources.addElement(appSource);
                 break;
                 case SyncListener.SERVER_FULL_ERROR:
-                    serverQuotaFullSources.add(appSource);
+                    serverQuotaFullSources.addElement(appSource);
                 break;
             }
         }

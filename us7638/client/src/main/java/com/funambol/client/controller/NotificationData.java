@@ -35,8 +35,6 @@
 
 package com.funambol.client.controller;
 
-import android.app.Activity;
-
 /**
  * An abstract and platform-independent implementation of a notification data.
  * Usually, a notification is a type of message to the user not
@@ -134,7 +132,7 @@ public class NotificationData {
     }
     /**
      * Sets a generic object for the notification. In Android, for example,
-     * the tag contains the {@link Activity} to launch when the user press
+     * the tag contains the Activity to launch when the user press
      * the notification
      */
     public NotificationData setTag(Object tag) {

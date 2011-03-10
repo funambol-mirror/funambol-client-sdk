@@ -53,8 +53,8 @@ public class PercentageStorageLimit extends StorageLimit {
     
     public PercentageStorageLimit(float percent) {
         this.threshold = 0.01 * percent;
-        if (percent == Math.round(percent)) {
-            percentage = Math.round(percent) + "%";
+        if (percent == (int) percent) {
+            percentage = (int) percent + "%";
         } else {
             percentage = percent + "%";
         }
