@@ -180,7 +180,7 @@ public abstract class BasicRobot extends Robot {
         Vector items = new Vector();
         while(item != null) {
             itemsCount++;
-            items.addElement(new ItemStatus(item.getKey(), 200));
+            items.addElement(new ItemStatus(item.getKey(), SyncSource.SUCCESS_STATUS));
             item = source.getNextItem();
         }
         source.applyItemsStatus(items);
