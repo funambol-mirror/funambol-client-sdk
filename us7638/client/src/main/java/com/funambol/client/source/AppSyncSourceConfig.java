@@ -73,7 +73,8 @@ public class AppSyncSourceConfig {
     protected static final String CONF_KEY_PENDING_SYNC_MODE      = "PENDING_SYNC_MODE";
     protected static final String CONF_KEY_SYNC_TIMESTAMP         = "SYNC_SOURCE_TIMESTAMP";
 
-    private static final String VERSION                         = "1";
+    private static final String VERSION_1 = "1";
+    private static final String VERSION   = "2";
 
     protected String uri;
     protected boolean enabled = true;
@@ -535,6 +536,13 @@ public class AppSyncSourceConfig {
             // In v9 we removed 1way syncs from the product, so it is safe to
             // execute this piece of code here
             migrateSupportedSyncModes(config);
+        } else if(VERSION_1.equals(from)) {
+            // ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW has been deprecated
+            if(syncType == SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW) {
+                syncType = SyncSource.INCREMENTAL_UPLOAD;
+            } if(pendingSyncMode == SyncML.ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW) {
+                pendingSyncMode = SyncSource.INCREMENTAL_UPLOAD;
+            }
         }
         // Finally we update the version to its current value
         version = VERSION;
