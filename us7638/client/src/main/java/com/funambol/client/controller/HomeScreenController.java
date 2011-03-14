@@ -161,7 +161,7 @@ public class HomeScreenController extends SynchronizationController {
     
     protected void displayStorageLimitWarning(Vector localStorageFullSources) {
         logSyncSourceErrors(localStorageFullSources);
-        if (isInForeground()) {        
+        if (isInForeground()) {
             if (!dontDisplayStorageLimitWarning) {            
                 String message = localization.getLanguage("message_storage_limit");
                 controller.getDialogController().showMessageAndWaitUserConfirmation(message);
@@ -413,11 +413,6 @@ public class HomeScreenController extends SynchronizationController {
     }
 
     protected void syncSource(String syncType, AppSyncSource appSource) {
-
-        //for manual sync source, always show a message to the user in case of
-        //storage limit or server quota exceeded
-        dontDisplayStorageLimitWarning = false;
-        dontDisplayServerQuotaWarning = false;
         
         Vector sources = new Vector();
         sources.addElement(appSource);
@@ -476,36 +471,54 @@ public class HomeScreenController extends SynchronizationController {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "syncAllSources");
         }
-        
-        dontDisplayStorageLimitWarning = false;
-        dontDisplayServerQuotaWarning = false;
-        Vector sources = new Vector();
-        
+
+        Vector sources = new Vector();        
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
             if (appSource.getConfig().getEnabled() && appSource.isWorking()) {
                 sources.addElement(appSource);
-                //for manual sync, always show alert message for storage/server
-                //quota limit. for other sync modes, don't display message if
-                //the previous sync ends with same errors
-                if (!MANUAL.equals(syncType)) {
-                    switch (appSource.getConfig().getLastSyncStatus()) {
-                    case SyncListener.LOCAL_CLIENT_FULL_ERROR:
-                        // If for at least one source the storage limit warning has
-                        // already been shown, no warning should be displayed again
-                        dontDisplayStorageLimitWarning = true;
-                        break;
-                    case SyncListener.SERVER_FULL_ERROR:
-                        // If for at least one source the server full quota warning has
-                        // already been shown, no warning should be displayed again
-                        dontDisplayServerQuotaWarning = true;
-                        break;
-                    }
-                }
             }
         }
         
         synchronize(syncType, sources);
+    }
+    
+    /**
+     * Triggers a synchronization for the given syncSources. The caller can
+     * specify its type (manual, scheduled, push) to change the error handling
+     * behavior
+     *
+     * @param syncType the caller type (SYNC_TYPE_MANUAL, SYNC_TYPE_SCHEDULED)
+     * @param syncSources is a vector of AppSyncSource to be synchronized
+     *
+     */
+    public synchronized void synchronize(String syncType, Vector syncSources) {
+        
+        dontDisplayStorageLimitWarning = false;
+        dontDisplayServerQuotaWarning = false;
+        
+        // For manual sync, always show alert message for storage/server
+        // quota limit. For other sync modes, doesn't display message if
+        // the previous sync ended with the same error.
+        if (!MANUAL.equals(syncType)) {
+            for(int i = 0 ; i < syncSources.size(); ++i) {
+                AppSyncSource appSource = (AppSyncSource)syncSources.elementAt(i);
+                    
+                switch (appSource.getConfig().getLastSyncStatus()) {
+                case SyncListener.LOCAL_CLIENT_FULL_ERROR:
+                    // If for at least one source the storage limit warning has
+                    // already been shown, no warning should be displayed again
+                    dontDisplayStorageLimitWarning = true;
+                    break;
+                case SyncListener.SERVER_FULL_ERROR:
+                    // If for at least one source the server full quota warning has
+                    // already been shown, no warning should be displayed again
+                    dontDisplayServerQuotaWarning = true;
+                    break;
+                }
+            }
+        }
+        super.synchronize(syncType, syncSources);
     }
 
     public void cancelMenuSelected() {
