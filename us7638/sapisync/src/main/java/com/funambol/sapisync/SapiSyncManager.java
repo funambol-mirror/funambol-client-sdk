@@ -758,8 +758,10 @@ public class SapiSyncManager implements SyncManagerI {
         for(int l=0;l<sourceItems.size();++l) {
             SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
             // Update the sync status
-            syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
-                    newItem.getState(), newItem.getSyncStatus());
+            if (newItem.getKey() != null) {
+                syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
+                        newItem.getState(), newItem.getSyncStatus());
+            }
             // and the mapping table
             if (state == SyncItem.STATE_NEW && newItem.getSyncStatus() != SyncSource.DEVICE_FULL_ERROR_STATUS) {
                 if (Log.isLoggable(Log.TRACE)) {
