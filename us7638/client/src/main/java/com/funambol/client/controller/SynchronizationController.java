@@ -122,6 +122,9 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
     private boolean isUserConfirmationNeeded = false;
 
     private FirstSyncRequest pendingFirstSyncQuestion = null;
+    
+    protected Vector localStorageFullSources = new Vector();
+    protected Vector serverQuotaFullSources = new Vector();
 
     SynchronizationController() {
         throw new IllegalArgumentException("Invalid");
@@ -251,7 +254,10 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
     }
 
     public void syncEnded() {
-        syncType = null;
+
+        displayEndOfSyncWarnings();
+       
+        syncType = null;        
         
         // TODO FIXME MARCO
         /*
@@ -261,6 +267,28 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
             upm.check();
         }
         */
+        
+    }
+    
+    /**
+     * Displays warnings in the proper form if the outcome of the latest sync requires so.
+     * This method must be called when all synchronization operations are finished and the
+     * user can be warned about problems that trigger a notification or a pop-up message
+     * like those connected with storage limits (locally or in the cloud).
+     */
+    private void displayEndOfSyncWarnings() {
+        
+        if (localStorageFullSources != null && localStorageFullSources.size() > 0) {
+            Log.debug(TAG_LOG, "Notifying storage limit warning");
+            displayStorageLimitWarning(localStorageFullSources);
+            localStorageFullSources.clear();
+        }
+        if (serverQuotaFullSources != null && serverQuotaFullSources.size() > 0) {
+            Log.debug(TAG_LOG, "Notifying server quota warning");
+            displayServerQuotaWarning(serverQuotaFullSources);
+            serverQuotaFullSources.clear();
+        } 
+        
     }
 
     /**
@@ -757,8 +785,9 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
             */
         }
 
-        Vector localStorageFullSources = new Vector();
-        Vector serverQuotaFullSources = new Vector();
+        // Re-checks
+        localStorageFullSources.clear();
+        serverQuotaFullSources.clear();
         for (int i = 0; i < sources.size(); i++) {
             AppSyncSource appSource = (AppSyncSource) sources.elementAt(i);
             
@@ -772,14 +801,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
                     serverQuotaFullSources.addElement(appSource);
                 break;
             }
-        }
-        if (localStorageFullSources != null && localStorageFullSources.size() > 0) {
-            Log.debug(TAG_LOG, "notification for storage limit warning");
-            displayStorageLimitWarning(localStorageFullSources);
-        }
-        if (serverQuotaFullSources != null && serverQuotaFullSources.size() > 0) {
-            Log.debug(TAG_LOG, "notification for server quota warning");
-            displayServerQuotaWarning(serverQuotaFullSources);
         }
 
         // We reset these errors because this sync is over (if we are retrying,
