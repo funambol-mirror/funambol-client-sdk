@@ -175,7 +175,9 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
      * @param args the command related and String formatted arguments
      * @throws Throwable if anything goes wrong when the application starts.
      */
-    protected abstract void startMainApp(String command, Vector args) throws Throwable;
+    protected void startMainApp(String command, Vector args) throws Throwable {
+        getBasicRobot().startMainApp();
+    }
 
     /**
      * The automatic test common method to close the main application.
@@ -184,7 +186,9 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
      * @param args the command related and String formatted arguments
      * @throws Throwable if anything goes wrong when the application starts.
      */
-    protected abstract void closeMainApp(String command, Vector args) throws Throwable;
+    protected void closeMainApp(String command, Vector args) throws Throwable {
+        getBasicRobot().closeMainApp();
+    }
     
     /**
      * Uses the SyncMonitor object to wait that for specific sync action and

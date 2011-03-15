@@ -199,6 +199,9 @@ public abstract class BasicRobot extends Robot {
         configuration.save();
     }
 
+    protected abstract void startMainApp() throws Throwable;
+    protected abstract void closeMainApp() throws Throwable;
+
     public abstract void waitForAuthToComplete(int minStart, int max, SyncMonitor syncMonitor) throws Throwable;
 
     public abstract void keyPress(String keyName, int count) throws Throwable;
