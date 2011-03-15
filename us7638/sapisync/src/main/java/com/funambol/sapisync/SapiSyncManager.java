@@ -166,12 +166,13 @@ public class SapiSyncManager implements SyncManagerI {
             jsonSyncSource.updateSyncConfig(syncConfig);
         }
         
-        // TODO FIXME: check if resume is needed
         boolean resume = false;
 
         syncStatus = new SapiSyncStatus(src.getName());
         try {
             syncStatus.load();
+            // If the sync was interrupted, then we shall resume
+            resume = syncStatus.getInterrupted();
         } catch (Exception e) {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Cannot load sync status, use an empty one");
@@ -179,9 +180,13 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         // If we are not resuming, then we can reset the status
-        if (!resume) {
+        if (resume) {
+            // We need to understand where the sync got stopped and if a single item
+            // shall be resumed
+        } else {
             try {
                 syncStatus.reset();
+                syncStatus.setInterrupted(true);
             } catch (IOException ioe) {
                 Log.error(TAG_LOG, "Cannot reset status", ioe);
             }
@@ -361,6 +366,22 @@ public class SapiSyncManager implements SyncManagerI {
                         SyncSource.SUCCESS_STATUS));
                     continue;
                 }
+
+                // If the item was already sent in a previously interrupted
+                // sync, then we do not send it again
+                if (resume) {
+                    int itemStatus = syncStatus.getSentItemStatus(item.getKey());
+                    if (itemStatus != -1 && itemStatus != SyncSource.SUCCESS_STATUS) {
+                        // This item has either error or was interrupted
+                        if (itemStatus == SyncSource.INTERRUPTED_STATUS) {
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "Resuming upload for " + item.getKey());
+                            }
+                        }
+                    }
+                }
+
+                syncStatus.addSentItem(item.getKey(), SyncItem.STATE_NEW);
                 // Upload the item to the server
                 String remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
                         getSyncListenerFromSource(src));
@@ -378,15 +399,18 @@ public class SapiSyncManager implements SyncManagerI {
             } catch (ItemUploadInterruptionException ex) {
                 // An item could not be uploaded
                 if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "");
+                    Log.info(TAG_LOG, "Error upload item " + item.getKey());
                 }
-                sourceStatus.addElement(new ItemStatus(item.getKey(),
-                        SyncSource.ERROR_STATUS));
-                // TODO FIXME: handle the suspend/resume
+                syncStatus.setSentItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS);
+                sourceStatus.addElement(new ItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS));
+                try {
+                    syncStatus.save();
+                } catch (Exception e) {
+                    Log.error(TAG_LOG, "Cannot save sync status", e);
+                }
             } catch(Exception ex) {
                 if(Log.isLoggable(Log.ERROR)) {
-                    Log.error(TAG_LOG, "Failed to upload item with key: " +
-                            item.getKey(), ex);
+                    Log.error(TAG_LOG, "Failed to upload item with key: " + item.getKey(), ex);
                 }
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
                         SyncSource.ERROR_STATUS));

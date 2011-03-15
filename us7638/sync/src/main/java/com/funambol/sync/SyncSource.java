@@ -139,6 +139,7 @@ public interface SyncSource {
     public static final int SERVER_FULL_ERROR_STATUS = 2;
     public static final int CHUNK_SUCCESS_STATUS     = 3;
     public static final int DEVICE_FULL_ERROR_STATUS = 4;
+    public static final int INTERRUPTED_STATUS       = 5;
 
     //--------------------------------------------------------------- Methods
 

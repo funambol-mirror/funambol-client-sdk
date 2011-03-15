@@ -161,6 +161,14 @@ public class SapiSyncStatus implements SyncReport {
         pendingSentItems.put(key, status);
     }
 
+    public void setSentItemStatus(String key, int status) {
+        SentItemStatus s = (SentItemStatus)sentItems.get(key);
+        if (s == null) {
+            s = (SentItemStatus)pendingSentItems.get(key);
+        }
+        s.setStatus(status);
+    }
+
     public int getSentItemsCount() {
         return sentItems.size() + pendingSentItems.size();
     }

@@ -94,26 +94,9 @@ public class SapiSyncHandler {
      * @throws SyncException
      */
     public void login() throws SyncException {
-        try {
-            sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_IN_QUERY_STRING);
-            JSONObject res = sapiQueryWithRetries("login", "login", null, null, null);
-            JSONObject resData = res.getJSONObject(JSON_OBJECT_DATA);
-            if(resData != null) {
-                String jsessionid = resData.getString(JSON_OBJECT_DATA_FIELD_JSESSIONID);
-                sapiHandler.enableJSessionAuthentication(true);
-                sapiHandler.forceJSessionId(jsessionid);
-                sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
-            } else {
-                handleResponseError(resData);
-                throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
-            }
-        } catch(Exception ex) {
-            if (Log.isLoggable(Log.ERROR)) {
-                Log.error(TAG_LOG, "Failed to login", ex);
-            }
-            throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
-        }
+        login(0);
     }
+
 
     /**
      * Logout from the current server.
@@ -157,6 +140,8 @@ public class SapiSyncHandler {
 
             JSONObject addRequest = new JSONObject();
             addRequest.put("data", metadata);
+
+            Log.info("MARCO", addRequest.toString());
 
             // Send the meta data request
             sapiHandler.setSapiRequestListener(null);
@@ -246,7 +231,7 @@ public class SapiSyncHandler {
     public ChangesSet getIncrementalChanges(Date from, String dataType) throws JSONException {
 
         Vector params = new Vector();
-        params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
+        params.addElement("from=" + from.getTime());
         params.addElement("type=" + dataType);
         params.addElement("responsetime=true");
 
@@ -307,7 +292,7 @@ public class SapiSyncHandler {
             params.addElement("offset=" + offset);
         }
         if (from != null) {
-            params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
+            params.addElement("from=" + from.getDate());
         }
         params.addElement("responsetime=true");
         params.addElement("exif=none");
@@ -348,7 +333,7 @@ public class SapiSyncHandler {
 
         Vector params = new Vector();
         if (from != null) {
-            params.addElement("from=" + DateUtil.formatDateTimeUTC(from));
+            params.addElement("from=" + from.getDate());
         }
         JSONObject resp = sapiQueryWithRetries("media/" + remoteUri, "count",
                 params, null, null);
@@ -467,6 +452,61 @@ public class SapiSyncHandler {
         public JSONArray items     = null;
         public long      timeStamp = -1;
         public String    serverUrl = null;
+    }
+
+    private void login(int attempt) throws SyncException {
+        try {
+            sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_IN_QUERY_STRING);
+            JSONObject res = sapiQueryWithRetries("login", "login", null, null, null);
+
+            if (res.has(JSON_OBJECT_ERROR)) {
+
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "login returned an error " + res.toString());
+                }
+
+                // We have an error, check the code
+                JSONObject resError = res.getJSONObject(JSON_OBJECT_ERROR);
+                String code = resError.getString(JSON_OBJECT_ERROR_FIELD_CODE);
+                
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "login error code " + code);
+                }
+
+                if (attempt == 0 && JSON_ERROR_CODE_SEC_1002.equals(code)) {
+                    // We already logged in.We need to logout first
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "logging out");
+                    }
+                    logout();
+                    // login again
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "logging in");
+                    }
+                    login(attempt++);
+                    return;
+                } else {
+                    // Login failed
+                    throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
+                }
+            }
+
+            JSONObject resData = res.getJSONObject(JSON_OBJECT_DATA);
+            if(resData != null) {
+                String jsessionid = resData.getString(JSON_OBJECT_DATA_FIELD_JSESSIONID);
+                sapiHandler.enableJSessionAuthentication(true);
+                sapiHandler.forceJSessionId(jsessionid);
+                sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
+            } else {
+                handleResponseError(resData);
+                throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
+            }
+        } catch(Exception ex) {
+            if (Log.isLoggable(Log.ERROR)) {
+                Log.error(TAG_LOG, "Failed to login", ex);
+            }
+            throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
+        }
     }
 
     /**
