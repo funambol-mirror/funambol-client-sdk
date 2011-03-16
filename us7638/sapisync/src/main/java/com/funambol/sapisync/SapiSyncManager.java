@@ -903,40 +903,6 @@ public class SapiSyncManager implements SyncManagerI {
         return count;
     }
 
-    private void applyNewUpdItems(SyncSource src, JSONArray added, char state,
-            StringKeyValueStore mapping) throws SyncException, JSONException {
-        // The JSONArray contains the "id" of the new items, we still need to
-        // download their complete meta information. We get the new items in
-        // pages to make sure we don't use too much memory. Each page of items
-        // is then passed to the sync source
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "apply new update items " + state);
-        }
-        int i = 0;
-        String dataTag = getDataTag(src);
-        while(i < added.length()) {
-            // Fetch a single page of items
-            JSONArray itemsId = new JSONArray();
-            for(int j=0;j<MAX_ITEMS_PER_BLOCK && i < added.length();++j) {
-                int id = Integer.parseInt(added.getString(i++));
-                itemsId.put(id);
-            }
-            if (itemsId.length() > 0) {
-                // Ask for these items
-                SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(
-                        src.getConfig().getRemoteUri(), dataTag,
-                        itemsId, null, null, null);
-                if (fullSet != null && fullSet.items != null) {
-                    if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
-                    }
-                    applyNewUpdToSyncSource(src, fullSet.items, state,
-                            fullSet.serverUrl, mapping);
-                }
-            }
-        }
-    }
-
     /**
      * Apply the given items to the source, returning whether the source can
      * accept further items.
