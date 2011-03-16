@@ -146,13 +146,18 @@ public class BasicScriptRunner extends CommandRunner {
      * @throws Throwable if an error occurred while retrieving a script content.
      * This is the only case in which the test suite is entirely aborted.
      */
-    public void runScriptFile(String scriptUrl, boolean mainScript) throws Throwable {
+    public void runScriptFile(String scriptUrl, boolean mainScript, Hashtable vars) throws Throwable {
         testResults = new Vector();
         testKeys = new Hashtable();
 
-        // Set predefined variables
-        definedVars = new Hashtable();
+        if (vars != null) {
+            definedVars = vars;
+        } else {
+            // Set predefined variables
+            definedVars = new Hashtable();
+        }
 
+        // Add more variables (platform independent)
         if (devInfo.getDeviceRole() == DeviceInfo.DeviceRole.TABLET) {
             definedVars.put("devicetype", "table");
         } else {
@@ -277,6 +282,7 @@ public class BasicScriptRunner extends CommandRunner {
                                 }
                                 String a = arg.toString().trim();
                                 Log.trace(TAG_LOG, "Found argument " + a);
+                                a = processArg(a);
                                 args.addElement(a);
                                 require(parser, parser.END_TAG, null, "Arg");
                             }
