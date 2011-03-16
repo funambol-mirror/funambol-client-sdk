@@ -141,6 +141,10 @@ public class SapiSyncHandler {
             JSONObject addRequest = new JSONObject();
             addRequest.put("data", metadata);
 
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "metadata " + addRequest.toString());
+            }
+
             // Send the meta data request
             sapiHandler.setSapiRequestListener(null);
             JSONObject addResponse = sapiQueryWithRetries("upload/" + remoteUri,
