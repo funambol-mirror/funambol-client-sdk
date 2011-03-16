@@ -36,7 +36,9 @@
 package com.funambol.sapisync;
 
 import java.util.Vector;
+import java.util.Hashtable;
 import java.util.Date;
+import java.util.Enumeration;
 import java.io.OutputStream;
 import java.io.IOException;
 
@@ -95,6 +97,23 @@ public class SapiSyncManager implements SyncManagerI {
      * can call the cancel (@see cancel) method to cancel the current sync
      */
     private boolean cancel;
+
+
+    private JSONArray addedArray   = null;
+    private JSONArray updatedArray = null;
+    private JSONArray deletedArray = null;
+
+    private String addedServerUrl = null;
+    private String updatedServerUrl = null;
+    private String deletedServerUrl = null;
+
+    private long downloadNextAnchor;
+
+    private Hashtable localUpdated;
+    private Hashtable localDeleted;
+
+    private static final JSONObject REMOVED_ITEM = new JSONObject();
+
 
     /**
      * <code>SapiSyncManager</code> constructor
@@ -219,7 +238,7 @@ public class SapiSyncManager implements SyncManagerI {
 
             cancelSyncIfNeeded(src);
 
-            performInitializationPhase(src, getActualSyncMode(src, syncMode), resume);
+            performInitializationPhase(src, getActualSyncMode(src, syncMode), resume, mapping);
 
             cancelSyncIfNeeded(src);
 
@@ -233,11 +252,26 @@ public class SapiSyncManager implements SyncManagerI {
             cancelSyncIfNeeded(src);
             
             if(isUploadPhaseNeeded(syncMode)) {
-                long newUploadAnchor = (new Date()).getTime();
-                performUploadPhase(src, getActualUploadSyncMode(src), resume, mapping);
-                // If we had no error so far, then we update the anchor
-                SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
-                anchor.setUploadAnchor(newUploadAnchor);
+                long startUploadPhase = System.currentTimeMillis();
+                try {
+                    long newUploadAnchor = (new Date()).getTime();
+                    performUploadPhase(src, getActualUploadSyncMode(src), resume, mapping);
+                    // If we had no error so far, then we update the anchor
+                    SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
+                    anchor.setUploadAnchor(newUploadAnchor);
+                } finally {
+                    if (isDownloadPhaseNeeded(syncMode)) {
+                        long endTime = System.currentTimeMillis();
+                        long delta = endTime - startUploadPhase;
+                        // Update the download anchor
+                        SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
+                        long newTime = anchor.getDownloadAnchor() + delta;
+                        if (Log.isLoggable(Log.DEBUG)) {
+                            Log.debug(TAG_LOG, "Download anchor updated after upload phase to " + newTime);
+                        }
+                        anchor.setDownloadAnchor(newTime);
+                    }
+                }
             }
 
             cancelSyncIfNeeded(src);
@@ -299,11 +333,325 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void performInitializationPhase(SyncSource src, int syncMode,
-            boolean resume) {
+    private void performInitializationPhase(SyncSource src, int syncMode, boolean resume,
+                                            StringKeyValueStore mapping)
+    throws SyncException, JSONException
+    {
+        // Prepare the source for the sync
         src.beginSync(syncMode, resume);
+
+        // Perform a login to avoid multiple authentications
         sapiSyncHandler.login();
+
+        boolean incremental = isIncrementalSync(syncMode);
+        if (incremental) {
+            prepareIncrementalSync(src, syncMode, resume, mapping);
+        } else {
+            prepareFullSync(src, syncMode, resume, mapping);
+        }
     }
+
+    /**
+     * This method computes the set of items to be downloaded from the server in
+     * an incremental sync.
+     * The set of data to be downloaded depends on many things, including the
+     * changes made locally. After this method the src update/delete items have
+     * been consumed and the getNextNewItem and getNextUpdItem will return null.
+     */
+    private void prepareIncrementalSync(SyncSource src, int syncMode, boolean resume,
+                                        StringKeyValueStore mapping)
+    throws SyncException, JSONException
+    {
+        String remoteUri = src.getConfig().getRemoteUri();
+        SyncFilter syncFilter = src.getFilter();
+
+        // Check what is available on the server and what changed locally to
+        // determine the list of items to be exchanged
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Computing changes set for fast sync");
+        }
+        SapiSyncHandler.FullSet addedInfo   = null;
+        SapiSyncHandler.FullSet updatedInfo = null;
+        SapiSyncHandler.FullSet deletedInfo = null;
+
+        addedArray   = null;
+        updatedArray = null;
+        deletedArray = null;
+
+        if (isDownloadPhaseNeeded(syncMode)) {
+            if(syncFilter != null && syncFilter.getIncrementalDownloadFilter() != null) {
+                throw new UnsupportedOperationException("Not implemented yet");
+            }
+            SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "Last download anchor is: " + sapiAnchor.getDownloadAnchor());
+            }
+            Date anchor = new Date(sapiAnchor.getDownloadAnchor());
+
+            SapiSyncHandler.ChangesSet changesSet = sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
+            if (changesSet != null) {
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "There are changes pending on the server");
+                }
+
+                // Use the above value as timestamp for the next sync
+                downloadNextAnchor = changesSet.timeStamp;
+
+                addedInfo   = fetchItemsInfo(src, changesSet.added);
+                updatedInfo = fetchItemsInfo(src, changesSet.updated);
+                deletedInfo = fetchItemsInfo(src, changesSet.deleted);
+
+                if (addedInfo != null) {
+                    addedArray = addedInfo.items;
+                    addedServerUrl = addedInfo.serverUrl;
+                } 
+                if (updatedInfo != null) {
+                    updatedArray = updatedInfo.items;
+                    updatedServerUrl = updatedInfo.serverUrl;
+                }
+                if (deletedInfo != null) {
+                    deletedArray = deletedInfo.items;
+                    deletedServerUrl = deletedInfo.serverUrl;
+                }
+            }
+        }
+
+        localUpdated = null;
+        localDeleted = null;
+        if (isUploadPhaseNeeded(syncMode)) {
+            localUpdated = new Hashtable();
+            localDeleted = new Hashtable();
+
+            SyncItem localUpdatedItem = src.getNextUpdatedItem();
+            while(localUpdatedItem != null) {
+                localUpdated.put(localUpdatedItem.getKey(), localUpdatedItem);
+                localUpdatedItem = src.getNextUpdatedItem();
+            }
+
+            SyncItem localDeletedItem = src.getNextDeletedItem();
+            while(localDeletedItem != null) {
+                localDeleted.put(localDeletedItem.getKey(), localDeletedItem);
+                localDeletedItem = src.getNextDeletedItem();
+            }
+        }
+
+        // Now we have all the required information to decide what we need
+        // to download/upload. It is here that we resolve conflicts and
+        // twins
+        if (addedArray != null) {
+            // The server has items to send.
+
+            // First of all check if this command is a real add or an update
+            for(int i=0;i<addedArray.length();++i) {
+                JSONObject item = addedArray.getJSONObject(i);
+                String     guid = item.getString("id");
+
+                if (mapping.get(guid) != null) {
+                    // This is rather an update because the guid is already
+                    // in the mapping table
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Turning an add into an update");
+                    }
+                    // Nullify this item
+                    addedArray.put(i, REMOVED_ITEM);
+                    if (updatedArray == null) {
+                        updatedArray = new JSONArray();
+                        updatedServerUrl = addedServerUrl;
+                    }
+                    updatedArray.put(item);
+                }
+            }
+        }
+
+        // Now check if there is any update which is not an update, but
+        // just an add instead (i.e. it does not exist in our mapping)
+        if (updatedArray != null) {
+            for(int i=0;i<updatedArray.length();++i) {
+                JSONObject item = updatedArray.getJSONObject(i);
+                String     guid = item.getString("id");
+
+                if (mapping.get(guid) == null) {
+                    // This is rather an add because the guid is not in the
+                    // mapping table
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Turning an update into an add");
+                    }
+                    // Nullify this item
+                    updatedArray.put(i, REMOVED_ITEM);
+                    if (addedArray == null) {
+                        addedArray = new JSONArray();
+                        addedServerUrl = updatedServerUrl;
+                    }
+                    addedArray.put(item);
+                }
+            }
+        }
+
+        // Now check the added/updated lists searching for twins and
+        // conflicts
+        if (addedArray != null) {
+            discardTwinAndConflictFromList(src, addedArray, localUpdated,
+                    localDeleted, addedServerUrl, mapping);
+        }
+        if (updatedArray != null) {
+            discardTwinAndConflictFromList(src, updatedArray, localUpdated,
+                    localDeleted, updatedServerUrl, mapping);
+        }
+    }
+
+    private void prepareFullSync(SyncSource src, int syncMode, boolean resume, StringKeyValueStore mapping)
+    throws SyncException, JSONException
+    {
+        String remoteUri = src.getConfig().getRemoteUri();
+        SyncFilter syncFilter = src.getFilter();
+
+        int totalCount = -1;
+        int filterMaxCount = -1;
+        Date filterFrom = null;
+
+        Filter fullDownloadFilter = null;
+        if(syncFilter != null) {
+            fullDownloadFilter = syncFilter.getFullDownloadFilter();
+        }
+        if(fullDownloadFilter != null) {
+            if(fullDownloadFilter != null && fullDownloadFilter.getType()
+                    == Filter.ITEMS_COUNT_TYPE) {
+                filterMaxCount = fullDownloadFilter.getCount();
+            } else if(fullDownloadFilter != null && fullDownloadFilter.getType()
+                    == Filter.DATE_RECENT_TYPE) {
+                filterFrom = new Date(fullDownloadFilter.getDate());
+            } else {
+                throw new UnsupportedOperationException("Not implemented yet");
+            }
+        }
+
+        // Get the number of items and notify the listener
+        totalCount = sapiSyncHandler.getItemsCount(remoteUri, filterFrom);
+
+        // Fill the addedArray
+
+        addedArray = null;
+        addedServerUrl = null;
+
+        int downloadLimit = FULL_SYNC_DOWNLOAD_LIMIT;
+        String dataTag = getDataTag(src);
+        int offset = 0;
+        boolean done = false;
+
+        downloadNextAnchor = -1;
+        do {
+            // Update the download limit given the total amount of items
+            // to download
+            if((offset + downloadLimit) > totalCount) {
+                downloadLimit = totalCount - offset;
+            }
+            SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(remoteUri, dataTag, null,
+                    Integer.toString(downloadLimit),
+                    Integer.toString(offset), filterFrom);
+            if (downloadNextAnchor == -1) {
+                downloadNextAnchor = fullSet.timeStamp;
+                addedServerUrl = fullSet.serverUrl;
+            }
+            if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
+                }
+
+                if (addedArray == null) {
+                    addedArray = new JSONArray();
+                }
+
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "");
+                }
+                // Search and discard twins, as there is no need to download
+                // them again
+                discardTwinAndConflictFromList(src, fullSet.items, null, null,
+                        fullSet.serverUrl, mapping);
+
+                for(int i=0;i<fullSet.items.length();++i) {
+                    JSONObject item = fullSet.items.getJSONObject(i);
+
+                    if (item != REMOVED_ITEM) {
+                        addedArray.put(item);
+                    }
+                }
+
+                offset += fullSet.items.length();
+                if ((fullSet.items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
+                    done = true;
+                }
+            } else {
+                done = true;
+            }
+        } while(!done);
+    }
+
+    private void discardTwinAndConflictFromList(SyncSource src, JSONArray items,
+                                                Hashtable localMods, Hashtable localDel,
+                                                String serverUrl, StringKeyValueStore mapping)
+    throws JSONException
+    {
+        if (src instanceof TwinDetectionSource) {
+            for(int i=0;i<items.length();++i) {
+                JSONObject item = items.getJSONObject(i);
+                if (item != REMOVED_ITEM) {
+                    // First of all we check if we already the very same item
+                    String     guid = item.getString("id");
+                    long       size = Long.parseLong(item.getString("size"));
+                    SyncItem syncItem = createSyncItem(src, guid, SyncItem.STATE_NEW, size, item, serverUrl);
+                    syncItem.setGuid(guid);
+                    TwinDetectionSource twinSource = (TwinDetectionSource)src;
+                    SyncItem twin = twinSource.findTwin(syncItem);
+                    if (twin != null) {
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Found a twin for incoming command, ignoring it " + guid);
+                        }
+                        items.put(i, REMOVED_ITEM);
+                    }
+                    // Now we check if the client has a pending delete for this
+                    // item. If an item is scheduled for deletion, then its id
+                    // must be in the mapping, so we can get its luid
+                    if (mapping != null) {
+                        String luid = (String)mapping.get(guid);
+                        if (luid != null && localDel != null && localDel.get(luid) != null) {
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "Conflict detected, item sent by the server has been deleted on client. Ignoring " + luid);
+                            }
+                            items.put(i, REMOVED_ITEM);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private SapiSyncHandler.FullSet fetchItemsInfo(SyncSource src, JSONArray items)
+    throws JSONException
+    {
+        SapiSyncHandler.FullSet fullSet = null;
+        if (items != null) {
+            String dataTag = getDataTag(src);
+            JSONArray itemsId = new JSONArray();
+            for(int i=0;i<items.length();++i) {
+                int id = Integer.parseInt(items.getString(i));
+                itemsId.put(id);
+            }
+            if (itemsId.length() > 0) {
+                // Ask for these items
+                fullSet = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), dataTag,
+                        itemsId, null, null, null);
+                if (fullSet != null && fullSet.items != null) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
+                    }
+                }
+            }
+        }
+        return fullSet;
+    }
+
+
 
     private void performUploadPhase(SyncSource src, int syncMode, 
             boolean resume, StringKeyValueStore mapping) {
@@ -423,17 +771,21 @@ public class SapiSyncManager implements SyncManagerI {
         if(incremental) {
             // Updates and deletes are not propagated, return a success status 
             // for each item anyway
-            SyncItem update = src.getNextUpdatedItem();
-            while(update != null) {
-                sourceStatus.addElement(new ItemStatus(update.getKey(),
-                            SyncSource.SUCCESS_STATUS));
-                update = src.getNextUpdatedItem();
+            if (localUpdated != null) {
+                Enumeration updKeys = localUpdated.keys();
+                while(updKeys.hasMoreElements()) {
+                    String updKey = (String)updKeys.nextElement();
+                    SyncItem update = (SyncItem)localUpdated.get(updKey);
+                    sourceStatus.addElement(new ItemStatus(update.getKey(), SyncSource.SUCCESS_STATUS));
+                }
             }
-            SyncItem delete = src.getNextDeletedItem();
-            while(delete != null) {
-                sourceStatus.addElement(new ItemStatus(delete.getKey(),
-                            SyncSource.SUCCESS_STATUS));
-                delete = src.getNextDeletedItem();
+            if (localDeleted != null) {
+                Enumeration delKeys = localDeleted.keys();
+                while(delKeys.hasMoreElements()) {
+                    String delKey = (String)delKeys.nextElement();
+                    SyncItem delete = (SyncItem)localDeleted.get(delKey);
+                    sourceStatus.addElement(new ItemStatus(delete.getKey(), SyncSource.SUCCESS_STATUS));
+                }
             }
         }
         
@@ -469,80 +821,17 @@ public class SapiSyncManager implements SyncManagerI {
         
         if (syncMode == SyncSource.FULL_DOWNLOAD) {
 
-            int totalCount = -1;
+            if (addedArray != null && addedArray.length() > 0) {
+                getSyncListenerFromSource(src).startReceiving(addedArray.length());
 
-            int filterMaxCount = -1;
-            Date filterFrom = null;
-            
-            Filter fullDownloadFilter = null;
-            if(syncFilter != null) {
-                fullDownloadFilter = syncFilter.getFullDownloadFilter();
-            }
-            if(fullDownloadFilter != null) {
-                if(fullDownloadFilter != null && fullDownloadFilter.getType()
-                        == Filter.ITEMS_COUNT_TYPE) {
-                    filterMaxCount = fullDownloadFilter.getCount();
-                } else if(fullDownloadFilter != null && fullDownloadFilter.getType()
-                        == Filter.DATE_RECENT_TYPE) {
-                    filterFrom = new Date(fullDownloadFilter.getDate());
-                } else {
-                    throw new UnsupportedOperationException("Not implemented yet");
-                }
-            }
-            
-            // Get the number of items and notify the listener
-            try {
-                totalCount = sapiSyncHandler.getItemsCount(remoteUri, filterFrom);
-                if (totalCount != -1) {
-                    if(filterMaxCount > 0 && filterMaxCount < totalCount) {
-                        getSyncListenerFromSource(src).startReceiving(filterMaxCount);
-                    } else {
-                        getSyncListenerFromSource(src).startReceiving(totalCount);
-                    }
-                }
-            } catch (Exception e) {
-                Log.error(TAG_LOG, "Cannot get the number of items on server", e);
-                // We ignore this exception and try to get the content
-            }
-            int downloadLimit = FULL_SYNC_DOWNLOAD_LIMIT;
-            String dataTag = getDataTag(src);
-            int offset = 0;
-            boolean done = false;
-            try {
-                long newDownloadAnchor = -1;
-                do {
-                    // Update the download limit given the total amount of items
-                    // to download
-                    if((offset + downloadLimit) > totalCount) {
-                        downloadLimit = totalCount - offset;
-                    }
-                    SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(remoteUri, dataTag, null,
-                            Integer.toString(downloadLimit),
-                            Integer.toString(offset), filterFrom);
-                    if (newDownloadAnchor == -1) {
-                        newDownloadAnchor = fullSet.timeStamp;
-                    }
-                    if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
-                        if (Log.isLoggable(Log.TRACE)) {
-                            Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
-                        }
-                        done = applyNewUpdToSyncSource(src, fullSet.items, 
-                                SyncItem.STATE_NEW, filterMaxCount, offset,
-                                fullSet.serverUrl, mapping, true);
+                try {
+                    applyNewUpdToSyncSource(src, addedArray, SyncItem.STATE_NEW, 
+                                            addedServerUrl, mapping);
                         
-                        offset += fullSet.items.length();
-                        if ((fullSet.items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
-                            done = true;
-                        }
-                    } else {
-                        done = true;
-                    }
-                } while(!done);
+                    updateDownloadAnchor(
+                            (SapiSyncAnchor) src.getConfig().getSyncAnchor(), 
+                            downloadNextAnchor);
 
-                updateDownloadAnchor(
-                        (SapiSyncAnchor) src.getConfig().getSyncAnchor(), 
-                        newDownloadAnchor);
-                
             // This case is distinct from the one above in that this is for download failures
             // on individual items that disrupt the download while it is progress, while failures
             // due to storage limit breach are "graceful" because they occur before the actual
@@ -551,72 +840,67 @@ public class SapiSyncManager implements SyncManagerI {
             // downloaded: in such a case, it is appropriate not to call it an interruption.
             // To sum up, interruptions are to be dealt with in this catch block, graceful failures
             // at the end of the try block above
-            } catch (ItemDownloadInterruptionException ide) {
-                // An item could not be downloaded
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "");
+                } catch (ItemDownloadInterruptionException ide) {
+                    // An item could not be downloaded
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "");
+                    }
+                } catch (JSONException je) {
+                    Log.error(TAG_LOG, "Cannot parse server data", je);
                 }
-                // TODO FIXME: handle the suspend/resume
-            
-            } catch (JSONException je) {
-                Log.error(TAG_LOG, "Cannot parse server data", je);
             }
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "Performing incremental download");
             }
-            if(syncFilter != null && syncFilter.getIncrementalDownloadFilter() != null) {
-                throw new UnsupportedOperationException("Not implemented yet");
-            }
-            SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "Last download anchor is: " + sapiAnchor.getDownloadAnchor());
-            }
-            Date anchor = new Date(sapiAnchor.getDownloadAnchor());
+
+            int total = 0;
 
             try {
-                SapiSyncHandler.ChangesSet changesSet =
-                        sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
+                // Count the number of items to be received
+                total += countActualItems(addedArray);
+                total += countActualItems(updatedArray);
+                total += countActualItems(deletedArray);
 
-                if (changesSet != null) {
-                    // Count the number of items to be received and notify the
-                    // listener
-                    int total = 0;
-                    if (changesSet.added != null) {
-                        total += changesSet.added.length();
-                    }
-                    if (changesSet.updated != null) {
-                        total += changesSet.updated.length();
-                    }
-                    if (changesSet.deleted != null) {
-                        total += changesSet.deleted.length();
-                    }
+                getSyncListenerFromSource(src).startReceiving(total);
 
-                    getSyncListenerFromSource(src).startReceiving(total);
-
-                    // We must pass all of the items to the sync source, but for each
-                    // item we need to retrieve the complete information
-                    if (changesSet.added != null) {
-                        applyNewUpdItems(src, changesSet.added,
-                                SyncItem.STATE_NEW, mapping);
-                    }
-                    if (changesSet.updated != null) {
-                        applyNewUpdItems(src, changesSet.updated,
-                                SyncItem.STATE_UPDATED, mapping);
-                    }
-                    if (changesSet.deleted != null) {
-                        applyDelItems(src, changesSet.deleted, mapping);
-                    }
-
-                    // Tries to update the anchor if everything went well
-                    if (changesSet.timeStamp != -1) {
-                        updateDownloadAnchor(sapiAnchor, changesSet.timeStamp);
-                    }
+                if (addedArray != null) {
+                    applyNewUpdToSyncSource(src, addedArray, SyncItem.STATE_NEW,
+                            addedServerUrl, mapping);
                 }
-            } catch (JSONException je) {
-                Log.error(TAG_LOG, "Cannot apply changes", je);
+
+                if (updatedArray != null) {
+                    applyNewUpdToSyncSource(src, updatedArray, SyncItem.STATE_UPDATED,
+                            updatedServerUrl, mapping);
+                }
+
+                if (deletedArray != null) {
+                    applyDelItems(src, deletedArray, mapping);
+                }
+
+                // Tries to update the anchor if everything went well
+                if (downloadNextAnchor != -1) {
+                    SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
+                    updateDownloadAnchor(sapiAnchor, downloadNextAnchor);
+                }
+            } catch (JSONException jse) {
+                Log.error(TAG_LOG, "Error applying server changes", jse);
+                throw new SyncException(SyncException.CLIENT_ERROR, "Error applying server changes");
             }
         }
+    }
+
+    private int countActualItems(JSONArray items) throws JSONException{
+        int count = 0;
+        if (items != null) {
+            for(int i=0;i<items.length();++i) {
+                JSONObject item = items.getJSONObject(i);
+                if (item != REMOVED_ITEM) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     private void applyNewUpdItems(SyncSource src, JSONArray added, char state,
@@ -646,8 +930,8 @@ public class SapiSyncManager implements SyncManagerI {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
                     }
-                    applyNewUpdToSyncSource(src, fullSet.items, state, -1, -1,
-                            fullSet.serverUrl, mapping, true);
+                    applyNewUpdToSyncSource(src, fullSet.items, state,
+                            fullSet.serverUrl, mapping);
                 }
             }
         }
@@ -667,12 +951,13 @@ public class SapiSyncManager implements SyncManagerI {
      * @throws JSONException
      */
     private boolean applyNewUpdToSyncSource(SyncSource src, JSONArray items,
-            char state, int maxItemsCount, int appliedItemsCount, String serverUrl,
-            StringKeyValueStore mapping, boolean deepTwinSearch)
-            throws SyncException, JSONException {
+                                            char state, String serverUrl,
+                                            StringKeyValueStore mapping)
+    throws SyncException, JSONException
+    {
 
         if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "apply new update items to source" + state);
+            Log.trace(TAG_LOG, "apply new update items to source " + src.getName());
         }
 
         boolean done = false;
@@ -684,6 +969,12 @@ public class SapiSyncManager implements SyncManagerI {
             cancelSyncIfNeeded(src);
 
             JSONObject item = items.getJSONObject(k);
+
+            // We must skip items that were removed by the initialization phase
+            if (item == REMOVED_ITEM) {
+                continue;
+            }
+
             String     guid = item.getString("id");
             long       size = Long.parseLong(item.getString("size"));
 
@@ -691,16 +982,11 @@ public class SapiSyncManager implements SyncManagerI {
             if (state == SyncItem.STATE_UPDATED) {
                 luid = mapping.get(guid);
             } else {
+                // This is an add. If the item is already present in the mapping
+                // then this is an add
                 luid = guid;
             }
 
-            // Notify the listener
-            if (state == SyncItem.STATE_NEW) {
-                getSyncListenerFromSource(src).itemAddReceivingStarted(luid, null, size);
-            } else if(state == SyncItem.STATE_UPDATED) {
-                getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
-            }
-            
             // If the client doesn't have the luid we change the state to new
             if(StringUtil.isNullOrEmpty(luid)) {
                 state = SyncItem.STATE_NEW;
@@ -710,40 +996,13 @@ public class SapiSyncManager implements SyncManagerI {
             SyncItem syncItem = createSyncItem(src, luid, state, size, item, serverUrl);
             syncItem.setGuid(guid);
 
-            if (deepTwinSearch) {
-                // In this case we cannot rely on mappings to detect twins, we
-                // rather perform a content analysis to determine twins
-                if (src instanceof TwinDetectionSource) {
-                    TwinDetectionSource twinSource = (TwinDetectionSource)src;
-                    SyncItem twinItem = twinSource.findTwin(syncItem);
-                    if (twinItem != null) {
-                        if (Log.isLoggable(Log.INFO)) {
-                            Log.info(TAG_LOG, "Found twin for item: " + guid);
-                        }
-                        twins.addElement(twinItem.getKey());
-                        // Skip the processing of this item
-                        if(src instanceof JSONSyncSource) {
-                            ((JSONSyncSource)src).skipItemDownload(syncItem);
-                        }
-                        continue;
-                    }
-                } else {
-                    Log.error(TAG_LOG, "Source does not implement TwinDetection, "
-                            + "possible creation of duplicates");
-                }
-            } else {
-                // In this case we only check if an item with the same guid
-                // already exists. In such a case we turn the command into a
-                // replace
-                if (state == SyncItem.STATE_NEW && mapping.get(guid) != null) {
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Turning add into replace as item "
-                                + "already exists " + guid);
-                    }
-                    state = SyncItem.STATE_UPDATED;
-                }
+            // Notify the listener
+            if (state == SyncItem.STATE_NEW) {
+                getSyncListenerFromSource(src).itemAddReceivingStarted(luid, null, size);
+            } else if(state == SyncItem.STATE_UPDATED) {
+                getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
             }
-
+            
             // Filter downloaded items for JSONSyncSources only
             if(src instanceof JSONSyncSource) {
                 if(((JSONSyncSource)src).filterSyncItem(syncItem)) {
@@ -757,16 +1016,6 @@ public class SapiSyncManager implements SyncManagerI {
                 sourceItems.addElement(syncItem);
             }
             
-            // Apply items count filter
-            if(maxItemsCount > 0) {
-                if((appliedItemsCount + sourceItems.size()) >= maxItemsCount) {
-                    if (Log.isLoggable(Log.DEBUG)) {
-                        Log.debug(TAG_LOG, "The source doesn't accept more items");
-                    }
-                    done = true;
-                }
-            }
-
             // Notify the listener
             if (state == SyncItem.STATE_NEW) {
                 getSyncListenerFromSource(src).itemAddReceivingEnded(luid, null);

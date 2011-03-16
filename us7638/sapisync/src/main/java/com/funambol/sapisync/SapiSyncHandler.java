@@ -106,10 +106,11 @@ public class SapiSyncHandler {
     public void logout() throws SyncException {
         try {
             sapiQueryWithRetries("login", "logout", null, null, null);
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Failed to logout", ioe);
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "Cannot logout");
         } catch(Exception ex) {
-            if (Log.isLoggable(Log.ERROR)) {
-                Log.error(TAG_LOG, "Failed to logout", ex);
-            }
+            Log.error(TAG_LOG, "Failed to logout", ex);
             throw new SyncException(SyncException.AUTH_ERROR, "Cannot logout");
         }
         sapiHandler.enableJSessionAuthentication(false);
@@ -177,7 +178,6 @@ public class SapiSyncHandler {
                 String code = error.getString("code");
                 if(JSON_ERROR_CODE_MED_1002.equals(code)) {
                     // The size of the uploading media does not match the one declared
-                    // TODO: FIXME retrieve actual uploaded size
                     throw new ItemUploadInterruptionException(item, 0);
                 }
                 Log.error(TAG_LOG, "Error in SAPI response: " + msg);
@@ -210,6 +210,9 @@ public class SapiSyncHandler {
             JSONObject request = new JSONObject();
             request.put("data", data);
             sapiQueryWithRetries("media/" + remoteUri, "delete", null, null, request);
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Failed to delete item: " + key, ioe);
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while deleting");
         } catch(Exception ex) {
             Log.error(TAG_LOG, "Failed to delete item: " + key, ex);
             throw new SyncException(SyncException.CLIENT_ERROR,
@@ -223,6 +226,9 @@ public class SapiSyncHandler {
         }
         try {
             sapiHandler.query("media/" + remoteUri, "reset", null, null, null);
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Failed to delete all items", ioe);
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while deleting");
         } catch(Exception ex) {
             Log.error(TAG_LOG, "Failed to delete all items", ex);
             throw new SyncException(SyncException.CLIENT_ERROR,
@@ -230,55 +236,65 @@ public class SapiSyncHandler {
         }
     }
 
-    public ChangesSet getIncrementalChanges(Date from, String dataType) throws JSONException {
+    public ChangesSet getIncrementalChanges(Date from, String dataType) throws SyncException {
 
         Vector params = new Vector();
         params.addElement("from=" + from.getTime());
         params.addElement("type=" + dataType);
         params.addElement("responsetime=true");
 
-        JSONObject resp = sapiQueryWithRetries("profile/changes", "get",
-                params, null, null);
+        JSONObject resp = null;
+        try {
+            resp = sapiQueryWithRetries("profile/changes", "get", params, null, null);
+        } catch (IOException ioe) {
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while getting incremental changes");
+        } catch (Exception e) {
+            throw new SyncException(SyncException.CLIENT_ERROR, "Client error while getting incremental changes");
+        }
 
-        ChangesSet res = new ChangesSet();
+        try {
+            ChangesSet res = new ChangesSet();
 
-        JSONObject data = resp.getJSONObject("data");
-        if (data != null) {
-            if (data.has(dataType)) {
-                JSONObject items = data.getJSONObject(dataType);
-                if (items != null) {
-                    if (items.has("N")) {
-                        res.added = items.getJSONArray("N");
-                    }
-                    if (items.has("U")) {
-                        res.updated = items.getJSONArray("U");
-                    }
-                    if (items.has("D")) {
-                        res.deleted = items.getJSONArray("D");
+            JSONObject data = resp.getJSONObject("data");
+            if (data != null) {
+                if (data.has(dataType)) {
+                    JSONObject items = data.getJSONObject(dataType);
+                    if (items != null) {
+                        if (items.has("N")) {
+                            res.added = items.getJSONArray("N");
+                        }
+                        if (items.has("U")) {
+                            res.updated = items.getJSONArray("U");
+                        }
+                        if (items.has("D")) {
+                            res.deleted = items.getJSONArray("D");
+                        }
                     }
                 }
             }
-            
-        }
 
-        // Get the timestamp if available
-        if (resp.has("responsetime")) {
-            String ts = resp.getString("responsetime");
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
+            // Get the timestamp if available
+            if (resp.has("responsetime")) {
+                String ts = resp.getString("responsetime");
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
+                }
+                try {
+                    res.timeStamp = Long.parseLong(ts);
+                } catch (Exception e) {
+                    Log.error(TAG_LOG, "Cannot parse server responsetime");
+                    res.timeStamp = -1;
+                }
             }
-            try {
-                res.timeStamp = Long.parseLong(ts);
-            } catch (Exception e) {
-                Log.error(TAG_LOG, "Cannot parse server responsetime");
-                res.timeStamp = -1;
-            }
+            return res;
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot get incremental changes", e);
+            throw new SyncException(SyncException.CLIENT_ERROR, "Cannot get incremental changes");
         }
-        return res;
     }
 
     public FullSet getItems(String remoteUri, String dataTag, JSONArray ids,
-                              String limit, String offset, Date from) throws JSONException {
+                            String limit, String offset, Date from) throws JSONException, SyncException {
 
         Vector params = new Vector();
         if (ids != null) {
@@ -299,46 +315,51 @@ public class SapiSyncHandler {
         params.addElement("responsetime=true");
         params.addElement("exif=none");
 
-        JSONObject resp = sapiQueryWithRetries("media/" + remoteUri, "get",
-                params, null, null);
-
-        if (resp != null) {
-            FullSet res = new FullSet();
-            JSONObject data = resp.getJSONObject("data");
-            if (data != null) {
-                if (data.has(dataTag)) {
-                    JSONArray items = data.getJSONArray(dataTag);
-                    res.items = items;
-                }
-            }
-            if (data.has("portalurl")) {
-                res.serverUrl = data.getString("portalurl");
-            }
-            if (resp.has("responsetime")) {
-                String ts = resp.getString("responsetime");
-                if (Log.isLoggable(Log.TRACE)) {
-                    Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
-                }
-                try {
-                    res.timeStamp = Long.parseLong(ts);
-                } catch (Exception e) {
-                    Log.error(TAG_LOG, "Cannot parse server responsetime");
-                    res.timeStamp = -1;
-                }
-            }
-            return res;
+        JSONObject resp = null;
+        try {
+            resp = sapiQueryWithRetries("media/" + remoteUri, "get", params, null, null);
+        } catch (IOException ioe) {
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while getting items");
         }
-        return null;
+
+        FullSet res = new FullSet();
+        JSONObject data = resp.getJSONObject("data");
+        if (data != null) {
+            if (data.has(dataTag)) {
+                JSONArray items = data.getJSONArray(dataTag);
+                res.items = items;
+            }
+        }
+        if (data.has("portalurl")) {
+            res.serverUrl = data.getString("portalurl");
+        }
+        if (resp.has("responsetime")) {
+            String ts = resp.getString("responsetime");
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
+            }
+            try {
+                res.timeStamp = Long.parseLong(ts);
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot parse server responsetime");
+                res.timeStamp = -1;
+            }
+        }
+        return res;
     }
 
-    public int getItemsCount(String remoteUri, Date from) throws JSONException {
+    public int getItemsCount(String remoteUri, Date from) throws JSONException, SyncException {
 
         Vector params = new Vector();
         if (from != null) {
             params.addElement("from=" + from.getDate());
         }
-        JSONObject resp = sapiQueryWithRetries("media/" + remoteUri, "count",
-                params, null, null);
+        JSONObject resp;
+        try {
+            resp = sapiQueryWithRetries("media/" + remoteUri, "count", params, null, null);
+        } catch (IOException ioe) {
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOException getting items count");
+        }
         if (resp != null) {
             JSONObject data = resp.getJSONObject("data");
             if (data != null) {
@@ -404,7 +425,9 @@ public class SapiSyncHandler {
      * @throws JSONException
      */
     private JSONObject sapiQueryWithRetries(String name, String action, Vector params,
-            Hashtable headers, JSONObject request) throws JSONException {
+                                            Hashtable headers, JSONObject request)
+    throws JSONException, IOException
+    {
         JSONObject resp = null;
         boolean retry = true;
         int attempt = 0;
@@ -415,7 +438,7 @@ public class SapiSyncHandler {
                 retry = false;
             } catch (IOException ioe) {
                 if (attempt >= MAX_RETRIES) {
-                    retry = false;
+                    throw ioe;
                 }
             }
         } while(retry);
@@ -423,8 +446,10 @@ public class SapiSyncHandler {
     }
     
     private JSONObject sapiQueryWithRetries(String name, String action, 
-            Vector params, Hashtable headers, InputStream requestIs,
-            String contentType, long contentLength) throws JSONException {
+                                            Vector params, Hashtable headers, InputStream requestIs,
+                                            String contentType, long contentLength)
+    throws JSONException, IOException
+    {
         JSONObject resp = null;
         boolean retry = true;
         int attempt = 0;
@@ -436,7 +461,7 @@ public class SapiSyncHandler {
                 retry = false;
             } catch (IOException ioe) {
                 if (attempt >= MAX_RETRIES) {
-                    retry = false;
+                    throw ioe;
                 }
             }
         } while(retry);
