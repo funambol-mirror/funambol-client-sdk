@@ -48,6 +48,7 @@ import org.json.me.JSONArray;
 
 import com.funambol.sync.BasicSyncListener;
 import com.funambol.sync.ItemStatus;
+import com.funambol.sync.QuotaOverflowException;
 import com.funambol.sync.SyncAnchor;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
@@ -756,6 +757,14 @@ public class SapiSyncManager implements SyncManagerI {
                 } catch (Exception e) {
                     Log.error(TAG_LOG, "Cannot save sync status", e);
                 }
+            
+            } catch (QuotaOverflowException ex) {
+                // An item could not be uploaded because user quota on server exceeded
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Server quota overflow error");
+                }
+                sourceStatus.addElement(new ItemStatus(item.getKey(),
+                        SyncSource.SERVER_FULL_ERROR_STATUS));
             } catch(Exception ex) {
                 if(Log.isLoggable(Log.ERROR)) {
                     Log.error(TAG_LOG, "Failed to upload item with key: " + item.getKey(), ex);

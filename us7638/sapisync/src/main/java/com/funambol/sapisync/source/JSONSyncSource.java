@@ -151,8 +151,12 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         return jsonFile;
     }
 
+    /**
+     * This method is for backward compatibility only
+     * @deprecated
+     * @throws SyncException
+     */
     public void setItemStatus(String key, int status) throws SyncException {
-
         if (status == SyncSource.SERVER_FULL_ERROR_STATUS) {
             // The user reached his quota on the server
             if (Log.isLoggable(Log.INFO)) {

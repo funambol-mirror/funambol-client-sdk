@@ -412,7 +412,6 @@ public abstract class TrackableSyncSource implements SyncSource {
     }
 
     /**
-     *
      * This method is for backward compatibility only
      * @deprecated
      * @throws SyncException

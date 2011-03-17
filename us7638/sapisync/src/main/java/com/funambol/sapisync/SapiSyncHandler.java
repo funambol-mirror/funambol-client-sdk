@@ -47,6 +47,7 @@ import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.sapisync.source.JSONFileObject;
 import com.funambol.sapisync.source.JSONSyncItem;
 import com.funambol.sync.ItemUploadInterruptionException;
+import com.funambol.sync.QuotaOverflowException;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
@@ -73,10 +74,6 @@ public class SapiSyncHandler {
     private static final String JSON_OBJECT_ERROR_FIELD_MESSAGE = "message";
     private static final String JSON_OBJECT_ERROR_FIELD_CAUSE   = "cause";
     
-    public static final String JSON_ERROR_CODE_SEC_1002 = "SEC-1002";
-    public static final String JSON_ERROR_CODE_SEC_1004 = "SEC-1004";
-    public static final String JSON_ERROR_CODE_MED_1002 = "MED-1002";
-
     /**
      * SapiSyncHandler constructor
      * 
@@ -172,13 +169,17 @@ public class SapiSyncHandler {
                     "add", null, headers, item.getInputStream(),
                     json.getMimetype(), json.getSize());
 
-            if(uploadResponse.has("error")) {
-                JSONObject error = uploadResponse.getJSONObject("error");
+            if(uploadResponse.has(JSON_OBJECT_ERROR)) {
+                JSONObject error = uploadResponse.getJSONObject(JSON_OBJECT_ERROR);
                 String msg = error.getString("message");
                 String code = error.getString("code");
-                if(JSON_ERROR_CODE_MED_1002.equals(code)) {
+                if(SapiException.MED_1002.equals(code)) {
                     // The size of the uploading media does not match the one declared
                     throw new ItemUploadInterruptionException(item, 0);
+                }
+                if(SapiException.MED_1007.equals(code)) {
+                    //server user quota exceeded 
+                    throw new QuotaOverflowException(item);
                 }
                 Log.error(TAG_LOG, "Error in SAPI response: " + msg);
                 throw new SyncException(SyncException.SERVER_ERROR,
@@ -236,16 +237,22 @@ public class SapiSyncHandler {
         }
     }
 
-    public ChangesSet getIncrementalChanges(Date from, String dataType) throws SyncException {
+    public ChangesSet getIncrementalChanges(Date from, String dataType) throws SapiException {
 
         Vector params = new Vector();
         params.addElement("from=" + from.getTime());
         params.addElement("type=" + dataType);
         params.addElement("responsetime=true");
 
-        JSONObject resp = null;
+        JSONObject response = null;
         try {
-            resp = sapiQueryWithRetries("profile/changes", "get", params, null, null);
+            response = sapiQueryWithRetries(
+                    "profile/changes",
+                    "get",
+                    params,
+                    null,
+                    null);
+
         } catch (IOException ioe) {
             throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while getting incremental changes");
         } catch (Exception e) {
@@ -253,10 +260,9 @@ public class SapiSyncHandler {
         }
 
         try {
-            ChangesSet res = new ChangesSet();
-
-            JSONObject data = resp.getJSONObject("data");
-            if (data != null) {
+        	ChangesSet res = new ChangesSet();
+            if(!responseHasError(response)) {
+                JSONObject data = getDataFromResponse(response);
                 if (data.has(dataType)) {
                     JSONObject items = data.getJSONObject(dataType);
                     if (items != null) {
@@ -274,6 +280,62 @@ public class SapiSyncHandler {
             }
 
             // Get the timestamp if available
+            if (response.has("responsetime")) {
+                String ts = response.getString("responsetime");
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
+                }
+                try {
+                    res.timeStamp = Long.parseLong(ts);
+                } catch (Exception e) {
+                    Log.error(TAG_LOG, "Cannot parse server responsetime");
+                    res.timeStamp = -1;
+                }
+            }
+            return res;
+
+        } catch (JSONException e) {
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        }
+    }
+
+    public FullSet getItems(String remoteUri, String dataTag, JSONArray ids,
+                              String limit, String offset, Date from) throws SapiException {
+
+        try {
+            Vector params = new Vector();
+            if (ids != null) {
+                JSONObject request = new JSONObject();
+                request.put("ids", ids);
+    
+                params.addElement("id=" + request.toString());
+            }
+            if (limit != null) {
+                params.addElement("limit=" + limit);
+            }
+            if (offset != null) {
+                params.addElement("offset=" + offset);
+            }
+            if (from != null) {
+                params.addElement("from=" + from.getDate());
+            }
+            params.addElement("responsetime=true");
+            params.addElement("exif=none");
+    
+            JSONObject resp = sapiQueryWithRetries("media/" + remoteUri, "get",
+                    params, null, null);
+    
+            FullSet res = new FullSet();
+            if (!responseHasError(resp)) {
+                JSONObject data = getDataFromResponse(resp);
+                if (data.has(dataTag)) {
+                    JSONArray items = data.getJSONArray(dataTag);
+                    res.items = items;
+                }
+                if (data.has("portalurl")) {
+                    res.serverUrl = data.getString("portalurl");
+                }
+            }
             if (resp.has("responsetime")) {
                 String ts = resp.getString("responsetime");
                 if (Log.isLoggable(Log.TRACE)) {
@@ -287,86 +349,39 @@ public class SapiSyncHandler {
                 }
             }
             return res;
-        } catch (Exception e) {
-            Log.error(TAG_LOG, "Cannot get incremental changes", e);
-            throw new SyncException(SyncException.CLIENT_ERROR, "Cannot get incremental changes");
-        }
-    }
 
-    public FullSet getItems(String remoteUri, String dataTag, JSONArray ids,
-                            String limit, String offset, Date from) throws JSONException, SyncException {
-
-        Vector params = new Vector();
-        if (ids != null) {
-            JSONObject request = new JSONObject();
-            request.put("ids", ids);
-
-            params.addElement("id=" + request.toString());
-        }
-        if (limit != null) {
-            params.addElement("limit=" + limit);
-        }
-        if (offset != null) {
-            params.addElement("offset=" + offset);
-        }
-        if (from != null) {
-            params.addElement("from=" + from.getDate());
-        }
-        params.addElement("responsetime=true");
-        params.addElement("exif=none");
-
-        JSONObject resp = null;
-        try {
-            resp = sapiQueryWithRetries("media/" + remoteUri, "get", params, null, null);
         } catch (IOException ioe) {
-            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while getting items");
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while getting item");
+        } catch (JSONException e) {
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
         }
-
-        FullSet res = new FullSet();
-        JSONObject data = resp.getJSONObject("data");
-        if (data != null) {
-            if (data.has(dataTag)) {
-                JSONArray items = data.getJSONArray(dataTag);
-                res.items = items;
-            }
-        }
-        if (data.has("portalurl")) {
-            res.serverUrl = data.getString("portalurl");
-        }
-        if (resp.has("responsetime")) {
-            String ts = resp.getString("responsetime");
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
-            }
-            try {
-                res.timeStamp = Long.parseLong(ts);
-            } catch (Exception e) {
-                Log.error(TAG_LOG, "Cannot parse server responsetime");
-                res.timeStamp = -1;
-            }
-        }
-        return res;
     }
 
-    public int getItemsCount(String remoteUri, Date from) throws JSONException, SyncException {
-
+    public int getItemsCount(String remoteUri, Date from) throws SapiException {
         Vector params = new Vector();
         if (from != null) {
             params.addElement("from=" + from.getDate());
         }
-        JSONObject resp;
+        
         try {
-            resp = sapiQueryWithRetries("media/" + remoteUri, "count", params, null, null);
-        } catch (IOException ioe) {
-            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOException getting items count");
-        }
-        if (resp != null) {
-            JSONObject data = resp.getJSONObject("data");
-            if (data != null) {
+            JSONObject response = sapiQueryWithRetries(
+                    "media/" + remoteUri,
+                    "count",
+                    params,
+                    null,
+                    null);
+            
+            if (!responseHasError(response)) {
+                JSONObject data = getDataFromResponse(response);
                 if (data.has("count")) {
                     return Integer.parseInt(data.getString("count"));
                 }
             }
+            
+        } catch (IOException ioe) {
+            throw new SyncException(SyncException.CONN_NOT_FOUND, "IOException getting items count");
+        } catch (JSONException e) {
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
         }
         return -1;
     }
@@ -382,35 +397,34 @@ public class SapiSyncHandler {
             sapiHandler.cancel();
         }
     }
-
-    private void handleResponseError(JSONObject response) throws Exception {
+    
+    
+    /**
+     * 
+     * @param source
+     * @return
+     */
+    public long getUserAvailableServerQuota(String remoteUri) throws SapiException {
+        JSONObject response;
         try {
-            // Check for errors
-            JSONObject error = response.getJSONObject(JSON_OBJECT_ERROR);
-            if(error != null) {
-                String code    = error.getString(JSON_OBJECT_ERROR_FIELD_CODE);
-                String message = error.getString(JSON_OBJECT_ERROR_FIELD_MESSAGE);
-                String cause   = error.getString(JSON_OBJECT_ERROR_FIELD_CAUSE);
-
-                StringBuffer logMsg = new StringBuffer(
-                        "Error in SAPI response").append("\r\n");
-                logMsg.append("code: ").append(code).append("\r\n");
-                logMsg.append("cause: ").append(cause).append("\r\n");
-                logMsg.append("message: ").append(message).append("\r\n");
-
-                // Handle error codes
-                if(JSON_ERROR_CODE_SEC_1002.equals(code)) {
-                    // A session is already open. To provide new credentials 
-                    // please logout first.
-                } else if(JSON_ERROR_CODE_SEC_1004.equals(code)) {
-                    // Both header and parameter credentials provided, please
-                    // use only one authentication schema.
-                } 
+            response = sapiQueryWithRetries(
+                    "media/" + remoteUri,
+                    "get-storage-space",
+                    null, null, null);
+            
+            if (!responseHasError(response)) {
+                JSONObject data = getDataFromResponse(response);
+                if (data.has("free")) {
+                    return Long.parseLong(data.getString("free"));
+                }
             }
-        } catch(JSONException ex) {
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Failed to retrieve error json object");
-            }
+            return -1;
+            
+        } catch (IOException ioe) {
+            //TODO verify if the error code is correct
+            throw new SapiException(SapiException.HTTP_400, "IOError while getting server quota");
+        } catch (JSONException e) {
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
         }
     }
 
@@ -500,7 +514,7 @@ public class SapiSyncHandler {
                     Log.info(TAG_LOG, "login error code " + code);
                 }
 
-                if (attempt == 0 && JSON_ERROR_CODE_SEC_1002.equals(code)) {
+                if (attempt == 0 && SapiException.SEC_1002.equals(code)) {
                     // We already logged in.We need to logout first
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "logging out");
@@ -510,6 +524,7 @@ public class SapiSyncHandler {
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "logging in");
                     }
+                    //TODO check, shouldn't be ++attempt?
                     login(attempt++);
                     return;
                 } else {
@@ -525,7 +540,7 @@ public class SapiSyncHandler {
                 sapiHandler.forceJSessionId(jsessionid);
                 sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
             } else {
-                handleResponseError(resData);
+                logErrorResponseAndThrowException(resData, false);
                 throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
             }
         } catch(Exception ex) {
@@ -565,6 +580,88 @@ public class SapiSyncHandler {
             if(syncListener != null) {
                 syncListener.itemAddSendingEnded(itemKey, null);
             }
+        }
+    }
+
+    /**
+     * Finds if the SAPI response contains errors
+     * @param response
+     * @return false only if response contains data part, otherwise false
+     * @throws SapiException
+     */
+    private boolean responseHasError(JSONObject response)
+    throws SapiException {
+        if (null == response || response.has(JSON_OBJECT_ERROR)) {
+            logErrorResponseAndThrowException(response, true);
+            return true;
+        }
+        //just to be sure that JSON object has data value
+        if (response.has(JSON_OBJECT_DATA)) return false;
+        return true;
+    }
+    
+    /**
+     * Extracts data part from a SAPI response. If data is no present, a
+     * {@link SapiException} is thrown
+     * @param response
+     * @return
+     * @throws SapiException
+     */
+    private JSONObject getDataFromResponse(JSONObject response)
+    throws SapiException {
+        try {
+            JSONObject data = response.getJSONObject(JSON_OBJECT_DATA);
+            return data;
+        } catch (JSONException e) {
+            Log.debug(TAG_LOG, "Sapi response doesn't contain data object");
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        }
+    }
+
+    /**
+     * Handles error response from SAPI, logging the error and creating the
+     * proper {@link SapiException} object to throw
+     * 
+     * @param response a {@link JSONObject} with the error response to analyze
+     * @param throwException true if an exception must be thrown
+     * @throws SapiException
+     */
+    private void logErrorResponseAndThrowException(JSONObject response, boolean throwException)
+    throws SapiException {
+        if (null == response) {
+            if (throwException) {
+                Log.debug(TAG_LOG, "SAPI response is null");
+                throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+            } else {
+                return;
+            }
+        }
+
+        try {
+            // Check for errors
+            if (response.has(JSON_OBJECT_ERROR)) {
+                JSONObject error = response.getJSONObject(JSON_OBJECT_ERROR);
+                String code    = error.getString(JSON_OBJECT_ERROR_FIELD_CODE);
+                String message = error.getString(JSON_OBJECT_ERROR_FIELD_MESSAGE);
+                String cause   = error.getString(JSON_OBJECT_ERROR_FIELD_CAUSE);
+
+                StringBuffer logMsg = new StringBuffer(
+                        "Error in SAPI response").append("\r\n");
+                logMsg.append("code: ").append(code).append("\r\n");
+                logMsg.append("cause: ").append(cause).append("\r\n");
+                logMsg.append("message: ").append(message).append("\r\n");
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, logMsg.toString());
+                }
+
+                if (throwException) throw new SapiException(code, message, cause);
+            }
+            
+        } catch(JSONException ex) {
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Failed to retrieve error json object");
+            }
+            if (throwException) throw SapiException.SAPI_EXCEPTION_UNKNOWN;
         }
     }
 }
