@@ -342,7 +342,7 @@ public class SapiSyncManager implements SyncManagerI {
         src.beginSync(syncMode, resume);
 
         // Perform a login to avoid multiple authentications
-        sapiSyncHandler.login();
+        sapiSyncHandler.login(null);
 
         boolean incremental = isIncrementalSync(syncMode);
         if (incremental) {
@@ -652,8 +652,6 @@ public class SapiSyncManager implements SyncManagerI {
         return fullSet;
     }
 
-
-
     private void performUploadPhase(SyncSource src, int syncMode, 
             boolean resume, StringKeyValueStore mapping) {
 
@@ -684,6 +682,7 @@ public class SapiSyncManager implements SyncManagerI {
                 maxSending = uploadFilter.getCount();
             }
         }
+
 
         // Exclude twins from total items count
         totalSending -= twins.size();
@@ -718,6 +717,8 @@ public class SapiSyncManager implements SyncManagerI {
 
                 // If the item was already sent in a previously interrupted
                 // sync, then we do not send it again
+                boolean uploadDone = false;
+                String remoteKey = null;
                 if (resume) {
                     int itemStatus = syncStatus.getSentItemStatus(item.getKey());
                     if (itemStatus != -1 && itemStatus != SyncSource.SUCCESS_STATUS) {
@@ -726,14 +727,21 @@ public class SapiSyncManager implements SyncManagerI {
                             if (Log.isLoggable(Log.INFO)) {
                                 Log.info(TAG_LOG, "Resuming upload for " + item.getKey());
                             }
+
+                            remoteKey = syncStatus.getSentItemGuid(item.getKey());
+                            item.setGuid(remoteKey);
+                            sapiSyncHandler.resumeUploadItem(item, remoteUri, getSyncListenerFromSource(src));
+                            uploadDone = true;
                         }
                     }
                 }
 
-                syncStatus.addSentItem(item.getKey(), SyncItem.STATE_NEW);
-                // Upload the item to the server
-                String remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
-                        getSyncListenerFromSource(src));
+                if (!uploadDone) {
+                    syncStatus.addSentItem(item.getKey(), SyncItem.STATE_NEW);
+                    // Upload the item to the server
+                    remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
+                                                           getSyncListenerFromSource(src));
+                }
 
                 item.setGuid(remoteKey);
                 mapping.add(remoteKey, item.getKey());
@@ -744,11 +752,10 @@ public class SapiSyncManager implements SyncManagerI {
 
                 syncStatus.addSentItem(item.getKey(), item.getState());
                 uploadedCount++;
-            
             } catch (ItemUploadInterruptionException ex) {
-                // An item could not be uploaded
+                // An item could not be fully uploaded
                 if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Error upload item " + item.getKey());
+                    Log.info(TAG_LOG, "Error uploading item " + item.getKey());
                 }
                 syncStatus.setSentItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS);
                 sourceStatus.addElement(new ItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS));
@@ -757,7 +764,6 @@ public class SapiSyncManager implements SyncManagerI {
                 } catch (Exception e) {
                     Log.error(TAG_LOG, "Cannot save sync status", e);
                 }
-            
             } catch (QuotaOverflowException ex) {
                 // An item could not be uploaded because user quota on server exceeded
                 if (Log.isLoggable(Log.INFO)) {

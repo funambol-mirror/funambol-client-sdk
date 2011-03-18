@@ -90,8 +90,8 @@ public class SapiSyncHandler {
      *
      * @throws SyncException
      */
-    public void login() throws SyncException {
-        login(0);
+    public void login(String deviceId) throws SyncException {
+        login(deviceId, 0);
     }
 
 
@@ -115,14 +115,9 @@ public class SapiSyncHandler {
         sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
     }
 
-    /**
-     * Upload the given item to the server
-     * @return the remote item key
-     * @param item
-     */
-    public String uploadItem(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
+    public String resumeUploadItem(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
         if (Log.isLoggable(Log.INFO)) {
-            Log.info(TAG_LOG, "Uploading item: " + item.getKey());
+            Log.info(TAG_LOG, "Resuming upload for item: " + item.getKey());
         }
         if(!(item instanceof JSONSyncItem)) {
             throw new UnsupportedOperationException("Not implemented.");
@@ -130,33 +125,110 @@ public class SapiSyncHandler {
         try {
             JSONObject metadata = new JSONObject();
             JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
-            metadata.put("name",             json.getName());
-            metadata.put("creationdate",     DateUtil.formatDateTimeUTC(json.getCreationDate()));
-            metadata.put("modificationdate", DateUtil.formatDateTimeUTC(json.getLastModifiedDate()));
-            metadata.put("contenttype",      json.getMimetype());
-            metadata.put("size",             json.getSize());
 
-            JSONObject addRequest = new JSONObject();
-            addRequest.put("data", metadata);
+            // First of all we need to query the server to understand where we shall
+            // restart from. The item must have a valid guid, otherwise we cannot
+            // resume
+            String guid = item.getGuid();
 
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "metadata " + addRequest.toString());
+            if (guid == null) {
+                Log.error(TAG_LOG, "Cannot resume, a complete upload will be performed instead");
+                return uploadItem(item, remoteUri, listener);
             }
 
-            // Send the meta data request
-            sapiHandler.setSapiRequestListener(null);
-            JSONObject addResponse = sapiQueryWithRetries("upload/" + remoteUri,
-                "add-metadata", null, null, addRequest);
-
-            if(!addResponse.has("success")) {
-                Log.error(TAG_LOG, "Failed to upload item");
-                throw new SyncException(SyncException.SERVER_ERROR,
-                    "Failed to upload item");
-            }
-
-            String remoteKey = addResponse.getString("id");
-            
             Hashtable headers = new Hashtable();
+            headers.put("Content-Range","bytes */" + json.getSize());
+
+            JSONObject resumeResponse = sapiQueryWithRetries("upload/" + remoteUri,
+                                                             "add", null, headers, null);
+
+            long length = sapiHandler.getMediaPartialUploadLength(remoteUri, guid, json.getSize());
+
+            if (length > 0) {
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Upload can be resumed at byte " + length);
+                }
+            } else {
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Upload cannot be resumed, perform a complete upload");
+                    return uploadItem(item, remoteUri, listener);
+                }
+            }
+            return guid;
+        } catch(Exception ex) {
+            if(ex instanceof SyncException) {
+                throw (SyncException)ex;
+            }
+            Log.error(TAG_LOG, "Failed to upload item", ex);
+            throw new SyncException(SyncException.CLIENT_ERROR, "Cannot upload item");
+        }
+    }
+
+    public String uploadItem(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
+        return uploadItem(item, remoteUri, listener, 0);
+    }
+
+    /**
+     * Upload the given item to the server (and possibly resume it)
+     * @return the remote item key
+     * @param item
+     */
+    public String uploadItem(SyncItem item, String remoteUri, SyncListener listener, long fromByte)
+    throws SyncException
+    {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Uploading item: " + item.getKey());
+        }
+        if(!(item instanceof JSONSyncItem)) {
+            throw new UnsupportedOperationException("Not implemented.");
+        }
+        try {
+            // If this is not a resume, we must perform the upload in two
+            // phases. Send the metadata first and then the actual content
+            String remoteKey;
+            Hashtable headers = new Hashtable();
+            InputStream is = item.getInputStream();
+
+            JSONObject metadata = new JSONObject();
+            JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
+
+            if (fromByte == 0) {
+                metadata.put("name",             json.getName());
+                metadata.put("creationdate",     DateUtil.formatDateTimeUTC(json.getCreationDate()));
+                metadata.put("modificationdate", DateUtil.formatDateTimeUTC(json.getLastModifiedDate()));
+                metadata.put("contenttype",      json.getMimetype());
+                metadata.put("size",             json.getSize());
+
+                JSONObject addRequest = new JSONObject();
+                addRequest.put("data", metadata);
+
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "metadata " + addRequest.toString());
+                }
+
+                // Send the meta data request
+                sapiHandler.setSapiRequestListener(null);
+                JSONObject addResponse = sapiQueryWithRetries("upload/" + remoteUri,
+                        "add-metadata", null, null, addRequest);
+
+                if(!addResponse.has("success")) {
+                    Log.error(TAG_LOG, "Failed to upload item");
+                    throw new SyncException(SyncException.SERVER_ERROR,
+                            "Failed to upload item");
+                }
+                remoteKey = addResponse.getString("id");
+            } else {
+                remoteKey = item.getGuid();
+                StringBuffer contentRangeValue = new StringBuffer();
+                contentRangeValue.append("bytes ").append(fromByte).append("-").append(json.getSize()-1)
+                                 .append("/").append(json.getSize());
+                headers.put("Content-Range", contentRangeValue.toString());
+                // We must skip the first bytes of the input stream
+                for(int i=0;i<fromByte;++i) {
+                    is.read();
+                }
+            }
+            
             headers.put("x-funambol-id", remoteKey);
             headers.put("x-funambol-file-size", Long.toString(json.getSize()));
 
@@ -165,9 +237,17 @@ public class SapiSyncHandler {
             sapiHandler.setSapiRequestListener(sapiListener);
 
             // Send the upload request
-            JSONObject uploadResponse = sapiQueryWithRetries("upload/" + remoteUri,
-                    "add", null, headers, item.getInputStream(),
-                    json.getMimetype(), json.getSize());
+            JSONObject uploadResponse = null;
+            try {
+                uploadResponse = sapiHandler.query("upload/" + remoteUri,
+                                                   "add", null, headers, is,
+                                                   json.getMimetype(), json.getSize() - fromByte);
+            } catch (IOException ioe) {
+                // The upload failed and got interrupted. We report this error
+                // so that a resume is possible
+                item.setGuid(remoteKey);
+                throw new ItemUploadInterruptionException(item, 0);
+            }
 
             if(uploadResponse.has(JSON_OBJECT_ERROR)) {
                 JSONObject error = uploadResponse.getJSONObject(JSON_OBJECT_ERROR);
@@ -175,9 +255,9 @@ public class SapiSyncHandler {
                 String code = error.getString("code");
                 if(SapiException.MED_1002.equals(code)) {
                     // The size of the uploading media does not match the one declared
+                    item.setGuid(remoteKey);
                     throw new ItemUploadInterruptionException(item, 0);
-                }
-                if(SapiException.MED_1007.equals(code)) {
+                } else if(SapiException.MED_1007.equals(code)) {
                     //server user quota exceeded 
                     throw new QuotaOverflowException(item);
                 }
@@ -260,7 +340,7 @@ public class SapiSyncHandler {
         }
 
         try {
-        	ChangesSet res = new ChangesSet();
+            ChangesSet res = new ChangesSet();
             if(!responseHasError(response)) {
                 JSONObject data = getDataFromResponse(response);
                 if (data.has(dataType)) {
@@ -332,8 +412,8 @@ public class SapiSyncHandler {
                     JSONArray items = data.getJSONArray(dataTag);
                     res.items = items;
                 }
-                if (data.has("portalurl")) {
-                    res.serverUrl = data.getString("portalurl");
+                if (data.has("mediaserverurl")) {
+                    res.serverUrl = data.getString("mediaserverurl");
                 }
             }
             if (resp.has("responsetime")) {
@@ -495,10 +575,17 @@ public class SapiSyncHandler {
         public String    serverUrl = null;
     }
 
-    private void login(int attempt) throws SyncException {
+    private void login(String deviceId, int attempt) throws SyncException {
         try {
             sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_IN_QUERY_STRING);
-            JSONObject res = sapiQueryWithRetries("login", "login", null, null, null);
+
+            Vector params = null;
+            if (deviceId != null) {
+                params = new Vector();
+                params.add("syncdeviceid=" + deviceId);
+            }
+
+            JSONObject res = sapiQueryWithRetries("login", "login", params, null, null);
 
             if (res.has(JSON_OBJECT_ERROR)) {
 
@@ -525,7 +612,7 @@ public class SapiSyncHandler {
                         Log.info(TAG_LOG, "logging in");
                     }
                     //TODO check, shouldn't be ++attempt?
-                    login(attempt++);
+                    login(deviceId, attempt++);
                     return;
                 } else {
                     // Login failed

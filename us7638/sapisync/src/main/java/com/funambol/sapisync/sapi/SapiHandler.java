@@ -365,6 +365,89 @@ public class SapiHandler {
         }
     }
 
+    public long getMediaPartialUploadLength(String name, String guid, long size) throws IOException {
+
+        String url = createUrl(name, "add", null);
+        HttpConnectionAdapter conn = null;
+
+        OutputStream os = null;
+        
+        try {
+            // Open the connection with a given size to prevent the output
+            // stream from buffering all data
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Requesting url: " + url);
+            }
+            conn = connectionManager.openHttpConnection(url, null);
+            conn.setRequestMethod(HttpConnectionAdapter.POST);
+            conn.setRequestProperty(CONTENT_LENGTH_HEADER, "0");
+
+            // Set the authentication if we have no jsessionid
+            if (jsessionId != null && jsessionAuthEnabled) {
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Authorization is specified via jsessionid");
+                }
+                conn.setRequestProperty("Cookie", JSESSIONID_HEADER + "=" + jsessionId);
+            } else if (authMethod == AUTH_IN_HTTP_HEADER) {
+                String token = user + ":" + pwd;
+                String authToken = new String(Base64.encode(token.getBytes()));
+
+                String authParam = AUTH_BASIC + " " + authToken;
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Setting auth header to: " + authParam);
+                }
+                conn.setRequestProperty(AUTH_HEADER, authParam);
+            }
+
+            // Set the item guid
+            conn.setRequestProperty("x-funambol-id", guid);
+            // Ask for the current length
+            conn.setRequestProperty("Content-Range", "bytes */" + size);
+
+            os = conn.openOutputStream();
+            os.flush();
+
+            // The answer can be either HTTP_OK or HTTP_INCOMPLETE (308)
+            if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
+                // We have uploaded the item completely
+                return size;
+            } else if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_PARTIAL) {
+                String length = conn.getHeaderField("Range");
+                if (length == null) {
+                    Log.error(TAG_LOG, "Server did not return a valid range");
+                    return 0;
+                }
+                // The range is expected as 0-length
+                int minusIdx = length.indexOf("-");
+                if (minusIdx == -1) {
+                    Log.error(TAG_LOG, "Server returned a range in unknown format " + length);
+                    return 0;
+                }
+                length = length.substring(minusIdx).trim();
+                try {
+                    long res = Long.parseLong(length);
+                    return res;
+                } catch (Exception e) {
+                    Log.error(TAG_LOG, "Server returned a range which is not an integer value " + length);
+                    return 0;
+                }
+            } else {
+                Log.error(TAG_LOG, "Range request failed with HTTP code " + conn.getResponseCode());
+                return 0;
+            }
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Cannot open http connection", ioe);
+            throw ioe;
+        } finally {
+            if (os != null) {
+                os.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
     /**
      * Cancels the current query
      */

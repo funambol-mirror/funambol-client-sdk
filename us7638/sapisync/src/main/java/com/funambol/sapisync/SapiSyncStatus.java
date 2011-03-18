@@ -162,11 +162,18 @@ public class SapiSyncStatus implements SyncReport {
     }
 
     public void setSentItemStatus(String key, int status) {
+        setSentItemStatus(key, status, null);
+    }
+
+    public void setSentItemStatus(String key, int status, String guid) {
         SentItemStatus s = (SentItemStatus)sentItems.get(key);
         if (s == null) {
             s = (SentItemStatus)pendingSentItems.get(key);
         }
         s.setStatus(status);
+        if (guid != null) {
+            s.setGuid(guid);
+        }
     }
 
     public int getSentItemsCount() {
@@ -280,6 +287,20 @@ public class SapiSyncStatus implements SyncReport {
         }
     }
 
+    public String getSentItemGuid(String key) {
+        SentItemStatus s = (SentItemStatus)sentItems.get(key);
+        if (s == null) {
+            s = (SentItemStatus)pendingSentItems.get(key);
+        }
+        if (s == null) {
+            return null;
+        } else {
+            return s.getGuid();
+        }
+    }
+
+
+
     public String getReceivedItemLuid(String guid) {
         Enumeration keys = receivedItems.keys();
         while(keys.hasMoreElements()) {
@@ -349,8 +370,15 @@ public class SapiSyncStatus implements SyncReport {
                 String values[] = StringUtil.split(value, ",");
                 char cmd = values[0].charAt(0);
                 int    status = Integer.parseInt(values[1]);
+                String guid = null;
+                if (values.length == 2) {
+                    guid   = values[2];
+                }
                 SentItemStatus v = new SentItemStatus(cmd);
                 v.setStatus(status);
+                if (guid != null) {
+                    v.setGuid(guid);
+                }
                 sentItems.put(itemKey, v);
             } else if (key.equals(LOC_URI_KEY)) {
                 locUri = value;
@@ -393,6 +421,10 @@ public class SapiSyncStatus implements SyncReport {
 
             StringBuffer v = new StringBuffer(status.getCmd());
             v.append(",").append(status.getStatus());
+            String guid = status.getGuid();
+            if (guid != null) {
+                v.append(",").append(guid);
+            }
 
             store.add(SENT_ITEM_KEY + key, v.toString());
 
@@ -664,6 +696,7 @@ public class SapiSyncStatus implements SyncReport {
         public static final int UNDEFINED_STATUS = -1;
         protected char cmd;
         protected int status = UNDEFINED_STATUS;
+        protected String  guid;
 
         public ItemStatus(char cmd) {
             this.cmd = cmd;
@@ -680,10 +713,13 @@ public class SapiSyncStatus implements SyncReport {
         public char getCmd() {
             return cmd;
         }
+
+        public String getGuid() {
+            return guid;
+        }
     }
 
     private class ReceivedItemStatus extends ItemStatus {
-        private String  guid;
         private boolean mapSent;
         private int status;
 
@@ -696,10 +732,6 @@ public class SapiSyncStatus implements SyncReport {
             mapSent = value;
         }
 
-        public String getGuid() {
-            return guid;
-        }
-
         public boolean getMapSent() {
             return mapSent;
         }
@@ -709,6 +741,10 @@ public class SapiSyncStatus implements SyncReport {
 
         public SentItemStatus(char cmd) {
             super(cmd);
+        }
+
+        public void setGuid(String guid) {
+            this.guid = guid;
         }
     }
 
