@@ -136,6 +136,22 @@ public interface MediaUserCommands {
      *
      */
     public static final String DELETE_ALL_VIDEOS_ON_SERVER = "DeleteAllVideosOnServer";
+
+    /**
+     * This command asserts on the number of pictures locally available
+     *
+     * @example CheckPicturesCount(5);
+     *
+     */
+    public static final String CHECK_PICTURES_COUNT = "CheckPicturesCount";
+
+    /**
+     * This command asserts on the number of videos locally available
+     *
+     * @example CheckVideosCount(5);
+     *
+     */
+    public static final String CHECK_VIDEOS_COUNT = "CheckVideosCount";
 }
     
 

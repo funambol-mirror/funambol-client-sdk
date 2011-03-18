@@ -50,6 +50,7 @@ import com.funambol.client.test.basic.BasicRobot;
 import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
+import com.funambol.sync.ItemStatus;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
@@ -221,24 +222,31 @@ public abstract class ContactsRobot extends Robot {
 
         vCard = StringUtil.replaceAll(vCard, "\\r\\n", "\r\n");
 
-        Enumeration sources = getAppSyncSourceManager().getWorkingSources();
-        AppSyncSource appSource = null;
-
-        while(sources.hasMoreElements()) {
-            appSource = (AppSyncSource)sources.nextElement();
-            if (appSource.getId() == AppSyncSourceManager.CONTACTS_ID) {
-                break;
-            }
-        }
-
         // We add an item via the SyncSource
-        SyncSource source = appSource.getSyncSource();
+        SyncSource source = getSyncSource();
         SyncItem item = new SyncItem("guid", "text/x-vcard", SyncItem.STATE_NEW, null);
         item.setContent(vCard.getBytes("UTF-8"));
 
         Vector items = new Vector();
         items.addElement(item);
         source.applyChanges(items);
+    }
+
+    public void checkContactsCount(int count) throws Throwable {
+        SyncSource source = getSyncSource();
+
+        source.beginSync(SyncSource.FULL_SYNC, false); // Resets the tracker status
+        int itemsCount = 0;
+        SyncItem item = source.getNextItem();
+        Vector items = new Vector();
+        while(item != null) {
+            itemsCount++;
+            items.addElement(new ItemStatus(item.getKey(), SyncSource.SUCCESS_STATUS));
+            item = source.getNextItem();
+        }
+        source.applyItemsStatus(items);
+        source.endSync();
+        assertTrue(count, itemsCount, "Contacts count mismatch");
     }
 
     protected AppSyncSourceManager getAppSyncSourceManager() {
@@ -258,6 +266,22 @@ public abstract class ContactsRobot extends Robot {
         }
 
         assertTrue(currentVCard, vcard, "VCard mismatch");
+    }
+
+    private SyncSource getSyncSource() {
+        Enumeration sources = getAppSyncSourceManager().getWorkingSources();
+        AppSyncSource appSource = null;
+
+        while(sources.hasMoreElements()) {
+            appSource = (AppSyncSource)sources.nextElement();
+            if (appSource.getId() == AppSyncSourceManager.CONTACTS_ID) {
+                break;
+            }
+        }
+
+        // We add an item via the SyncSource
+        SyncSource source = appSource.getSyncSource();
+        return source;
     }
 
     protected abstract Configuration getConfiguration();

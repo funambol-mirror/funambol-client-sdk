@@ -138,8 +138,6 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             startMainApp(command, pars);
         } else if (CLOSE_MAIN_APP_COMMAND.equals(command)) {
             closeMainApp(command, pars);
-        } else if (CHECK_ITEMS_COUNT_COMMAND.equals(command)) {
-            checkItemsCount(command, pars);
         } else if (INTERRUPT_SYNC_AFTER_PHASE_COMMAND.equals(command)) {
             interruptSyncAfterPhase(command, pars);
         } else if (SET_DEVICE_DATE.equals(command)) {
@@ -544,24 +542,6 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             // Wait forever
             Robot.waitDelay(10000);
         }
-    }
-
-    /**
-     * Command to check the items count on the device
-     * @param command the String formatted command to check the client's items
-     * count
-     * @param args the command's String formatted arguments
-     * @throws Throwable if anything went wrong
-     */
-    public void checkItemsCount(String command, Vector args) throws Throwable {
-
-        String source = getParameter(args, 0);
-        String count =  getParameter(args, 1);
-
-        checkArgument(source, "Missing source name in " + command);
-        checkArgument(count, "Missing count in " + command);
-
-        getBasicRobot().checkItemsCount(source, Integer.parseInt(count));
     }
 
     private void resetFirstRunTimestamp(String command, Vector args) throws Throwable {

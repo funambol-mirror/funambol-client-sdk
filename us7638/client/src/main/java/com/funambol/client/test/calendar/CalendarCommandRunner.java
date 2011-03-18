@@ -101,6 +101,8 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
             checkRawReminderField(command, pars);
         } else if (CHECK_EVENTS_COUNT_ON_SERVER_COMMAND.equals(command)) {
             checkEventsCountOnServer(command, pars);
+        } else if (CHECK_EVENTS_COUNT_COMMAND.equals(command)) {
+            checkEventsCount(command, pars);
         } else {
             return false;
         }
@@ -236,10 +238,24 @@ public class CalendarCommandRunner extends CommandRunner implements EventsUserCo
      * @throws Throwable if anything went wrong
      */
     private void checkEventsCountOnServer(String command, Vector args) throws Throwable {
-
         String count =  getParameter(args, 0);
         checkArgument(count, "Missing count in " + command);
         getCalendarRobot().checkItemsCountOnServer(Integer.parseInt(count));
     }
+
+        /**
+     * Command to check the items count on the device
+     * @param command the String formatted command to check the client's items
+     * count
+     * @param args the command's String formatted arguments
+     * @throws Throwable if anything went wrong
+     */
+    public void checkEventsCount(String command, Vector args) throws Throwable {
+        String count =  getParameter(args, 0);
+        checkArgument(count, "Missing count in " + command);
+        getCalendarRobot().checkEventsCount(Integer.parseInt(count));
+    }
+
+
 }
  

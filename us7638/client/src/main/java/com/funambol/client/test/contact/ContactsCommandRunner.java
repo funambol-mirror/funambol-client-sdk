@@ -126,6 +126,8 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
             checkRawContactData(command, pars);
         } else if (CHECK_CONTACTS_COUNT_ON_SERVER_COMMAND.equals(command)) {
             checkContactsCountOnServer(command, pars);
+        } else if (CHECK_CONTACTS_COUNT_COMMAND.equals(command)) {
+            checkContactsCount(command, pars);
         } else {
             return false;
         }
@@ -280,9 +282,23 @@ public class ContactsCommandRunner extends CommandRunner implements ContactsUser
     private void checkContactsCountOnServer(String command, Vector args) throws Throwable {
 
         String count =  getParameter(args, 0);
-
         checkArgument(count, "Missing count in " + command);
-
         getContactsRobot().checkItemsCountOnServer(Integer.parseInt(count));
     }
+
+    /**
+     * Command to check the items count on the device
+     * @param command the String formatted command to check the client's items
+     * count
+     * @param args the command's String formatted arguments
+     * @throws Throwable if anything went wrong
+     */
+    public void checkContactsCount(String command, Vector args) throws Throwable {
+
+        String count =  getParameter(args, 0);
+        checkArgument(count, "Missing count in " + command);
+        getContactsRobot().checkContactsCount(Integer.parseInt(count));
+    }
+
+
 }

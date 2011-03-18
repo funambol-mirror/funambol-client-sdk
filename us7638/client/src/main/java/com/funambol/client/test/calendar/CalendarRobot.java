@@ -51,6 +51,7 @@ import com.funambol.client.test.ClientTestException;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
+import com.funambol.sync.ItemStatus;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
@@ -225,6 +226,23 @@ public abstract class CalendarRobot extends Robot {
         assertTrue(count, serverCount, "Server events count mismatch");
     }
 
+    public void checkEventsCount(int count) throws Throwable {
+        SyncSource source = getSyncSource();
+
+        source.beginSync(SyncSource.FULL_SYNC, false); // Resets the tracker status
+        int itemsCount = 0;
+        SyncItem item = source.getNextItem();
+        Vector items = new Vector();
+        while(item != null) {
+            itemsCount++;
+            items.addElement(new ItemStatus(item.getKey(), SyncSource.SUCCESS_STATUS));
+            item = source.getNextItem();
+        }
+        source.applyItemsStatus(items);
+        source.endSync();
+        assertTrue(count, itemsCount, "Events count mismatch");
+    }
+
     public void setEventAsVCal(String vCal) throws Throwable{
         String[] sep = new String[]{"\\r\\n"};
         String[] parts = StringUtil.split(vCal, sep);
@@ -240,16 +258,7 @@ public abstract class CalendarRobot extends Robot {
 
     public void setEventFromServer(String vCal) throws Throwable {
         vCal = StringUtil.replaceAll(vCal, "\\r\\n", "\r\n");
-        Enumeration sources = getAppSyncSourceManager().getWorkingSources();
-        AppSyncSource appSource = null;
-        while(sources.hasMoreElements()) {
-            appSource = (AppSyncSource)sources.nextElement();
-            if (appSource.getId() == AppSyncSourceManager.EVENTS_ID) {
-                break;
-            }
-        }
-        // We add an item via the SyncSource
-        SyncSource source = appSource.getSyncSource();
+        SyncSource source = getSyncSource();
         SyncItem item = new SyncItem("guid", "text/x-vcalendar", SyncItem.STATE_NEW, null);
         item.setContent(vCal.getBytes("UTF-8"));
 
@@ -260,6 +269,20 @@ public abstract class CalendarRobot extends Robot {
 
     protected AppSyncSourceManager getAppSyncSourceManager() {
         return appSourceManager;
+    }
+
+    protected SyncSource getSyncSource() {
+        Enumeration sources = getAppSyncSourceManager().getWorkingSources();
+        AppSyncSource appSource = null;
+        while(sources.hasMoreElements()) {
+            appSource = (AppSyncSource)sources.nextElement();
+            if (appSource.getId() == AppSyncSourceManager.EVENTS_ID) {
+                break;
+            }
+        }
+        // We add an item via the SyncSource
+        SyncSource source = appSource.getSyncSource();
+        return source;
     }
  
     private SapiHandler getSapiHandler() {

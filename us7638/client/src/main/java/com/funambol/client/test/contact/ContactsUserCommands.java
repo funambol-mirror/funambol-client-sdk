@@ -244,6 +244,14 @@ public interface ContactsUserCommands {
      */
     public static final String CHECK_CONTACTS_COUNT_ON_SERVER_COMMAND = "CheckContactsCountOnServer";
 
+    /**
+     * This command checks the number of contacts on device
+     *
+     * @param count the number of expected contacts
+     *
+     * @example CheckContactsCount(10);
+     */
+    public static final String CHECK_CONTACTS_COUNT_COMMAND = "CheckContactsCount";
 
     
     // These commands are used by automatically generated scripts

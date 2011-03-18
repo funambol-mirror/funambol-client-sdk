@@ -164,10 +164,12 @@ public class BasicScriptRunner extends CommandRunner {
             definedVars.put("devicetype", "phone");
         }
 
+        long startTime = System.currentTimeMillis();
         try {
             runScriptFileI(scriptUrl, mainScript);
         } finally {
-            dumpResults();
+            long endTime = System.currentTimeMillis();
+            dumpResults(startTime, endTime);
         }
     }
 
@@ -240,7 +242,6 @@ public class BasicScriptRunner extends CommandRunner {
                     String tagName = parser.getName();
 
                     if ("Condition".equals(tagName)) {
-                        // TODO FIXME
                         condition = true;
                     } else if ("If".equals(tagName)) {
                         // We just read the "<If>" tag, now we read the rest of the condition
@@ -841,7 +842,7 @@ public class BasicScriptRunner extends CommandRunner {
      * Accessor method to retrieve the details of the failed tests
      * @return String the String formatted failed test report content.
      */
-    private void dumpResults() {
+    private void dumpResults(long startTime, long endTime) {
 
         Log.info(TAG_LOG, "***************************************");
 
@@ -866,6 +867,8 @@ public class BasicScriptRunner extends CommandRunner {
                     case TestStatus.FAILURE:
                         r = "FAILURE";
                         failed++;
+                        // Record that we had an error
+                        errorCode = -1;
                         break;
                     case TestStatus.SKIPPED:
                         r = "SKIPPED";
@@ -889,6 +892,8 @@ public class BasicScriptRunner extends CommandRunner {
             Log.info(TAG_LOG, "Total number of success: " + success);
             Log.info(TAG_LOG, "Total number of failures: " + failed);
             Log.info(TAG_LOG, "Total number of skipped: " + skipped);
+            long secs = (endTime - startTime) / 1000;
+            Log.info(TAG_LOG, "Total execution time: " + secs);
         } else {
             Log.info(TAG_LOG, "No tests performed");
         }

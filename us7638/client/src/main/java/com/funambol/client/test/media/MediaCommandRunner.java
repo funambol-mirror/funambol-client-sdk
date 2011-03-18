@@ -64,7 +64,7 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             deleteMedia(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
         } else if (DELETE_PICTURE_ON_SERVER.equals(command)) {
             deleteMediaOnServer(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
-        } else if (DELETE_PICTURE_ON_SERVER.equals(command)) {
+        } else if (DELETE_VIDEO_ON_SERVER.equals(command)) {
             deleteMediaOnServer(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
         } else if (DELETE_ALL_PICTURES.equals(command)) {
             deleteAllMedia(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
@@ -74,6 +74,10 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             deleteAllMediaOnServer(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
         } else if (DELETE_ALL_VIDEOS_ON_SERVER.equals(command)) {
             deleteAllMediaOnServer(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (CHECK_PICTURES_COUNT.equals(command)) {
+            checkMediaCount(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (CHECK_VIDEOS_COUNT.equals(command)) {
+            checkMediaCount(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
         } else {
             return false;
         }
@@ -115,6 +119,13 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
     private void deleteAllMediaOnServer(String type, String command, Vector args) throws Throwable {
         getMediaRobot().deleteAllMediaOnServer(type);
     }
+
+    private void checkMediaCount(String type, String command, Vector args) throws Throwable {
+        String number = getParameter(args, 0);
+        checkArgument(number, "Missing expected count in " + command);
+        getMediaRobot().checkMediaCount(type, Integer.parseInt(number));
+    }
+ 
     
 }
 

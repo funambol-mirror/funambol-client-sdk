@@ -90,6 +90,10 @@ public abstract class BasicRobot extends Robot {
                 throw new ClientTestException("Sync did not complete before timeout");
             }
         }
+
+        // Wait one extra second to be really sure everything is terminated and
+        // the client is ready for another sync
+        Thread.sleep(1000);
     }
 
     public void interruptSyncAfterPhase(String phase, int num, String reason, SyncMonitor syncMonitor) throws Throwable {
@@ -168,24 +172,6 @@ public abstract class BasicRobot extends Robot {
         SyncSource source = getSyncSource(sourceName);
         source.getSyncAnchor().reset();
         saveSourceConfig(sourceName);
-    }
-
-    public void checkItemsCount(String sourceName, int count) throws Throwable {
-
-        SyncSource source = getSyncSource(sourceName);
-
-        source.beginSync(SyncSource.FULL_SYNC, false); // Resets the tracker status
-        int itemsCount = 0;
-        SyncItem item = source.getNextItem();
-        Vector items = new Vector();
-        while(item != null) {
-            itemsCount++;
-            items.addElement(new ItemStatus(item.getKey(), SyncSource.SUCCESS_STATUS));
-            item = source.getNextItem();
-        }
-        source.applyItemsStatus(items);
-        source.endSync();
-        assertTrue(count, itemsCount, "Items count mismatch for source: " + sourceName);
     }
 
     public void resetFirstRunTimestamp() throws Throwable {

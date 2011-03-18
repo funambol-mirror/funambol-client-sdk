@@ -74,7 +74,7 @@ public interface BasicUserCommands {
      * @param name is the name of the test as it will be reported in the final
      *             summary.
      *
-     * @example BeginTest("Contact01")
+     * @example &lt;BeginTest&gt;&lt;Arg&gt;Contact01&lt;/Arg&gt;&lt;/BeginTest&gt;
      */
     public static final String BEGIN_TEST_COMMAND = "BeginTest";
 

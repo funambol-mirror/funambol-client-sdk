@@ -114,7 +114,7 @@ public abstract class MediaRobot extends Robot {
                 new ByteArrayInputStream(fileContent), size);
 
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
-        sapiHandler.login();
+        sapiHandler.login(null);
         sapiHandler.uploadItem(item, getRemoteUri(type), null);
         sapiHandler.logout();
     }
@@ -122,14 +122,14 @@ public abstract class MediaRobot extends Robot {
     public void deleteMediaOnServer(String type, String filename) throws Throwable {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
         String itemId = findMediaOnServer(type, filename);
-        sapiHandler.login();
+        sapiHandler.login(null);
         sapiHandler.deleteItem(itemId, getRemoteUri(type));
         sapiHandler.logout();
     }
 
     private String findMediaOnServer(String type, String filename) throws Throwable {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
-        sapiHandler.login();
+        sapiHandler.login(null);
         try {
             SapiSyncHandler.FullSet itemsSet = sapiHandler.getItems(
                     getRemoteUri(type), getDataTag(type), null, null, null, null);
@@ -150,12 +150,12 @@ public abstract class MediaRobot extends Robot {
 
     public void deleteAllMediaOnServer(String type) throws Throwable {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
-        sapiHandler.login();
+        sapiHandler.login(null);
         sapiHandler.deleteAllItems(getRemoteUri(type));
         sapiHandler.logout();
     }
 
-    protected abstract SyncConfig getSyncConfig();
+
 
     protected AppSyncSourceManager getAppSyncSourceManager() {
         return appSourceManager;
@@ -235,4 +235,8 @@ public abstract class MediaRobot extends Robot {
         String url = baseUrl + "/" + filename;
         return fileManager.getFile(url, output);
     }
+
+    public abstract void checkMediaCount(String type, int count) throws Throwable;
+    protected abstract SyncConfig getSyncConfig();
+
 }
