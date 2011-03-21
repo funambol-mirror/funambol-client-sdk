@@ -602,7 +602,9 @@ public class HomeScreenController extends SynchronizationController {
     public boolean isInForeground() {
         //first of all, if an HomeScreen is not associated with the controller
         //it's impossible that the screen is in foreground
-        if (null == homeScreen) return false;
+        if (null == homeScreen) {
+            return false;
+        }
         
         //then, check for internal flag
         return homeScreenRegisteredAndInForeground ;
