@@ -139,15 +139,13 @@ public class SapiSyncHandler {
             Hashtable headers = new Hashtable();
             headers.put("Content-Range","bytes */" + json.getSize());
 
-            JSONObject resumeResponse = sapiQueryWithRetries("upload/" + remoteUri,
-                                                             "add", null, headers, null);
-
             long length = sapiHandler.getMediaPartialUploadLength(remoteUri, guid, json.getSize());
 
             if (length > 0) {
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "Upload can be resumed at byte " + length);
                 }
+                return uploadItem(item, remoteUri, listener, length);
             } else {
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "Upload cannot be resumed, perform a complete upload");
