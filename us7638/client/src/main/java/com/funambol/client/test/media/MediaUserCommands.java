@@ -169,6 +169,27 @@ public interface MediaUserCommands {
      *
      */
     public static final String CHECK_VIDEOS_COUNT = "CheckVideosCount";
+
+    /**
+     * This command fill the user quota on server leaving specified free space
+     * for pictures (in byte). If user has already less free space available, the
+     * command doesn't execute any modification. 
+     *
+     * @example LeaveFreeServerQuotaForPicture(1048576);
+     *
+     */
+    public static final String LEAVE_FREE_SERVER_QUOTA_FOR_PICTURE = "LeaveFreeServerQuotaForPicture";
+    
+    /**
+     * This command fill the user quota on server leaving specified free space
+     * for videos (in byte). If user has already less free space available, the
+     * command doesn't execute any modification. 
+     *
+     * @example LeaveFreeServerQuotaForVideo(1048576);
+     *
+     */
+    public static final String LEAVE_FREE_SERVER_QUOTA_FOR_VIDEO = "LeaveFreeServerQuotaForVideo";
+
 }
     
 
