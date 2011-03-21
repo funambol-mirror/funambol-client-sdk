@@ -236,6 +236,10 @@ public abstract class MediaRobot extends Robot {
         return fileManager.getFile(url, output);
     }
 
+    protected abstract void fillLocalStorage();
+    
+    protected abstract void restoreLocalStorage();
+
     public abstract void checkMediaCount(String type, int count) throws Throwable;
     protected abstract SyncConfig getSyncConfig();
 

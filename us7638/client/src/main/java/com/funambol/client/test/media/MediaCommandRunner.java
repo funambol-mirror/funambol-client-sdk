@@ -74,6 +74,10 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             deleteAllMediaOnServer(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
         } else if (DELETE_ALL_VIDEOS_ON_SERVER.equals(command)) {
             deleteAllMediaOnServer(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (FILL_LOCAL_STORAGE.equals(command)) {
+            fillLocalStorage();
+        } else if (RESTORE_LOCAL_STORAGE.equals(command)) {
+            restoreLocalStorage();
         } else if (CHECK_PICTURES_COUNT.equals(command)) {
             checkMediaCount(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
         } else if (CHECK_VIDEOS_COUNT.equals(command)) {
@@ -126,6 +130,14 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         getMediaRobot().checkMediaCount(type, Integer.parseInt(number));
     }
  
+    
+    private void fillLocalStorage() {
+        getMediaRobot().fillLocalStorage();
+    }
+    
+    private void restoreLocalStorage() {
+        getMediaRobot().restoreLocalStorage();
+    }
     
 }
 

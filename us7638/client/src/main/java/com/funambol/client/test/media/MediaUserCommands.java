@@ -138,6 +138,23 @@ public interface MediaUserCommands {
     public static final String DELETE_ALL_VIDEOS_ON_SERVER = "DeleteAllVideosOnServer";
 
     /**
+     * This command fills the local storage with fake data leaving only <1M free.
+     *
+     * @example FillLocalStorage();
+     *
+     */
+    public static final String FILL_LOCAL_STORAGE = "FillLocalStorage";
+    
+    /**
+     * This command fills remove fake data created by FillLocalStorage from local 
+     * storage.
+     *
+     * @example RestoreLocalStorage();
+     *
+     */
+    public static final String RESTORE_LOCAL_STORAGE = "RestoreLocalStorage";
+
+    /**
      * This command asserts on the number of pictures locally available
      *
      * @example CheckPicturesCount(5);
