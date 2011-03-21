@@ -277,18 +277,26 @@ public class SapiSyncHandler {
         }
     }
 
-    public void deleteItem(String key, String remoteUri) throws SyncException {
+    public void deleteItem(String key, String remoteUri, String dataTag) throws SyncException {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Deleting item: " + key);
         }
         try {
             JSONArray pictures = new JSONArray();
+            int id;
+            try {
+                id = Integer.parseInt(key);
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Invalid key while deleting item", e);
+                throw new SyncException(SyncException.CLIENT_ERROR, "Cannot delete item");
+            }
+            pictures.put(id);
             pictures.put(key);
             JSONObject data = new JSONObject();
-            data.put("pictures", pictures);
+            data.put(dataTag, pictures);
             JSONObject request = new JSONObject();
             request.put("data", data);
-            sapiQueryWithRetries("media/" + remoteUri, "delete", null, null, request);
+                sapiQueryWithRetries("media/" + remoteUri, "delete", null, null, request);
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Failed to delete item: " + key, ioe);
             throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while deleting");

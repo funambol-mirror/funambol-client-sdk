@@ -165,7 +165,7 @@ public abstract class MediaRobot extends Robot {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
         String itemId = findMediaOnServer(type, filename);
         sapiHandler.login(null);
-        sapiHandler.deleteItem(itemId, getRemoteUri(type));
+        sapiHandler.deleteItem(itemId, getRemoteUri(type), getDataTag(type));
         sapiHandler.logout();
     }
 
