@@ -281,12 +281,12 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         if (localStorageFullSources != null && localStorageFullSources.size() > 0) {
             Log.debug(TAG_LOG, "Notifying storage limit warning");
             displayStorageLimitWarning(localStorageFullSources);
-            localStorageFullSources.clear();
+            localStorageFullSources.removeAllElements();
         }
         if (serverQuotaFullSources != null && serverQuotaFullSources.size() > 0) {
             Log.debug(TAG_LOG, "Notifying server quota warning");
             displayServerQuotaWarning(serverQuotaFullSources);
-            serverQuotaFullSources.clear();
+            serverQuotaFullSources.removeAllElements();
         } 
         
     }
@@ -786,8 +786,8 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         }
 
         // Re-checks
-        localStorageFullSources.clear();
-        serverQuotaFullSources.clear();
+        localStorageFullSources.removeAllElements();
+        serverQuotaFullSources.removeAllElements();
         for (int i = 0; i < sources.size(); i++) {
             AppSyncSource appSource = (AppSyncSource) sources.elementAt(i);
             

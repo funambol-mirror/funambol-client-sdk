@@ -395,7 +395,7 @@ public class SapiSyncHandler {
                 params.addElement("offset=" + offset);
             }
             if (from != null) {
-                params.addElement("from=" + from.getDate());
+                params.addElement("from=" + from.getTime());
             }
             params.addElement("responsetime=true");
             params.addElement("exif=none");
@@ -438,7 +438,7 @@ public class SapiSyncHandler {
     public int getItemsCount(String remoteUri, Date from) throws SapiException {
         Vector params = new Vector();
         if (from != null) {
-            params.addElement("from=" + from.getDate());
+            params.addElement("from=" + from.getTime());
         }
         
         try {
@@ -580,7 +580,7 @@ public class SapiSyncHandler {
             Vector params = null;
             if (deviceId != null) {
                 params = new Vector();
-                params.add("syncdeviceid=" + deviceId);
+                params.addElement("syncdeviceid=" + deviceId);
             }
 
             JSONObject res = sapiQueryWithRetries("login", "login", params, null, null);
