@@ -164,7 +164,7 @@ public abstract class BasicRobot extends Robot {
                 "Sent delete mismatch");
     }
 
-    public void checkLastResumedData(String source, int sentResumed,
+    public void checkLastSyncResumedData(String source, int sentResumed,
             int receivedResumed, SyncMonitor syncMonitor) throws Throwable
     {
         if (Log.isLoggable(Log.DEBUG)) {
