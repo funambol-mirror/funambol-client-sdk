@@ -103,6 +103,9 @@ public class SapiSyncStatus implements SyncReport {
     private Hashtable pendingSentItems = new Hashtable();
     private Hashtable pendingReceivedItems = new Hashtable();
 
+    private Vector sentResumedItems = new Vector();
+    private Vector receivedResumedItems = new Vector();
+
     private static StringKeyValueStoreFactory storeFactory = StringKeyValueStoreFactory.getInstance();
 
     public SapiSyncStatus(String sourceName) {
@@ -567,6 +570,21 @@ public class SapiSyncStatus implements SyncReport {
         return getNumberOfItemsWithSyncStatus(sentItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingSentItems, syncStatus);
     }
 
+    public void addSentResumedItem(String key) {
+        sentResumedItems.addElement(key);
+    }
+
+    public void addReceivedResumedItem(String key) {
+        receivedResumedItems.addElement(key);
+    }
+
+    public int getReceivedResumedNumber() {
+        return receivedResumedItems.size();
+    }
+
+    public int getSentResumedNumber() {
+        return sentResumedItems.size();
+    }
 
     public String toString() {
         StringBuffer res = new StringBuffer();
@@ -582,6 +600,7 @@ public class SapiSyncStatus implements SyncReport {
         res.append("| Add: ").append(getReceivedAddNumber()).append("\n");
         res.append("| Replace: ").append(getReceivedReplaceNumber()).append("\n");
         res.append("| Delete: ").append(getReceivedDeleteNumber()).append("\n");
+        res.append("| Resumed: ").append(getReceivedResumedNumber()).append("\n");
         res.append("| Total errors: ").append(getNumberOfReceivedItemsWithError()).append("\n");
         res.append("|-----------------------------------------------------------------\n");
         res.append("| Changes sent to server in this sync\n");
@@ -589,6 +608,7 @@ public class SapiSyncStatus implements SyncReport {
         res.append("| Add: ").append(getSentAddNumber()).append("\n");
         res.append("| Replace: ").append(getSentReplaceNumber()).append("\n");
         res.append("| Delete: ").append(getSentDeleteNumber()).append("\n");
+        res.append("| Resumed: ").append(getSentResumedNumber()).append("\n");
         res.append("| Total errors: ").append(getNumberOfSentItemsWithError()).append("\n");
         res.append("|-----------------------------------------------------------------\n");
         res.append("| Global sync status: ").append(getStatusCode()).append("\n");
@@ -645,6 +665,8 @@ public class SapiSyncStatus implements SyncReport {
         receivedItems.clear();
         pendingSentItems.clear();
         pendingReceivedItems.clear();
+        sentResumedItems.clear();
+        receivedResumedItems.clear();
         locUri = null;
         remoteUri = null;
         se = null;

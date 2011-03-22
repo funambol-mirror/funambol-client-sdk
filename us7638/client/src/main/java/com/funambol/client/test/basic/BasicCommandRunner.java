@@ -126,6 +126,8 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             waitForAuthToComplete(command, pars);
         } else if (CHECK_EXCHANGED_DATA_COMMAND.equals(command)) {
             checkExchangedData(command, pars);
+        } else if (CHECK_RESUMED_DATA_COMMAND.equals(command)) {
+            checkResumedData(command, pars);
         } else if (CHECK_REQUESTED_SYNC_MODE_COMMAND.equals(command)) {
             checkLastSyncRequestedSyncMode(command, pars);
         } else if (CHECK_ALERTED_SYNC_MODE_COMMAND.equals(command)) {
@@ -398,6 +400,29 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
                                          Integer.parseInt(sentDelete), Integer.parseInt(receivedAdd),
                                          Integer.parseInt(receivedReplace), Integer.parseInt(receivedDelete),
                                          syncMonitor);
+    }
+
+    /**
+     * Checks the resumed data of the last sync.
+     * @param command the check data command related Stirng formatted
+     * representation
+     * @param args the command's related String arguments.
+     * @throws Throwable if an error occurred
+     */
+    private void checkResumedData(String command, Vector args) throws Throwable {
+
+        String source          = getParameter(args, 0);
+        String sentResumed     = getParameter(args, 1);
+        String receivedResumed = getParameter(args, 2);
+
+        checkArgument(source, "Missing source name in " + command);
+        checkArgument(sentResumed, "Missing sentResumed in " + command);
+        checkArgument(receivedResumed, "Missing receivedResumed in " + command);
+
+        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
+
+        getBasicRobot().checkLastSyncResumedData(source, Integer.parseInt(sentResumed),
+                Integer.parseInt(receivedResumed), syncMonitor);
     }
 
     /**

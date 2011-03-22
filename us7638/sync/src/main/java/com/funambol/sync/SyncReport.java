@@ -35,13 +35,8 @@
 
 package com.funambol.sync;
 
-import java.util.Hashtable;
-import java.util.Enumeration;
-import java.util.Vector;
-import java.io.IOException;
-
 public interface SyncReport {
-
+    
     public int getRequestedSyncMode();
     public int getStatusCode();
     public String getLocUri();
@@ -60,5 +55,7 @@ public interface SyncReport {
     public int getSentDeleteNumber();
     public int getNumberOfReceivedItemsWithError();
     public int getNumberOfSentItemsWithError();
+    public int getReceivedResumedNumber();
+    public int getSentResumedNumber();
     public String toString();
 }

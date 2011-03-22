@@ -212,6 +212,19 @@ public interface BasicUserCommands {
     public static final String CHECK_EXCHANGED_DATA_COMMAND = "CheckExchangedData";
 
     /**
+     * This command checks the amount of resumed items exchanged between the
+     * server and the client during the last synchronization (for a given
+     * source).
+     *
+     * @param source the source name. The value is what is displayed
+     * on the main screen for that source.
+     * @param sentResumed the expected number of sent resumed items
+     * @param receivedResumed the expected number of received resumed items
+     * @example CheckResumedData("Pictures", 1, 0)
+     */
+    public static final String CHECK_RESUMED_DATA_COMMAND = "CheckResumedData";
+
+    /**
      * This command checks the requested sync mode of the last sync.
      *
      * @param source is the source name

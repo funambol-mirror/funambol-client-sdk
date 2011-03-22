@@ -164,6 +164,22 @@ public abstract class BasicRobot extends Robot {
                 "Sent delete mismatch");
     }
 
+    public void checkLastResumedData(String source, int sentResumed,
+            int receivedResumed, SyncMonitor syncMonitor) throws Throwable
+    {
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "check last sync resumed data");
+        }
+
+        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        assertTrue(sr != null, "source has no report associated");
+
+        assertTrue(sentResumed, sr.getSentResumedNumber(),
+                "Sent resumed mismatch");
+        assertTrue(receivedResumed, sr.getReceivedResumedNumber(),
+                "Received resumed mismatch");
+    }
+
     public void resetSourceAnchor(String sourceName) throws Throwable {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "resetting source anchor");

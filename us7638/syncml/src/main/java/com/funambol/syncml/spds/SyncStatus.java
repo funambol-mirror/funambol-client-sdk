@@ -113,6 +113,9 @@ public class SyncStatus implements SyncReport {
     private Hashtable pendingSentItems = new Hashtable();
     private Hashtable pendingReceivedItems = new Hashtable();
 
+    private Vector sentResumedItems = new Vector();
+    private Vector receivedResumedItems = new Vector();
+
     private int initialReceivedAddNumber = 0;
     private int initialReceivedReplaceNumber = 0;
     private int initialReceivedDeleteNumber = 0;
@@ -631,6 +634,22 @@ public class SyncStatus implements SyncReport {
         return getNumberOfItemsWithError(sentItems) + getNumberOfItemsWithError(pendingSentItems);
     }
 
+    public void addSentResumedItem(String key) {
+        sentResumedItems.addElement(key);
+    }
+
+    public void addReceivedResumedItem(String key) {
+        receivedResumedItems.addElement(key);
+    }
+
+    public int getReceivedResumedNumber() {
+        return receivedResumedItems.size();
+    }
+
+    public int getSentResumedNumber() {
+        return sentResumedItems.size();
+    }
+
     public String toString() {
         StringBuffer res = new StringBuffer();
 
@@ -725,6 +744,8 @@ public class SyncStatus implements SyncReport {
         receivedItems.clear();
         pendingSentItems.clear();
         pendingReceivedItems.clear();
+        sentResumedItems.clear();
+        receivedResumedItems.clear();
         locUri = null;
         remoteUri = null;
         se = null;

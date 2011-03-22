@@ -725,17 +725,22 @@ public class SapiSyncManager implements SyncManagerI {
 
                             remoteKey = syncStatus.getSentItemGuid(item.getKey());
                             item.setGuid(remoteKey);
-                            sapiSyncHandler.resumeItemUpload(item, remoteUri, getSyncListenerFromSource(src));
+                            remoteKey = sapiSyncHandler.resumeItemUpload(item,
+                                    remoteUri, getSyncListenerFromSource(src));
+                            // If the returned key is the same as the item guid,
+                            // the item has been resumed correctly.
+                            if(remoteKey.equals(item.getGuid())) {
+                                syncStatus.addSentResumedItem(item.getKey());
+                            }
                             uploadDone = true;
                         }
                     }
                 }
 
                 if (!uploadDone) {
-                    syncStatus.addSentItem(item.getKey(), SyncItem.STATE_NEW);
                     // Upload the item to the server
                     remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
-                                                           getSyncListenerFromSource(src));
+                            getSyncListenerFromSource(src));
                 }
 
                 item.setGuid(remoteKey);
