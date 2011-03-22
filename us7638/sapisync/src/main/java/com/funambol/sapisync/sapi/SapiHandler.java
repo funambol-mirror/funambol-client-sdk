@@ -203,9 +203,11 @@ public class SapiHandler {
             throw ioe;
         }
 
-        // Set chunked streaming mode in order to avoid buffering
-        conn.setChunkedStreamingMode(DEFAULT_CHUNK_SIZE);
-        
+        // Set fixed streaming mode in order to avoid buffering
+        if(contentLength >= 0 && contentLength <= Integer.MAX_VALUE) {
+            conn.setFixedLengthStreamingMode((int)contentLength);
+        }
+
         OutputStream os = null;
         InputStream  is = null;
 

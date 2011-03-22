@@ -306,6 +306,17 @@ public class HttpConnectionAdapter {
      * @param chunkLength the length of the single chunk
      */
     public void setChunkedStreamingMode(int chunkLength) throws IOException {
+        throw new UnsupportedOperationException("Chunked encoding not supported");
+    }
+    
+    /**
+     * If the length of a HTTP request body is known ahead, sets fixed length to
+     * enable streaming without buffering. Sets after connection will cause an
+     * exception.
+     *
+     * @param chunkLength the length of the single chunk
+     */
+    public void setFixedLengthStreamingMode(int contentLength) throws IOException {
     }
     
     /**
