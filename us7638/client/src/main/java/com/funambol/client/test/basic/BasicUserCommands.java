@@ -209,8 +209,36 @@ public interface BasicUserCommands {
      *
      * @example CheckExchangedData("Calendar", 1, 0, 0, 0, 0, 1)
      */
-    public static final String CHECK_EXCHANGED_DATA_COMMAND = "CheckExchangedData";
+    public static final String CHECK_EXCHANGED_DATA_COMMAND = "CheckExchangedData";    
+    
+    /**
+     * This command checks the amount of items exchanged between the server and
+     * the client during the last synchronization (for a given source).
+     *
+     * @param source the source name. The value is what is displayed
+     * on the main screen for that source.
+     * @param code one of the status codes in {@link SyncListener}
+     *
+     * @example CheckExchangedData("Pictures", 154)
+     */
+    public static final String CHECK_SYNC_STATUS_CODE_COMMAND = "CheckSyncStatusCode";
 
+    /**
+     * This command checks the amount of items exchanged between the server and
+     * the client during the last synchronization (for a given source).
+     *
+     * @param id
+     * @param severity
+     * @param ticker
+     * @param title
+     * @param message
+     *
+     * @example CheckLastNotification(10, 1, "Sync error", 
+     *          "Insufficient storage on device", 
+     *          "You're running out of storage space on device and cannot download media and files.")
+     */
+    public static final String CHECK_LAST_NOTIFICATION = "CheckLastNotification";
+    
     /**
      * This command checks the amount of resumed items exchanged between the
      * server and the client during the last synchronization (for a given

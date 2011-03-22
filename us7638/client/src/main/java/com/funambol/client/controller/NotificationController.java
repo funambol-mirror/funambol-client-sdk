@@ -53,10 +53,12 @@ public class NotificationController {
     private static final int NOTIFICATION_ID_SERVER_FULL = 10;
     private static final int NOTIFICATION_ID_CLIENT_FULL = 11;
 
+    /** Last notification shown (used by automatic tests) */
+    private NotificationData lastNotification = null;
+    
     //--- Local instance fields fed by the constructor
     private Localization localization;
     private DisplayManager displayManager;
-    
 
     /**
      * Public constructor
@@ -81,7 +83,7 @@ public class NotificationController {
                 localization.getLanguage("notification_online_quota_full_server_title"),
                 localization.getLanguage("notification_online_quota_full_server_message"),
                 null);
-        displayManager.showNotification(screen, notificationData);
+        showNotification(screen, notificationData);
     }
     
     /**
@@ -97,6 +99,22 @@ public class NotificationController {
                 localization.getLanguage("notification_storage_full_device_title"),
                 localization.getLanguage("notification_storage_full_device_message"),
                 null);
+        showNotification(screen, notificationData);
+    }
+    
+    private void showNotification(Screen screen, NotificationData notificationData) {
+        lastNotification = notificationData;
         displayManager.showNotification(screen, notificationData);
+    }
+    
+    /**
+     * Returns the last notification shown.
+     * 
+     * @return a NotificationData instance or null if no notification was shown since
+     *         the controller was created
+     * 
+     */
+    public NotificationData getLastNotification() {
+        return lastNotification;
     }
 }

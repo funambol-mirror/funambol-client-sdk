@@ -126,6 +126,8 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             waitForAuthToComplete(command, pars);
         } else if (CHECK_EXCHANGED_DATA_COMMAND.equals(command)) {
             checkExchangedData(command, pars);
+        } else if (CHECK_SYNC_STATUS_CODE_COMMAND.equals(command)) {
+            checkSyncStatusCode(command, pars);
         } else if (CHECK_RESUMED_DATA_COMMAND.equals(command)) {
             checkResumedData(command, pars);
         } else if (CHECK_REQUESTED_SYNC_MODE_COMMAND.equals(command)) {
@@ -134,6 +136,8 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             checkLastSyncAlertedSyncMode(command, pars);
         } else if (CHECK_REMOTE_URI_COMMAND.equals(command)) {
             checkLastSyncRemoteUri(command, pars);
+        }  else if (CHECK_LAST_NOTIFICATION.equals(command)) {
+            checkLastNotification(command, pars);
         } else if (FORCE_SLOW_SYNC_COMMAND.equals(command)) {
             resetSourceAnchor(command, pars);
         } else if (START_MAIN_APP_COMMAND.equals(command)) {
@@ -400,6 +404,68 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
                                          Integer.parseInt(sentDelete), Integer.parseInt(receivedAdd),
                                          Integer.parseInt(receivedReplace), Integer.parseInt(receivedDelete),
                                          syncMonitor);
+    }
+    
+    /**
+     * Checks the final status code after a sync
+     * @param command the check data command related String formatted
+     * representation
+     * @param args the command's related String arguments.
+     * @throws Throwable if an error occurred
+     */
+    private void checkSyncStatusCode(String command, Vector args) throws Throwable {
+
+        String source          = getParameter(args, 0);
+        String code            = getParameter(args, 1);
+
+        checkArgument(source, "Missing source name in " + command);
+        checkArgument(code, "Missing code in " + command);
+
+        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
+
+        getBasicRobot().checkLastSyncStatusCode(source, Integer.parseInt(code),
+                                         syncMonitor);
+    }
+    
+    /**
+     * Checks the last notification's content
+     * 
+     * @param command the check data command related String formatted
+     * representation
+     * @param args the command's related String arguments.
+     * @throws Throwable if an error occurred
+     */
+    private void checkLastNotification(String command, Vector args) throws Throwable {
+
+        String id          = getParameter(args, 0);
+        if (id == null) {
+            id = "-1";
+        }
+        String severity    = getParameter(args, 1);
+        if (severity == null) {
+            severity = "-1";
+        }
+        String ticker      = getParameter(args, 2);
+        if (ticker.length() == 0) {
+            ticker = null;
+        }
+        String title       = getParameter(args, 3);
+        if (title.length() == 0) {
+            title = null;
+        }
+        String message     = getParameter(args, 4);
+        if (message.length() == 0) {
+            message = null;
+        }
+        
+        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
+
+        getBasicRobot().checkLastNotification(
+                Integer.parseInt(id), 
+                Integer.parseInt(severity),
+                ticker,
+                title,
+                message);
     }
 
     /**

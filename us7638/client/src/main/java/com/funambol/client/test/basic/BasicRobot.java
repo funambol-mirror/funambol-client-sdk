@@ -37,18 +37,14 @@ package com.funambol.client.test.basic;
 
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.controller.Controller;
+import com.funambol.client.controller.NotificationData;
 import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.client.test.util.TestFileManager;
-import java.util.Vector;
-
-import com.funambol.sync.SyncItem;
-import com.funambol.sync.ItemStatus;
 import com.funambol.sync.SyncReport;
 import com.funambol.sync.SyncSource;
 import com.funambol.syncml.spds.SyncStatus;
-import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
 
@@ -162,6 +158,63 @@ public abstract class BasicRobot extends Robot {
                 "Sent replace mismatch");
         assertTrue(sentDelete, sr.getSentDeleteNumber(),
                 "Sent delete mismatch");
+    }
+    
+    public void checkLastSyncStatusCode(String source,
+            int code,
+            SyncMonitor syncMonitor) throws Throwable
+    {
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "check last sync status code");
+        }
+        
+        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        assertTrue(sr != null, "source has no report associated");
+        assertTrue(code, sr.getStatusCode(), "Status code mismatch");
+
+    }
+
+   /** 
+    * Checks the last notification's data. If an integer parameter is -1,
+    * it's not checked. If a string parameter is null, it's not checked.
+    * 
+    * @param id -1 means don't check
+    * @param severity -1 means don't check
+    * @param ticker null means don't check
+    * @param title null means don't check
+    * @param message null means don't check
+    */
+    public void checkLastNotification(int id, int severity,
+            String ticker, String title, String message) throws Throwable {
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "check last notification");
+        }
+        
+        NotificationData lastNotification = 
+            getController().getNotificationController().getLastNotification();
+        
+        assertTrue(lastNotification != null, 
+                "No notification was shown");
+        if (id != -1) {
+            assertTrue(id, lastNotification.getId(), 
+                    "Notification ID mismatch");
+        }
+        if (severity != -1) {
+            assertTrue(severity, lastNotification.getSeverity(), 
+                    "Notification severity mismatch");
+        }
+        if (ticker != null) {
+            assertTrue(ticker, lastNotification.getTicker(), 
+                    "Notification ticker mismatch");
+        }
+        if (title != null) {
+            assertTrue(title, lastNotification.getTitle(), 
+                    "Notification title mismatch");
+        }
+        if (message != null) {
+            assertTrue(message, lastNotification.getMessage(), 
+                    "Notification message mismatch");
+        }
     }
 
     public void checkLastSyncResumedData(String source, int sentResumed,
