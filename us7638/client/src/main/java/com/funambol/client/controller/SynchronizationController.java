@@ -786,8 +786,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
         }
 
         // Re-checks
-        localStorageFullSources.removeAllElements();
-        serverQuotaFullSources.removeAllElements();
         for (int i = 0; i < sources.size(); i++) {
             AppSyncSource appSource = (AppSyncSource) sources.elementAt(i);
             
@@ -817,6 +815,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
      */
     protected void displayStorageLimitWarning(Vector localStorageFullSources) {
         controller.getNotificationController().showNotificationClientFull(screen);
+        localStorageFullSources.removeAllElements();
     }
 
     /**
@@ -826,6 +825,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
      */
     protected void displayServerQuotaWarning(Vector serverQuotaFullSources) {
         controller.getNotificationController().showNotificationServerFull(screen);
+        serverQuotaFullSources.removeAllElements();
     }
 
     public void sourceStarted(AppSyncSource appSource) {
