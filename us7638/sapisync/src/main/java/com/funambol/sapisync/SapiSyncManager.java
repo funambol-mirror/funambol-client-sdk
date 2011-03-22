@@ -106,7 +106,6 @@ public class SapiSyncManager implements SyncManagerI {
 
     private String addedServerUrl = null;
     private String updatedServerUrl = null;
-    private String deletedServerUrl = null;
 
     private long downloadNextAnchor;
 
@@ -400,7 +399,7 @@ public class SapiSyncManager implements SyncManagerI {
 
                 addedInfo   = fetchItemsInfo(src, changesSet.added);
                 updatedInfo = fetchItemsInfo(src, changesSet.updated);
-                deletedInfo = fetchItemsInfo(src, changesSet.deleted);
+                deletedArray = changesSet.deleted;
 
                 if (addedInfo != null) {
                     addedArray = addedInfo.items;
@@ -409,10 +408,6 @@ public class SapiSyncManager implements SyncManagerI {
                 if (updatedInfo != null) {
                     updatedArray = updatedInfo.items;
                     updatedServerUrl = updatedInfo.serverUrl;
-                }
-                if (deletedInfo != null) {
-                    deletedArray = deletedInfo.items;
-                    deletedServerUrl = deletedInfo.serverUrl;
                 }
             }
         }
@@ -1065,13 +1060,16 @@ public class SapiSyncManager implements SyncManagerI {
             String guid = removed.getString(i);
             String luid = mapping.get(guid);
             if (luid == null) {
-                luid = guid;
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Cannot delete item with unknown luid " + guid);
+                }
+            } else {
+                SyncItem delItem = new SyncItem(luid, src.getType(),
+                        SyncItem.STATE_DELETED, null);
+                delItem.setGuid(guid);
+                delItems.addElement(delItem);
+                getSyncListenerFromSource(src).itemDeleted(delItem);
             }
-            SyncItem delItem = new SyncItem(luid, src.getType(),
-                    SyncItem.STATE_DELETED, null);
-            delItem.setGuid(guid);
-            delItems.addElement(delItem);
-            getSyncListenerFromSource(src).itemDeleted(delItem);
         }
 
         if (delItems.size() > 0) {

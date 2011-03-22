@@ -312,25 +312,39 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         }
 
         public void startSession() {
-            syncListener.startSession();
+            if (syncListener != null) {
+                syncListener.startSession();
+            }
         }
         public void endSession(SyncReport report) {
-            syncListener.endSession(report);
+            if (syncListener != null) {
+                syncListener.endSession(report);
+            }
         }
         public void startConnecting() {
-            syncListener.startConnecting();
+            if (syncListener != null) {
+                syncListener.startConnecting();
+            }
         }
         public void endConnecting(int action) {
-            syncListener.endConnecting(action);
+            if (syncListener != null) {
+                syncListener.endConnecting(action);
+            }
         }
         public void syncStarted(int alertCode) {
-            syncListener.syncStarted(alertCode);
+            if (syncListener != null) {
+                syncListener.syncStarted(alertCode);
+            }
         }
         public void endSyncing() {
-            syncListener.endSyncing();
+            if (syncListener != null) {
+                syncListener.endSyncing();
+            }
         }
         public void startReceiving(int number) {
-            syncListener.startReceiving(number);
+            if (syncListener != null) {
+                syncListener.startReceiving(number);
+            }
         }
         public void itemAddReceivingStarted(String key, String parent, long size) {
             // Do nothing
@@ -357,46 +371,76 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             // This is actually called by the DownloadSyncListener
         }
         public void itemDeleted(SyncItem item) {
-            syncListener.itemDeleted(item);
+            if (syncListener != null) {
+                syncListener.itemDeleted(item);
+            }
         }
         public void endReceiving() {
-            syncListener.endReceiving();
+            if (syncListener != null) {
+                syncListener.endReceiving();
+            }
         }
         public void startSending(int numNewItems, int numUpdItems, int numDelItems) {
-            syncListener.startSending(numNewItems, numUpdItems, numDelItems);
+            if (syncListener != null) {
+                syncListener.startSending(numNewItems, numUpdItems, numDelItems);
+            }
         }
         public void itemAddSendingStarted(String key, String parent, long size) {
-            syncListener.itemAddSendingStarted(key, parent, size);
+            if (syncListener != null) {
+                syncListener.itemAddSendingStarted(key, parent, size);
+            }
         }
         public void itemAddSendingEnded(String key, String parent) {
-            syncListener.itemAddSendingEnded(key, parent);
+            if (syncListener != null) {
+                syncListener.itemAddSendingEnded(key, parent);
+            }
         }
         public void itemAddSendingProgress(String key, String parent, long size) {
-            syncListener.itemAddSendingProgress(key, parent, size);
+            if (syncListener != null) {
+                syncListener.itemAddSendingProgress(key, parent, size);
+            }
         }
         public void itemReplaceSendingStarted(String key, String parent, long size) {
-            syncListener.itemReplaceSendingStarted(key, parent, size);
+            if (syncListener != null) {
+                syncListener.itemReplaceSendingStarted(key, parent, size);
+            }
         }
         public void itemReplaceSendingEnded(String key, String parent) {
-            syncListener.itemReplaceSendingEnded(key, parent);
+            if (syncListener != null) {
+                syncListener.itemReplaceSendingEnded(key, parent);
+            }
         }
         public void itemReplaceSendingProgress(String key, String parent, long size) {
-            syncListener.itemReplaceSendingProgress(key, parent, size);
+            if (syncListener != null) {
+                syncListener.itemReplaceSendingProgress(key, parent, size);
+            }
         }
         public void itemDeleteSent(SyncItem item) {
-            syncListener.itemDeleteSent(item);
+            if (syncListener != null) {
+                syncListener.itemDeleteSent(item);
+            }
         }
         public void endSending() {
-            syncListener.endSending();
+            if (syncListener != null) {
+                syncListener.endSending();
+            }
         }
         public void startFinalizing() {
-            syncListener.startFinalizing();
+            if (syncListener != null) {
+                syncListener.startFinalizing();
+            }
         }
         public void endFinalizing() { 
-            syncListener.endFinalizing();
+            if (syncListener != null) {
+                syncListener.endFinalizing();
+            }
         }
         public boolean startSyncing(int alertCode, Object devInf) {
-            return syncListener.startSyncing(alertCode, devInf);
+            if (syncListener != null) {
+                return syncListener.startSyncing(alertCode, devInf);
+            } else {
+                return true;
+            }
         }
     }
     
