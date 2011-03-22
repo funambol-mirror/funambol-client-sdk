@@ -289,6 +289,20 @@ public class HttpConnectionAdapter {
         conn.setChunkedStreamingMode(chunkLength);
     }
 
+    /**
+     * If the length of a HTTP request body is known ahead, sets fixed length to
+     * enable streaming without buffering. Sets after connection will cause an
+     * exception.
+     *
+     * @param chunkLength the length of the single chunk
+     */
+    public void setFixedLengthStreamingMode(int contentLength) throws IOException {
+        if (conn == null) {
+            throw new IOException("Cannot open output stream on non opened connection");
+        }
+        conn.setFixedLengthStreamingMode(contentLength);
+    }
+
 
     /**
      * Sets the general request property. If a property with the key already exists,
