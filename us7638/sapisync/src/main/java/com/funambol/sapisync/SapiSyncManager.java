@@ -835,6 +835,10 @@ public class SapiSyncManager implements SyncManagerI {
         
         if (syncMode == SyncSource.FULL_DOWNLOAD) {
 
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "Performing full download");
+            }
+
             if (addedArray != null && addedArray.length() > 0) {
                 getSyncListenerFromSource(src).startReceiving(addedArray.length());
 
@@ -919,7 +923,11 @@ public class SapiSyncManager implements SyncManagerI {
 
     private int countActualDeletedItems(JSONArray items) throws JSONException {
         // At the moment server deletes cannot be filtered out
-        return items.length();
+        if (items != null) {
+            return items.length();
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -1063,7 +1071,11 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private void applyDelItems(SyncSource src, JSONArray removed, 
-            StringKeyValueStore mapping) throws SyncException, JSONException {
+                               StringKeyValueStore mapping) throws SyncException, JSONException
+    {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "applyDelItems");
+        }
         Vector delItems = new Vector();
         for(int i=0;i < removed.length();++i) {
             String guid = removed.getString(i);
@@ -1078,6 +1090,7 @@ public class SapiSyncManager implements SyncManagerI {
                 delItem.setGuid(guid);
                 delItems.addElement(delItem);
                 getSyncListenerFromSource(src).itemDeleted(delItem);
+                syncStatus.addReceivedItem(guid, luid, delItem.getState(), SyncSource.SUCCESS_STATUS);
             }
         }
 
