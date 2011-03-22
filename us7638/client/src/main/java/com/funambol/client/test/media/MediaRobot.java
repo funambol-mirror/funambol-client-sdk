@@ -213,7 +213,7 @@ public abstract class MediaRobot extends Robot {
             throws Throwable {
         // get free quota for the current user
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
-        sapiHandler.logout();
+        sapiHandler.login(null);
         long availableSpace = sapiHandler
                 .getUserAvailableServerQuota(getRemoteUri(type));
         
