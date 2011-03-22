@@ -146,7 +146,7 @@ public class SapiHandler {
         return query(name, action, params, headers, requestIs,
                 "application/octet-stream", contentLength);
     }
-    public JSONObject query(String name, String action, Vector params, 
+    public synchronized JSONObject query(String name, String action, Vector params,
             Hashtable headers, InputStream requestIs, String contentType,
             long contentLength) throws IOException, JSONException {
         
@@ -204,9 +204,7 @@ public class SapiHandler {
         }
 
         // Set fixed streaming mode in order to avoid buffering
-        if(contentLength >= 0 && contentLength <= Integer.MAX_VALUE) {
-            conn.setFixedLengthStreamingMode((int)contentLength);
-        }
+        conn.setChunkedStreamingMode(DEFAULT_CHUNK_SIZE);
 
         OutputStream os = null;
         InputStream  is = null;
@@ -401,8 +399,9 @@ public class SapiHandler {
                 conn.setRequestProperty(AUTH_HEADER, authParam);
             }
 
-            // Set the item guid
             conn.setRequestProperty("x-funambol-id", guid);
+            conn.setRequestProperty("x-funambol-file-size", Long.toString(size));
+
             // Ask for the current length
             conn.setRequestProperty("Content-Range", "bytes */" + size);
 

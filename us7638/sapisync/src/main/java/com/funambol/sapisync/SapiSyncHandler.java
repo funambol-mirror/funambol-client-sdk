@@ -135,16 +135,21 @@ public class SapiSyncHandler {
                 return uploadItem(item, remoteUri, listener);
             }
 
-            Hashtable headers = new Hashtable();
-            headers.put("Content-Range","bytes */" + json.getSize());
-
-            long length = sapiHandler.getMediaPartialUploadLength(remoteUri, guid, json.getSize());
+            long length = sapiHandler.getMediaPartialUploadLength(remoteUri,
+                    guid, json.getSize());
 
             if (length > 0) {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Upload can be resumed at byte " + length);
+                if(length == json.getSize()) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "No need to resume item");
+                    }
+                    return guid;
+                } else {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Upload can be resumed at byte " + length);
+                    }
+                    return uploadItem(item, remoteUri, listener, length);
                 }
-                return uploadItem(item, remoteUri, listener, length);
             } else {
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "Upload cannot be resumed, perform a complete upload");
@@ -220,6 +225,7 @@ public class SapiSyncHandler {
                 contentRangeValue.append("bytes ").append(fromByte).append("-").append(json.getSize()-1)
                                  .append("/").append(json.getSize());
                 headers.put("Content-Range", contentRangeValue.toString());
+
                 // We must skip the first bytes of the input stream
                 for(int i=0;i<fromByte;++i) {
                     is.read();
@@ -238,7 +244,8 @@ public class SapiSyncHandler {
             try {
                 uploadResponse = sapiHandler.query("upload/" + remoteUri,
                                                    "add", null, headers, is,
-                                                   json.getMimetype(), json.getSize() - fromByte);
+                                                   json.getMimetype(),
+                                                   json.getSize() - fromByte);
             } catch (IOException ioe) {
                 // The upload failed and got interrupted. We report this error
                 // so that a resume is possible

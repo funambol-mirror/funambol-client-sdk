@@ -118,7 +118,6 @@ public class SapiSyncStatus implements SyncReport {
     }
 
     public void setRequestedSyncMode(int requestedSyncMode) {
-        oldRequestedSyncMode = this.requestedSyncMode;
         this.requestedSyncMode = requestedSyncMode;
     }
 
@@ -172,6 +171,10 @@ public class SapiSyncStatus implements SyncReport {
         SentItemStatus s = (SentItemStatus)sentItems.get(key);
         if (s == null) {
             s = (SentItemStatus)pendingSentItems.get(key);
+        }
+        if(s == null) {
+            Log.error(TAG_LOG, "Cannot find sent item with key: " + key);
+            return;
         }
         s.setStatus(status);
         if (guid != null) {
@@ -270,7 +273,6 @@ public class SapiSyncStatus implements SyncReport {
     }
 
     public void setInterrupted(boolean interrupted) {
-        oldInterrupted = this.interrupted;
         this.interrupted = interrupted;
     }
 
@@ -301,8 +303,6 @@ public class SapiSyncStatus implements SyncReport {
             return s.getGuid();
         }
     }
-
-
 
     public String getReceivedItemLuid(String guid) {
         Enumeration keys = receivedItems.keys();
@@ -363,19 +363,21 @@ public class SapiSyncStatus implements SyncReport {
             String key   = (String)keys.nextElement();
             String value = store.get(key);
 
-            if (REQUESTED_SYNC_MODE_KEY.equals(key)) {
+             if (REQUESTED_SYNC_MODE_KEY.equals(key)) {
                 requestedSyncMode = Integer.parseInt(value);
+                oldRequestedSyncMode = requestedSyncMode;
             } else if (INTERRUPTED_KEY.equals(key)) {
                 interrupted = TRUE.equals(value.toUpperCase());
+                oldInterrupted = interrupted;
             } else if (key.startsWith(SENT_ITEM_KEY)) {
                 String itemKey = key.substring(SENT_ITEM_KEY.length());
                 // The value contains both the cmd and the status
                 String values[] = StringUtil.split(value, ",");
                 char cmd = values[0].charAt(0);
-                int    status = Integer.parseInt(values[1]);
+                int status = Integer.parseInt(values[1]);
                 String guid = null;
-                if (values.length == 2) {
-                    guid   = values[2];
+                if (values.length == 3) {
+                    guid = values[2];
                 }
                 SentItemStatus v = new SentItemStatus(cmd);
                 v.setStatus(status);
@@ -422,8 +424,8 @@ public class SapiSyncStatus implements SyncReport {
             String key    = (String)keys.nextElement();
             SentItemStatus status = (SentItemStatus)pendingSentItems.get(key);
 
-            StringBuffer v = new StringBuffer(status.getCmd());
-            v.append(",").append(status.getStatus());
+            StringBuffer v = new StringBuffer();
+            v.append(status.getCmd()).append(",").append(status.getStatus());
             String guid = status.getGuid();
             if (guid != null) {
                 v.append(",").append(guid);
@@ -495,7 +497,7 @@ public class SapiSyncStatus implements SyncReport {
             oldLastSyncStartTime = lastSyncStartTime;
         }
 
-        if (interrupted != oldInterrupted) {
+        if (interrupted != oldInterrupted ) {
             if (store.get(INTERRUPTED_KEY) == null) {
                 store.add(INTERRUPTED_KEY, "" + interrupted);
             } else {
@@ -672,6 +674,8 @@ public class SapiSyncStatus implements SyncReport {
         se = null;
         startTime = 0;
         endTime = 0;
+        interrupted = false;
+        oldInterrupted = false;
     }
 
     private int getItemsNumber(Hashtable table, char cmd) {

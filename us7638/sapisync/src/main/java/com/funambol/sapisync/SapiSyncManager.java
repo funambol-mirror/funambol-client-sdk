@@ -710,6 +710,9 @@ public class SapiSyncManager implements SyncManagerI {
                     continue;
                 }
 
+                syncStatus.addSentItem(item.getKey(), item.getState());
+                uploadedCount++;
+                
                 // If the item was already sent in a previously interrupted
                 // sync, then we do not send it again
                 boolean uploadDone = false;
@@ -722,7 +725,6 @@ public class SapiSyncManager implements SyncManagerI {
                             if (Log.isLoggable(Log.INFO)) {
                                 Log.info(TAG_LOG, "Resuming upload for " + item.getKey());
                             }
-
                             remoteKey = syncStatus.getSentItemGuid(item.getKey());
                             item.setGuid(remoteKey);
                             remoteKey = sapiSyncHandler.resumeItemUpload(item,
@@ -736,7 +738,6 @@ public class SapiSyncManager implements SyncManagerI {
                         }
                     }
                 }
-
                 if (!uploadDone) {
                     // Upload the item to the server
                     remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
@@ -750,14 +751,12 @@ public class SapiSyncManager implements SyncManagerI {
                 sourceStatus.addElement(new ItemStatus(item.getKey(),
                         SyncSource.SUCCESS_STATUS));
 
-                syncStatus.addSentItem(item.getKey(), item.getState());
-                uploadedCount++;
             } catch (ItemUploadInterruptionException ex) {
                 // An item could not be fully uploaded
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "Error uploading item " + item.getKey());
                 }
-                syncStatus.setSentItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS);
+                syncStatus.setSentItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS, item.getGuid());
                 sourceStatus.addElement(new ItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS));
                 try {
                     syncStatus.save();

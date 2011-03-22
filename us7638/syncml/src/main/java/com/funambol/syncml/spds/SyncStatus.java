@@ -434,8 +434,8 @@ public class SyncStatus implements SyncReport {
             String key    = (String)keys.nextElement();
             SentItemStatus status = (SentItemStatus)pendingSentItems.get(key);
 
-            StringBuffer v = new StringBuffer(status.getCmd());
-            v.append(",").append(status.getStatus());
+            StringBuffer v = new StringBuffer();
+            v.append(status.getCmd()).append(",").append(status.getStatus());
 
             store.add(SENT_ITEM_KEY + key, v.toString());
 
@@ -757,6 +757,8 @@ public class SyncStatus implements SyncReport {
         initialSentAddNumber = 0;
         initialSentReplaceNumber = 0;
         initialSentDeleteNumber = 0;
+        interrupted = false;
+        oldInterrupted = false;
     }
 
     private int getItemsNumber(Hashtable table, String cmd) {
