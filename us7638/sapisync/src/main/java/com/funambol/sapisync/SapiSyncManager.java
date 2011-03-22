@@ -875,7 +875,7 @@ public class SapiSyncManager implements SyncManagerI {
                 // Count the number of items to be received
                 total += countActualItems(addedArray);
                 total += countActualItems(updatedArray);
-                total += countActualItems(deletedArray);
+                total += countActualDeletedItems(deletedArray);
 
                 getSyncListenerFromSource(src).startReceiving(total);
 
@@ -916,6 +916,11 @@ public class SapiSyncManager implements SyncManagerI {
             }
         }
         return count;
+    }
+
+    private int countActualDeletedItems(JSONArray items) throws JSONException {
+        // At the moment server deletes cannot be filtered out
+        return items.length();
     }
 
     /**
