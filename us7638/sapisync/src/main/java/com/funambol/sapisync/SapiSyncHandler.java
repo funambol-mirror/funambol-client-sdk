@@ -115,7 +115,7 @@ public class SapiSyncHandler {
         sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
     }
 
-    public String resumeUploadItem(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
+    public String resumeItemUpload(SyncItem item, String remoteUri, SyncListener listener) throws SyncException {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Resuming upload for item: " + item.getKey());
         }
@@ -123,7 +123,6 @@ public class SapiSyncHandler {
             throw new UnsupportedOperationException("Not implemented.");
         }
         try {
-            JSONObject metadata = new JSONObject();
             JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
 
             // First of all we need to query the server to understand where we shall

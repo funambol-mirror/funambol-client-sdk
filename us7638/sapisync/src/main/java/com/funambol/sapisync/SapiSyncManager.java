@@ -725,7 +725,7 @@ public class SapiSyncManager implements SyncManagerI {
 
                             remoteKey = syncStatus.getSentItemGuid(item.getKey());
                             item.setGuid(remoteKey);
-                            sapiSyncHandler.resumeUploadItem(item, remoteUri, getSyncListenerFromSource(src));
+                            sapiSyncHandler.resumeItemUpload(item, remoteUri, getSyncListenerFromSource(src));
                             uploadDone = true;
                         }
                     }
