@@ -185,6 +185,13 @@ public interface BasicUserCommands {
     public static final String WRITE_STRING_COMMAND = "WriteString";
 
     /**
+     * This command presses the "Sync All" button.
+     *
+     * @example SyncAll()
+     */
+    public static final String SYNC_ALL_COMMAND = "SyncAll";
+    
+    /**
      * This command forces the next sync to be a slow sync for the given source
      *
      * @param sourceName is the name of the source. The value is what is displayed

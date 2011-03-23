@@ -269,6 +269,12 @@ public abstract class BasicRobot extends Robot {
         }
         configuration.save();
     }
+    
+
+    public void syncAll() {
+       Log.debug("simulating Sync All button pressed");
+       getController().getHomeScreenController().syncAllPressed();        
+    }
 
     protected abstract void startMainApp() throws Throwable;
     protected abstract void closeMainApp() throws Throwable;
@@ -283,5 +289,6 @@ public abstract class BasicRobot extends Robot {
 
     protected abstract Configuration getConfiguration();
     protected abstract Controller getController();
+
     
 }

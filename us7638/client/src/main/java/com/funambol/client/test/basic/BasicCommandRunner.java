@@ -118,6 +118,8 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             endTest(command, pars);
         } else if (KEY_PRESS_COMMAND.equals(command)) {
             keyPress(command, pars);
+        } else if (SYNC_ALL_COMMAND.equals(command)) {
+            syncAll(command, pars);
         } else if (WRITE_STRING_COMMAND.equals(command)) {
             writeString(command, pars);
         } else if (WAIT_FOR_SYNC_TO_COMPLETE_COMMAND.equals(command)) {
@@ -622,6 +624,18 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             }
         }
         getBasicRobot().keyPress(keyName, pressCount);
+    }
+    
+    /**
+     * Command to simulate a press on button "Sync All".
+     * 
+     * @param command the String formatted command
+     * @param args the command's related String arguments.
+     * @throws Throwable if an error occurred
+     */
+    private void syncAll(String command, Vector args) throws Throwable {
+
+        getBasicRobot().syncAll();
     }
 
     /**
