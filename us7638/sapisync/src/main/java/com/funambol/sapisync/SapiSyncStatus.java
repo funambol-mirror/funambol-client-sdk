@@ -564,6 +564,10 @@ public class SapiSyncStatus implements SyncReport {
         return getNumberOfItemsWithError(receivedItems) + getNumberOfItemsWithError(pendingReceivedItems);
     }
     
+    public int getNumberOfPendingReceivedItemsWithSyncStatus(int syncStatus) {
+        return  getNumberOfItemsWithSyncStatus(pendingReceivedItems, syncStatus);
+    }
+    
     public int getNumberOfReceivedItemsWithSyncStatus(int syncStatus) {
         return getNumberOfItemsWithSyncStatus(receivedItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingReceivedItems, syncStatus);
     }
@@ -573,6 +577,10 @@ public class SapiSyncStatus implements SyncReport {
     }
     
     public int getNumberOfSentItemsWithSyncStatus(int syncStatus) {
+        return getNumberOfItemsWithSyncStatus(sentItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingSentItems, syncStatus);
+    }
+    
+    public int getNumberOfPendingSentItemsWithSyncStatus(int syncStatus) {
         return getNumberOfItemsWithSyncStatus(sentItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingSentItems, syncStatus);
     }
 

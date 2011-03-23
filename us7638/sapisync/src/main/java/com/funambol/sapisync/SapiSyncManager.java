@@ -278,7 +278,7 @@ public class SapiSyncManager implements SyncManagerI {
 
             performFinalizationPhase(src);
 
-            if (syncStatus.getNumberOfReceivedItemsWithSyncStatus(
+            if (syncStatus.getNumberOfPendingReceivedItemsWithSyncStatus(
                     SyncSource.DEVICE_FULL_ERROR_STATUS) > 0) {
                 syncStatus.setInterrupted(true);
                 syncStatus.setStatusCode(SyncListener.LOCAL_CLIENT_FULL_ERROR);
@@ -1219,7 +1219,7 @@ public class SapiSyncManager implements SyncManagerI {
      */
     private void updateDownloadAnchor(SapiSyncAnchor sapiAnchor, long newDownloadAnchor) {
         int itemsNotDownloaded = 
-            syncStatus.getNumberOfReceivedItemsWithSyncStatus(SyncSource.DEVICE_FULL_ERROR_STATUS);
+            syncStatus.getNumberOfPendingReceivedItemsWithSyncStatus(SyncSource.DEVICE_FULL_ERROR_STATUS);
         if (itemsNotDownloaded > 0) {
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "The download anchor will not be updated because there are " + 
