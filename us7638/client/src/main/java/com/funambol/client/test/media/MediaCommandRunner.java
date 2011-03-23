@@ -135,9 +135,9 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
     }
  
     private void leaveFreeServerQuota(String type, String command, Vector args) throws Throwable {
-        String number = getParameter(args, 0);
-        checkArgument(number, "Missing expected server quota space to leave free in " + command);
-        getMediaRobot().leaveFreeServerQuota(type, Long.parseLong(number));
+        String filename = getParameter(args, 0);
+        checkArgument(filename, "Missing filename in " + command);
+        getMediaRobot().leaveFreeServerQuota(type, filename);
     }
 
     

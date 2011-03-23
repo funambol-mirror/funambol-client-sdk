@@ -142,6 +142,14 @@ public abstract class MediaRobot extends Robot {
             String contentType)
             throws JSONException {
 
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG,
+                    "Adding media on server for source " + getRemoteUri(type) +
+                    " with name " + itemName +
+                    " of type " + contentType +
+                    " and size " + contentSize);
+        }
+        
         // Prepare json item to upload
         JSONFileObject jsonFileObject = new JSONFileObject();
         jsonFileObject.setName(itemName);
@@ -200,52 +208,45 @@ public abstract class MediaRobot extends Robot {
     }
 
     /**
-     * Fill the server with some data in order to leave only specified quota
-     * free.
-     * Is free user quota is less that the required size, no action is
-     * performed. 
+     * Fills the server with some data in order to leave no more space for a
+     * further upload of the same file specified as parameter  
      * 
      * @param type
-     * @param byteToLeaveFree amount of byte to leave free on server 
+     * @param fileName name of the file to use as a reference
      * @throws Throwable
      */
-    public void leaveFreeServerQuota(String type, long byteToLeaveFree)
+    public void leaveFreeServerQuota(String type, String fileName)
             throws Throwable {
         // get free quota for the current user
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
         sapiHandler.login(null);
         long availableSpace = sapiHandler
                 .getUserAvailableServerQuota(getRemoteUri(type));
+        sapiHandler.logout();
         
-        //calculate server space to fill
-        long spaceToFill = availableSpace - byteToLeaveFree;
-        if (spaceToFill > 0) {
+        //make file available on local storage
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        String contentType = getMediaFile(fileName, os);
+        byte[] fileContent = os.toByteArray();
+        int pictureSize = fileContent.length;
+        long repetition = availableSpace / pictureSize;
+        
+        if (repetition > 0) {
             if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Available user quota is " + availableSpace + ", creating a fake file of bytes " + spaceToFill);
+                Log.debug(TAG_LOG, "Available user quota is " + availableSpace + ", while picture size is " + pictureSize);
+                Log.debug(TAG_LOG, "Filling the user quota, please wait...");
             }
-            String extension;
-            String mimetype;
-            if (BasicUserCommands.SOURCE_NAME_PICTURES.equals(type)) {
-                extension = ".jpg";
-                mimetype = "image/jpeg";
-            } else if (BasicUserCommands.SOURCE_NAME_VIDEOS.equals(type)) {
-                extension = ".avi";
-                mimetype = "video/avi";
-            } else {
-                extension = ".txt";
-                mimetype = "application/*";
+            for (long i=1; i <= repetition; i++) {
+                String newFileName = i + fileName;
+                Log.trace(TAG_LOG, "Upload file " + newFileName + " on server [" + i + "/" + repetition + "]");
+                InputStream is = new ByteArrayInputStream(fileContent);
+                addMediaOnServerFromStream(type, i + newFileName, is, pictureSize, contentType);
             }
-
-            //create a fake file and fill it
-            File tempFile = createFileWithSizeOnDevice(spaceToFill);
-            FileInputStream fis = new FileInputStream(tempFile);
-            if (tempFile != null ) addMediaOnServerFromStream(getRemoteUri(type), "fillspaceitem" + extension, fis, spaceToFill, mimetype);
         } else {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Available user quota is " + availableSpace + ", less that the required. Nothing to do.");
             }
         }
-        sapiHandler.logout();
     }
 
     protected AppSyncSourceManager getAppSyncSourceManager() {
@@ -348,10 +349,13 @@ public abstract class MediaRobot extends Robot {
      * Creates a temporary file of specified size
      * 
      * @param byteSize size of the file
+     * @param header header of the file
+     * @param footer footer of the file
+     * 
      * @return name of the file created
      * @throws IOException
      */
-    protected abstract File createFileWithSizeOnDevice(long byteSize)
+    protected abstract File createFileWithSizeOnDevice(long byteSize, String header, String footer)
             throws IOException;
 
 }
