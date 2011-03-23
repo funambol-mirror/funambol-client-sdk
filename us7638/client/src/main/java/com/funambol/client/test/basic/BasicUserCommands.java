@@ -238,7 +238,19 @@ public interface BasicUserCommands {
      *          "You're running out of storage space on device and cannot download media and files.")
      */
     public static final String CHECK_LAST_NOTIFICATION = "CheckLastNotification";
-    
+
+    /**
+     * This command checks the amount of errors happened during the last
+     * synchronization.
+     *
+     * @param source the source name. The value is what is displayed
+     * on the main screen for that source.
+     * @param sendingErrors the expected number of sent resumed items
+     * @param receivingErrors the expected number of received resumed items
+     * @example CheckSyncErrors("Pictures", 1, 0)
+     */
+    public static final String CHECK_SYNC_ERRORS_COMMAND = "CheckSyncErrors";
+
     /**
      * This command checks the amount of resumed items exchanged between the
      * server and the client during the last synchronization (for a given

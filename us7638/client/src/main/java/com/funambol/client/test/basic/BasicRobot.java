@@ -159,7 +159,23 @@ public abstract class BasicRobot extends Robot {
         assertTrue(sentDelete, sr.getSentDeleteNumber(),
                 "Sent delete mismatch");
     }
-    
+
+    public void checkLastSyncErrors(String source, int sendingErrors,
+            int receivingErrors, SyncMonitor syncMonitor) throws Throwable
+    {
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "check last sync exchanged data");
+        }
+
+        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        assertTrue(sr != null, "source has no report associated");
+
+        assertTrue(sendingErrors, sr.getNumberOfSentItemsWithError(),
+                "Sending errors mismatch");
+        assertTrue(receivingErrors, sr.getNumberOfReceivedItemsWithError(),
+                "Receiving errors mismatch");
+    }
+
     public void checkLastSyncStatusCode(String source,
             int code,
             SyncMonitor syncMonitor) throws Throwable

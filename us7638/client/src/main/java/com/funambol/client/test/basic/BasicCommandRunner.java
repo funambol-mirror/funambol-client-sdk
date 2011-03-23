@@ -126,6 +126,8 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             waitForAuthToComplete(command, pars);
         } else if (CHECK_EXCHANGED_DATA_COMMAND.equals(command)) {
             checkExchangedData(command, pars);
+        } else if (CHECK_SYNC_ERRORS_COMMAND.equals(command)) {
+            checkSyncErrors(command, pars);
         } else if (CHECK_SYNC_STATUS_CODE_COMMAND.equals(command)) {
             checkSyncStatusCode(command, pars);
         } else if (CHECK_RESUMED_DATA_COMMAND.equals(command)) {
@@ -406,6 +408,31 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
                                          syncMonitor);
     }
     
+    /**
+     * checks the final data exchanged after a sync
+     * @param command the check data command related Stirng formatted
+     * representation
+     * @param args the command's related String arguments.
+     * @throws Throwable if an error occurred
+     */
+    private void checkSyncErrors(String command, Vector args) throws Throwable {
+
+        String source          = getParameter(args, 0);
+        String sendingErrors   = getParameter(args, 1);
+        String receivingErrors = getParameter(args, 2);
+
+        checkArgument(source, "Missing source name in " + command);
+        checkArgument(sendingErrors, "Missing sendingErrors in " + command);
+        checkArgument(receivingErrors, "Missing receivingErrors in " + command);
+
+        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
+
+        getBasicRobot().checkLastSyncErrors(source,
+                Integer.parseInt(sendingErrors),
+                Integer.parseInt(receivingErrors),
+                syncMonitor);
+    }
+
     /**
      * Checks the final status code after a sync
      * @param command the check data command related String formatted
