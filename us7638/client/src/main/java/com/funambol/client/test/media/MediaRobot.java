@@ -215,7 +215,7 @@ public abstract class MediaRobot extends Robot {
      * @param fileName name of the file to use as a reference
      * @throws Throwable
      */
-    public void leaveFreeServerQuota(String type, String fileName)
+    public void leaveNoFreeServerQuota(String type, String fileName)
             throws Throwable {
         // get free quota for the current user
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
@@ -229,16 +229,16 @@ public abstract class MediaRobot extends Robot {
         String contentType = getMediaFile(fileName, os);
         byte[] fileContent = os.toByteArray();
         int pictureSize = fileContent.length;
-        long repetition = availableSpace / pictureSize;
+        long repetitions = availableSpace / pictureSize;
         
-        if (repetition > 0) {
+        if (repetitions > 0) {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Available user quota is " + availableSpace + ", while picture size is " + pictureSize);
                 Log.debug(TAG_LOG, "Filling the user quota, please wait...");
             }
-            for (long i=1; i <= repetition; i++) {
+            for (long i=1; i <= repetitions; i++) {
                 String newFileName = i + fileName;
-                Log.trace(TAG_LOG, "Upload file " + newFileName + " on server [" + i + "/" + repetition + "]");
+                Log.trace(TAG_LOG, "Upload file " + newFileName + " on server [" + i + "/" + repetitions + "]");
                 InputStream is = new ByteArrayInputStream(fileContent);
                 addMediaOnServerFromStream(type, i + newFileName, is, pictureSize, contentType);
             }

@@ -82,10 +82,10 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             checkMediaCount(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
         } else if (CHECK_VIDEOS_COUNT.equals(command)) {
             checkMediaCount(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
-        } else if (LEAVE_FREE_SERVER_QUOTA_FOR_PICTURE.equals(command)) {
-            leaveFreeServerQuota(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
-        } else if (LEAVE_FREE_SERVER_QUOTA_FOR_VIDEO.equals(command)) {
-            leaveFreeServerQuota(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (LEAVE_NO_FREE_SERVER_QUOTA_FOR_PICTURE.equals(command)) {
+            leaveNoFreeServerQuota(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (LEAVE_NO_FREE_SERVER_QUOTA_FOR_VIDEO.equals(command)) {
+            leaveNoFreeServerQuota(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
         } else {
             return false;
         }
@@ -134,10 +134,10 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         getMediaRobot().checkMediaCount(type, Integer.parseInt(number));
     }
  
-    private void leaveFreeServerQuota(String type, String command, Vector args) throws Throwable {
+    private void leaveNoFreeServerQuota(String type, String command, Vector args) throws Throwable {
         String filename = getParameter(args, 0);
         checkArgument(filename, "Missing filename in " + command);
-        getMediaRobot().leaveFreeServerQuota(type, filename);
+        getMediaRobot().leaveNoFreeServerQuota(type, filename);
     }
 
     

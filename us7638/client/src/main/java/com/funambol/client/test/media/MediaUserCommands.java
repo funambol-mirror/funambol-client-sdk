@@ -175,20 +175,20 @@ public interface MediaUserCommands {
      * for pictures (in byte). If user has already less free space available, the
      * command doesn't execute any modification. 
      *
-     * @example LeaveFreeServerQuotaForPicture(1048576);
+     * @example LeaveNoFreeServerQuotaForPicture("img05.png");
      *
      */
-    public static final String LEAVE_FREE_SERVER_QUOTA_FOR_PICTURE = "LeaveFreeServerQuotaForPicture";
+    public static final String LEAVE_NO_FREE_SERVER_QUOTA_FOR_PICTURE = "LeaveNoFreeServerQuotaForPicture";
     
     /**
      * This command fill the user quota on server leaving specified free space
      * for videos (in byte). If user has already less free space available, the
      * command doesn't execute any modification. 
      *
-     * @example LeaveFreeServerQuotaForVideo(1048576);
+     * @example LeaveNoFreeServerQuotaForVideo("img05.png");
      *
      */
-    public static final String LEAVE_FREE_SERVER_QUOTA_FOR_VIDEO = "LeaveFreeServerQuotaForVideo";
+    public static final String LEAVE_NO_FREE_SERVER_QUOTA_FOR_VIDEO = "LeaveNoFreeServerQuotaForVideo";
 
 }
     
