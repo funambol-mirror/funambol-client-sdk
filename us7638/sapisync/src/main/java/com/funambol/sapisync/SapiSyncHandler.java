@@ -35,6 +35,7 @@
 
 package com.funambol.sapisync;
 
+import java.security.InvalidParameterException;
 import java.util.Vector;
 import java.util.Date;
 import java.io.IOException;
@@ -53,6 +54,8 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.util.DateUtil;
+import com.funambol.util.StringUtil;
+
 import java.io.InputStream;
 import java.util.Hashtable;
 
@@ -67,6 +70,7 @@ public class SapiSyncHandler {
 
     private static final String JSON_OBJECT_DATA  = "data";
     private static final String JSON_OBJECT_ERROR = "error";
+    private static final String JSON_OBJECT_SUCCESS = "success";
 
     private static final String JSON_OBJECT_DATA_FIELD_JSESSIONID = "jsessionid";
 
@@ -135,8 +139,10 @@ public class SapiSyncHandler {
                 return uploadItem(item, remoteUri, listener);
             }
 
-            long length = sapiHandler.getMediaPartialUploadLength(remoteUri,
-                    guid, json.getSize());
+            Hashtable headers = new Hashtable();
+            headers.put("Content-Range","bytes */" + json.getSize());
+
+            long length = sapiHandler.getMediaPartialUploadLength(remoteUri, guid, json.getSize());
 
             if (length > 0) {
                 if(length == json.getSize()) {
@@ -195,11 +201,11 @@ public class SapiSyncHandler {
             JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
 
             if (fromByte == 0) {
-                metadata.put("name",             json.getName());
-                metadata.put("creationdate",     DateUtil.formatDateTimeUTC(json.getCreationDate()));
+                metadata.put("name", json.getName());
+                metadata.put("creationdate", DateUtil.formatDateTimeUTC(json.getCreationDate()));
                 metadata.put("modificationdate", DateUtil.formatDateTimeUTC(json.getLastModifiedDate()));
-                metadata.put("contenttype",      json.getMimetype());
-                metadata.put("size",             json.getSize());
+                metadata.put("contenttype", json.getMimetype());
+                metadata.put("size", json.getSize());
 
                 JSONObject addRequest = new JSONObject();
                 addRequest.put("data", metadata);
@@ -212,12 +218,12 @@ public class SapiSyncHandler {
                 sapiHandler.setSapiRequestListener(null);
                 JSONObject addResponse = sapiQueryWithRetries("upload/" + remoteUri,
                         "add-metadata", null, null, addRequest);
-
-                if(!addResponse.has("success")) {
-                    Log.error(TAG_LOG, "Failed to upload item");
-                    throw new SyncException(SyncException.SERVER_ERROR,
-                            "Failed to upload item");
+                
+                //original code: throws exception if sucess is not present
+                if (SapiResultError.hasError(addResponse)) {
+                    verifyErrorInSapiUploadResponse(addResponse, item, null);
                 }
+                
                 remoteKey = addResponse.getString("id");
             } else {
                 remoteKey = item.getGuid();
@@ -225,8 +231,8 @@ public class SapiSyncHandler {
                 contentRangeValue.append("bytes ").append(fromByte).append("-").append(json.getSize()-1)
                                  .append("/").append(json.getSize());
                 headers.put("Content-Range", contentRangeValue.toString());
-
                 // We must skip the first bytes of the input stream
+                // FIXME: low performance way to skip bytes, find a better and quicker way
                 for(int i=0;i<fromByte;++i) {
                     is.read();
                 }
@@ -243,9 +249,8 @@ public class SapiSyncHandler {
             JSONObject uploadResponse = null;
             try {
                 uploadResponse = sapiHandler.query("upload/" + remoteUri,
-                                                   "add", null, headers, is,
-                                                   json.getMimetype(),
-                                                   json.getSize() - fromByte);
+                        "add", null, headers, is,
+                        json.getMimetype(), json.getSize() - fromByte);
             } catch (IOException ioe) {
                 // The upload failed and got interrupted. We report this error
                 // so that a resume is possible
@@ -253,7 +258,11 @@ public class SapiSyncHandler {
                 throw new ItemUploadInterruptionException(item, 0);
             }
 
-            if(uploadResponse.has(JSON_OBJECT_ERROR)) {
+            //original code: process the exception if error is present in the object
+            if (SapiResultError.hasError(uploadResponse)) {
+                verifyErrorInSapiUploadResponse(uploadResponse, item, remoteKey);
+
+                /*
                 JSONObject error = uploadResponse.getJSONObject(JSON_OBJECT_ERROR);
                 String msg = error.getString("message");
                 String code = error.getString("code");
@@ -268,19 +277,51 @@ public class SapiSyncHandler {
                 Log.error(TAG_LOG, "Error in SAPI response: " + msg);
                 throw new SyncException(SyncException.SERVER_ERROR,
                     "Error in SAPI response: " + msg);
+                */
             }
 
             sapiHandler.setSapiRequestListener(null);
 
             return remoteKey;
-        } catch(Exception ex) {
-            if(ex instanceof SyncException) {
-                throw (SyncException)ex;
-            }
+        } catch(JSONException ex) {
+            Log.error(TAG_LOG, "Failed to upload item", ex);
+            throw new SyncException(SyncException.CLIENT_ERROR,
+                    "Cannot upload item");
+        } catch(IOException ex) {
             Log.error(TAG_LOG, "Failed to upload item", ex);
             throw new SyncException(SyncException.CLIENT_ERROR,
                     "Cannot upload item");
         }
+    }
+
+    /**
+     * Common code used to verify specific error in upload sapi
+     * (size mismatch, over quota etc)
+     * this method should be optimized, removing code duplication because
+     * it's very similar to {@link #logErrorResponseAndThrowSapiException(JSONObject, boolean)}
+     * 
+     * @param sapiResponse, cannot be null
+     * @throws SyncException
+     */
+    private void verifyErrorInSapiUploadResponse(JSONObject sapiResponse, SyncItem item, String remoteKey) 
+    throws SyncException
+    {
+        
+        //check for standard error code
+        SapiResultError resultError = checkForCommonSapiErrorCodeAndThrowSyncException(
+                sapiResponse, "Failed to upload item");
+        
+        //no exception was thrown, so a sapi-specific error code is returned
+        if(SapiException.MED_1002.equals(resultError.code)) {
+            // The size of the uploading media does not match the one declared
+            item.setGuid(remoteKey);
+            throw new ItemUploadInterruptionException(item, 0);
+        } else if(SapiException.MED_1007.equals(resultError.code)) {
+            //server user quota exceeded 
+            throw new QuotaOverflowException(item);
+        }
+        throw new SyncException(SyncException.SERVER_ERROR,
+            "Error in SAPI response: " + resultError.message);
     }
 
     public void deleteItem(String key, String remoteUri, String dataTag) throws SyncException {
@@ -302,7 +343,8 @@ public class SapiSyncHandler {
             data.put(dataTag, pictures);
             JSONObject request = new JSONObject();
             request.put("data", data);
-                sapiQueryWithRetries("media/" + remoteUri, "delete", null, null, request);
+            sapiQueryWithRetries("media/" + remoteUri, "delete", null, null, request);
+            //TODO check for errors
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Failed to delete item: " + key, ioe);
             throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while deleting");
@@ -319,6 +361,7 @@ public class SapiSyncHandler {
         }
         try {
             sapiHandler.query("media/" + remoteUri, "reset", null, null, null);
+            //TODO check for errors
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Failed to delete all items", ioe);
             throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while deleting");
@@ -346,27 +389,31 @@ public class SapiSyncHandler {
                     null);
 
         } catch (IOException ioe) {
+            //TODO: why syncException?
             throw new SyncException(SyncException.CONN_NOT_FOUND, "IOError while getting incremental changes");
-        } catch (Exception e) {
+        } catch (JSONException e) {
+            //TODO: why syncException?
             throw new SyncException(SyncException.CLIENT_ERROR, "Client error while getting incremental changes");
         }
 
+        if (SapiResultError.hasError(response)) {
+            checkForCommonSapiErrorCodeAndThrowSapiException(response, "Error in incremental changes sapi call");
+        }
+        
         try {
             ChangesSet res = new ChangesSet();
-            if(!responseHasError(response)) {
-                JSONObject data = getDataFromResponse(response);
-                if (data.has(dataType)) {
-                    JSONObject items = data.getJSONObject(dataType);
-                    if (items != null) {
-                        if (items.has("N")) {
-                            res.added = items.getJSONArray("N");
-                        }
-                        if (items.has("U")) {
-                            res.updated = items.getJSONArray("U");
-                        }
-                        if (items.has("D")) {
-                            res.deleted = items.getJSONArray("D");
-                        }
+            JSONObject data = getDataFromResponse(response);
+            if (data.has(dataType)) {
+                JSONObject items = data.getJSONObject(dataType);
+                if (items != null) {
+                    if (items.has("N")) {
+                        res.added = items.getJSONArray("N");
+                    }
+                    if (items.has("U")) {
+                        res.updated = items.getJSONArray("U");
+                    }
+                    if (items.has("D")) {
+                        res.deleted = items.getJSONArray("D");
                     }
                 }
             }
@@ -418,16 +465,21 @@ public class SapiSyncHandler {
                     params, null, null);
     
             FullSet res = new FullSet();
-            if (!responseHasError(resp)) {
-                JSONObject data = getDataFromResponse(resp);
-                if (data.has(dataTag)) {
-                    JSONArray items = data.getJSONArray(dataTag);
-                    res.items = items;
-                }
-                if (data.has("mediaserverurl")) {
-                    res.serverUrl = data.getString("mediaserverurl");
-                }
+
+            if (SapiResultError.hasError(resp)) {
+                checkForCommonSapiErrorCodeAndThrowSapiException(resp, "Error in get items sapi call");
             }
+
+            JSONObject data = getDataFromResponse(resp);
+            if (data.has(dataTag)) {
+                JSONArray items = data.getJSONArray(dataTag);
+                res.items = items;
+            }
+            if (data.has("mediaserverurl")) {
+                res.serverUrl = data.getString("mediaserverurl");
+            }
+            
+            //TODO responsetime outside the success or error check?
             if (resp.has("responsetime")) {
                 String ts = resp.getString("responsetime");
                 if (Log.isLoggable(Log.TRACE)) {
@@ -463,11 +515,12 @@ public class SapiSyncHandler {
                     null,
                     null);
             
-            if (!responseHasError(response)) {
-                JSONObject data = getDataFromResponse(response);
-                if (data.has("count")) {
-                    return Integer.parseInt(data.getString("count"));
-                }
+            if (SapiResultError.hasError(response)) {
+                checkForCommonSapiErrorCodeAndThrowSapiException(response, "Error in get items sapi call");
+            }
+            JSONObject data = getDataFromResponse(response);
+            if (data.has("count")) {
+                return Integer.parseInt(data.getString("count"));
             }
             
         } catch (IOException ioe) {
@@ -504,11 +557,12 @@ public class SapiSyncHandler {
                     "get-storage-space",
                     null, null, null);
             
-            if (!responseHasError(response)) {
-                JSONObject data = getDataFromResponse(response);
-                if (data.has("free")) {
-                    return Long.parseLong(data.getString("free"));
-                }
+            if (SapiResultError.hasError(response)) {
+                checkForCommonSapiErrorCodeAndThrowSapiException(response, "Error in get items sapi call");
+            }
+            JSONObject data = getDataFromResponse(response);
+            if (data.has("free")) {
+                return Long.parseLong(data.getString("free"));
             }
             return -1;
             
@@ -632,6 +686,10 @@ public class SapiSyncHandler {
                 }
             }
 
+            //original code: find data part, if error or null, throw exception
+            if (SapiResultError.hasError(res)) {
+                checkForCommonSapiErrorCodeAndThrowSyncException(res, "Error in login sapi call");
+            }
             JSONObject resData = res.getJSONObject(JSON_OBJECT_DATA);
             if(resData != null) {
                 String jsessionid = resData.getString(JSON_OBJECT_DATA_FIELD_JSESSIONID);
@@ -639,13 +697,20 @@ public class SapiSyncHandler {
                 sapiHandler.forceJSessionId(jsessionid);
                 sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
             } else {
-                logErrorResponseAndThrowException(resData, false);
                 throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
             }
-        } catch(Exception ex) {
+
+        } catch(IOException ex) {
             if (Log.isLoggable(Log.ERROR)) {
                 Log.error(TAG_LOG, "Failed to login", ex);
             }
+            throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
+        } catch(JSONException ex) {
+            if (Log.isLoggable(Log.ERROR)) {
+                Log.error(TAG_LOG, "Failed to login", ex);
+            }
+            throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
+        } catch(SyncException ex) {
             throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
         }
     }
@@ -683,23 +748,6 @@ public class SapiSyncHandler {
     }
 
     /**
-     * Finds if the SAPI response contains errors
-     * @param response
-     * @return false only if response contains data part, otherwise false
-     * @throws SapiException
-     */
-    private boolean responseHasError(JSONObject response)
-    throws SapiException {
-        if (null == response || response.has(JSON_OBJECT_ERROR)) {
-            logErrorResponseAndThrowException(response, true);
-            return true;
-        }
-        //just to be sure that JSON object has data value
-        if (response.has(JSON_OBJECT_DATA)) return false;
-        return true;
-    }
-    
-    /**
      * Extracts data part from a SAPI response. If data is no present, a
      * {@link SapiException} is thrown
      * @param response
@@ -718,49 +766,126 @@ public class SapiSyncHandler {
     }
 
     /**
+     * 
+     * @param sapiResponse
+     * @param fallbackMessage
+     * @throws SyncException
+     */
+    private SapiResultError checkForCommonSapiErrorCodeAndThrowSyncException(JSONObject sapiResponse, String fallbackMessage)
+    throws SyncException {
+
+        if (null == sapiResponse) {
+            Log.error(TAG_LOG, "Null response from sapi call");
+            throw new SyncException(
+                    SyncException.SERVER_ERROR,
+                    fallbackMessage);
+        }
+        
+        SapiResultError resultError = SapiResultError.extractFromSapiResponse(sapiResponse);
+        
+        if (StringUtil.isNullOrEmpty(resultError.code)) {
+            Log.error(TAG_LOG, "Invalid return code from sapi call");
+            throw new SyncException(
+                    SyncException.SERVER_ERROR,
+                    fallbackMessage);
+        }
+
+        // TODO actually, no common error code check is performed
+        
+        return resultError;
+    }
+
+    /**
      * Handles error response from SAPI, logging the error and creating the
      * proper {@link SapiException} object to throw
      * 
-     * @param response a {@link JSONObject} with the error response to analyze
-     * @param throwException true if an exception must be thrown
+     * @param sapiResponse error response to analyze
+     * @param fallbackMessage
      * @throws SapiException
      */
-    private void logErrorResponseAndThrowException(JSONObject response, boolean throwException)
+    private SapiResultError checkForCommonSapiErrorCodeAndThrowSapiException(JSONObject sapiResponse, String fallbackMessage)
     throws SapiException {
-        if (null == response) {
-            if (throwException) {
-                Log.debug(TAG_LOG, "SAPI response is null");
-                throw SapiException.SAPI_EXCEPTION_UNKNOWN;
-            } else {
-                return;
-            }
+        if (null == sapiResponse) {
+            Log.error(TAG_LOG, "Null response from sapi call");
+            //FIXME: fix the error message, maybe it's not correct
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
         }
 
-        try {
-            // Check for errors
-            if (response.has(JSON_OBJECT_ERROR)) {
-                JSONObject error = response.getJSONObject(JSON_OBJECT_ERROR);
-                String code    = error.getString(JSON_OBJECT_ERROR_FIELD_CODE);
-                String message = error.getString(JSON_OBJECT_ERROR_FIELD_MESSAGE);
-                String cause   = error.getString(JSON_OBJECT_ERROR_FIELD_CAUSE);
+        SapiResultError resultError = SapiResultError.extractFromSapiResponse(sapiResponse);
 
-                StringBuffer logMsg = new StringBuffer(
-                        "Error in SAPI response").append("\r\n");
-                logMsg.append("code: ").append(code).append("\r\n");
-                logMsg.append("cause: ").append(cause).append("\r\n");
-                logMsg.append("message: ").append(message).append("\r\n");
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, logMsg.toString());
+        if (StringUtil.isNullOrEmpty(resultError.code)) {
+            Log.error(TAG_LOG, "Invalid return code from sapi call");
+            //FIXME: fix the error message, maybe it's not correct
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        }
+        
+        // TODO actually, no common error code check is performed,
+        // so an exception is automatically thrown. In the future,
+        // only known error codes will thrown an exception
+        throw new SapiException(
+                resultError.code,
+                resultError.message,
+                resultError.cause);
+        
+        //return resultError;
+    }
+
+    /**
+     * Handles SAPI result in case of error
+     */
+    static class SapiResultError {
+        public String code;
+        public String message;
+        public String cause;
+        
+        public SapiResultError() {}
+        
+        public SapiResultError(String code, String message, String cause) {
+            this.code = code;
+            this.message = message;
+            this.cause = cause;
+        }
+        
+        public static boolean hasError(JSONObject sapiResponse) {
+            if (null == sapiResponse) return true;
+            return sapiResponse.has(JSON_OBJECT_ERROR);
+            //TODO add the check for "success" string inside the object?
+        }
+        
+        public static SapiResultError extractFromSapiResponse(JSONObject sapiResponse) {
+            if (null == sapiResponse)
+                throw new InvalidParameterException("SAPI response cannot be null");
+            
+            //before, if json object doens't have all tree field, an error is trown
+            SapiResultError sapiResultError = new SapiResultError();
+            if (sapiResponse.has(JSON_OBJECT_ERROR)) {
+                JSONObject error = null;
+                try {
+                    error = sapiResponse.getJSONObject(JSON_OBJECT_ERROR);
+                } catch (JSONException e) {
+                    //cannot happens
                 }
-
-                if (throwException) throw new SapiException(code, message, cause);
+                try {
+                    sapiResultError.code = error.getString(JSON_OBJECT_ERROR_FIELD_CODE);
+                } catch (JSONException e) {}
+                try {
+                    sapiResultError.message = error.getString(JSON_OBJECT_ERROR_FIELD_MESSAGE);
+                } catch (JSONException e) {}
+                try {
+                    sapiResultError.cause = error.getString(JSON_OBJECT_ERROR_FIELD_CAUSE);
+                } catch (JSONException e) {}
             }
             
-        } catch(JSONException ex) {
+            //log the error
             if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Failed to retrieve error json object");
+                StringBuffer logMsg = new StringBuffer()
+                        .append("Error in SAPI response").append("\r\n")
+                        .append("code: ").append(sapiResultError.code).append("\r\n")
+                        .append("cause: ").append(sapiResultError.cause).append("\r\n")
+                        .append("message: ").append(sapiResultError.message).append("\r\n");
+                Log.debug(TAG_LOG, logMsg.toString());
             }
-            if (throwException) throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+            return sapiResultError;
         }
     }
 }
