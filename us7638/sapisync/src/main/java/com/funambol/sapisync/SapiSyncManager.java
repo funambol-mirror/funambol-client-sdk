@@ -202,6 +202,9 @@ public class SapiSyncManager implements SyncManagerI {
         if (resume) {
             // We need to understand where the sync got stopped and if a single item
             // shall be resumed
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Resume is active");
+            }
         } else {
             try {
                 syncStatus.reset();
@@ -595,7 +598,7 @@ public class SapiSyncManager implements SyncManagerI {
                     // First of all we check if we already the very same item
                     String     guid = item.getString("id");
                     long       size = Long.parseLong(item.getString("size"));
-                    SyncItem syncItem = createSyncItem(src, guid, SyncItem.STATE_NEW, size, item, serverUrl);
+                    SyncItem syncItem = createSyncItem(src, guid, SyncItem.STATE_NEW, size, item, serverUrl, 0);
                     syncItem.setGuid(guid);
                     TwinDetectionSource twinSource = (TwinDetectionSource)src;
                     SyncItem twin = twinSource.findTwin(syncItem);
@@ -773,7 +776,7 @@ public class SapiSyncManager implements SyncManagerI {
                     }
                     sourceStatus.addElement(new ItemStatus(item.getKey(),
                             SyncSource.SERVER_FULL_ERROR_STATUS));
-                	throw new SyncException(SyncException.DEVICE_FULL, "Server quota exceeded");
+                    throw new SyncException(SyncException.DEVICE_FULL, "Server quota exceeded");
                 } catch(Exception ex) {
                     if(Log.isLoggable(Log.ERROR)) {
                         Log.error(TAG_LOG, "Failed to upload item with key: " +
@@ -830,8 +833,8 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void performDownloadPhase(SyncSource src, int syncMode,
-            boolean resume, StringKeyValueStore mapping) throws SyncException {
+    private void performDownloadPhase(SyncSource src, int syncMode, boolean resume, StringKeyValueStore mapping)
+    throws SyncException {
 
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Starting download phase with mode: " + syncMode);
@@ -852,25 +855,28 @@ public class SapiSyncManager implements SyncManagerI {
 
                 try {
                     applyNewUpdToSyncSource(src, addedArray, SyncItem.STATE_NEW, 
-                                            addedServerUrl, mapping);
+                                            addedServerUrl, mapping, resume);
                         
                     updateDownloadAnchor(
                             (SapiSyncAnchor) src.getConfig().getSyncAnchor(), 
                             downloadNextAnchor);
 
-            // This case is distinct from the one above in that this is for download failures
-            // on individual items that disrupt the download while it is progress, while failures
-            // due to storage limit breach are "graceful" because they occur before the actual
-            // download of the item has started. In future implementations, we might decide to
-            // change the logics so that if an item is too large, the next ones can still be
-            // downloaded: in such a case, it is appropriate not to call it an interruption.
-            // To sum up, interruptions are to be dealt with in this catch block, graceful failures
-            // at the end of the try block above
                 } catch (ItemDownloadInterruptionException ide) {
+                    // This case is distinct from the one above in that this is for download failures
+                    // on individual items that disrupt the download while it is progress, while failures
+                    // due to storage limit breach are "graceful" because they occur before the actual
+                    // download of the item has started. In future implementations, we might decide to
+                    // change the logics so that if an item is too large, the next ones can still be
+                    // downloaded: in such a case, it is appropriate not to call it an interruption.
+                    // To sum up, interruptions are to be dealt with in this catch block, graceful failures
+                    // at the end of the try block above
                     // An item could not be downloaded
                     if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "");
+                        Log.info(TAG_LOG, "Download for item " + ide.getItem().getKey() + " was interrupted at " + ide.getDownloadedSize());
                     }
+                    SyncItem item = ide.getItem();
+                    syncStatus.addReceivedItem(item.getKey(), item.getGuid(), item.getState(),
+                                               SyncSource.INTERRUPTED_STATUS, ide.getDownloadedSize());
                 } catch (JSONException je) {
                     Log.error(TAG_LOG, "Cannot parse server data", je);
                 }
@@ -892,12 +898,12 @@ public class SapiSyncManager implements SyncManagerI {
 
                 if (addedArray != null) {
                     applyNewUpdToSyncSource(src, addedArray, SyncItem.STATE_NEW,
-                            addedServerUrl, mapping);
+                            addedServerUrl, mapping, resume);
                 }
 
                 if (updatedArray != null) {
                     applyNewUpdToSyncSource(src, updatedArray, SyncItem.STATE_UPDATED,
-                            updatedServerUrl, mapping);
+                            updatedServerUrl, mapping, resume);
                 }
 
                 if (deletedArray != null) {
@@ -909,6 +915,22 @@ public class SapiSyncManager implements SyncManagerI {
                     SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
                     updateDownloadAnchor(sapiAnchor, downloadNextAnchor);
                 }
+            } catch (ItemDownloadInterruptionException ide) {
+                    // This case is distinct from the one above in that this is for download failures
+                    // on individual items that disrupt the download while it is progress, while failures
+                    // due to storage limit breach are "graceful" because they occur before the actual
+                    // download of the item has started. In future implementations, we might decide to
+                    // change the logics so that if an item is too large, the next ones can still be
+                    // downloaded: in such a case, it is appropriate not to call it an interruption.
+                    // To sum up, interruptions are to be dealt with in this catch block, graceful failures
+                    // at the end of the try block above
+                    // An item could not be downloaded
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Download for item " + ide.getItem().getKey() + " was interrupted at " + ide.getDownloadedSize());
+                    }
+                    SyncItem item = ide.getItem();
+                    syncStatus.addReceivedItem(item.getKey(), item.getGuid(), item.getState(),
+                                               SyncSource.INTERRUPTED_STATUS, ide.getDownloadedSize());
             } catch (JSONException jse) {
                 Log.error(TAG_LOG, "Error applying server changes", jse);
                 throw new SyncException(SyncException.CLIENT_ERROR, "Error applying server changes");
@@ -953,7 +975,7 @@ public class SapiSyncManager implements SyncManagerI {
      */
     private boolean applyNewUpdToSyncSource(SyncSource src, JSONArray items,
                                             char state, String serverUrl,
-                                            StringKeyValueStore mapping)
+                                            StringKeyValueStore mapping, boolean resume)
     throws SyncException, JSONException
     {
 
@@ -993,8 +1015,17 @@ public class SapiSyncManager implements SyncManagerI {
                 state = SyncItem.STATE_NEW;
             }
 
+            // Shall we resume this item download?
+            long partialLength = 0;
+            if (resume && syncStatus.getReceivedItemStatus(guid) == SyncSource.INTERRUPTED_STATUS) {
+                partialLength = syncStatus.getReceivedItemPartialLength(guid);
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Found an item whose download can be resumed at " + partialLength);
+                }
+            }
+
             // Create the item
-            SyncItem syncItem = createSyncItem(src, luid, state, size, item, serverUrl);
+            SyncItem syncItem = createSyncItem(src, luid, state, size, item, serverUrl, partialLength);
             syncItem.setGuid(guid);
 
             // Notify the listener
@@ -1003,7 +1034,7 @@ public class SapiSyncManager implements SyncManagerI {
             } else if(state == SyncItem.STATE_UPDATED) {
                 getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
             }
-            
+
             // Filter downloaded items for JSONSyncSources only
             if(src instanceof JSONSyncSource) {
                 if(((JSONSyncSource)src).filterSyncItem(syncItem)) {
@@ -1049,7 +1080,7 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private SyncItem createSyncItem(SyncSource src, String luid, char state, 
-            long size, JSONObject item, String serverUrl) throws JSONException {
+            long size, JSONObject item, String serverUrl, long partialLength) throws JSONException {
 
         SyncItem syncItem = null;
         if(src instanceof JSONSyncSource) {
@@ -1075,6 +1106,7 @@ public class SapiSyncManager implements SyncManagerI {
                 }
             }
         }
+        syncItem.setPartialLength(partialLength);
         return syncItem;
     }
 

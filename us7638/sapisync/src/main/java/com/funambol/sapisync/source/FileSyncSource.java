@@ -224,11 +224,10 @@ public class FileSyncSource extends JSONSyncSource implements TwinDetectionSourc
         }
     }
 
-    public OutputStream getDownloadOutputStream(String name, long size, 
-            boolean isUpdate, boolean isThumbnail) throws IOException {
-        // TODO FIXME: hanlde the resume
+    public OutputStream getDownloadOutputStream(String name, long size, boolean isUpdate,
+                                                boolean isThumbnail, boolean append) throws IOException {
         FileAdapter file = new FileAdapter(directory + name);
-        OutputStream os = file.openOutputStream();
+        OutputStream os = file.openOutputStream(append);
         file.close();
         return os;
     }

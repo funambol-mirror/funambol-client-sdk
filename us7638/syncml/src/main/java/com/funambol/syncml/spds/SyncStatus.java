@@ -278,6 +278,11 @@ public class SyncStatus implements SyncReport {
         return receivedItems.size() + pendingReceivedItems.size();
     }
 
+    // TODO: provide a meaningful implementation if needed
+    public int getReceivedItemStatus(String guid) {
+        return -1;
+    }
+
     public void addMappingSent(String luid) {
         ReceivedItemStatus status = (ReceivedItemStatus)receivedItems.get(luid);
         if (status == null) {

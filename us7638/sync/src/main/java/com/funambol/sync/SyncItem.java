@@ -83,6 +83,9 @@ public class SyncItem {
 
     /** Item guid (info is optional) */
     protected String guid;
+
+    /** Item partial length at the beginning of a download */
+    protected long partialLength;
     
     //------------------------------------------------------------- Constructors
     
@@ -129,6 +132,7 @@ public class SyncItem {
         this.parent = that.parent;
         this.objectSize = that.objectSize;
         this.os = that.os;
+        this.partialLength = that.partialLength;
     }
 
     //----------------------------------------------------------- Public methods
@@ -309,6 +313,14 @@ public class SyncItem {
 
     public void setGuid(String guid) {
         this.guid = guid;
+    }
+
+    public void setPartialLength(long length) {
+        this.partialLength = length;
+    }
+
+    public long getPartialLength() {
+        return partialLength;
     }
 }
 

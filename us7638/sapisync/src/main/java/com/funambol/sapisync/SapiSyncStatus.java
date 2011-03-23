@@ -240,8 +240,23 @@ public class SapiSyncStatus implements SyncReport {
      * @param status the client status for this command
      */
     public void addReceivedItem(String guid, String luid, char cmd, int statusCode) {
+        addReceivedItem(guid, luid, cmd, statusCode, 0);
+    }
+ 
+
+    /**
+     * The client received an item via a command and it has been processed
+     * generating a certain status.
+     *
+     * @param guid the server id for the item
+     * @param luid the client id for the item
+     * @param cmd the command the server sent the item into
+     * @param status the client status for this command
+     */
+    public void addReceivedItem(String guid, String luid, char cmd, int statusCode, long partialLength) {
         ReceivedItemStatus status = new ReceivedItemStatus(guid, cmd);
         status.setStatus(statusCode);
+        status.setPartialLength(partialLength);
         // If the pending received items already have this key, then we add
         // the current item with another key. This may happen for example if two
         // commands have the same key. When keys are used (e.g. calendar sync)
@@ -330,6 +345,24 @@ public class SapiSyncStatus implements SyncReport {
         return null;
     }
 
+    public int getReceivedItemStatus(String guid) {
+        ReceivedItemStatus status = getReceivedStatus(guid);
+        if (status != null) {
+            return status.getStatus();
+        } else {
+            return -1;
+        }
+    }
+
+    public long getReceivedItemPartialLength(String guid) {
+        ReceivedItemStatus status = getReceivedStatus(guid);
+        if (status != null) {
+            return status.getPartialLength();
+        } else {
+            return 0;
+        }
+    }
+
     public Hashtable getPendingMappings() {
         // Create an enumeration with all the pending mappings. The value is
         Hashtable res = new Hashtable();
@@ -395,13 +428,14 @@ public class SapiSyncStatus implements SyncReport {
                 remoteUri = value;
             } else if (key.startsWith(RECEIVED_ITEM_KEY)) {
                 String itemKey = key.substring(RECEIVED_ITEM_KEY.length());
-                // The value contains the GUID, the map flag, the cmd and the
-                // status
+                // The value contains the GUID, the map flag, the cmd, the
+                // status and the partial length
                 String values[] = StringUtil.split(value, ",");
                 String guid   = values[0];
                 String mapped = values[1];
                 char cmd    = values[2].charAt(0);
                 String stat   = values[3];
+                String pl     = values[4];
                 ReceivedItemStatus status = new ReceivedItemStatus(guid, cmd);
                 if (TRUE.equals(mapped.toUpperCase())) {
                     status.setMapSent(true);
@@ -409,7 +443,9 @@ public class SapiSyncStatus implements SyncReport {
                     status.setMapSent(false);
                 }
                 int s = Integer.parseInt(stat);
+                long partialLength = Long.parseLong(pl);
                 status.setStatus(s);
+                status.setPartialLength(partialLength);
                 receivedItems.put(itemKey, status);
             }
         }
@@ -450,6 +486,7 @@ public class SapiSyncStatus implements SyncReport {
             v.append(",").append(status.getMapSent() ? TRUE : FALSE);
             v.append(",").append(status.getCmd());
             v.append(",").append(status.getStatus());
+            v.append(",").append(status.getPartialLength());
             store.add(RECEIVED_ITEM_KEY + key, v.toString());
 
             // Now move this item into the in memory values
@@ -729,6 +766,31 @@ public class SapiSyncStatus implements SyncReport {
         return count;
     }
 
+    private ReceivedItemStatus getReceivedStatus(String guid) {
+        Enumeration keys = receivedItems.keys();
+        while(keys.hasMoreElements()) {
+            String luid = (String)keys.nextElement();
+            ReceivedItemStatus status = (ReceivedItemStatus)receivedItems.get(luid);
+            String g = status.getGuid();
+            if (guid.equals(g)) {
+                return status;
+            }
+        }
+        keys = pendingReceivedItems.keys();
+        while(keys.hasMoreElements()) {
+            String luid = (String)keys.nextElement();
+            ReceivedItemStatus status = (ReceivedItemStatus)pendingReceivedItems.get(luid);
+            String g = status.getGuid();
+            if (guid.equals(g)) {
+                return status;
+            }
+        }
+        return null;
+    }
+
+
+
+
     private class ItemStatus {
 
         public static final int UNDEFINED_STATUS = -1;
@@ -760,6 +822,7 @@ public class SapiSyncStatus implements SyncReport {
     private class ReceivedItemStatus extends ItemStatus {
         private boolean mapSent;
         private int status;
+        private long partialLength;
 
         public ReceivedItemStatus(String guid, char cmd) {
             super(cmd);
@@ -772,6 +835,14 @@ public class SapiSyncStatus implements SyncReport {
 
         public boolean getMapSent() {
             return mapSent;
+        }
+
+        public void setPartialLength(long partialLength) {
+            this.partialLength = partialLength;
+        }
+
+        public long getPartialLength() {
+            return partialLength;
         }
     }
 

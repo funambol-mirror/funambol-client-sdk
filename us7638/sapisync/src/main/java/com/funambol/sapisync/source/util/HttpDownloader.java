@@ -104,6 +104,11 @@ public class HttpDownloader  {
                 if (se.getCode() == SyncException.CONN_NOT_FOUND && i < MAX_RETRY) {
                     retry = true;
                 }
+            } catch (ResumeException re) {
+                // This is a bug in the code because we did not ask for a
+                // resume, so we cannot have a ResumeException here
+                Log.error(TAG_LOG, "Unexpected resume exception", re);
+                throw new SyncException(SyncException.CLIENT_ERROR, "Unexpected resume exception");
             }
         } while(retry && downloadedSize < size);
         return downloadedSize;
@@ -118,9 +123,9 @@ public class HttpDownloader  {
      * @throws SyncException
      * @throws IOException
      */
-    public void resume(String url, OutputStream os, long size, long startOffset)
-    throws SyncException, IOException {
-        download(url, os, size, startOffset, size - 1);
+    public long resume(String url, OutputStream os, long size, long startOffset)
+    throws SyncException, IOException, ResumeException {
+        return download(url, os, size, startOffset, size - 1);
     }
 
     /**
@@ -137,10 +142,10 @@ public class HttpDownloader  {
         return cancel;
     }
 
-    protected int download(String url, OutputStream os, long size, long startOffset, long endOffset)
-    throws SyncException, IOException {
+    protected long download(String url, OutputStream os, long size, long startOffset, long endOffset)
+    throws SyncException, IOException, ResumeException {
 
-        int downloadedSize = 0;
+        long downloadedSize = 0;
 
         HttpConnectionAdapter conn = null;
         InputStream is = null;
@@ -181,9 +186,7 @@ public class HttpDownloader  {
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Server refused resuming download");
                     }
-                    // Leave the os at the very beginning, so that we overwrite old data
-                    // TODO: use the proper error
-                    throw new SyncException(SyncException.CLIENT_ERROR, "Cannot resume download");
+                    throw new ResumeException("Cannot resume download");
                 } else {
                     ok = false;
                 }

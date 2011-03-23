@@ -47,6 +47,7 @@ import com.funambol.sync.client.ChangesTracker;
 import com.funambol.sync.client.StorageLimitException;
 import com.funambol.sync.client.TrackableSyncSource;
 import com.funambol.sapisync.source.util.HttpDownloader;
+import com.funambol.sapisync.source.util.ResumeException;
 import com.funambol.sync.Filter;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncListener;
@@ -205,15 +206,41 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             String baseUrl = jsonFile.getUrl();
             long size = jsonFile.getSize();
             OutputStream fileos = null;
-            fileos = getDownloadOutputStream(jsonFile, isUpdate, false);
+
+            long partialLength = item.getPartialLength();
+            if (partialLength > 0) {
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Download can be resumed at " + partialLength);
+                }
+            }
+            fileos = getDownloadOutputStream(jsonFile, isUpdate, false, partialLength > 0);
             downloader.setDownloadListener(
                     new DownloadSyncListener(item, super.getListener()));
             String url = composeUrl(jsonFile.getServerUrl(), baseUrl);
-            long actualSize = downloader.download(url, fileos, size);
-            if (size != actualSize) {
-                // The download was interrupted. We shall keep track of this interrupted download
-                // so that it can be resumed
-                throw new ItemDownloadInterruptionException(item, actualSize);
+            try {
+                long actualSize;
+                if (partialLength > 0) {
+                    actualSize = downloader.resume(url, fileos, size, partialLength);
+                } else {
+                    actualSize = downloader.download(url, fileos, size);
+                }
+                if (size != actualSize && actualSize > 0) {
+                    // The download was interrupted. We shall keep track of this interrupted download
+                    // so that it can be resumed
+                    throw new ItemDownloadInterruptionException(item, actualSize);
+                }
+            } catch (ResumeException re) {
+                // The item download cannot be resumed properly
+                // Re-create a new output stream without appending
+                fileos.close();
+                fileos = getDownloadOutputStream(jsonFile, isUpdate, false, false);
+                // Download the item from scratch
+                long actualSize = downloader.download(url, fileos, size);
+                if (size != actualSize && actualSize > 0) {
+                    // The download was interrupted. We shall keep track of this interrupted download
+                    // so that it can be resumed
+                    throw new ItemDownloadInterruptionException(item, actualSize);
+                }
             }
         }
         if(downloadThumbnails) {
@@ -223,12 +250,13 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     }
 
     protected OutputStream getDownloadOutputStream(JSONFileObject jsonItem,
-            boolean isUpdate, boolean isThumbnail) throws IOException {
+            boolean isUpdate, boolean isThumbnail, boolean append) throws IOException {
         return getDownloadOutputStream(
                 jsonItem.getName(),
                 jsonItem.getSize(),
                 isUpdate,
-                isThumbnail);
+                isThumbnail,
+                append);
     }
 
     /**
@@ -242,7 +270,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
      * @return
      */
     public abstract OutputStream getDownloadOutputStream(String name,
-            long size, boolean isUpdate, boolean isThumbnail) throws IOException;
+            long size, boolean isUpdate, boolean isThumbnail, boolean append) throws IOException;
 
     /**
      * Composes the url to use for the download operation.

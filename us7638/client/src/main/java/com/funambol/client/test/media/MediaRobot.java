@@ -91,7 +91,7 @@ public abstract class MediaRobot extends Robot {
 
         getMediaFile(filename,
                 ((JSONSyncSource) source).getDownloadOutputStream(filename, -1,
-                        false, false));
+                        false, false, false));
     }
 
     public abstract void deleteMedia(String type, String filename)

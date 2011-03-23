@@ -48,6 +48,7 @@ public interface SyncReport {
     public int getSentItemsCount();
     public int getReceivedItemsCount();
     public int getReceivedAddNumber();
+    public int getReceivedItemStatus(String guid);
     public int getReceivedReplaceNumber();
     public int getReceivedDeleteNumber();
     public int getSentAddNumber();
