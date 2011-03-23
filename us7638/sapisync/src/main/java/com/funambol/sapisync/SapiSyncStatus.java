@@ -160,7 +160,11 @@ public class SapiSyncStatus implements SyncReport {
     public void addSentItem(String key, char cmd) {
         // The item was sent but a status has not been received yet
         SentItemStatus status = new SentItemStatus(cmd);
-        pendingSentItems.put(key, status);
+        if(sentItems.containsKey(key)) {
+            sentItems.put(key, status);
+        } else {
+            pendingSentItems.put(key, status);
+        }
     }
 
     public void setSentItemStatus(String key, int status) {

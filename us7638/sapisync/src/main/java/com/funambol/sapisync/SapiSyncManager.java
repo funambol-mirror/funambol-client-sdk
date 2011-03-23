@@ -743,6 +743,8 @@ public class SapiSyncManager implements SyncManagerI {
                     mapping.add(remoteKey, item.getKey());
 
                     syncStatus.addSentItem(item.getKey(), item.getState());
+                    syncStatus.setSentItemStatus(item.getKey(),
+                            SyncSource.SUCCESS_STATUS, item.getGuid());
 
                     // Set the item status
                     sourceStatus.addElement(new ItemStatus(item.getKey(),
