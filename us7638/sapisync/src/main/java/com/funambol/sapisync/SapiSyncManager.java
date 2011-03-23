@@ -323,12 +323,12 @@ public class SapiSyncManager implements SyncManagerI {
         }
         cancel = true;
         sapiSyncHandler.cancel();
-        performFinalizationPhase(null);
     }
 
     private void cancelSyncIfNeeded(SyncSource src) throws SyncException {
         if(cancel) {
             src.cancel();
+            performFinalizationPhase(null);
             throw new SyncException(SyncException.CANCELLED, "Sync got cancelled");
         }
     }
@@ -678,7 +678,6 @@ public class SapiSyncManager implements SyncManagerI {
             }
         }
 
-
         // Exclude twins from total items count
         totalSending -= twins.size();
 
@@ -695,115 +694,121 @@ public class SapiSyncManager implements SyncManagerI {
 
         int uploadedCount = 0;
         SyncItem item = getNextItemToUpload(src, incremental);
-        
-        while(item != null && itemsCountFilter(maxSending, uploadedCount)) {
 
-            try {
-                // Exclude twins
-                if(twins.contains(item.getKey())) {
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Exclude twin item to be uploaded: "
-                                + item.getKey());
+        try {
+            while(item != null && itemsCountFilter(maxSending, uploadedCount)) {
+                try {
+                    // Exclude twins
+                    if(twins.contains(item.getKey())) {
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Exclude twin item to be uploaded: "
+                                    + item.getKey());
+                        }
+                        sourceStatus.addElement(new ItemStatus(item.getKey(),
+                            SyncSource.SUCCESS_STATUS));
+                        continue;
                     }
-                    sourceStatus.addElement(new ItemStatus(item.getKey(),
-                        SyncSource.SUCCESS_STATUS));
-                    continue;
-                }
-
-                syncStatus.addSentItem(item.getKey(), item.getState());
-                uploadedCount++;
-                
-                // If the item was already sent in a previously interrupted
-                // sync, then we do not send it again
-                boolean uploadDone = false;
-                String remoteKey = null;
-                if (resume) {
-                    int itemStatus = syncStatus.getSentItemStatus(item.getKey());
-                    if (itemStatus != -1 && itemStatus != SyncSource.SUCCESS_STATUS) {
-                        // This item has either error or was interrupted
-                        if (itemStatus == SyncSource.INTERRUPTED_STATUS) {
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Resuming upload for " + item.getKey());
+                    // If the item was already sent in a previously interrupted
+                    // sync, then we do not send it again
+                    boolean uploadDone = false;
+                    String remoteKey = null;
+                    if (resume) {
+                        int itemStatus = syncStatus.getSentItemStatus(item.getKey());
+                        if (itemStatus != -1 && itemStatus != SyncSource.SUCCESS_STATUS) {
+                            // This item has either error or was interrupted
+                            if (itemStatus == SyncSource.INTERRUPTED_STATUS) {
+                                if (Log.isLoggable(Log.INFO)) {
+                                    Log.info(TAG_LOG, "Resuming upload for " + item.getKey());
+                                }
+                                remoteKey = syncStatus.getSentItemGuid(item.getKey());
+                                item.setGuid(remoteKey);
+                                remoteKey = sapiSyncHandler.resumeItemUpload(item,
+                                        remoteUri, getSyncListenerFromSource(src));
+                                // If the returned key is the same as the item guid,
+                                // the item has been resumed correctly.
+                                if(remoteKey.equals(item.getGuid())) {
+                                    syncStatus.addSentResumedItem(item.getKey());
+                                }
+                                uploadDone = true;
                             }
-                            remoteKey = syncStatus.getSentItemGuid(item.getKey());
-                            item.setGuid(remoteKey);
-                            remoteKey = sapiSyncHandler.resumeItemUpload(item,
-                                    remoteUri, getSyncListenerFromSource(src));
-                            // If the returned key is the same as the item guid,
-                            // the item has been resumed correctly.
-                            if(remoteKey.equals(item.getGuid())) {
-                                syncStatus.addSentResumedItem(item.getKey());
-                            }
-                            uploadDone = true;
                         }
                     }
-                }
-                if (!uploadDone) {
-                    // Upload the item to the server
-                    remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
-                            getSyncListenerFromSource(src));
-                }
+                    if (!uploadDone) {
+                        // Upload the item to the server
+                        remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
+                                getSyncListenerFromSource(src));
+                    }
 
-                item.setGuid(remoteKey);
-                mapping.add(remoteKey, item.getKey());
-                
-                // Set the item status
-                sourceStatus.addElement(new ItemStatus(item.getKey(),
-                        SyncSource.SUCCESS_STATUS));
+                    item.setGuid(remoteKey);
+                    mapping.add(remoteKey, item.getKey());
 
-            } catch (ItemUploadInterruptionException ex) {
-                // An item could not be fully uploaded
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Error uploading item " + item.getKey());
+                    syncStatus.addSentItem(item.getKey(), item.getState());
+
+                    // Set the item status
+                    sourceStatus.addElement(new ItemStatus(item.getKey(),
+                            SyncSource.SUCCESS_STATUS));
+
+                } catch (ItemUploadInterruptionException ex) {
+                    // An item could not be fully uploaded
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Error uploading item " + item.getKey());
+                    }
+                    syncStatus.addSentItem(item.getKey(), item.getState());
+                    syncStatus.setSentItemStatus(item.getKey(),
+                            SyncSource.INTERRUPTED_STATUS, item.getGuid());
+                    sourceStatus.addElement(new ItemStatus(item.getKey(),
+                            SyncSource.INTERRUPTED_STATUS));
+                    try {
+                        syncStatus.save();
+                    } catch (Exception e) {
+                        Log.error(TAG_LOG, "Cannot save sync status", e);
+                    }
+                } catch (QuotaOverflowException ex) {
+                    // An item could not be uploaded because user quota on
+                    // server exceeded
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Server quota overflow error");
+                    }
+                    sourceStatus.addElement(new ItemStatus(item.getKey(),
+                            SyncSource.SERVER_FULL_ERROR_STATUS));
+                } catch(Exception ex) {
+                    if(Log.isLoggable(Log.ERROR)) {
+                        Log.error(TAG_LOG, "Failed to upload item with key: " +
+                                item.getKey(), ex);
+                    }
+                    sourceStatus.addElement(new ItemStatus(item.getKey(),
+                            SyncSource.ERROR_STATUS));
+                } finally {
+                    uploadedCount++;
+                    item = getNextItemToUpload(src, incremental);
+                    cancelSyncIfNeeded(src);
                 }
-                syncStatus.setSentItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS, item.getGuid());
-                sourceStatus.addElement(new ItemStatus(item.getKey(), SyncSource.INTERRUPTED_STATUS));
-                try {
-                    syncStatus.save();
-                } catch (Exception e) {
-                    Log.error(TAG_LOG, "Cannot save sync status", e);
-                }
-            } catch (QuotaOverflowException ex) {
-                // An item could not be uploaded because user quota on server exceeded
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Server quota overflow error");
-                }
-                sourceStatus.addElement(new ItemStatus(item.getKey(),
-                        SyncSource.SERVER_FULL_ERROR_STATUS));
-            } catch(Exception ex) {
-                if(Log.isLoggable(Log.ERROR)) {
-                    Log.error(TAG_LOG, "Failed to upload item with key: " + item.getKey(), ex);
-                }
-                sourceStatus.addElement(new ItemStatus(item.getKey(),
-                        SyncSource.ERROR_STATUS));
-            } finally {
-                item = getNextItemToUpload(src, incremental);
-                cancelSyncIfNeeded(src);
             }
+            if(incremental) {
+                // Updates and deletes are not propagated, return a success status
+                // for each item anyway
+                if (localUpdated != null) {
+                    Enumeration updKeys = localUpdated.keys();
+                    while(updKeys.hasMoreElements()) {
+                        String updKey = (String)updKeys.nextElement();
+                        SyncItem update = (SyncItem)localUpdated.get(updKey);
+                        sourceStatus.addElement(new ItemStatus(update.getKey(),
+                                SyncSource.SUCCESS_STATUS));
+                    }
+                }
+                if (localDeleted != null) {
+                    Enumeration delKeys = localDeleted.keys();
+                    while(delKeys.hasMoreElements()) {
+                        String delKey = (String)delKeys.nextElement();
+                        SyncItem delete = (SyncItem)localDeleted.get(delKey);
+                        sourceStatus.addElement(new ItemStatus(delete.getKey(),
+                                SyncSource.SUCCESS_STATUS));
+                    }
+                }
+            }
+        } finally {
+            src.applyItemsStatus(sourceStatus);
         }
-
-        if(incremental) {
-            // Updates and deletes are not propagated, return a success status 
-            // for each item anyway
-            if (localUpdated != null) {
-                Enumeration updKeys = localUpdated.keys();
-                while(updKeys.hasMoreElements()) {
-                    String updKey = (String)updKeys.nextElement();
-                    SyncItem update = (SyncItem)localUpdated.get(updKey);
-                    sourceStatus.addElement(new ItemStatus(update.getKey(), SyncSource.SUCCESS_STATUS));
-                }
-            }
-            if (localDeleted != null) {
-                Enumeration delKeys = localDeleted.keys();
-                while(delKeys.hasMoreElements()) {
-                    String delKey = (String)delKeys.nextElement();
-                    SyncItem delete = (SyncItem)localDeleted.get(delKey);
-                    sourceStatus.addElement(new ItemStatus(delete.getKey(), SyncSource.SUCCESS_STATUS));
-                }
-            }
-        }
-        
-        src.applyItemsStatus(sourceStatus);
     }
 
     private boolean itemsCountFilter(int max, int current) {

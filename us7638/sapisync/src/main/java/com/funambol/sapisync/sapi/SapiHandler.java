@@ -367,7 +367,7 @@ public class SapiHandler {
 
     public long getMediaPartialUploadLength(String name, String guid, long size) throws IOException {
 
-        String url = createUrl(name, "add", null);
+        String url = createUrl("upload/" + name, "add", null);
         HttpConnectionAdapter conn = null;
 
         OutputStream os = null;
@@ -412,7 +412,7 @@ public class SapiHandler {
             if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
                 // We have uploaded the item completely
                 return size;
-            } else if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_PARTIAL) {
+            } else if (conn.getResponseCode() == 308 /* Resume Incomplete */) {
                 String length = conn.getHeaderField("Range");
                 if (length == null) {
                     Log.error(TAG_LOG, "Server did not return a valid range");
@@ -424,7 +424,7 @@ public class SapiHandler {
                     Log.error(TAG_LOG, "Server returned a range in unknown format " + length);
                     return 0;
                 }
-                length = length.substring(minusIdx).trim();
+                length = length.substring(minusIdx+1).trim();
                 try {
                     long res = Long.parseLong(length);
                     return res;

@@ -151,10 +151,11 @@ public class SapiSyncHandler {
                     }
                     return guid;
                 } else {
+                    long fromByte = length + 1;
                     if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Upload can be resumed at byte " + length);
+                        Log.info(TAG_LOG, "Upload can be resumed at byte " + fromByte);
                     }
-                    return uploadItem(item, remoteUri, listener, length);
+                    return uploadItem(item, remoteUri, listener, fromByte);
                 }
             } else {
                 if (Log.isLoggable(Log.INFO)) {
@@ -228,14 +229,13 @@ public class SapiSyncHandler {
             } else {
                 remoteKey = item.getGuid();
                 StringBuffer contentRangeValue = new StringBuffer();
-                contentRangeValue.append("bytes ").append(fromByte).append("-").append(json.getSize()-1)
-                                 .append("/").append(json.getSize());
+                contentRangeValue.append("bytes ").append(fromByte)
+                        .append("-").append(json.getSize()-1)
+                        .append("/").append(json.getSize());
                 headers.put("Content-Range", contentRangeValue.toString());
+
                 // We must skip the first bytes of the input stream
-                // FIXME: low performance way to skip bytes, find a better and quicker way
-                for(int i=0;i<fromByte;++i) {
-                    is.read();
-                }
+                is.skip(fromByte);
             }
             
             headers.put("x-funambol-id", remoteKey);
