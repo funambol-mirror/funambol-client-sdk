@@ -771,6 +771,7 @@ public class SapiSyncManager implements SyncManagerI {
                     }
                     sourceStatus.addElement(new ItemStatus(item.getKey(),
                             SyncSource.SERVER_FULL_ERROR_STATUS));
+                	throw new SyncException(SyncException.DEVICE_FULL, "Server quota exceeded");
                 } catch(Exception ex) {
                     if(Log.isLoggable(Log.ERROR)) {
                         Log.error(TAG_LOG, "Failed to upload item with key: " +
