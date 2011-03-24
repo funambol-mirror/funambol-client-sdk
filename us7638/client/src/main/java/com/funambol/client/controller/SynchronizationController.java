@@ -814,7 +814,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
      * @param localStorageFullSources 
      */
     protected void displayStorageLimitWarning(Vector localStorageFullSources) {
-        controller.getNotificationController().showNotificationClientFull(screen);
+        controller.getNotificationController().showNotificationClientFull();
         localStorageFullSources.removeAllElements();
     }
 
@@ -824,7 +824,7 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
      * @param serverQuotaFullSources 
      */
     protected void displayServerQuotaWarning(Vector serverQuotaFullSources) {
-        controller.getNotificationController().showNotificationServerFull(screen);
+        controller.getNotificationController().showNotificationServerFull();
         serverQuotaFullSources.removeAllElements();
     }
 
