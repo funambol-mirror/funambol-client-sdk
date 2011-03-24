@@ -503,7 +503,7 @@ public class SapiHandler {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Authorization is specified via jsessionid");
             }
-            url.append(";jsessionid=" + jsessionId);
+            url.append(";jsessionid=").append(jsessionId);
         }
 
         // Append the Params
