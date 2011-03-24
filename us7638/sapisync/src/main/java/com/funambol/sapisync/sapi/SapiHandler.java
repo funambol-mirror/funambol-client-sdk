@@ -356,6 +356,12 @@ public class SapiHandler {
                 } catch (IOException e) {}
                 is = null;
             }
+            if (requestIs != null) {
+                try {
+                    requestIs.close();
+                } catch (IOException e) {}
+                requestIs = null;
+            }
             if (conn != null) {
                 try {
                     conn.close();
