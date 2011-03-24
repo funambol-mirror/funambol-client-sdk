@@ -162,7 +162,7 @@ public class HomeScreenController extends SynchronizationController {
     protected void displayStorageLimitWarning(Vector localStorageFullSources) {
         logSyncSourceErrors(localStorageFullSources);
         if (isInForeground()) {
-            if (!dontDisplayStorageLimitWarning) {            
+            if (!dontDisplayStorageLimitWarning) {         
                 String message = localization.getLanguage("message_storage_limit");
                 controller.getDialogController().showMessageAndWaitUserConfirmation(message);
                 dontDisplayStorageLimitWarning = true; // Once is enough
@@ -497,7 +497,10 @@ public class HomeScreenController extends SynchronizationController {
         // For manual sync, always show alert message for storage/server
         // quota limit. For other sync modes, doesn't display message if
         // the previous sync ended with the same error.
-        if (!MANUAL.equals(syncType)) {
+        if (MANUAL.equals(syncType)) {
+            dontDisplayStorageLimitWarning = false;
+            dontDisplayServerQuotaWarning = false;
+        } else {
             for(int i = 0 ; i < syncSources.size(); ++i) {
                 AppSyncSource appSource = (AppSyncSource)syncSources.elementAt(i);
                     
