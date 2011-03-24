@@ -116,9 +116,11 @@ public abstract class Configuration {
     protected static final String CONF_KEY_SKIP_UPDATE       = "SKIP_UPDATE";
     protected static final String CONF_KEY_ACTIVATION_DATE   = "ACTIVATION_DATE";
 
-    protected static final String CONF_KEY_FORCE_SERVER_CAPS_REQ = "FORCE_SERVER_CAPS_REQ";
+    protected static final String CONF_KEY_FORCE_SERVER_CAPS_REQ    = "FORCE_SERVER_CAPS_REQ";
     protected static final String CONF_KEY_SOURCE_SYNC_TYPE_CHANGED = "SOURCE_SYNC_TYPE_CHANGED";
     protected static final String CONF_KEY_SERVER_DEV_INF    = "SERVER_DEV_INF";
+
+    protected static final String CONF_KEY_CURRENT_SYNC_RETRY_COUNT = "CURRENT_SYNC_RETRY_COUNT";
 
     protected static final String CONFIG_VERSION = "10";
 
@@ -159,6 +161,8 @@ public abstract class Configuration {
     protected boolean      forceServerCapsRequest    = false;
 
     protected boolean      pimSourceSyncTypeChanged  = false;
+
+    protected int          currentSyncRetryCount     = -1; // -1 means no retry
 
     /**
      * This is the proxy configuration. Note that at the moment this value is
@@ -236,6 +240,8 @@ public abstract class Configuration {
 
         pimSourceSyncTypeChanged = false;
 
+        currentSyncRetryCount = -1;
+
         logLevel = Log.ERROR;
 
         version = CONFIG_VERSION;
@@ -290,6 +296,8 @@ public abstract class Configuration {
             forceServerCapsRequest = loadBooleanKey(CONF_KEY_FORCE_SERVER_CAPS_REQ, false);
 
             pimSourceSyncTypeChanged = loadBooleanKey(CONF_KEY_SOURCE_SYNC_TYPE_CHANGED, false);
+
+            currentSyncRetryCount = loadIntKey(CONF_KEY_CURRENT_SYNC_RETRY_COUNT, -1);
 
             // Updater properties
             downloadUrl      = loadStringKey(CONF_KEY_UPDATE_URL, " ");
@@ -437,6 +445,8 @@ public abstract class Configuration {
 
         saveBooleanKey(CONF_KEY_FORCE_SERVER_CAPS_REQ, forceServerCapsRequest);
         saveBooleanKey(CONF_KEY_SOURCE_SYNC_TYPE_CHANGED, pimSourceSyncTypeChanged);
+
+        saveIntKey(CONF_KEY_CURRENT_SYNC_RETRY_COUNT, currentSyncRetryCount);
 
         saveBooleanKey(CONF_KEY_BANDWIDTH_SAVER, bandwidthSaverChecked);
 
@@ -835,6 +845,14 @@ public abstract class Configuration {
 
     public void setPimSourceSyncTypeChanged(boolean value) {
         pimSourceSyncTypeChanged = value;
+    }
+
+    public int getCurrentSyncRetryCount() {
+        return currentSyncRetryCount;
+    }
+
+    public void setCurrentSyncRetryCount(int value) {
+        currentSyncRetryCount = value;
     }
 
     public Runnable getPostConfigurationTask() {
