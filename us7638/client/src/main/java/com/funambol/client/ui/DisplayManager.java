@@ -197,8 +197,7 @@ public interface DisplayManager {
 
     /**
      * Display a notification
-     * @param screen with the data
      * @param notificationData the notification data
      */
-    public void showNotification(Screen screen, NotificationData notificationData);
+    public void showNotification(NotificationData notificationData);
 }

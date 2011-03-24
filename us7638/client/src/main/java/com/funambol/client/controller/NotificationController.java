@@ -37,7 +37,6 @@ package com.funambol.client.controller;
 
 import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.DisplayManager;
-import com.funambol.client.ui.Screen;
 
 /**
  * A controller for a "background" notification, i.e. a notification not
@@ -62,7 +61,7 @@ public class NotificationController {
 
     /**
      * Public constructor
-     * @param displayManager the DisplayManager object to be used.
+     * @param displayManager the DisplayManager object to be used.o
      * @param controller
      */
     public NotificationController(DisplayManager displayManager, Controller controller) {
@@ -73,7 +72,7 @@ public class NotificationController {
     /**
      * Display a notification when server has no more available storage for media upload
      */
-    public void showNotificationServerFull(Screen screen){
+    public void showNotificationServerFull(){
         //creates notification data
         //TODO find a way to put android class to call
         NotificationData notificationData = NotificationData.Factory.create(
@@ -83,13 +82,13 @@ public class NotificationController {
                 localization.getLanguage("notification_online_quota_full_server_title"),
                 localization.getLanguage("notification_online_quota_full_server_message"),
                 null);
-        showNotification(screen, notificationData);
+        showNotification(notificationData);
     }
     
     /**
      * Display a notification when server has no more available storage for media upload
      */
-    public void showNotificationClientFull(Screen screen){
+    public void showNotificationClientFull(){
         //creates notification data
         //TODO find a way to put android class to call
         NotificationData notificationData = NotificationData.Factory.create(
@@ -99,12 +98,12 @@ public class NotificationController {
                 localization.getLanguage("notification_storage_full_device_title"),
                 localization.getLanguage("notification_storage_full_device_message"),
                 null);
-        showNotification(screen, notificationData);
+        showNotification(notificationData);
     }
     
-    private void showNotification(Screen screen, NotificationData notificationData) {
+    private void showNotification(NotificationData notificationData) {
         lastNotification = notificationData;
-        displayManager.showNotification(screen, notificationData);
+        displayManager.showNotification(notificationData);
     }
     
     /**
