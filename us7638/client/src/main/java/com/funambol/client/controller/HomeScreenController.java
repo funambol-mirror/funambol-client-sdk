@@ -494,9 +494,6 @@ public class HomeScreenController extends SynchronizationController {
      */
     public synchronized void synchronize(String syncType, Vector syncSources) {
         
-        dontDisplayStorageLimitWarning = false;
-        dontDisplayServerQuotaWarning = false;
-        
         // For manual sync, always show alert message for storage/server
         // quota limit. For other sync modes, doesn't display message if
         // the previous sync ended with the same error.
