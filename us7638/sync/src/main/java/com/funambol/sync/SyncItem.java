@@ -79,7 +79,7 @@ public class SyncItem {
     protected ByteArrayOutputStream os;
 
     /** The item status (specify SUCCESS or FAILURE) */
-    protected int itemStatus;
+    protected int itemStatus = -1;
 
     /** Item guid (info is optional) */
     protected String guid;
@@ -132,6 +132,8 @@ public class SyncItem {
         this.parent = that.parent;
         this.objectSize = that.objectSize;
         this.os = that.os;
+        this.guid = that.guid;
+        this.itemStatus = that.itemStatus;
         this.partialLength = that.partialLength;
     }
 
@@ -299,6 +301,9 @@ public class SyncItem {
         }
     }
 
+    /**
+     * Returns the item status as set by the sync source or -1 if not defined.
+     */
     public int getSyncStatus() {
         return itemStatus;
     }

@@ -648,7 +648,7 @@ public class ConnectionManager {
         HttpConnectionAdapter res = null;
         if (extra != null && extra instanceof String) {
             String e = (String)extra;
-            if ("wrapper".equals(e)) {
+            if (e.startsWith("wrapper")) {
                 res = new HttpConnectionAdapterWrapper();
             }
         }

@@ -877,8 +877,11 @@ public class SapiSyncManager implements SyncManagerI {
                     SyncItem item = ide.getItem();
                     syncStatus.addReceivedItem(item.getKey(), item.getGuid(), item.getState(),
                                                SyncSource.INTERRUPTED_STATUS, ide.getDownloadedSize());
+                    // Interrupt the sync with a network error
+                    throw new SyncException(SyncException.CONN_NOT_FOUND, ide.toString());
                 } catch (JSONException je) {
                     Log.error(TAG_LOG, "Cannot parse server data", je);
+                    throw new SyncException(SyncException.CLIENT_ERROR, je.toString());
                 }
             }
         } else if (syncMode == SyncSource.INCREMENTAL_DOWNLOAD) {
@@ -931,6 +934,8 @@ public class SapiSyncManager implements SyncManagerI {
                     SyncItem item = ide.getItem();
                     syncStatus.addReceivedItem(item.getKey(), item.getGuid(), item.getState(),
                                                SyncSource.INTERRUPTED_STATUS, ide.getDownloadedSize());
+                    // Interrupt the sync with a network error
+                    throw new SyncException(SyncException.CONN_NOT_FOUND, ide.toString());
             } catch (JSONException jse) {
                 Log.error(TAG_LOG, "Error applying server changes", jse);
                 throw new SyncException(SyncException.CLIENT_ERROR, "Error applying server changes");
@@ -1019,8 +1024,12 @@ public class SapiSyncManager implements SyncManagerI {
             long partialLength = 0;
             if (resume && syncStatus.getReceivedItemStatus(guid) == SyncSource.INTERRUPTED_STATUS) {
                 partialLength = syncStatus.getReceivedItemPartialLength(guid);
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Found an item whose download can be resumed at " + partialLength);
+                if (partialLength > 0) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Found an item whose download can be resumed at " + partialLength);
+                    }
+                    // Notify the sync status that we are trying to resume
+                    syncStatus.addReceivedResumedItem(guid);
                 }
             }
 
@@ -1055,25 +1064,29 @@ public class SapiSyncManager implements SyncManagerI {
                 getSyncListenerFromSource(src).itemReplaceReceivingEnded(luid, null);
             }
         }
-        // Apply the items in the sync source
-        sourceItems = src.applyChanges(sourceItems);
-        
-        // The sourceItems returned by the call contains the LUID,
-        // so we can create the luid/guid map here
-        for(int l=0;l<sourceItems.size();++l) {
-            SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
-            // Update the sync status
-            if (newItem.getKey() != null) {
-                syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
-                        newItem.getState(), newItem.getSyncStatus());
-            }
-            // and the mapping table
-            if (state == SyncItem.STATE_NEW && newItem.getSyncStatus() != SyncSource.DEVICE_FULL_ERROR_STATUS) {
-                if (Log.isLoggable(Log.TRACE)) {
-                    Log.trace(TAG_LOG, "Updating mapping info for: " +
-                            newItem.getGuid() + "," + newItem.getKey());
+
+        try {
+            // Apply the items in the sync source
+            src.applyChanges(sourceItems);
+        } finally {
+            // The sourceItems returned by the call contains the LUID,
+            // so we can create the luid/guid map here
+            for(int l=0;l<sourceItems.size();++l) {
+                SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
+                // Update the sync status for all the items that were processed
+                // by the source
+                if (newItem.getSyncStatus() != -1) {
+                    syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
+                            newItem.getState(), newItem.getSyncStatus());
+                    // and the mapping table
+                    if (state == SyncItem.STATE_NEW) {
+                        if (Log.isLoggable(Log.TRACE)) {
+                            Log.trace(TAG_LOG, "Updating mapping info for: " +
+                                    newItem.getGuid() + "," + newItem.getKey());
+                        }
+                        mapping.add(newItem.getGuid(), newItem.getKey());
+                    }
                 }
-                mapping.add(newItem.getGuid(), newItem.getKey());
             }
         }
         return done;

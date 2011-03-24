@@ -207,10 +207,9 @@ public interface SyncSource {
      * </ul>
      *
      * @param items the list of modified items.
-     * @return a list of SyncItem with the proper status and key set
      * @throws SyncException
      */
-    public Vector applyChanges(Vector items) throws SyncException;
+    public void applyChanges(Vector items) throws SyncException;
 
     /**
      *

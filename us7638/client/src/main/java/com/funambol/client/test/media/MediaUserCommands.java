@@ -171,7 +171,7 @@ public interface MediaUserCommands {
     public static final String CHECK_VIDEOS_COUNT = "CheckVideosCount";
 
     /**
-     * This command fill the user quota on server leaving specified free space
+     * This command fills the user quota on server leaving specified free space
      * for pictures (in byte). If user has already less free space available, the
      * command doesn't execute any modification. 
      *
@@ -181,7 +181,7 @@ public interface MediaUserCommands {
     public static final String LEAVE_NO_FREE_SERVER_QUOTA_FOR_PICTURE = "LeaveNoFreeServerQuotaForPicture";
     
     /**
-     * This command fill the user quota on server leaving specified free space
+     * This command fills the user quota on server leaving specified free space
      * for videos (in byte). If user has already less free space available, the
      * command doesn't execute any modification. 
      *
@@ -190,6 +190,23 @@ public interface MediaUserCommands {
      */
     public static final String LEAVE_NO_FREE_SERVER_QUOTA_FOR_VIDEO = "LeaveNoFreeServerQuotaForVideo";
 
+    /**
+     * This command forces the upload of a given item to fail with a network
+     * error. The command can specify after how many byte the failuere shall
+     * occur.
+     *
+     * @example InterrupItemUpload("img01.jpg",1023);
+     */
+    public static final String INTERRUPT_ITEM_UPLOAD = "InterruptItemUpload";
+
+    /**
+     * This command forces the download of a given item to fail with a network
+     * error. The command can specify after how many byte the failuere shall
+     * occur.
+     *
+     * @example InterrupItemDowload("img01.jpg",1023);
+     */
+    public static final String INTERRUPT_ITEM_DOWNLOAD = "InterruptItemDownload";
 }
     
 

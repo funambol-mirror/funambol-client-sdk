@@ -51,6 +51,7 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
+import com.funambol.util.ConnectionManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -246,6 +247,10 @@ public abstract class MediaRobot extends Robot {
                 Log.debug(TAG_LOG, "Available user quota is " + availableSpace + ", less that the required. Nothing to do.");
             }
         }
+    }
+
+    public void interruptItem(String phase, String itemKey, int pos) {
+        ConnectionManager.getInstance().setBreakInfo(phase, itemKey, pos);
     }
 
     protected AppSyncSourceManager getAppSyncSourceManager() {

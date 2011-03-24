@@ -148,10 +148,9 @@ public abstract class TrackableSyncSource implements SyncSource {
      * This implementation performs a linear scan of the items and calls add/update/delete items
      * accordingly.
      * @param syncItems
-     * @return
      * @throws SyncException
      */
-    public Vector applyChanges(Vector syncItems) throws SyncException {
+    public void applyChanges(Vector syncItems) throws SyncException {
         
         int status = -1; // outside of the loop because it's used at each step 
                          // after the first one to keep track of the previous 
@@ -163,36 +162,17 @@ public abstract class TrackableSyncSource implements SyncSource {
             SyncItem item = (SyncItem)syncItems.elementAt(i);
             try {
                 if (item.getState() == SyncItem.STATE_NEW) {                    
-                    // Doesn't even try to download another item if the 
-                    // previous one reached the storage limit
-                    if (status != DEVICE_FULL_ERROR_STATUS) {
-                        status = addItem(item);
-                    } // else just keeps the same status
-                
-                // TODO Change the logics when the update case is implemented
+                    status = addItem(item);
                 } else if (item.getState() == SyncItem.STATE_UPDATED) {
-                
-                    // Doesn't even try to download another item if the 
-                    // previous one reached the storage limit
-                    if (status != DEVICE_FULL_ERROR_STATUS) {
-                        status = updateItem(item);
-                    } // else just keeps the same status
-                
+                    status = updateItem(item);
                 } else { // STATE_DELETED
                     status = deleteItem(item.getKey());
-                }
-            } catch (SyncException se) {
-                if (se.getCode() == SyncException.LOCAL_DEVICE_FULL) {
-                    status = DEVICE_FULL_ERROR_STATUS;
-                } else {
-                    status = ERROR_STATUS;
                 }
             } catch (Exception e) {
                 status = ERROR_STATUS;
             }
             item.setSyncStatus(status);
         }
-        return syncItems;
     }
 
     public void applyItemsStatus(Vector itemsStatus) {

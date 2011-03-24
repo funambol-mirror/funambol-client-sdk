@@ -35,6 +35,7 @@
 
 package com.funambol.sapisync.source;
 
+import java.util.Vector;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -48,6 +49,7 @@ import com.funambol.sync.client.StorageLimitException;
 import com.funambol.sync.client.TrackableSyncSource;
 import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.sapisync.source.util.ResumeException;
+import com.funambol.sapisync.source.util.DownloadException;
 import com.funambol.sync.Filter;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncListener;
@@ -70,7 +72,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     protected boolean downloadFileObject;
     protected boolean downloadThumbnails;
 
-    private HttpDownloader downloader = null;
+    protected HttpDownloader downloader = null;
     private SyncConfig syncConfig = null;
     private String dataTag = null;
 
@@ -94,6 +96,36 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         return item;
     }
 
+    public void applyChanges(Vector syncItems) throws SyncException {
+        
+        int status = -1; // outside of the loop because it's used at each step 
+                         // after the first one to keep track of the previous 
+                         // item's sync status
+        for(int i = 0; i < syncItems.size(); ++i) {
+
+            cancelIfNeeded();
+            
+            SyncItem item = (SyncItem)syncItems.elementAt(i);
+            try {
+                if (item.getState() == SyncItem.STATE_NEW) {                    
+                    status = addItem(item);
+                } else if (item.getState() == SyncItem.STATE_UPDATED) {
+                    status = updateItem(item);
+                } else { // STATE_DELETED
+                    status = deleteItem(item.getKey());
+                }
+            } catch (ItemDownloadInterruptionException ide) {
+                // The download got interrupted with a network error (this
+                // interrupts the application of other items)
+                throw ide;
+            } catch (Exception e) {
+                status = ERROR_STATUS;
+            }
+            item.setSyncStatus(status);
+        }
+    }
+
+
     public int addItem(SyncItem item) throws SyncException {
         // Note that the addItem must still download the actual item content, therefore
         // it can get a network error and this must be propagated
@@ -110,9 +142,10 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Cannot add item", ioe);
             return SyncSource.ERROR_STATUS;
-        } catch (SyncException se) {
+        } catch (ItemDownloadInterruptionException ide) {
             // This kind of exception blocks the sync because it is a network error of some kind
-            throw se;
+            Log.error(TAG_LOG, "Network error while downloading item", ide);
+            throw ide;
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Cannot add item", t);
             return SyncSource.ERROR_STATUS;
@@ -139,17 +172,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             Log.error(TAG_LOG, "Cannot add item", t);
             return SyncSource.ERROR_STATUS;
         }
-    }
-
-    private JSONFileObject getJSONFileFromSyncItem(SyncItem item) throws JSONException {
-        JSONFileObject jsonFile = null;
-        if(item instanceof JSONSyncItem) {
-            jsonFile = ((JSONSyncItem)item).getJSONFileObject();
-        } else {
-            String itemContent = new String(item.getContent());
-            jsonFile = new JSONFileObject(itemContent, null);
-        }
-        return jsonFile;
     }
 
     /**
@@ -220,13 +242,20 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             try {
                 long actualSize;
                 if (partialLength > 0) {
-                    actualSize = downloader.resume(url, fileos, size, partialLength);
+                    actualSize = downloader.resume(url, fileos, size, partialLength, jsonFile.getName());
                 } else {
-                    actualSize = downloader.download(url, fileos, size);
+                    actualSize = downloader.download(url, fileos, size, jsonFile.getName());
                 }
-                if (size != actualSize && actualSize > 0) {
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "size is " + size + " actual size is " + actualSize);
+                }
+                // This should never happen, but we check for safety
+                if (size != actualSize) {
                     // The download was interrupted. We shall keep track of this interrupted download
                     // so that it can be resumed
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Item download was interrupted at " + actualSize);
+                    }
                     throw new ItemDownloadInterruptionException(item, actualSize);
                 }
             } catch (ResumeException re) {
@@ -235,12 +264,23 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
                 fileos.close();
                 fileos = getDownloadOutputStream(jsonFile, isUpdate, false, false);
                 // Download the item from scratch
-                long actualSize = downloader.download(url, fileos, size);
-                if (size != actualSize && actualSize > 0) {
-                    // The download was interrupted. We shall keep track of this interrupted download
-                    // so that it can be resumed
-                    throw new ItemDownloadInterruptionException(item, actualSize);
+                try {
+                    long actualSize = downloader.download(url, fileos, size, jsonFile.getName());
+                    if (size != actualSize) {
+                        // The download was interrupted. We shall keep track of this interrupted download
+                        // so that it can be resumed
+                        throw new ItemDownloadInterruptionException(item, actualSize);
+                    }
+                } catch (DownloadException de) {
+                    throw new ItemDownloadInterruptionException(item, de.getPartialLength());
                 }
+            } catch (DownloadException de) {
+                // We had a network error while download the item. Propagate the
+                // exception as the sync must be interrupted
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Cannot download item, interrupt sync " + de.getPartialLength());
+                }
+                throw new ItemDownloadInterruptionException(item, de.getPartialLength());
             }
         }
         if(downloadThumbnails) {
@@ -470,6 +510,17 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
                 return true;
             }
         }
+    }
+
+    private JSONFileObject getJSONFileFromSyncItem(SyncItem item) throws JSONException {
+        JSONFileObject jsonFile = null;
+        if(item instanceof JSONSyncItem) {
+            jsonFile = ((JSONSyncItem)item).getJSONFileObject();
+        } else {
+            String itemContent = new String(item.getContent());
+            jsonFile = new JSONFileObject(itemContent, null);
+        }
+        return jsonFile;
     }
     
     /**

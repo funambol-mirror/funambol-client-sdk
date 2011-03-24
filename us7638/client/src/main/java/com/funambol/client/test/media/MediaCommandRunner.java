@@ -86,6 +86,10 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             leaveNoFreeServerQuota(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
         } else if (LEAVE_NO_FREE_SERVER_QUOTA_FOR_VIDEO.equals(command)) {
             leaveNoFreeServerQuota(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (INTERRUPT_ITEM_UPLOAD.equals(command)) {
+            interruptItem("sending", command, pars);
+        } else if (INTERRUPT_ITEM_DOWNLOAD.equals(command)) {
+            interruptItem("receiving", command, pars);
         } else {
             return false;
         }
@@ -133,7 +137,19 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         checkArgument(number, "Missing expected count in " + command);
         getMediaRobot().checkMediaCount(type, Integer.parseInt(number));
     }
- 
+
+    private void interruptItem(String phase, String command, Vector args) throws Throwable {
+        String name = getParameter(args, 0);
+        String pos = getParameter(args, 1);
+        int p;
+        if (pos != null) {
+            p = Integer.parseInt(pos);
+        } else {
+            p = -1;
+        }
+        getMediaRobot().interruptItem(phase, name, p);
+    }
+
     private void leaveNoFreeServerQuota(String type, String command, Vector args) throws Throwable {
         String filename = getParameter(args, 0);
         checkArgument(filename, "Missing filename in " + command);
@@ -148,6 +164,7 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
     private void restoreLocalStorage() {
         getMediaRobot().restoreLocalStorage();
     }
+
     
 }
 

@@ -38,6 +38,7 @@ package com.funambol.util;
 import java.io.IOException;
 
 import com.funambol.platform.HttpConnectionAdapter;
+import com.funambol.platform.TestableHttpConnectionAdapter;
 import com.funambol.platform.SocketAdapter;
 import com.funambol.platform.net.ProxyConfig;
 
@@ -58,6 +59,11 @@ public class ConnectionManager {
      * The listsener associated to this ConnectionManager
      */
     private ConnectionListener cl = null;
+
+
+    private String breakOnPhase = null;
+    private String breakOnKey   = null;
+    private int breakOnPos      = -1;
     
     /**
      * Private constructor - Use getInstance() method
@@ -76,7 +82,6 @@ public class ConnectionManager {
             instance = new ConnectionManager();
             return instance;
         } else {
-            Log.trace(TAG_LOG, "Returning the existing connection manager instance");
             return instance;
         }
     }
@@ -95,6 +100,45 @@ public class ConnectionManager {
      * @throws IOException if the connection cannot be established
      */
     public HttpConnectionAdapter openHttpConnection(String url, ProxyConfig proxyConfig, Object extra) throws IOException {
+
+        // If the connection manager has been programmed to break on a given
+        // operation, then we check for the extra to identify the proper
+        // connection
+        if (breakOnKey != null && breakOnPhase != null) {
+            String key = null;
+            String phase = null;
+            if (extra instanceof String) {
+                String e[] = StringUtil.split((String)extra, ",");
+                if (e != null && e.length > 0) {
+                    // Check if this is a test specification info
+                    for(int i=0;i<e.length;++i) {
+                        String v = e[i];
+                        if ("key".equals(v)) {
+                            // The next value must be the item id
+                            key = e[i+1];
+                        } else if ("phase".equals(v)) {
+                            phase = e[i+1];
+                        }
+                    }
+                }
+            }
+            if (breakOnPhase.equals(phase) && breakOnKey.equals(key)) {
+                // Create a testable connection
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Creating a test connection set to break " + breakOnPhase + "," + breakOnPos);
+                }
+                TestableHttpConnectionAdapter res = new TestableHttpConnectionAdapter();
+                res.setBreakInfo(breakOnPhase, breakOnPos);
+                // Now opn the connection
+                res.open(url, proxyConfig);
+                // This is the item where we must break, reset the break info
+                // (we do it only if we had no exception opening the connection)
+                breakOnKey = null;
+                breakOnPhase = null;
+                return res;
+            }
+        }
+
         HttpConnectionAdapter res = new HttpConnectionAdapter();
         res.open(url, proxyConfig);
         return res;
@@ -109,7 +153,8 @@ public class ConnectionManager {
      * @throws IOException if the connection cannot be established
      */
     public HttpConnectionAdapter openHttpConnection(String url, Object extra) throws IOException {
-    	return openHttpConnection(url, null, extra);
+
+        return openHttpConnection(url, null, extra);
     }
 
     /**
@@ -140,6 +185,13 @@ public class ConnectionManager {
      */
     public SocketAdapter openSocketConnection(String addr, int port, int mode, boolean timeout) throws IOException {
         return openSocketConnection(addr, port, mode, timeout, null);
+    }
+
+    //////////////////////// This code is for automatic tests only /////////////////////////
+    public void setBreakInfo(String breakOnPhase, String breakOnKey, int breakOnPos) {
+        this.breakOnPhase = breakOnPhase;
+        this.breakOnKey   = breakOnKey;
+        this.breakOnPos   = breakOnPos;
     }
 }
 

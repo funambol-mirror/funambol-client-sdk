@@ -261,7 +261,7 @@ public abstract class BaseSyncSource implements SyncSource {
      */
     public abstract int deleteItem(String key) throws SyncException ;
 
-    public Vector applyChanges(Vector syncItems) throws SyncException {
+    public void applyChanges(Vector syncItems) throws SyncException {
         for(int i=0;i<syncItems.size();++i) {
             SyncItem item = (SyncItem)syncItems.elementAt(i);
             int status;
@@ -278,7 +278,6 @@ public abstract class BaseSyncSource implements SyncSource {
             }
             item.setSyncStatus(status);
         }
-        return syncItems;
     }
 
     public void applyItemsStatus(Vector itemsStatus) {
