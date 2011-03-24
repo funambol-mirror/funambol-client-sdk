@@ -41,6 +41,7 @@ import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.client.test.basic.BasicUserCommands;
+import com.funambol.platform.FileAdapter;
 import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.source.JSONFileObject;
 import com.funambol.sapisync.source.JSONSyncItem;
@@ -53,13 +54,11 @@ import com.funambol.util.StringUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import org.json.me.JSONArray;
 
+import org.json.me.JSONArray;
 import org.json.me.JSONException;
 import org.json.me.JSONObject;
 
@@ -355,7 +354,7 @@ public abstract class MediaRobot extends Robot {
      * @return name of the file created
      * @throws IOException
      */
-    protected abstract File createFileWithSizeOnDevice(long byteSize, String header, String footer)
+    protected abstract FileAdapter createFileWithSizeOnDevice(long byteSize, String header, String footer)
             throws IOException;
 
 }

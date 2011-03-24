@@ -716,8 +716,8 @@ public class SapiSyncStatus implements SyncReport {
         receivedItems.clear();
         pendingSentItems.clear();
         pendingReceivedItems.clear();
-        sentResumedItems.clear();
-        receivedResumedItems.clear();
+        sentResumedItems.removeAllElements();
+        receivedResumedItems.removeAllElements();
         locUri = null;
         remoteUri = null;
         se = null;

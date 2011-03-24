@@ -35,7 +35,6 @@
 
 package com.funambol.sapisync;
 
-import java.security.InvalidParameterException;
 import java.util.Vector;
 import java.util.Date;
 import java.io.IOException;
@@ -853,8 +852,9 @@ public class SapiSyncHandler {
         }
         
         public static SapiResultError extractFromSapiResponse(JSONObject sapiResponse) {
-            if (null == sapiResponse)
-                throw new InvalidParameterException("SAPI response cannot be null");
+            if (null == sapiResponse) {
+                throw new IllegalArgumentException("SAPI response cannot be null");
+            }
             
             //before, if json object doens't have all tree field, an error is trown
             SapiResultError sapiResultError = new SapiResultError();
