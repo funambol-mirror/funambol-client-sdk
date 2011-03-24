@@ -83,19 +83,19 @@ public abstract class TrackableSyncSource implements SyncSource {
     protected int syncMode;
 
     /** The number of items to be sent to the server in the session */
-    private int clientItemsNumber;
+    protected int clientItemsNumber;
     
     /** The number of items that the server announced to send in the session */
-    private int serverItemsNumber;
+    protected int serverItemsNumber;
 
     /** The number of new items to be sent to the server in the session */
-    private int clientAddItemsNumber;
+    protected int clientAddItemsNumber;
 
     /** The number of replaced items to be sent to the server in the session */
-    private int clientReplaceItemsNumber;
+    protected int clientReplaceItemsNumber;
 
     /** The number of deleted items to be sent to the server in the session */
-    private int clientDeleteItemsNumber;
+    protected int clientDeleteItemsNumber;
 
     /** Status of the sync source summarized in an integer value. See constants
      * defined in SyncSource */

@@ -908,7 +908,8 @@ public class SyncMLFormatter {
             if (value.length() == 0) {
                 formatter.text("");
             } else {
-                formatter.cdsect(value);
+                formatter.text(value);
+                //formatter.cdsect(value);
             }
             formatter.endTag(null, tagName);
             if (prettyPrint) {

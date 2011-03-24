@@ -107,6 +107,7 @@ class SyncSourceLOHandler {
     private boolean                resume             = false;
     private boolean                deletesResumed     = false;
     private Enumeration            sentItemKeysForResume = null;
+    private boolean                sendSuspendOnCancel = false;
 
     public SyncSourceLOHandler(SyncSource source, int maxMsgSize, boolean wbxml)
     {
@@ -121,6 +122,10 @@ class SyncSourceLOHandler {
 
     public void setResume(boolean resume) {
         this.resume = resume;
+    }
+
+    public void setSendSuspendOnCancel(boolean sendSuspendOnCancel) {
+        this.sendSuspendOnCancel = sendSuspendOnCancel;
     }
 
     /**
@@ -275,12 +280,18 @@ class SyncSourceLOHandler {
 
 
 
-    private void cancelSync() throws SyncException
-    {
+    private void cancelSync() throws SyncException {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Cancelling sync for source ["+source.getName()+"]");
         }
-        throw new SyncException(SyncException.CANCELLED, "SyncManager sync got cancelled");
+
+        if (sendSuspendOnCancel) {
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Need to send suspend alert");
+            }
+        } else {
+            throw new SyncException(SyncException.CANCELLED, "SyncManager sync got cancelled");
+        }
     }
 
     private boolean isSyncToBeCancelled() {
@@ -396,6 +407,11 @@ class SyncSourceLOHandler {
             // Ask the source for next item
             chunk = getNextNewItem();
 
+            if (cancel && sendSuspendOnCancel) {
+                ret = FLUSH;
+                break;
+            }
+
             // Last new item found
             if (chunk == null) {
                 ret = DONE; 
@@ -494,6 +510,11 @@ class SyncSourceLOHandler {
             // Last item found
             if (chunk == null) {
                 ret = DONE;
+                break;
+            }
+
+            if (cancel && sendSuspendOnCancel) {
+                ret = FLUSH;
                 break;
             }
 
@@ -745,6 +766,11 @@ class SyncSourceLOHandler {
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "Reached max number of items per message in slow sync");
                 }
+                ret = FLUSH;
+                break;
+            }
+
+            if (cancel && sendSuspendOnCancel) {
                 ret = FLUSH;
                 break;
             }

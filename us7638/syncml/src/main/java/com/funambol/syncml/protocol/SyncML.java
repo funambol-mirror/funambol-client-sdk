@@ -162,6 +162,7 @@ public class SyncML {
     public static final int ALERT_CODE_REFRESH_FROM_SERVER_BY_SERVER = 210;
     public static final int ALERT_CODE_NEXT_MESSAGE                  = 222;
     public static final int ALERT_CODE_RESUME                        = 225;
+    public static final int ALERT_CODE_SUSPEND                       = 224;
 
     //Extended alert codes defined by Funambol for custom sync
     public static final int ALERT_CODE_ONE_WAY_FROM_CLIENT_NO_SLOW = 250;
