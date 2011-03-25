@@ -131,14 +131,12 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         // it can get a network error and this must be propagated
         try {
             JSONFileObject jsonFile = getJSONFileFromSyncItem(item);
-            int res;
-            try {
-                res = addUpdateItem(item, jsonFile, false);
-            } catch (StorageLimitException sle) {
-                throw sle.getCorrespondingSyncException();
-            }
+            int res = addUpdateItem(item, jsonFile, false);
             super.addItem(item);
             return res;
+        } catch (StorageLimitException sle) {
+            Log.error(TAG_LOG, "Storage limit exception", sle);
+            throw sle.getCorrespondingSyncException();
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Cannot add item", ioe);
             return SyncSource.ERROR_STATUS;
@@ -162,32 +160,20 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
             int res = addUpdateItem(item, jsonFile, true);
             super.updateItem(item);
             return res;
+        } catch (StorageLimitException sle) {
+            Log.error(TAG_LOG, "Storage limit exception", sle);
+            throw sle.getCorrespondingSyncException();
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Cannot add item, ioe");
             return SyncSource.ERROR_STATUS;
-        } catch (SyncException se) {
+        } catch (ItemDownloadInterruptionException ide) {
             // This kind of exception blocks the sync because it is a network error of some kind
-            throw se;
+            Log.error(TAG_LOG, "Network error while downloading item", ide);
+            throw ide;
         } catch (Throwable t) {
             Log.error(TAG_LOG, "Cannot add item", t);
             return SyncSource.ERROR_STATUS;
         }
-    }
-
-    /**
-     * This method is for backward compatibility only
-     * @deprecated
-     * @throws SyncException
-     */
-    public void setItemStatus(String key, int status) throws SyncException {
-        if (status == SyncSource.SERVER_FULL_ERROR_STATUS) {
-            // The user reached his quota on the server
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "Server is full");
-            }
-            throw new SyncException(SyncException.DEVICE_FULL, "Server is full");
-        }
-        super.setItemStatus(key, status);
     }
 
     public void updateSyncConfig(SyncConfig syncConfig) {
