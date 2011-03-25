@@ -144,11 +144,11 @@ public class SapiHandler {
             String testItemName) throws IOException, JSONException {
 
         return query(name, action, params, headers, requestIs,
-                "application/octet-stream", contentLength, testItemName);
+                "application/octet-stream", contentLength, 0, testItemName);
     }
     public synchronized JSONObject query(String name, String action, Vector params,
             Hashtable headers, InputStream requestIs, String contentType,
-            long contentLength, String testItemName) throws IOException, JSONException {
+            long contentLength, long fromByte, String testItemName) throws IOException, JSONException {
         
         String url = createUrl(name, action, params);
         HttpConnectionAdapter conn;
@@ -171,10 +171,12 @@ public class SapiHandler {
                 }
                 conn.setRequestProperty(CONTENT_TYPE_HEADER, contentType);
             }
+
+            long uploadContentLength = contentLength - fromByte;
             if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Setting content length to " + contentLength);
+                Log.debug(TAG_LOG, "Setting content length to " + uploadContentLength);
             }
-            conn.setRequestProperty(CONTENT_LENGTH_HEADER, String.valueOf(contentLength));
+            conn.setRequestProperty(CONTENT_LENGTH_HEADER, String.valueOf(uploadContentLength));
 
             // Set the authentication if we have no jsessionid
             if (jsessionId != null && jsessionAuthEnabled) {
@@ -225,6 +227,13 @@ public class SapiHandler {
             if (requestIs != null) {
                 int total = 0;
                 int read  = 0;
+                if(fromByte > 0) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "Skip " + fromByte + " bytes from request InputStream");
+                    }
+                    requestIs.skip(fromByte);
+                    total += fromByte;
+                }
                 byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
                 do {
                     read = requestIs.read(chunk);

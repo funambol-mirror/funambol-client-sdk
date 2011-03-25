@@ -232,9 +232,6 @@ public class SapiSyncHandler {
                         .append("-").append(json.getSize()-1)
                         .append("/").append(json.getSize());
                 headers.put("Content-Range", contentRangeValue.toString());
-
-                // We must skip the first bytes of the input stream
-                is.skip(fromByte);
             }
             
             headers.put("x-funambol-id", remoteKey);
@@ -248,8 +245,8 @@ public class SapiSyncHandler {
             JSONObject uploadResponse = null;
             try {
                 uploadResponse = sapiHandler.query("upload/" + remoteUri,
-                        "add", null, headers, is,
-                        json.getMimetype(), json.getSize() - fromByte, json.getName());
+                        "add", null, headers, is, json.getMimetype(),
+                        json.getSize(), fromByte, json.getName());
             } catch (IOException ioe) {
                 // The upload failed and got interrupted. We report this error
                 // so that a resume is possible
