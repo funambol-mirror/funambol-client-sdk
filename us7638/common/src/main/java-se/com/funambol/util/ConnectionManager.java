@@ -101,6 +101,7 @@ public class ConnectionManager {
      */
     public HttpConnectionAdapter openHttpConnection(String url, ProxyConfig proxyConfig, Object extra) throws IOException {
 
+        /////////// This code is here only to support automatic test ////////////////
         // If the connection manager has been programmed to break on a given
         // operation, then we check for the extra to identify the proper
         // connection
@@ -138,6 +139,7 @@ public class ConnectionManager {
                 return res;
             }
         }
+        ///////////////////////////////////////////////////////////////////////////////
 
         HttpConnectionAdapter res = new HttpConnectionAdapter();
         res.open(url, proxyConfig);
