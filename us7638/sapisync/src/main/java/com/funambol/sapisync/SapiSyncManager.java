@@ -61,8 +61,8 @@ import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.sync.ItemDownloadInterruptionException;
-import com.funambol.sync.Filter;
 import com.funambol.sync.ItemUploadInterruptionException;
+import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
@@ -528,7 +528,6 @@ public class SapiSyncManager implements SyncManagerI {
         totalCount = sapiSyncHandler.getItemsCount(remoteUri, filterFrom);
 
         // Fill the addedArray
-
         addedArray = null;
         addedServerUrl = null;
 
@@ -570,7 +569,6 @@ public class SapiSyncManager implements SyncManagerI {
 
                 for(int i=0;i<fullSet.items.length();++i) {
                     JSONObject item = fullSet.items.getJSONObject(i);
-
                     if (item != REMOVED_ITEM) {
                         addedArray.put(item);
                     }
@@ -745,9 +743,8 @@ public class SapiSyncManager implements SyncManagerI {
                     item.setGuid(remoteKey);
                     mapping.add(remoteKey, item.getKey());
 
-                    syncStatus.addSentItem(item.getKey(), item.getState());
-                    syncStatus.setSentItemStatus(item.getKey(),
-                            SyncSource.SUCCESS_STATUS, item.getGuid());
+                    syncStatus.addSentItem(item.getGuid(), item.getKey(),
+                            item.getState(), SyncSource.SUCCESS_STATUS);
 
                     // Set the item status
                     sourceStatus.addElement(new ItemStatus(item.getKey(),
@@ -758,16 +755,12 @@ public class SapiSyncManager implements SyncManagerI {
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Error uploading item " + item.getKey());
                     }
-                    syncStatus.addSentItem(item.getKey(), item.getState());
-                    syncStatus.setSentItemStatus(item.getKey(),
-                            SyncSource.INTERRUPTED_STATUS, item.getGuid());
+                    syncStatus.addSentItem(item.getGuid(), item.getKey(),
+                            item.getState(), SyncSource.INTERRUPTED_STATUS);
                     sourceStatus.addElement(new ItemStatus(item.getKey(),
                             SyncSource.INTERRUPTED_STATUS));
-                    try {
-                        syncStatus.save();
-                    } catch (Exception e) {
-                        Log.error(TAG_LOG, "Cannot save sync status", e);
-                    }
+                    // Interrupt the sync with a network error
+                    throw new SyncException(SyncException.CONN_NOT_FOUND, ex.toString());
                 } catch (QuotaOverflowException ex) {
                     // An item could not be uploaded because user quota on
                     // server exceeded
@@ -839,17 +832,11 @@ public class SapiSyncManager implements SyncManagerI {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Starting download phase with mode: " + syncMode);
         }
-        
-        String remoteUri = src.getConfig().getRemoteUri();
-
-        SyncFilter syncFilter = src.getFilter();
-        
+       
         if (syncMode == SyncSource.FULL_DOWNLOAD) {
-
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "Performing full download");
             }
-
             if (addedArray != null && addedArray.length() > 0) {
                 getSyncListenerFromSource(src).startReceiving(addedArray.length());
 
@@ -1003,8 +990,8 @@ public class SapiSyncManager implements SyncManagerI {
                 continue;
             }
 
-            String     guid = item.getString("id");
-            long       size = Long.parseLong(item.getString("size"));
+            String guid = item.getString("id");
+            long size = Long.parseLong(item.getString("size"));
 
             String luid;
             if (state == SyncItem.STATE_UPDATED) {

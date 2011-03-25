@@ -164,33 +164,11 @@ public class SapiSyncStatus implements SyncReport {
         return remoteUri;
     }
 
-    public void addSentItem(String key, char cmd) {
-        // The item was sent but a status has not been received yet
+    public void addSentItem(String guid, String luid, char cmd, int statusCode) {
         SentItemStatus status = new SentItemStatus(cmd);
-        if(sentItems.containsKey(key)) {
-            sentItems.put(key, status);
-        } else {
-            pendingSentItems.put(key, status);
-        }
-    }
-
-    public void setSentItemStatus(String key, int status) {
-        setSentItemStatus(key, status, null);
-    }
-
-    public void setSentItemStatus(String key, int status, String guid) {
-        SentItemStatus s = (SentItemStatus)sentItems.get(key);
-        if (s == null) {
-            s = (SentItemStatus)pendingSentItems.get(key);
-        }
-        if(s == null) {
-            Log.error(TAG_LOG, "Cannot find sent item with key: " + key);
-            return;
-        }
-        s.setStatus(status);
-        if (guid != null) {
-            s.setGuid(guid);
-        }
+        status.setStatus(statusCode);
+        status.setGuid(guid);
+        pendingSentItems.put(luid, status);
     }
 
     public int getSentItemsCount() {
@@ -281,6 +259,7 @@ public class SapiSyncStatus implements SyncReport {
         ReceivedItemStatus status = new ReceivedItemStatus(guid, cmd);
         status.setStatus(statusCode);
         status.setPartialLength(partialLength);
+
         // If the pending received items already have this key, then we add
         // the current item with another key. This may happen for example if two
         // commands have the same key. When keys are used (e.g. calendar sync)
@@ -656,27 +635,32 @@ public class SapiSyncStatus implements SyncReport {
     }
 
     public int getNumberOfReceivedItemsWithError() {
-        return getNumberOfItemsWithError(receivedItems) + getNumberOfItemsWithError(pendingReceivedItems);
+        return getNumberOfItemsWithError(receivedItems) +
+               getNumberOfItemsWithError(pendingReceivedItems);
     }
     
     public int getNumberOfPendingReceivedItemsWithSyncStatus(int syncStatus) {
-        return  getNumberOfItemsWithSyncStatus(pendingReceivedItems, syncStatus);
+        return getNumberOfItemsWithSyncStatus(pendingReceivedItems, syncStatus);
     }
     
     public int getNumberOfReceivedItemsWithSyncStatus(int syncStatus) {
-        return getNumberOfItemsWithSyncStatus(receivedItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingReceivedItems, syncStatus);
+        return getNumberOfItemsWithSyncStatus(receivedItems, syncStatus) +
+               getNumberOfItemsWithSyncStatus(pendingReceivedItems, syncStatus);
     }
     
     public int getNumberOfSentItemsWithError() {
-        return getNumberOfItemsWithError(sentItems) + getNumberOfItemsWithError(pendingSentItems);
+        return getNumberOfItemsWithError(sentItems) +
+               getNumberOfItemsWithError(pendingSentItems);
     }
     
     public int getNumberOfSentItemsWithSyncStatus(int syncStatus) {
-        return getNumberOfItemsWithSyncStatus(sentItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingSentItems, syncStatus);
+        return getNumberOfItemsWithSyncStatus(sentItems, syncStatus) +
+               getNumberOfItemsWithSyncStatus(pendingSentItems, syncStatus);
     }
     
     public int getNumberOfPendingSentItemsWithSyncStatus(int syncStatus) {
-        return getNumberOfItemsWithSyncStatus(sentItems, syncStatus) + getNumberOfItemsWithSyncStatus(pendingSentItems, syncStatus);
+        return getNumberOfItemsWithSyncStatus(sentItems, syncStatus) +
+               getNumberOfItemsWithSyncStatus(pendingSentItems, syncStatus);
     }
 
     public void addSentResumedItem(String key) {
@@ -798,7 +782,7 @@ public class SapiSyncStatus implements SyncReport {
         while (keys.hasMoreElements()) {
             String key = (String)keys.nextElement();
             ItemStatus status = (ItemStatus)table.get(key);
-            if (cmd == status.getCmd()) {
+            if (cmd == status.getCmd() && status.getStatus() != SyncSource.INTERRUPTED_STATUS) {
                 count++;
             }
         }
@@ -824,7 +808,8 @@ public class SapiSyncStatus implements SyncReport {
         while (keys.hasMoreElements()) {
             String key = (String)keys.nextElement();
             ItemStatus status = (ItemStatus)table.get(key);
-            if (status.getStatus() != SyncSource.SUCCESS_STATUS) {
+            if (status.getStatus() != SyncSource.SUCCESS_STATUS &&
+                status.getStatus() != SyncSource.INTERRUPTED_STATUS) {
                 count++;
             }
         }
