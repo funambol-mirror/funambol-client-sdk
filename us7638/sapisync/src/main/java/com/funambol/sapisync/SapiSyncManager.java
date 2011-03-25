@@ -1062,11 +1062,11 @@ public class SapiSyncManager implements SyncManagerI {
                 SyncItem newItem = (SyncItem)sourceItems.elementAt(l);
                 // Update the sync status for all the items that were processed
                 // by the source
-                if (newItem.getSyncStatus() != -1) {
+                if (newItem.getSyncStatus() != -1 && newItem.getGuid() != null && newItem.getKey() != null) {
                     syncStatus.addReceivedItem(newItem.getGuid(), newItem.getKey(),
                             newItem.getState(), newItem.getSyncStatus());
-                    // and the mapping table
-                    if (state == SyncItem.STATE_NEW) {
+                    // and the mapping table (if luid and guid are different)
+                    if (state == SyncItem.STATE_NEW && !newItem.getGuid().equals(newItem.getKey())) {
                         if (Log.isLoggable(Log.TRACE)) {
                             Log.trace(TAG_LOG, "Updating mapping info for: " +
                                     newItem.getGuid() + "," + newItem.getKey());
