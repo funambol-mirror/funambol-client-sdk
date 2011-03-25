@@ -106,6 +106,13 @@ public class SapiSyncStatus implements SyncReport {
     private Vector sentResumedItems = new Vector();
     private Vector receivedResumedItems = new Vector();
 
+    private int initialSentAddNumber = 0;
+    private int initialSentUpdNumber = 0;
+    private int initialSentDelNumber = 0;
+    private int initialReceivedAddNumber = 0;
+    private int initialReceivedUpdNumber = 0;
+    private int initialReceivedDelNumber = 0;
+
     private static StringKeyValueStoreFactory storeFactory = StringKeyValueStoreFactory.getInstance();
 
     public SapiSyncStatus(String sourceName) {
@@ -187,7 +194,24 @@ public class SapiSyncStatus implements SyncReport {
     }
 
     public int getSentItemsCount() {
-        return sentItems.size() + pendingSentItems.size();
+        // We shall discard the interrupted items as they cannot be considere as
+        // sent
+        int count = 0;
+        Enumeration sentItemsEnum = sentItems.elements();
+        while(sentItemsEnum.hasMoreElements()) {
+            SentItemStatus s = (SentItemStatus)sentItemsEnum.nextElement();
+            if (s.getStatus() != SyncSource.INTERRUPTED_STATUS) {
+                count++;
+            }
+        }
+        Enumeration pendingSentItemsEnum = pendingSentItems.elements();
+        while(pendingSentItemsEnum.hasMoreElements()) {
+            SentItemStatus s = (SentItemStatus)pendingSentItemsEnum.nextElement();
+            if (s.getStatus() != SyncSource.INTERRUPTED_STATUS) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public Enumeration getSentItems() {
@@ -276,7 +300,24 @@ public class SapiSyncStatus implements SyncReport {
     }
 
     public int getReceivedItemsCount() {
-        return receivedItems.size() + pendingReceivedItems.size();
+        // We shall discard the interrupted items as they cannot be considere as
+        // sent
+        int count = 0;
+        Enumeration receivedItemsEnum = receivedItems.elements();
+        while(receivedItemsEnum.hasMoreElements()) {
+            ReceivedItemStatus s = (ReceivedItemStatus)receivedItemsEnum.nextElement();
+            if (s.getStatus() != SyncSource.INTERRUPTED_STATUS) {
+                count++;
+            }
+        }
+        Enumeration pendingReceivedItemsEnum = pendingReceivedItems.elements();
+        while(pendingReceivedItemsEnum.hasMoreElements()) {
+            ReceivedItemStatus s = (ReceivedItemStatus)pendingReceivedItemsEnum.nextElement();
+            if (s.getStatus() != SyncSource.INTERRUPTED_STATUS) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void addMappingSent(String luid) {
@@ -422,6 +463,15 @@ public class SapiSyncStatus implements SyncReport {
                     v.setGuid(guid);
                 }
                 sentItems.put(itemKey, v);
+
+                if (cmd == SyncItem.STATE_NEW) {
+                    initialSentAddNumber++;
+                } else if (cmd == SyncItem.STATE_UPDATED) {
+                    initialSentUpdNumber++;
+                } else if (cmd == SyncItem.STATE_DELETED) {
+                    initialSentDelNumber++;
+                }
+
             } else if (key.equals(LOC_URI_KEY)) {
                 locUri = value;
             } else if (key.equals(REMOTE_URI_KEY)) {
@@ -447,6 +497,14 @@ public class SapiSyncStatus implements SyncReport {
                 status.setStatus(s);
                 status.setPartialLength(partialLength);
                 receivedItems.put(itemKey, status);
+
+                if (cmd == SyncItem.STATE_NEW) {
+                    initialReceivedAddNumber++;
+                } else if (cmd == SyncItem.STATE_UPDATED) {
+                    initialReceivedUpdNumber++;
+                } else if (cmd == SyncItem.STATE_DELETED) {
+                    initialReceivedDelNumber++;
+                }
             }
         }
     }
@@ -725,6 +783,13 @@ public class SapiSyncStatus implements SyncReport {
         endTime = 0;
         interrupted = false;
         oldInterrupted = false;
+
+        initialReceivedAddNumber = 0;
+        initialReceivedUpdNumber = 0;
+        initialReceivedDelNumber = 0;
+        initialSentAddNumber = 0;
+        initialSentUpdNumber = 0;
+        initialSentDelNumber = 0;
     }
 
     private int getItemsNumber(Hashtable table, char cmd) {
