@@ -136,19 +136,19 @@ public class SapiHandler {
             contentLength = r.length;
             s = new ByteArrayInputStream(r);
         }
-        return query(name, action, params, headers, s, contentLength);
+        return query(name, action, params, headers, s, contentLength, null);
     }
 
     public JSONObject query(String name, String action, Vector params,
-            Hashtable headers, InputStream requestIs, long contentLength)
-            throws IOException, JSONException {
+            Hashtable headers, InputStream requestIs, long contentLength, 
+            String testItemName) throws IOException, JSONException {
 
         return query(name, action, params, headers, requestIs,
-                "application/octet-stream", contentLength);
+                "application/octet-stream", contentLength, testItemName);
     }
     public synchronized JSONObject query(String name, String action, Vector params,
             Hashtable headers, InputStream requestIs, String contentType,
-            long contentLength) throws IOException, JSONException {
+            long contentLength, String testItemName) throws IOException, JSONException {
         
         String url = createUrl(name, action, params);
         HttpConnectionAdapter conn;
@@ -159,7 +159,11 @@ public class SapiHandler {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Requesting url: " + url);
             }
-            conn = connectionManager.openHttpConnection(url, null);
+            String extras = null;
+            if(testItemName != null) {
+                extras = "key," + testItemName + ",phase,sending";
+            }
+            conn = connectionManager.openHttpConnection(url, extras);
             conn.setRequestMethod(HttpConnectionAdapter.POST);
             if(contentLength > 0) {
                 if (Log.isLoggable(Log.DEBUG)) {

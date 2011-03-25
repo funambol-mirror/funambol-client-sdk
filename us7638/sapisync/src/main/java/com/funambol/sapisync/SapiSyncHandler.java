@@ -249,7 +249,7 @@ public class SapiSyncHandler {
             try {
                 uploadResponse = sapiHandler.query("upload/" + remoteUri,
                         "add", null, headers, is,
-                        json.getMimetype(), json.getSize() - fromByte);
+                        json.getMimetype(), json.getSize() - fromByte, json.getName());
             } catch (IOException ioe) {
                 // The upload failed and got interrupted. We report this error
                 // so that a resume is possible
@@ -594,29 +594,6 @@ public class SapiSyncHandler {
             try {
                 attempt++;
                 resp = sapiHandler.query(name, action, params, headers, request);
-                retry = false;
-            } catch (IOException ioe) {
-                if (attempt >= MAX_RETRIES) {
-                    throw ioe;
-                }
-            }
-        } while(retry);
-        return resp;
-    }
-    
-    private JSONObject sapiQueryWithRetries(String name, String action, 
-                                            Vector params, Hashtable headers, InputStream requestIs,
-                                            String contentType, long contentLength)
-    throws JSONException, IOException
-    {
-        JSONObject resp = null;
-        boolean retry = true;
-        int attempt = 0;
-        do {
-            try {
-                attempt++;
-                resp = sapiHandler.query(name, action, params, headers,
-                        requestIs, contentType, contentLength);
                 retry = false;
             } catch (IOException ioe) {
                 if (attempt >= MAX_RETRIES) {
