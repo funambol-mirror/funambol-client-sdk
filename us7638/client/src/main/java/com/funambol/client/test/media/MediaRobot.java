@@ -359,7 +359,7 @@ public abstract class MediaRobot extends Robot {
      * @return name of the file created
      * @throws IOException
      */
-    protected abstract FileAdapter createFileWithSizeOnDevice(long byteSize, String header, String footer)
+    protected abstract void createFileWithSizeOnDevice(long byteSize, String header, String footer)
             throws IOException;
 
 }
