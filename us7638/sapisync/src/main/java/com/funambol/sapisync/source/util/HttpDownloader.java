@@ -165,13 +165,13 @@ public class HttpDownloader  {
      * @param size the total size of the item being downloaded
      * @param startOffset the byte from which the download shall start
      * @param endOffset the end byte in the resume request
-     * @param testName is the name of the item being downloaded to which
+     * @param testItemName is the name of the item being downloaded to which
      *
      * @throws DownloadException if a network error occurs
      * @throws IOException if the output stream cannot be written
      * @throws ResumeException if the download cannot be resumed
      */
-    protected long download(String url, OutputStream os, long size, long startOffset, long endOffset, String testName)
+    protected long download(String url, OutputStream os, long size, long startOffset, long endOffset, String testItemName)
     throws DownloadException, IOException, ResumeException {
 
         long downloadedSize = startOffset > 0 ? startOffset : 0;
@@ -188,7 +188,7 @@ public class HttpDownloader  {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Sending http request to: " + url);
             }
-            conn = ConnectionManager.getInstance().openHttpConnection(url, "wrapper,key," + testName + ",phase,receiving");
+            conn = ConnectionManager.getInstance().openHttpConnection(url, "wrapper,key," + testItemName + ",phase,receiving");
             conn.setRequestMethod(HttpConnectionAdapter.GET);
             if (startOffset > 0  && endOffset > 0) {
                 // This is a resume request. Add the proper header
