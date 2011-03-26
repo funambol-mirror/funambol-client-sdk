@@ -32,8 +32,9 @@
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol". 
  */
-
 package com.funambol.syncml.spds;
+
+import com.funambol.sync.DeviceConfigI;
 
 /**
  * This class groups all configuration properties related to the device.
@@ -42,7 +43,7 @@ package com.funambol.syncml.spds;
  * DeviceConfig is a part of SyncConfig.
  *
  */
-public class DeviceConfig {
+public class DeviceConfig implements DeviceConfigI {
 
     //--------------------------------------------------------------- Constants
     private static final int MAXMSGSIZE = 16*1024;

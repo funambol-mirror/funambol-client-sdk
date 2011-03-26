@@ -284,7 +284,7 @@ public class SyncEngine implements SyncSchedulerListener {
         // We must create the proper sync manager instance, depending on the
         // source type/properties
         if (source.getIsMedia()) {
-            SapiSyncManager sm = new SapiSyncManager(config);
+            SapiSyncManager sm = new SapiSyncManager(config, dc);
             return sm;
         } else {
 

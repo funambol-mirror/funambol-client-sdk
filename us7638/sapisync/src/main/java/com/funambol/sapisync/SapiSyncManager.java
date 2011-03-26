@@ -56,6 +56,7 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncManagerI;
+import com.funambol.sync.DeviceConfigI;
 import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.storage.StringKeyValueStoreFactory;
@@ -81,6 +82,7 @@ public class SapiSyncManager implements SyncManagerI {
     private SyncConfig syncConfig = null;
     private SapiSyncHandler sapiSyncHandler = null;
     private SapiSyncStatus syncStatus = null;
+    private String deviceId = null;
 
     // Holds the list of twins found during the download phase, those items must
     // not be uploaded to the server later in the upload phase
@@ -119,12 +121,13 @@ public class SapiSyncManager implements SyncManagerI {
      * <code>SapiSyncManager</code> constructor
      * @param config
      */
-    public SapiSyncManager(SyncConfig config) {
+    public SapiSyncManager(SyncConfig config, DeviceConfigI devConfig) {
         this.syncConfig = config;
         this.sapiSyncHandler = new SapiSyncHandler(
                 StringUtil.extractAddressFromUrl(syncConfig.getSyncUrl()),
                 syncConfig.getUserName(),
                 syncConfig.getPassword());
+        this.deviceId = devConfig.getDevID();
     }
 
     /**
@@ -344,7 +347,7 @@ public class SapiSyncManager implements SyncManagerI {
         src.beginSync(syncMode, resume);
 
         // Perform a login to avoid multiple authentications
-        sapiSyncHandler.login(null);
+        sapiSyncHandler.login(deviceId);
 
         boolean incremental = isIncrementalSync(syncMode);
         if (incremental) {
