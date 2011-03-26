@@ -805,13 +805,6 @@ public class UISyncSourceController implements SyncListener {
                 break;
             case SyncListener.LOCAL_CLIENT_FULL_ERROR:
                 res = localization.getLanguage("status_no_space_on_device");
-
-                /*
-                if (report != null && (report.getNumberOfReceivedItems() > 0 || report.getNumberOfSentItems() > 0)) {
-                    res = localization.getLanguage("status_partial_failure");
-                } else {
-                    res = localization.getLanguage("status_complete_failure");
-                }*/
                 break;
             default:
                 if (report != null && (report.getReceivedItemsCount() > 0 || report.getSentItemsCount() > 0)) {
