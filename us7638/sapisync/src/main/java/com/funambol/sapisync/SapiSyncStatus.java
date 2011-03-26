@@ -601,37 +601,37 @@ public class SapiSyncStatus implements SyncReport {
     public int getReceivedAddNumber() {
         int v1 = getItemsNumber(receivedItems, SyncItem.STATE_NEW);
         int v2 = getItemsNumber(pendingReceivedItems, SyncItem.STATE_NEW);
-        return v1 + v2;
+        return v1 + v2 - initialReceivedAddNumber;
     }
 
     public int getReceivedReplaceNumber() {
         int v1 = getItemsNumber(receivedItems, SyncItem.STATE_UPDATED);
         int v2 = getItemsNumber(pendingReceivedItems, SyncItem.STATE_UPDATED);
-        return v1 + v2;
+        return v1 + v2 - initialReceivedUpdNumber;
     }
 
     public int getReceivedDeleteNumber() {
         int v1 = getItemsNumber(receivedItems, SyncItem.STATE_DELETED);
         int v2 = getItemsNumber(pendingReceivedItems, SyncItem.STATE_DELETED);
-        return v1 + v2;
+        return v1 + v2 - initialReceivedDelNumber;
     }
 
     public int getSentAddNumber() {
         int v1 = getItemsNumber(sentItems, SyncItem.STATE_NEW);
         int v2 = getItemsNumber(pendingSentItems, SyncItem.STATE_NEW);
-        return v1 + v2;
+        return v1 + v2 - initialSentAddNumber;
     }
     
     public int getSentReplaceNumber() {
         int v1 = getItemsNumber(sentItems, SyncItem.STATE_UPDATED);
         int v2 = getItemsNumber(pendingSentItems, SyncItem.STATE_UPDATED);
-        return v1 + v2;
+        return v1 + v2 - initialSentUpdNumber;
     }
 
     public int getSentDeleteNumber() {
         int v1 = getItemsNumber(sentItems, SyncItem.STATE_DELETED);
         int v2 = getItemsNumber(pendingSentItems, SyncItem.STATE_DELETED);
-        return v1 + v2;
+        return v1 + v2 - initialSentDelNumber;
     }
 
     public int getNumberOfReceivedItemsWithError() {
