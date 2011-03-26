@@ -768,23 +768,6 @@ public class SynchronizationController implements ConnectionListener, SyncEngine
             showMessage(localization.getLanguage("message_enter_TCP_settings"));
         }
 
-        // if we had a connectivity error, we bring the app to foreground
-        // if the user started the sync by hand
-        if (logConnectivityError) {
-            // TODO FIXME MARCO
-            /*
-            if (configuration.SYNC_MODE_MANUAL.equals(syncType)) {
-                Log.error(TAG_LOG, "Manual sync: Connection attempts failed.");
-                controller.toForeground();
-            } else {
-                if (!retry(sources)) {
-                    // Do not show any error to the user, just log the fact
-                    Log.error(TAG_LOG, "Automatic sync(" + syncType + ") failed after retrying");
-                }
-            }
-            */
-        }
-
         // Re-checks
         for (int i = 0; i < sources.size(); i++) {
             AppSyncSource appSource = (AppSyncSource) sources.elementAt(i);
