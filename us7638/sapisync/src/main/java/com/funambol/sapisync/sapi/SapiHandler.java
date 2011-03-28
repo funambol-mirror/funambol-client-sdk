@@ -72,7 +72,8 @@ public class SapiHandler {
     private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
     private static final String JSESSIONID_HEADER = "JSESSIONID";
-    private static final String COOKIE_HEADER     = "Set-Cookie";
+    private static final String SET_COOKIE_HEADER = "Set-Cookie";
+    private static final String COOKIE_HEADER     = "Cookie";
 
     private static final int DEFAULT_CHUNK_SIZE = 4096;
 
@@ -83,7 +84,7 @@ public class SapiHandler {
     private int authMethod = AUTH_IN_QUERY_STRING;
     private boolean jsessionAuthEnabled = false;
 
-    private String  jsessionId = null;
+    private String jsessionId = null;
     protected ConnectionManager connectionManager = ConnectionManager.getInstance();
 
     private SapiQueryListener listener = null;
@@ -183,7 +184,7 @@ public class SapiHandler {
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Authorization is specified via jsessionid");
                 }
-                conn.setRequestProperty("Cookie", JSESSIONID_HEADER + "=" + jsessionId);
+                conn.setRequestProperty(COOKIE_HEADER, JSESSIONID_HEADER + "=" + jsessionId);
             } else if (authMethod == AUTH_IN_HTTP_HEADER) {
                 String token = user + ":" + pwd;
                 String authToken = new String(Base64.encode(token.getBytes()));
@@ -311,17 +312,25 @@ public class SapiHandler {
 
             // This code handles JSESSION ID authentication
             try {
-                String cookies = conn.getHeaderField(COOKIE_HEADER);
+                String cookies = conn.getHeaderField(SET_COOKIE_HEADER);
                 if (cookies != null) {
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Set-Cookie from server: " + cookies);
+                    }
                     int jsidx = cookies.indexOf(JSESSIONID_HEADER);
                     if (jsidx >= 0) {
-                        jsessionId = cookies.substring(jsidx);
-                        int idx = jsessionId.indexOf(";");
-                        if (idx >= 0) {
+                        String tmpjsessionId = cookies.substring(jsidx);
+                        int equalidx = tmpjsessionId.indexOf("=");
+                        int idx = tmpjsessionId.indexOf(";");
+                        if (equalidx >= 0) {
+                            if(idx > 0) {
+                                jsessionId = tmpjsessionId.substring(equalidx+1, idx);
+                            } else {
+                                jsessionId = tmpjsessionId.substring(equalidx+1);
+                            }
                             if (Log.isLoggable(Log.DEBUG)) {
                                 Log.debug(TAG_LOG, "Found jsessionid = " + jsessionId);
                             }
-                            jsessionId = jsessionId.substring(0, idx);
                         }
                     }
                 }
@@ -406,7 +415,7 @@ public class SapiHandler {
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Authorization is specified via jsessionid");
                 }
-                conn.setRequestProperty("Cookie", JSESSIONID_HEADER + "=" + jsessionId);
+                conn.setRequestProperty(COOKIE_HEADER, JSESSIONID_HEADER + "=" + jsessionId);
             } else if (authMethod == AUTH_IN_HTTP_HEADER) {
                 String token = user + ":" + pwd;
                 String authToken = new String(Base64.encode(token.getBytes()));

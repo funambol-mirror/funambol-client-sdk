@@ -310,10 +310,7 @@ public abstract class SignupScreenController extends AccountScreenController {
     }
 
     protected void userAuthenticated() {
-
-        hideProgressDialog();
         ((SignupScreen)screen).enableSignup();
-
         // Show the congrats message only if the account has really been created
         if(customization.getShowSignupSuccededMessage() && state == STATE_SIGNED_UP) {
             if (Log.isLoggable(Log.DEBUG)) {
@@ -334,6 +331,7 @@ public abstract class SignupScreenController extends AccountScreenController {
             showSignupSucceededMessage(succeededMsg);
         }
         super.userAuthenticated();
+        hideProgressDialog();
     }
 
     protected void showSignupSucceededMessage(String message) {
@@ -441,7 +439,7 @@ public abstract class SignupScreenController extends AccountScreenController {
         private static final String JSON_OBJECT_CAPTCHA_FIELD_ACTIVE     = "active";
 
         private static final String JSESSIONID_HEADER = "JSESSIONID";
-        private static final String COOKIE_HEADER     = "Set-Cookie";
+        private static final String SET_COOKIE_HEADER = "Set-Cookie";
 
         private boolean unmatched = false;
 
@@ -534,17 +532,25 @@ public abstract class SignupScreenController extends AccountScreenController {
                     return;
                 }
                 // retrieve the JSESSIONID from http headers
-                String cookies = conn.getHeaderField(COOKIE_HEADER);
+                String cookies = conn.getHeaderField(SET_COOKIE_HEADER);
                 if (cookies != null) {
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Set-Cookie from server: " + cookies);
+                    }
                     int jsidx = cookies.indexOf(JSESSIONID_HEADER);
                     if (jsidx >= 0) {
-                        jsessionId = cookies.substring(jsidx);
-                        int idx = jsessionId.indexOf(";");
-                        if (idx >= 0) {
+                        String tmpjsessionId = cookies.substring(jsidx);
+                        int equalidx = tmpjsessionId.indexOf("=");
+                        int idx = tmpjsessionId.indexOf(";");
+                        if (equalidx >= 0) {
+                            if(idx > 0) {
+                                jsessionId = tmpjsessionId.substring(equalidx+1, idx);
+                            } else {
+                                jsessionId = tmpjsessionId.substring(equalidx+1);
+                            }
                             if (Log.isLoggable(Log.DEBUG)) {
                                 Log.debug(TAG_LOG, "Found jsessionid = " + jsessionId);
                             }
-                            jsessionId = jsessionId.substring(0, idx);
                         }
                     }
                 }
