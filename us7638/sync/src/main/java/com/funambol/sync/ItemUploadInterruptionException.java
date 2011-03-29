@@ -38,6 +38,9 @@ package com.funambol.sync;
 /**
  * This exception represents the base exception for synchronization
  * related error conditions.
+ *  
+ *  20110329
+ *  No more used in Android, if it's used in Blackberry ok, otherwise remove this class
  *
  */
 public class ItemUploadInterruptionException extends SyncException {

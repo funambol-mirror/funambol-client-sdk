@@ -149,7 +149,8 @@ public class SapiHandler {
     }
     public synchronized JSONObject query(String name, String action, Vector params,
             Hashtable headers, InputStream requestIs, String contentType,
-            long contentLength, long fromByte, String testItemName) throws IOException, JSONException {
+            long contentLength, long fromByte, String testItemName)
+    throws IOException, JSONException {
         
         String url = createUrl(name, action, params);
         HttpConnectionAdapter conn;
@@ -253,7 +254,7 @@ public class SapiHandler {
             os.flush();
 
             if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "Response is: " + conn.getResponseCode());
+                Log.trace(TAG_LOG, "Response code is: " + conn.getResponseCode());
             }
 
             // Now check the HTTP response, in case of success we set the item

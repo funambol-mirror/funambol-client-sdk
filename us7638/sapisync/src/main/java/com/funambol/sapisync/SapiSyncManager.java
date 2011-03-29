@@ -48,7 +48,6 @@ import org.json.me.JSONArray;
 
 import com.funambol.sync.BasicSyncListener;
 import com.funambol.sync.ItemStatus;
-import com.funambol.sync.QuotaOverflowException;
 import com.funambol.sync.SyncAnchor;
 import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
@@ -56,15 +55,14 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncManagerI;
-import com.funambol.sync.DeviceConfigI;
 import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.sync.ItemDownloadInterruptionException;
-import com.funambol.sync.ItemUploadInterruptionException;
 import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
+import com.funambol.sync.DeviceConfigI;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
@@ -346,8 +344,12 @@ public class SapiSyncManager implements SyncManagerI {
         // Prepare the source for the sync
         src.beginSync(syncMode, resume);
 
-        // Perform a login to avoid multiple authentications
-        sapiSyncHandler.login(deviceId);
+        try {
+            // Perform a login to avoid multiple authentications
+            sapiSyncHandler.login(deviceId);
+        } catch (SapiException e) {
+            throw new SyncException(SyncException.AUTH_ERROR, "Cannot login");
+        }
 
         boolean incremental = isIncrementalSync(syncMode);
         if (incremental) {
@@ -394,7 +396,14 @@ public class SapiSyncManager implements SyncManagerI {
             }
             Date anchor = new Date(sapiAnchor.getDownloadAnchor());
 
-            SapiSyncHandler.ChangesSet changesSet = sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
+            SapiSyncHandler.ChangesSet changesSet = null;
+            try {
+                changesSet = sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
+            } catch (SapiException e) {
+                processCommonSapiExceptions(e, "Client error while getting incremental changes", true);
+                //TODO process sapi-related error
+            }
+            
             if (changesSet != null) {
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "There are changes pending on the server");
@@ -528,7 +537,12 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         // Get the number of items and notify the listener
-        totalCount = sapiSyncHandler.getItemsCount(remoteUri, filterFrom);
+        try {
+            totalCount = sapiSyncHandler.getItemsCount(remoteUri, filterFrom);
+        } catch (SapiException e) {
+            processCommonSapiExceptions(e, "Cannot perform a full sync", true);
+            //TODO perform custom error management
+        }
 
         // Fill the addedArray
         addedArray = null;
@@ -726,8 +740,12 @@ public class SapiSyncManager implements SyncManagerI {
                                 }
                                 remoteKey = syncStatus.getSentItemGuid(item.getKey());
                                 item.setGuid(remoteKey);
-                                remoteKey = sapiSyncHandler.resumeItemUpload(item,
-                                        remoteUri, getSyncListenerFromSource(src));
+                                try {
+                                    remoteKey = sapiSyncHandler.resumeItemUpload(item,
+                                            remoteUri, getSyncListenerFromSource(src));
+                                } catch (SapiException e) {
+                                    verifyErrorInUploadResponse(e, item, remoteKey, sourceStatus);
+                                }
                                 // If the returned key is the same as the item guid,
                                 // the item has been resumed correctly.
                                 if(remoteKey.equals(item.getGuid())) {
@@ -737,11 +755,16 @@ public class SapiSyncManager implements SyncManagerI {
                             }
                         }
                     }
+                    
                     if (!uploadDone) {
-                        // Upload the item to the server
-                        remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
-                                getSyncListenerFromSource(src));
-                    }
+                        try {
+                            // Upload the item to the server
+                            remoteKey = sapiSyncHandler.uploadItem(item, remoteUri,
+                                    getSyncListenerFromSource(src));
+                        } catch (SapiException e) {
+                            verifyErrorInUploadResponse(e, item, remoteKey, sourceStatus);
+                        }
+                    } 
 
                     item.setGuid(remoteKey);
                     mapping.add(remoteKey, item.getKey());
@@ -753,27 +776,12 @@ public class SapiSyncManager implements SyncManagerI {
                     sourceStatus.addElement(new ItemStatus(item.getKey(),
                             SyncSource.SUCCESS_STATUS));
 
-                } catch (ItemUploadInterruptionException ex) {
-                    // An item could not be fully uploaded
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Error uploading item " + item.getKey());
-                    }
-                    syncStatus.addSentItem(item.getGuid(), item.getKey(),
-                            item.getState(), SyncSource.INTERRUPTED_STATUS);
-                    sourceStatus.addElement(new ItemStatus(item.getKey(),
-                            SyncSource.INTERRUPTED_STATUS));
-                    // Interrupt the sync with a network error
-                    throw new SyncException(SyncException.CONN_NOT_FOUND, ex.toString());
-                } catch (QuotaOverflowException ex) {
-                    // An item could not be uploaded because user quota on
-                    // server exceeded
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Server quota overflow error");
-                    }
-                    sourceStatus.addElement(new ItemStatus(item.getKey(),
-                            SyncSource.SERVER_FULL_ERROR_STATUS));
-                    throw new SyncException(SyncException.DEVICE_FULL, "Server quota exceeded");
+                } catch(SyncException ex) {
+                    //relaunch managed sync exception
+                    throw ex;
+
                 } catch(Exception ex) {
+                    //generic errors catch, just in case...
                     if(Log.isLoggable(Log.ERROR)) {
                         Log.error(TAG_LOG, "Failed to upload item with key: " +
                                 item.getKey(), ex);
@@ -1142,8 +1150,13 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void performFinalizationPhase(SyncSource src) {
-        sapiSyncHandler.logout();
+    private void performFinalizationPhase(SyncSource src)
+    throws SyncException {
+        try {
+            sapiSyncHandler.logout();
+        } catch (SapiException e) {
+            processCommonSapiExceptions(e, "Cannot logout", true);
+        }
         if(src != null) {
             src.endSync();
         }
@@ -1345,4 +1358,103 @@ public class SapiSyncManager implements SyncManagerI {
         }
         return syncStatus;
     }
+    
+    /**
+     * From a {@link SapiException} returns corresponding {@link SyncException}
+     * @param sapiException exception to analyze
+     * @param newErrorMessage error message for the exception
+     * @param throwGenericException thrown a generic exception if a specific one
+     *                              is not detected 
+     * 
+     * @throws SyncException
+     */
+    private void processCommonSapiExceptions(
+            SapiException sapiException,
+            String newErrorMessage,
+            boolean throwGenericException)
+    throws SyncException {
+        if (null == sapiException) return;
+        
+        //Referring to section 4.1.3 of "Funambol Server API Developers Guide" document
+        if (    SapiException.NO_CONNECTION.equals(sapiException.getCode()) || 
+                SapiException.HTTP_400.equals(sapiException.getCode())) {
+            throw new SyncException(
+                    SyncException.CONN_NOT_FOUND,
+                    StringUtil.isNullOrEmpty(newErrorMessage) ? sapiException.getMessage() : newErrorMessage);
+        } else if (SapiException.PAPI_0000.equals(sapiException.getCode())) {
+            //TODO
+        } else if (SapiException.SEC_1002.equals(sapiException.getCode())) {
+            //TODO
+        } else if (SapiException.SEC_1004.equals(sapiException.getCode())) {
+            //TODO
+        } else if (SapiException.SEC_1001.equals(sapiException.getCode())) {
+            //TODO
+        } else if (SapiException.SEC_1003.equals(sapiException.getCode())) {
+            //TODO
+        }
+
+        if (throwGenericException) {
+            throw new SyncException(
+                    SyncException.SERVER_ERROR,
+                    null != sapiException.getCause()
+                            ? sapiException.getCause().toString()
+                            : "Generic server error");
+        }
+        //SAPI specific errors must be handled by calling method
+    }
+    
+    /**
+     * Common code used to verify specific error in upload sapi
+     * (size mismatch, over quota etc)
+     * 
+     * @param sapiException
+     * @param item
+     * @param remoteKey
+     * @param sourceStatus 
+     * @throws SyncException
+     */
+    private void verifyErrorInUploadResponse(
+            SapiException sapiException,
+            SyncItem item,
+            String remoteKey,
+            Vector sourceStatus) 
+    throws SyncException
+    {
+        //manage common errors
+        processCommonSapiExceptions(sapiException, "Cannot upload item", false);
+        
+        if (SapiException.MED_1002.equals(sapiException.getCode())
+                || SapiException.CUS_0001.equals(sapiException.getCode())) {
+
+            // An item could not be fully uploaded
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Error uploading item " + item.getKey());
+            }
+
+            // The size of the uploading media does not match the one declared
+            item.setGuid(remoteKey);
+            
+            syncStatus.addSentItem(item.getGuid(), item.getKey(),
+                    item.getState(), SyncSource.INTERRUPTED_STATUS);
+            sourceStatus.addElement(new ItemStatus(item.getKey(),
+                    SyncSource.INTERRUPTED_STATUS));
+            // Interrupt the sync with a network error
+            throw new SyncException(SyncException.CONN_NOT_FOUND, sapiException.getMessage());
+            
+        } else if(SapiException.MED_1007.equals(sapiException.getCode())) {
+            // An item could not be uploaded because user quota on
+            // server exceeded
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Server quota overflow error");
+            }
+            sourceStatus.addElement(new ItemStatus(item.getKey(),
+                    SyncSource.SERVER_FULL_ERROR_STATUS));
+            throw new SyncException(SyncException.DEVICE_FULL, "Server quota exceeded");
+            
+        } else {
+            throw new SyncException(
+                    SyncException.SERVER_ERROR,
+                    "Cannot upload item, error in SAPI response: " + sapiException.getMessage());
+        }
+    }    
 }

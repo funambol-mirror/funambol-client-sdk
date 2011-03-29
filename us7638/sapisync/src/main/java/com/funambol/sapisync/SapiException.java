@@ -47,33 +47,56 @@ public class SapiException extends RuntimeException {
 
     //SAPI ERROR CODE 
     
-    /** */
-    public static final String UNKNOWN = "Unknown";
+    /** Unrecognized generic error */
+    public static final String UNKNOW = "UNKNOW";
+
+    /** Connection error with sapi server */
+    public static final String NO_CONNECTION = "NO_CONNECTION";
     
-    /** */
+    /** Unrecognized generic error */
     public static final String PAPI_0000 = "PAPI-0000";
+    /** Unknown exception in media handling */
+    public static final String MED_1000 = "MED-1000";
     /** User not specified when SAPI requires realm SYSTEM or USER */
     public static final String SEC_1001 = "SEC-1001";
-    /** */
+    /** A session is already open. To provide new credentials please logout first. */
     public static final String SEC_1002 = "SEC-1002";
-    /** */
+    /** Invalid mandatory validation key */
+    public static final String SEC_1003 = "SEC-1003";
+    /** Both header and parameter credentials provided, please use only one authentication schema. */
     public static final String SEC_1004 = "SEC-1004";
     /** */
     public static final String HTTP_400 = "HTTP-400";
-    /** */
+    /** The size declared in the header does not match the one declared in the metadata. */
+    public static final String MED_1001 = "MED-1001";
+    /** The size of the uploading media does not match the one declared */
     public static final String MED_1002 = "MED-1002";
-    /** */
+    /** User quota reached */
     public static final String MED_1007 = "MED-1007";
+    /** Custom error, item could be resumed */
+    public static final String CUS_0001 = "CUS_0001";
+    /** Custom error, invalid item id */
+    public static final String CUS_0002 = "CUS_0002";
+    
 
+    /** Unknown exception in SAPI process (wrong reply or other strange causes) */
+    public final static SapiException SAPI_EXCEPTION_UNKNOWN =
+        new SapiException(UNKNOW, "Cannot read data from server response");
+    /** SAPI cannot be reached */
+    public final static SapiException SAPI_EXCEPTION_NO_CONNECTION =
+        new SapiException(HTTP_400, "Connection error with SAPI, cannot find the service");
+    /** SAPI can be reached, but SAPI cannot reach the server */
+    public final static SapiException SAPI_EXCEPTION_NO_CONNECTION_WITH_SERVER =
+        new SapiException(NO_CONNECTION, "Connection error with SAPI server");
+
+    
     /** The code of the exception */
     private final String code;
 
     /** Server side cause of the exception */
     private final String sapiCause;
     
-    public final static SapiException SAPI_EXCEPTION_UNKNOWN =
-        new SapiException(UNKNOWN, "Impossible to retrieve SAPI exception from server reply");
-    
+   
     /**
      * Constructs an instance of <code>SapiException</code>
      * with the specified detail message.
@@ -106,5 +129,14 @@ public class SapiException extends RuntimeException {
 
     public String getSapiCause() {
         return sapiCause;
+    }
+    
+    
+    public boolean equals(Object o) {
+        if (null == o) return false;
+        if (! (o instanceof SapiException)) return false;
+        //compares only the SAPI code, message doesn't matter
+        SapiException other = (SapiException) o;
+        return this.getCode() == other.getCode();
     }
 }
