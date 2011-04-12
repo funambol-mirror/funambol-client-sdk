@@ -637,7 +637,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
             return null;
         }
 
-        public long getItemSize(String key) {
+        public long getPartiallyReceivedItemSize(String key) {
             return -1;
         }
     }

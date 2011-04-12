@@ -239,7 +239,7 @@ public class SyncSourceHandlerTest extends TestCase {
             return null;
         }
 
-        public long getItemSize(String key) {
+        public long getPartiallyReceivedItemSize(String key) {
             return -1;
         }
     }
