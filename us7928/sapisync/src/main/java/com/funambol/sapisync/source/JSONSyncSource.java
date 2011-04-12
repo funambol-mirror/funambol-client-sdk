@@ -77,6 +77,33 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     private SyncConfig syncConfig = null;
     private String dataTag = null;
 
+    private class JSONSyncSourceItem extends JSONSyncItem {
+
+        public JSONSyncSourceItem(String key, String type, char state, String parent,
+                                  JSONObject jsonObject, String serverUrl)
+        throws JSONException
+        {
+            super(key, type, state, parent, jsonObject, serverUrl);
+        }
+
+        public JSONSyncSourceItem(String key, String type, char state, String parent,
+                                  JSONFileObject jsonFileObject)
+        throws JSONException
+        {
+            super(key, type, state, parent, jsonFileObject);
+        }
+
+        /**
+         * Returns an OutputStream to write data to. In this default implementation
+         * a ByteArrayOutputStream is used to store the content. SyncSource that
+         * need to manipulate bug items shall redefine this method to use a non
+         * memory based sync item.
+         */
+        public OutputStream getOutputStream() throws IOException {
+            return getDownloadOutputStream(getJSONFileObject(), getState() == SyncItem.STATE_UPDATED, false, getPartialLength() > 0);
+        }
+    }
+
     //------------------------------------------------------------- Constructors
 
     /**
@@ -93,7 +120,7 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     public SyncItem createSyncItem(String key, String type, char state,
                                    String parent, JSONObject json,
                                    String serverUrl) throws JSONException {
-        JSONSyncItem item = new JSONSyncItem(key, type, state, parent, json, serverUrl);
+        JSONSyncSourceItem item = new JSONSyncSourceItem(key, type, state, parent, json, serverUrl);
         return item;
     }
 
@@ -216,76 +243,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
 
     protected int addUpdateItem(SyncItem item, JSONFileObject jsonFile, boolean isUpdate)
     throws SyncException, IOException {
-        if(downloadFileObject) {
-            String baseUrl = jsonFile.getUrl();
-            long size = jsonFile.getSize();
-            OutputStream fileos = null;
-
-            long partialLength = item.getPartialLength();
-            if (partialLength > 0) {
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Download can be resumed at " + partialLength);
-                }
-            }
-            try {
-                fileos = getDownloadOutputStream(jsonFile, isUpdate, false, partialLength > 0);
-            } catch (StorageLimitException sle) {
-                throw sle.getCorrespondingSyncException();
-            }
-            downloader.setDownloadListener(
-                    new DownloadSyncListener(item, super.getListener()));
-            String url = composeUrl(jsonFile.getServerUrl(), baseUrl);
-            try {
-                long actualSize;
-                if (partialLength > 0) {
-                    actualSize = downloader.resume(url, fileos, size, partialLength, jsonFile.getName());
-                } else {
-                    actualSize = downloader.download(url, fileos, size, jsonFile.getName());
-                }
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "size is " + size + " actual size is " + actualSize);
-                }
-                // This should never happen, but we check for safety
-                if (size != actualSize) {
-                    // The download was interrupted. We shall keep track of this interrupted download
-                    // so that it can be resumed
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Item download was interrupted at " + actualSize);
-                    }
-                    throw new ItemDownloadInterruptionException(item, actualSize);
-                }
-            } catch (ResumeException re) {
-                // The item download cannot be resumed properly
-                // Re-create a new output stream without appending
-                fileos.close();
-                fileos = getDownloadOutputStream(jsonFile, isUpdate, false, false);
-                // Download the item from scratch
-                try {
-                    long actualSize = downloader.download(url, fileos, size, jsonFile.getName());
-                    if (size != actualSize) {
-                        // The download was interrupted. We shall keep track of this interrupted download
-                        // so that it can be resumed
-                        throw new ItemDownloadInterruptionException(item, actualSize);
-                    }
-                } catch (DownloadException de) {
-                    throw new ItemDownloadInterruptionException(item, de.getPartialLength());
-                }
-            } catch (DownloadException de) {
-                // We had a network error while download the item. Propagate the
-                // exception as the sync must be interrupted
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Cannot download item, interrupt sync " + de.getPartialLength());
-                }
-                if(de.getCode() == DownloadException.CODE_CANCELLED) {
-                    throw new ItemDownloadInterruptionException(SyncException.CANCELLED, item, de.getPartialLength());
-                } else {
-                    throw new ItemDownloadInterruptionException(item, de.getPartialLength());
-                }
-            }
-        }
-        if(downloadThumbnails) {
-            // TODO FIXME download thumbnails
-        }
         return SyncSource.SUCCESS_STATUS;
     }
 
@@ -311,24 +268,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
      */
     protected abstract OutputStream getDownloadOutputStream(String name,
             long size, boolean isUpdate, boolean isThumbnail, boolean append) throws IOException;
-
-    /**
-     * Composes the url to use for the download operation.
-     *
-     * @param serverUrl
-     * @param baseUrl
-     * @param filename
-     * @return
-     */
-    private String composeUrl(String serverUrl, String baseUrl) {
-        if(StringUtil.isNullOrEmpty(serverUrl)) {
-            serverUrl = StringUtil.extractAddressFromUrl(syncConfig.getSyncUrl());
-        }
-        StringBuffer res = new StringBuffer();
-        res.append(serverUrl);
-        res.append(baseUrl);
-        return res.toString();
-    }
 
     /**
      * Return whether the given item is supported by the source
@@ -364,154 +303,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         }
     }
 
-    public SyncListener getListener() {
-        return new ProxySyncListener(super.getListener());
-    }
-
-    /**
-     * Filters some SyncListener calls which are actually invoked by the DownloadSyncListener
-     */
-    private class ProxySyncListener implements SyncListener {
-
-        private SyncListener syncListener = null;
-
-        public ProxySyncListener(SyncListener syncListener) {
-            this.syncListener = syncListener;
-        }
-
-        public void startSession() {
-            if (syncListener != null) {
-                syncListener.startSession();
-            }
-        }
-        public void endSession(SyncReport report) {
-            if (syncListener != null) {
-                syncListener.endSession(report);
-            }
-        }
-        public void startConnecting() {
-            if (syncListener != null) {
-                syncListener.startConnecting();
-            }
-        }
-        public void endConnecting(int action) {
-            if (syncListener != null) {
-                syncListener.endConnecting(action);
-            }
-        }
-        public void syncStarted(int alertCode) {
-            if (syncListener != null) {
-                syncListener.syncStarted(alertCode);
-            }
-        }
-        public void endSyncing() {
-            if (syncListener != null) {
-                syncListener.endSyncing();
-            }
-        }
-        public void startReceiving(int number) {
-            if (syncListener != null) {
-                syncListener.startReceiving(number);
-            }
-        }
-        public void itemAddReceivingStarted(String key, String parent, long size) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
-        }
-        public void itemAddReceivingEnded(String key, String parent) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
-        }
-        public void itemAddReceivingProgress(String key, String parent, long size) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
-        }
-        public void itemReplaceReceivingStarted(String key, String parent, long size) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
-        }
-        public void itemReplaceReceivingEnded(String key, String parent) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
-        }
-        public void itemReplaceReceivingProgress(String key, String parent, long size) {
-            // Do nothing
-            // This is actually called by the DownloadSyncListener
-        }
-        public void itemDeleted(SyncItem item) {
-            if (syncListener != null) {
-                syncListener.itemDeleted(item);
-            }
-        }
-        public void endReceiving() {
-            if (syncListener != null) {
-                syncListener.endReceiving();
-            }
-        }
-        public void startSending(int numNewItems, int numUpdItems, int numDelItems) {
-            if (syncListener != null) {
-                syncListener.startSending(numNewItems, numUpdItems, numDelItems);
-            }
-        }
-        public void itemAddSendingStarted(String key, String parent, long size) {
-            if (syncListener != null) {
-                syncListener.itemAddSendingStarted(key, parent, size);
-            }
-        }
-        public void itemAddSendingEnded(String key, String parent) {
-            if (syncListener != null) {
-                syncListener.itemAddSendingEnded(key, parent);
-            }
-        }
-        public void itemAddSendingProgress(String key, String parent, long size) {
-            if (syncListener != null) {
-                syncListener.itemAddSendingProgress(key, parent, size);
-            }
-        }
-        public void itemReplaceSendingStarted(String key, String parent, long size) {
-            if (syncListener != null) {
-                syncListener.itemReplaceSendingStarted(key, parent, size);
-            }
-        }
-        public void itemReplaceSendingEnded(String key, String parent) {
-            if (syncListener != null) {
-                syncListener.itemReplaceSendingEnded(key, parent);
-            }
-        }
-        public void itemReplaceSendingProgress(String key, String parent, long size) {
-            if (syncListener != null) {
-                syncListener.itemReplaceSendingProgress(key, parent, size);
-            }
-        }
-        public void itemDeleteSent(SyncItem item) {
-            if (syncListener != null) {
-                syncListener.itemDeleteSent(item);
-            }
-        }
-        public void endSending() {
-            if (syncListener != null) {
-                syncListener.endSending();
-            }
-        }
-        public void startFinalizing() {
-            if (syncListener != null) {
-                syncListener.startFinalizing();
-            }
-        }
-        public void endFinalizing() { 
-            if (syncListener != null) {
-                syncListener.endFinalizing();
-            }
-        }
-        public boolean startSyncing(int alertCode, Object devInf) {
-            if (syncListener != null) {
-                return syncListener.startSyncing(alertCode, devInf);
-            } else {
-                return true;
-            }
-        }
-    }
-
     private JSONFileObject getJSONFileFromSyncItem(SyncItem item) throws JSONException {
         JSONFileObject jsonFile = null;
         if(item instanceof JSONSyncItem) {
@@ -523,51 +314,4 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         return jsonFile;
     }
     
-    /**
-     * Translates the HttpDownloader.DownloadListener calls into SyncListener calls.
-     */
-    private class DownloadSyncListener implements HttpDownloader.DownloadListener {
-
-        private SyncListener syncListener = null;
-        private String itemKey = null;
-        private String itemParent = null;
-        private char itemState;
-
-        public DownloadSyncListener(SyncItem item, SyncListener syncListener) {
-            this.syncListener = syncListener;
-            this.itemKey = item.getKey();
-            this.itemParent = item.getParent();
-            this.itemState = item.getState();
-        }
-
-        public void downloadStarted(long totalSize) {
-            if(syncListener != null) {
-                if(itemState == SyncItem.STATE_NEW) {
-                    syncListener.itemAddReceivingStarted(itemKey, itemParent, totalSize);
-                } else {
-                    syncListener.itemReplaceReceivingStarted(itemKey, itemParent, totalSize);
-                }
-            }
-        }
-
-        public void downloadProgress(long size) {
-            if(syncListener != null) {
-                if(itemState == SyncItem.STATE_NEW) {
-                    syncListener.itemAddReceivingProgress(itemKey, itemParent, size);
-                } else {
-                    syncListener.itemReplaceReceivingProgress(itemKey, itemParent, size);
-                }
-            }
-        }
-
-        public void downloadEnded() {
-            if(syncListener != null) {
-                if(itemState == SyncItem.STATE_NEW) {
-                    syncListener.itemAddReceivingEnded(itemKey, itemParent);
-                } else {
-                    syncListener.itemReplaceReceivingEnded(itemKey, itemParent);
-                }
-            }
-        }
-    }
 }

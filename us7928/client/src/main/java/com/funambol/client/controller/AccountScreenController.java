@@ -126,6 +126,11 @@ public class AccountScreenController extends SynchronizationController {
             return;
         }
 
+        // Trim all values so that spaces
+        serverUri = serverUri.trim();
+        username  = username.trim();
+        password  = password.trim();
+
         // Load all the default settings and overwrite the parameters edited
         // here
         configuration.load();

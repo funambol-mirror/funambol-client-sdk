@@ -409,7 +409,7 @@ public class SapiHandler {
     public long getMediaPartialUploadLength(String name, String guid, long size)
     throws NotSupportedCallException, IOException {
 
-        String url = createUrl("upload/" + name, "add", null);
+        String url = createUrl("upload/" + name, "save", null);
         HttpConnectionAdapter conn = null;
 
         OutputStream os = null;

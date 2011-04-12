@@ -61,7 +61,7 @@ public class JSONFileObject {
 
     private Vector thumbnails;
 
-    public JSONFileObject() throws JSONException {
+    public JSONFileObject() {
     }
 
     public JSONFileObject(String json, String serverUrl) throws JSONException {

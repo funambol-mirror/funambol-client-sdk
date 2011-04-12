@@ -40,6 +40,8 @@ import com.funambol.sync.SyncItem;
 import com.funambol.org.json.me.JSONObject;
 import com.funambol.org.json.me.JSONException;
 
+import com.funambol.util.StringUtil;
+
 /**
  * Represents a SyncItem which holds a JSONFileObject
  */
@@ -47,19 +49,85 @@ public class JSONSyncItem extends SyncItem {
 
     private JSONFileObject fileObject = null;
 
+    public JSONSyncItem(String key) {
+        super(key);
+    }
+
     public JSONSyncItem(String key, String type, char state, String parent,
             JSONObject jsonObject, String serverUrl) throws JSONException {
         this(key, type, state, parent, new JSONFileObject(jsonObject, serverUrl));
     }
 
     public JSONSyncItem(String key, String type, char state, String parent,
-            JSONFileObject jsonFileObject) throws JSONException {
+            JSONFileObject jsonFileObject) {
         super(key, type, state, parent);
         fileObject = jsonFileObject;
     }
 
+    public JSONSyncItem(JSONSyncItem that) {
+        super(that);
+        fileObject = that.getJSONFileObject();
+    }
+
     public JSONFileObject getJSONFileObject() {
         return fileObject;
+    }
+
+    /*
+     * This method returns the url content for this item. This url can be
+     * anything and just needs to point to the actual content. If there is
+     * no remote content, but the content is withing the item itself, then this
+     * method shall return null.
+     */
+    public String getContentUrl(String syncUrl) {
+        if (fileObject != null) {
+            return composeUrl(syncUrl, fileObject.getServerUrl(), fileObject.getUrl());
+        } else {
+            return null;
+        }
+    }
+
+    public long getContentSize() {
+        if (fileObject != null) {
+            return fileObject.getSize();
+        } else {
+            return 0;
+        }
+    }
+
+    public String getContentName() {
+        if (fileObject != null) {
+            return fileObject.getName();
+        } else {
+            return null;
+        }
+    }
+
+    // Return the timestamp of the last modification for this item. If the item
+    // is flowing client -> server then this is the timestamp of the last local
+    // modification, otherwise it is the timestamp of the last remote
+    // modification
+    public long getLastModified() {
+        return -1;
+    }
+
+    /**
+     * Composes the url to use for the download operation.
+     *
+     * @param serverUrl
+     * @param baseUrl
+     * @param filename
+     * @return
+     */
+    private String composeUrl(String syncUrl, String serverUrl, String baseUrl) {
+
+        if(StringUtil.isNullOrEmpty(syncUrl)) {
+            serverUrl = StringUtil.extractAddressFromUrl(syncUrl);
+        }
+        StringBuffer res = new StringBuffer();
+        res.append(serverUrl);
+        res.append(baseUrl);
+        return res.toString();
     }
 
 }

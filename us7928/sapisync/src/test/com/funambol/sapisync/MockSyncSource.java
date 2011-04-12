@@ -42,6 +42,7 @@ import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.BaseSyncSource;
+import com.funambol.sapisync.source.JSONSyncItem;
 
 /**
  * Implements a Mock for the SyncSource interface
@@ -122,43 +123,49 @@ public class MockSyncSource extends BaseSyncSource {
 
     public void cancel() {
     }
+
+    public SyncItem createSyncItem(String key, String type, char state,
+                                   String parent, long size) throws SyncException
+    {
+        return new JSONSyncItem(key, type, state, parent, null);
+    }
     
     protected void initAllItems() {
-        allItems = new SyncItem[initialItemsCount];
+        allItems = new JSONSyncItem[initialItemsCount];
         for(int i=0; i<initialItemsCount; i++) {
-            allItems[i] = new SyncItem("Item"+i);
+            allItems[i] = new JSONSyncItem("Item"+i);
         }
     }
 
     protected void initNewItems() {
-        newItems = new SyncItem[initialNewItemsCount];
+        newItems = new JSONSyncItem[initialNewItemsCount];
         for(int i=0; i<initialNewItemsCount; i++) {
             String key = "Item"+(i+11);
-            newItems[i] = new SyncItem(key, getType(),
+            newItems[i] = new JSONSyncItem(key, getType(),
                     SyncItem.STATE_NEW, null, null);
         }
     }
 
     protected void initUpdItems() {
-        updItems = new SyncItem[initialUpdatedItemsCount];
+        updItems = new JSONSyncItem[initialUpdatedItemsCount];
         for(int i=0; i<initialUpdatedItemsCount; i++) {
             String key = "Item"+(i+4);
-            updItems[i]= new SyncItem(key, getType(),
+            updItems[i]= new JSONSyncItem(key, getType(),
                     SyncItem.STATE_UPDATED, null, null);
         }
     }
 
     protected void initDelItems() {
-        delItems = new SyncItem[initialDeletedItemsCount];
+        delItems = new JSONSyncItem[initialDeletedItemsCount];
         for(int i=0; i<initialDeletedItemsCount; i++) {
             String key = "Item"+(i+8);
-            delItems[i] = new SyncItem(key, getType(),
+            delItems[i] = new JSONSyncItem(key, getType(),
                     SyncItem.STATE_DELETED, null, null);
         }
     }
 
     protected SyncItem getItemContent(final SyncItem item) {
-        SyncItem ret = new SyncItem(item);
+        JSONSyncItem ret = new JSONSyncItem(item.getKey());
         ret.setContent(("This is the content of item: " +
                 item.getKey()).getBytes());
         return ret;
