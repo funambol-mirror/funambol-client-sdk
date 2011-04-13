@@ -70,11 +70,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
 
     private static final String TAG_LOG = "JSONSyncSource";
 
-    protected boolean downloadFileObject;
-    protected boolean downloadThumbnails;
-
-    protected HttpDownloader downloader = null;
-    private SyncConfig syncConfig = null;
     private String dataTag = null;
 
     private class JSONSyncSourceItem extends JSONSyncItem {
@@ -109,12 +104,8 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     /**
      * JSONSyncSource constructor: initialize source config
      */
-    public JSONSyncSource(SourceConfig config, SyncConfig syncConfig, ChangesTracker tracker) {
+    public JSONSyncSource(SourceConfig config, ChangesTracker tracker) {
         super(config, tracker);
-        this.downloadFileObject = true;
-        this.downloadThumbnails = false;
-        this.downloader = new HttpDownloader();
-        this.syncConfig = syncConfig;
     }
 
     public SyncItem createSyncItem(String key, String type, char state,
@@ -158,76 +149,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         }
     }
 
-
-    public int addItem(SyncItem item) throws SyncException {
-        // Note that the addItem must still download the actual item content, therefore
-        // it can get a network error and this must be propagated
-        try {
-            JSONFileObject jsonFile = getJSONFileFromSyncItem(item);
-            int res = addUpdateItem(item, jsonFile, false);
-            super.addItem(item);
-            return res;
-        } catch (NonBlockingSyncException nbse) {
-            Log.error(TAG_LOG, "Cannot add item because of non-blocking error", nbse);
-            throw nbse;
-        } catch (IOException ioe) {
-            Log.error(TAG_LOG, "Cannot add item because of I/O error", ioe);
-            return SyncSource.ERROR_STATUS;
-        } catch (ItemDownloadInterruptionException ide) {
-            // This kind of exception blocks the sync because it is a network error of some kind
-            Log.error(TAG_LOG, "Network error while downloading item", ide);
-            throw ide;
-        } catch (Throwable t) {
-            Log.error(TAG_LOG, "Cannot add item", t);
-            return SyncSource.ERROR_STATUS;
-        }
-    }
-
-
-    public int updateItem(SyncItem item) throws SyncException {
-        // We consider IOException and other generic exception as non
-        // blocking exceptions for the sync. Only network exceptions will
-        // block it
-        try {
-            JSONFileObject jsonFile = getJSONFileFromSyncItem(item);
-            int res = addUpdateItem(item, jsonFile, true);
-            super.updateItem(item);
-            return res;
-        } catch (NonBlockingSyncException nbse) {
-            Log.error(TAG_LOG, "Cannot update item because of non-blocking error", nbse);
-            throw nbse;
-        } catch (IOException ioe) {
-            Log.error(TAG_LOG, "Cannot update item, ioe");
-            return SyncSource.ERROR_STATUS;
-        } catch (ItemDownloadInterruptionException ide) {
-            // This kind of exception blocks the sync because it is a network error of some kind
-            Log.error(TAG_LOG, "Network error while downloading item", ide);
-            throw ide;
-        } catch (Throwable t) {
-            Log.error(TAG_LOG, "Cannot update item", t);
-            return SyncSource.ERROR_STATUS;
-        }
-    }
-
-    public void updateSyncConfig(SyncConfig syncConfig) {
-        this.syncConfig = syncConfig;
-    }
-
-    public void skipItemDownload(SyncItem item) {
-        // If the download for a specific item has been skipped we notify the
-        // listener in order to be consistent with the total items count
-        String itemKey = item.getKey();
-        String itemParent = item.getParent();
-        long itemSize = item.getObjectSize();
-        if(item.getState() == SyncItem.STATE_NEW) {
-            super.getListener().itemAddReceivingStarted(itemKey, itemParent, itemSize);
-            super.getListener().itemAddReceivingEnded(itemKey, itemParent);
-        } else {
-            super.getListener().itemReplaceReceivingStarted(itemKey, itemParent, itemSize);
-            super.getListener().itemReplaceReceivingEnded(itemKey, itemParent);
-        }
-    }
-
     /**
      * This method returns the tag name in the JSONobject for the specific
      * type of data handled by this source. Refer to the SAPI documentation
@@ -239,11 +160,6 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
 
     public void setDataTag(String dataTag) {
         this.dataTag = dataTag;
-    }
-
-    protected int addUpdateItem(SyncItem item, JSONFileObject jsonFile, boolean isUpdate)
-    throws SyncException, IOException {
-        return SyncSource.SUCCESS_STATUS;
     }
 
     protected OutputStream getDownloadOutputStream(JSONFileObject jsonItem,
@@ -294,24 +210,4 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
         }
         return true;
     }
-
-    public void cancel() {
-        super.cancel();
-        // Cancel any pending download
-        if(downloader != null) {
-            downloader.cancel();
-        }
-    }
-
-    private JSONFileObject getJSONFileFromSyncItem(SyncItem item) throws JSONException {
-        JSONFileObject jsonFile = null;
-        if(item instanceof JSONSyncItem) {
-            jsonFile = ((JSONSyncItem)item).getJSONFileObject();
-        } else {
-            String itemContent = new String(item.getContent());
-            jsonFile = new JSONFileObject(itemContent, null);
-        }
-        return jsonFile;
-    }
-    
 }

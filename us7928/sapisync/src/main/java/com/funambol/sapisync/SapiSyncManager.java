@@ -197,13 +197,6 @@ public class SapiSyncManager implements SyncManagerI {
 
         currentSource = src;
 
-        // JSONSyncSource require an updated sync config, therefore we update it
-        // at the beginning of each sync
-        if (src instanceof JSONSyncSource) {
-            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
-            jsonSyncSource.updateSyncConfig(syncConfig);
-        }
-        
         boolean resume = false;
 
         syncStatus = new SapiSyncStatus(src.getName());

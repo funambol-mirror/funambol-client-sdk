@@ -114,6 +114,8 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             overrideMediaContent(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
         } else if (OVERRIDE_VIDEO_CONTENT.equals(command)) {
             overrideMediaContent(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (OVERRIDE_FILE_CONTENT.equals(command)) {
+            overrideMediaContent(BasicUserCommands.SOURCE_NAME_FILES, command, pars);
         } else if (CREATE_FILE.equals(command)) {
             createFile(command, pars);
         } else {

@@ -345,10 +345,12 @@ public class SapiSyncStrategy {
             discardTwinAndConflictFromList(src, updatedArray, localUpdated,
                     localDeleted, updatedServerUrl, mapping, twins);
         }
+        /*
         if (deletedArray != null) {
             discardTwinAndConflictFromList(src, deletedArray, localUpdated,
                      localDeleted, updatedServerUrl, mapping, twins);
         }
+        */
     }
 
     private void prepareSyncFullDownload(SyncSource src, StringKeyValueStore mapping, Vector twins)

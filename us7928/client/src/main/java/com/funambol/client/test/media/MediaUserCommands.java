@@ -318,6 +318,15 @@ public interface MediaUserCommands {
      * @example OverrideVideoContent(target.3gp,source.3gp);
      */
     public static final String OVERRIDE_VIDEO_CONTENT = "OverrideVideoContent";
+
+    /**
+     * This command overrides a given file with the content of another one.
+     * Its main purpose it is simulate an update of a file.
+     *
+     * @example OverrideFileContent(target.txt,source.txt);
+     */
+    public static final String OVERRIDE_FILE_CONTENT = "OverrideFileContent";
+ 
     
     /**
      * This command creates a file in the mediahub folder

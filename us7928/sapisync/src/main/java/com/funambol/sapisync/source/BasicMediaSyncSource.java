@@ -65,11 +65,10 @@ public abstract class BasicMediaSyncSource extends JSONSyncSource {
      */
     public BasicMediaSyncSource(
             SourceConfig config,
-            SyncConfig syncConfig,
             ChangesTracker tracker,
             long maxItemSize,
             long oldestItemTimestamp) {
-        super(config, syncConfig, tracker);
+        super(config, tracker);
 
         this.maxItemSize = maxItemSize;
         this.oldestItemTimestamp = oldestItemTimestamp;

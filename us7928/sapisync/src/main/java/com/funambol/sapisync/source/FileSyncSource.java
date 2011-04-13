@@ -73,7 +73,6 @@ public class FileSyncSource extends BasicMediaSyncSource implements
      * FileSyncSource constructor: initialize source config
      * 
      * @param config
-     * @param syncConfig
      * @param tracker
      * @param directory the directory being synchronized
      * @param tempDirectory the directory holding temporary files being
@@ -85,12 +84,12 @@ public class FileSyncSource extends BasicMediaSyncSource implements
      *   uploaded. {@link BasicMediaSyncSource#NO_LIMIT_ON_ITEM_AGE} could
      *   be used to remove this filter
      */
-    public FileSyncSource(SourceConfig config, SyncConfig syncConfig,
+    public FileSyncSource(SourceConfig config,
             ChangesTracker tracker, String directory,
             String tempDirectory,
             long maxItemSize,
             long oldestItemTimestamp) {
-        super(config, syncConfig, tracker, maxItemSize, oldestItemTimestamp);
+        super(config, tracker, maxItemSize, oldestItemTimestamp);
         this.directory = directory;
         this.tempDirectory = tempDirectory;
     }
@@ -269,25 +268,27 @@ public class FileSyncSource extends BasicMediaSyncSource implements
         }
     }
 
-    protected int addUpdateItem(SyncItem item, JSONFileObject jsonFile,
-            boolean isUpdate) throws SyncException, IOException {
-        int res = super.addUpdateItem(item, jsonFile, isUpdate);
-        if(res == SyncSource.SUCCESS_STATUS && !isCancelled()) {
-            if(Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Item added successfully");
-            }
-            // Move the file from the temporary directory to the final one
-            String tempFileName = createTempFileName(jsonFile.getName());
-            String fullName = getFileFullName(jsonFile.getName());
-            renameTempFile(tempFileName, fullName);
+    protected int addItem(SyncItem item) throws SyncException {
+        if(Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "addItem");
+        }
+        JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
 
+        try {
+            // Move the file from the temporary directory to the final one
+            String tempFileName = createTempFileName(jsonSyncItem.getContentName());
+            String fullName = getFileFullName(jsonSyncItem.getContentName());
+            renameTempFile(tempFileName, fullName);
             // Set the item key
             item.setKey(fullName);
             if(Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "key set to:" + fullName);
             }
+            return SyncSource.SUCCESS_STATUS;
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Cannot rename temporary file", ioe);
+            throw new SyncException(SyncException.CLIENT_ERROR, "Cannot rename temporary file");
         }
-        return res;
     }
 
     protected void renameTempFile(String tempFileName, String fullName) throws IOException {
