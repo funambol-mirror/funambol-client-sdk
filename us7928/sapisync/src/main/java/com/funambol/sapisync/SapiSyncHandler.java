@@ -125,10 +125,11 @@ public class SapiSyncHandler {
             throw SapiException.SAPI_EXCEPTION_NO_CONNECTION;
         } catch(JSONException ex) {
             throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        } finally {
+            sapiHandler.enableJSessionAuthentication(false);
+            sapiHandler.forceJSessionId(null);
+            sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
         }
-        sapiHandler.enableJSessionAuthentication(false);
-        sapiHandler.forceJSessionId(null);
-        sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
     }
 
     public String resumeItemUpload(SyncItem item, String remoteUri, SyncListener listener)
@@ -212,10 +213,18 @@ public class SapiSyncHandler {
             JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
 
             metadata.put("name", json.getName());
-            metadata.put("creationdate", DateUtil.formatDateTimeUTC(json.getCreationDate()));
             metadata.put("modificationdate", DateUtil.formatDateTimeUTC(json.getLastModifiedDate()));
             metadata.put("contenttype", json.getMimetype());
             metadata.put("size", json.getSize());
+            if (item.getState() == SyncItem.STATE_UPDATED) {
+                metadata.put("id", item.getGuid());
+                metadata.put("creationdate", DateUtil.formatDateTimeUTC(json.getCreationDate()));
+            } else {
+                // We set the creation date only when the item is first added.
+                // We don't have the real creation date, but most of the time
+                // the last mod time is a good approximation for the first sync
+                metadata.put("creationdate", DateUtil.formatDateTimeUTC(json.getCreationDate()));
+            }
 
             JSONObject addRequest = new JSONObject();
             addRequest.put("data", metadata);
@@ -759,27 +768,43 @@ public class SapiSyncHandler {
 
         private SyncListener syncListener = null;
         private String itemKey = null;
+        private SyncItem item = null;
 
         public SapiUploadSyncListener(SyncItem item, SyncListener syncListener) {
             this.syncListener = syncListener;
-            this.itemKey = item.getKey();
+            this.item = item;
         }
 
         public void queryStarted(int totalSize) {
             if(syncListener != null) {
-                syncListener.itemAddSendingStarted(itemKey, null, totalSize);
+                if (item.getState() == SyncItem.STATE_NEW) {
+                    syncListener.itemAddSendingStarted(item.getKey(), item.getParent(), totalSize);
+                } else if (item.getState() == SyncItem.STATE_UPDATED) {
+                    syncListener.itemReplaceSendingStarted(item.getKey(), item.getParent(), totalSize);
+                }
+
             }
         }
 
         public void queryProgress(int size) {
             if(syncListener != null) {
-                syncListener.itemAddSendingProgress(itemKey, null, size);
+                if (item.getState() == SyncItem.STATE_NEW) {
+                    syncListener.itemAddSendingProgress(item.getKey(), item.getParent(), size);
+                } else if (item.getState() == SyncItem.STATE_UPDATED) {
+                    syncListener.itemReplaceSendingProgress(item.getKey(), item.getParent(), size);
+                }
             }
         }
 
         public void queryEnded() {
             if(syncListener != null) {
-                syncListener.itemAddSendingEnded(itemKey, null);
+                if (item.getState() == SyncItem.STATE_NEW) {
+                    syncListener.itemAddSendingEnded(item.getKey(), item.getParent());
+                } else if (item.getState() == SyncItem.STATE_UPDATED) {
+                    syncListener.itemReplaceSendingEnded(item.getKey(), item.getParent());
+                } else {
+                    syncListener.itemDeleteSent(item);
+                }
             }
         }
     }
@@ -923,7 +948,7 @@ public class SapiSyncHandler {
                 try {
                     error = sapiResponse.getJSONObject(JSON_OBJECT_ERROR);
                 } catch (JSONException e) {
-                    //cannot happens
+                    //cannot happen
                 }
                 try {
                     sapiResultError.code = error.getString(JSON_OBJECT_ERROR_FIELD_CODE);

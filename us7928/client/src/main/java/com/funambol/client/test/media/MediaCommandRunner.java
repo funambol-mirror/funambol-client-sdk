@@ -116,6 +116,12 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             overrideMediaContent(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
         } else if (OVERRIDE_FILE_CONTENT.equals(command)) {
             overrideMediaContent(BasicUserCommands.SOURCE_NAME_FILES, command, pars);
+        } else if (OVERRIDE_PICTURE_CONTENT_ON_SERVER.equals(command)) {
+            overrideMediaContentOnServer(BasicUserCommands.SOURCE_NAME_PICTURES, command, pars);
+        } else if (OVERRIDE_VIDEO_CONTENT_ON_SERVER.equals(command)) {
+            overrideMediaContentOnServer(BasicUserCommands.SOURCE_NAME_VIDEOS, command, pars);
+        } else if (OVERRIDE_FILE_CONTENT_ON_SERVER.equals(command)) {
+            overrideMediaContentOnServer(BasicUserCommands.SOURCE_NAME_FILES, command, pars);
         } else if (CREATE_FILE.equals(command)) {
             createFile(command, pars);
         } else {
@@ -206,6 +212,13 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         getMediaRobot().overrideMediaContent(type, targetFileName, sourceFileName);
     }
 
+    private void overrideMediaContentOnServer(String type, String command, Vector args) throws Throwable {
+        String targetFileName = getParameter(args, 0);
+        checkArgument(targetFileName, "Missing target filename in " + command);
+        String sourceFileName = getParameter(args, 1);
+        checkArgument(targetFileName, "Missing source filename in " + command);
+        getMediaRobot().overrideMediaContentOnServer(type, targetFileName, sourceFileName);
+    }
     
     private void fillLocalStorage() {
         getMediaRobot().fillLocalStorage();

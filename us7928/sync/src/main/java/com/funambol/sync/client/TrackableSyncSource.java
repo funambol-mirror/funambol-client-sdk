@@ -297,6 +297,7 @@ public abstract class TrackableSyncSource implements SyncSource {
         if (newItems.hasMoreElements()) {
             String key = (String)newItems.nextElement();
             item = new SyncItem(key);
+            item.setState(SyncItem.STATE_NEW);
             item = getItemContent(item);
         }
         return item;
@@ -311,6 +312,7 @@ public abstract class TrackableSyncSource implements SyncSource {
         if (updItems.hasMoreElements()) {
             String key = (String)updItems.nextElement();
             item = new SyncItem(key);
+            item.setState(SyncItem.STATE_UPDATED);
             item = getItemContent(item);
         }
         return item;
@@ -325,6 +327,7 @@ public abstract class TrackableSyncSource implements SyncSource {
         if (delItems.hasMoreElements()) {
             String key = (String)delItems.nextElement();
             item = new SyncItem(key);
+            item.setState(SyncItem.STATE_DELETED);
         }
         return item;
     }

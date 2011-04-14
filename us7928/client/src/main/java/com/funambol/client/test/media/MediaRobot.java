@@ -108,7 +108,20 @@ public abstract class MediaRobot extends Robot {
         int size = fileContent.length;
         InputStream is = new ByteArrayInputStream(fileContent);
         
-        addMediaOnServerFromStream(type, filename, is, size, contentType);
+        addMediaOnServerFromStream(type, filename, is, size, contentType, null);
+    }
+
+    public void overrideMediaContentOnServer(String type, String targetFileName, String sourceFileName) throws Throwable {
+        String itemId = findMediaOnServer(type, targetFileName);
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        String contentType = getMediaFile(sourceFileName, os);
+
+        byte[] fileContent = os.toByteArray();
+        int size = fileContent.length;
+        InputStream is = new ByteArrayInputStream(fileContent);
+        
+        addMediaOnServerFromStream(type, targetFileName, is, size, contentType, itemId);
     }
 
     /**
@@ -122,18 +135,14 @@ public abstract class MediaRobot extends Robot {
      * 
      * @throws JSONException
      */
-    protected void addMediaOnServerFromStream(
-            String type,
-            String itemName,
-            InputStream contentStream,
-            long contentSize,
-            String contentType)
-            throws JSONException {
+    protected void addMediaOnServerFromStream(String type, String itemName, InputStream contentStream,
+                                              long contentSize, String contentType, String guid)
+    throws JSONException {
 
         itemName = itemName.substring(itemName.lastIndexOf('/') + 1);
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG,
-                    "Adding media on server for source " + getRemoteUri(type) +
+                    "Adding/updating media on server for source " + getRemoteUri(type) +
                     " with name " + itemName +
                     " of type " + contentType +
                     " and size " + contentSize);
@@ -148,8 +157,12 @@ public abstract class MediaRobot extends Robot {
         jsonFileObject.setMimetype(contentType);
 
         MediaSyncItem item = new MediaSyncItem("fake_key", "fake_type",
-                SyncItem.STATE_NEW, null, jsonFileObject,
+                guid != null ? SyncItem.STATE_UPDATED : SyncItem.STATE_NEW, null, jsonFileObject,
                 contentStream, contentSize);
+
+        if (guid != null) {
+            item.setGuid(guid);
+        }
 
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
         sapiHandler.login(null);
@@ -240,7 +253,7 @@ public abstract class MediaRobot extends Robot {
                 String newFileName = i + fileName;
                 Log.trace(TAG_LOG, "Upload file " + newFileName + " on server [" + i + "/" + repetitions + "]");
                 InputStream is = new ByteArrayInputStream(fileContent);
-                addMediaOnServerFromStream(type, i + newFileName, is, pictureSize, contentType);
+                addMediaOnServerFromStream(type, i + newFileName, is, pictureSize, contentType, null);
             }
         } else {
             if (Log.isLoggable(Log.DEBUG)) {

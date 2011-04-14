@@ -266,11 +266,35 @@ public class FileSyncSource extends BasicMediaSyncSource implements
                 return 0;
             }
         }
+
+        public long getLastModified() {
+            try {
+                FileAdapter file = new FileAdapter(fileName);
+                return file.lastModified();
+            } catch(IOException ex) {
+                Log.error(TAG_LOG, "Failed to get file last modification time", ex);
+                return -1;
+            }
+        }
     }
 
     protected int addItem(SyncItem item) throws SyncException {
         if(Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "addItem");
+        }
+        return addUpdateItem(item, false);
+    }
+
+    protected int updateItem(SyncItem item) throws SyncException {
+        if(Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "updateItem");
+        }
+        return addUpdateItem(item, true);
+    }
+
+    protected int addUpdateItem(SyncItem item, boolean update) throws SyncException {
+        if(Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "addUpdateItem");
         }
         JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
 
@@ -284,12 +308,19 @@ public class FileSyncSource extends BasicMediaSyncSource implements
             if(Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "key set to:" + fullName);
             }
+            if (update) {
+                super.updateItem(item);
+            } else {
+                super.addItem(item);
+            }
             return SyncSource.SUCCESS_STATUS;
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Cannot rename temporary file", ioe);
             throw new SyncException(SyncException.CLIENT_ERROR, "Cannot rename temporary file");
         }
     }
+
+
 
     protected void renameTempFile(String tempFileName, String fullName) throws IOException {
         // Move the file from the temporary directory to the final one

@@ -64,6 +64,7 @@ import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.sapisync.source.util.DownloadException;
 import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
+import com.funambol.storage.StringKeyValuePair;
 import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
 import com.funambol.sync.DeviceConfigI;
@@ -219,6 +220,9 @@ public class SapiSyncManager implements SyncManagerI {
             }
         } else {
             try {
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Resume is not active");
+                }
                 syncStatus.reset();
                 syncStatus.setInterrupted(true);
             } catch (IOException ioe) {
@@ -230,13 +234,30 @@ public class SapiSyncManager implements SyncManagerI {
                 StringKeyValueStoreFactory.getInstance();
         StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore(
                 "mapping_" + src.getName());
-        try {
-            mapping.load();
-        } catch (Exception e) {
+
+        SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getSyncAnchor();
+        if (sapiAnchor.getDownloadAnchor() == 0 && sapiAnchor.getUploadAnchor() == 0) {
+            // This is the first sync with this server, clean the mapping
             if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "The mapping store does not exist, use an empty one");
+                Log.info(TAG_LOG, "Resetting mapping");
+            }
+            try {
+                mapping.reset();
+            } catch (Exception e) {
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "The mapping store does not exist, use an empty one");
+                }
+            }
+        } else {
+            try {
+                mapping.load();
+            } catch (Exception e) {
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "The mapping store does not exist, use an empty one");
+                }
             }
         }
+
         // Init twins vector
         twins = new Vector();
         try {
@@ -424,6 +445,16 @@ public class SapiSyncManager implements SyncManagerI {
         localDeletes = strategy.getLocalDeletes();
         if (localDeletes != null) {
             localDeletesEnum = localDeletes.elements();
+            // If the client reported deletes, then we can update the mapping
+            // accordinlgly
+            while(localDeletesEnum.hasMoreElements()) {
+                SyncItem item = (SyncItem)localDeletesEnum.nextElement();
+                String guid = getGuidFromLuid(item.getKey(), mapping);
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Removing entry from mapping " + guid);
+                }
+                mapping.remove(guid);
+            }
         }
     }
 
@@ -538,6 +569,12 @@ public class SapiSyncManager implements SyncManagerI {
                         try {
                             // Sets the status as interrupted so that if the
                             // client crashes badly we still remember this fact
+                            if (item.getState() == SyncItem.STATE_UPDATED) {
+                                // We need the item guid
+                                remoteKey = getGuidFromLuid(item.getKey(), mapping);
+                                item.setGuid(remoteKey);
+                            }
+
                             remoteKey = sapiSyncHandler.prepareItemUpload(item, remoteUri);
                             item.setGuid(remoteKey);
 
@@ -783,14 +820,6 @@ public class SapiSyncManager implements SyncManagerI {
                 }
             }
 
-
-            // Notify the listener
-            if (state == SyncItem.STATE_NEW) {
-                getSyncListenerFromSource(src).itemAddReceivingStarted(luid, null, size);
-            } else if(state == SyncItem.STATE_UPDATED) {
-                getSyncListenerFromSource(src).itemReplaceReceivingStarted(luid, null, size);
-            }
-
             // Filter downloaded items for JSONSyncSources only
             if(src instanceof JSONSyncSource) {
                 if(((JSONSyncSource)src).filterSyncItem(syncItem)) {
@@ -876,13 +905,6 @@ public class SapiSyncManager implements SyncManagerI {
 
             OutputStream fileos = null;
 
-            // Notify the source that a download is about to start
-            if (item.getState() == SyncItem.STATE_NEW) {
-                getSyncListenerFromSource(src).itemAddReceivingStarted(item.getKey(), item.getParent(), item.getContentSize());
-            } else {
-                getSyncListenerFromSource(src).itemReplaceReceivingStarted(item.getKey(), item.getParent(), item.getContentSize());
-            }
-
             try {
                 fileos = item.getOutputStream();
                 long partialLength = item.getPartialLength();
@@ -940,12 +962,30 @@ public class SapiSyncManager implements SyncManagerI {
                         Log.error(TAG_LOG, "Cannot close output stream", ioe);
                     }
                 }
-
-                // Notify the source that a download is about to start
+            }
+        } else {
+            // there is no remote content to download
+            OutputStream os = null;
+            try {
+                os = item.getOutputStream();
+                if (item.getState() == SyncItem.STATE_NEW) {
+                    getSyncListenerFromSource(src).itemAddReceivingStarted(item.getKey(), item.getParent(), item.getObjectSize());
+                } else if (item.getState() == SyncItem.STATE_UPDATED) {
+                    getSyncListenerFromSource(src).itemReplaceReceivingStarted(item.getKey(), item.getParent(), item.getObjectSize());
+                }
+                os.write(item.getContent());
                 if (item.getState() == SyncItem.STATE_NEW) {
                     getSyncListenerFromSource(src).itemAddReceivingEnded(item.getKey(), item.getParent());
-                } else {
+                } else if (item.getState() == SyncItem.STATE_UPDATED) {
                     getSyncListenerFromSource(src).itemReplaceReceivingEnded(item.getKey(), item.getParent());
+                }
+            } finally {
+                if (os != null) {
+                    try {
+                        os.close();
+                    } catch (IOException ioe) {
+                        Log.error(TAG_LOG, "Cannot close output stream", ioe);
+                    }
                 }
             }
         }
@@ -1164,6 +1204,17 @@ public class SapiSyncManager implements SyncManagerI {
         sapiAnchor.setDownloadAnchor(newDownloadAnchor);
     }
 
+    private String getGuidFromLuid(String luid, StringKeyValueStore mapping) {
+        Enumeration keyValuePairs = mapping.keyValuePairs();
+        while (keyValuePairs.hasMoreElements()) {
+            StringKeyValuePair pair = (StringKeyValuePair)keyValuePairs.nextElement();
+            if (luid.equals(pair.getValue())) {
+                return pair.getKey();
+            }
+        }
+        return null;
+    }
+
     
     /**
      * Common code used to verify specific error in upload sapi
@@ -1270,5 +1321,4 @@ public class SapiSyncManager implements SyncManagerI {
             }
         }
     }
-
 }

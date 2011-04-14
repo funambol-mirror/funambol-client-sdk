@@ -526,17 +526,41 @@ public class SapiSyncStrategy {
                                 Log.info(TAG_LOG, "Conflict detected, item modified both on client and server side " + luid);
                                 Log.info(TAG_LOG, "The most recent change shall win");
                             }
-                            // TODO: get the last changed information on both sides
                             JSONSyncItem localItem = (JSONSyncItem)localMods.get(luid);
                             long localLastMod = localItem.getLastModified();
-                            // TODO: adjust times by the // clientServerTimeDifference
-                            if (localLastMod == -1) {
-                                if (Log.isLoggable(Log.INFO)) {
-                                    Log.info(TAG_LOG, "No local modification timestamp available. Client wins");
-                                }
-                                items.put(i, removedItemMarker);
+                            long remoteLastMod;
+                            if (item.has("date")) {
+                               remoteLastMod = item.getLong("date");
+                            } else {
+                                remoteLastMod = -1;
                             }
 
+                            if (localLastMod == -1 || remoteLastMod ==  -1) {
+                                if (Log.isLoggable(Log.INFO)) {
+                                    Log.info(TAG_LOG, "No local or remote modification timestamp available. Client wins");
+                                }
+                                items.put(i, removedItemMarker);
+                            } else {
+                                // Pick the most recent one
+                                localLastMod += clientServerTimeDifference;
+                                if (Log.isLoggable(Log.INFO)) {
+                                    Log.info(TAG_LOG, "Comparing local last mod " + localLastMod +
+                                                      " with remote last mod " + remoteLastMod);
+                                }
+                                if (localLastMod > remoteLastMod) {
+                                    // Client wins
+                                    if (Log.isLoggable(Log.INFO)) {
+                                        Log.info(TAG_LOG, "Client wins");
+                                    }
+                                    items.put(i, removedItemMarker);
+                                } else {
+                                    // Server wins
+                                    if (Log.isLoggable(Log.INFO)) {
+                                        Log.info(TAG_LOG, "Server wins");
+                                    }
+                                    localMods.remove(luid);
+                                }
+                            }
                         }
                     }
                 }

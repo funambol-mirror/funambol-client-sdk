@@ -197,9 +197,6 @@ public class AppSyncSourceManager {
     }
 
     public Enumeration getEnabledAndWorkingSources() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "getEnabledAndWorkingSources");
-        }
         Vector result = new Vector();
         for(int i=0;i<sourcesList.size();++i) {
             AppSyncSource appSource = (AppSyncSource)sourcesList.elementAt(i);
@@ -227,9 +224,6 @@ public class AppSyncSourceManager {
         }
 
         private void bubbleSortResult() {
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "Sorting Sources");
-            }
             int n = sources.size();
 
             for (int i = 0; i < sources.size(); i++) {
@@ -252,9 +246,6 @@ public class AppSyncSourceManager {
                         result.setElementAt(temp, i + 1);
                     }
                 }
-            }
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "Returning sorted Sources: " + result.size());
             }
         }
 

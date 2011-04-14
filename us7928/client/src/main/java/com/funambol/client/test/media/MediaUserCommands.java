@@ -326,7 +326,30 @@ public interface MediaUserCommands {
      * @example OverrideFileContent(target.txt,source.txt);
      */
     public static final String OVERRIDE_FILE_CONTENT = "OverrideFileContent";
- 
+
+    /**
+     * This command overrides a given picture on the server with the content of another one.
+     * Its main purpose it is simulate an update of a picture.
+     *
+     * @example OverridePictureContentOnServer(target.jpg,source.jpg);
+     */
+    public static final String OVERRIDE_PICTURE_CONTENT_ON_SERVER = "OverridePictureContentOnServer";
+
+    /**
+     * This command overrides a given video on the server with the content of another one.
+     * Its main purpose it is simulate an update of a video.
+     *
+     * @example OverrideVideoContentOnServer(target.3gp,source.3gp);
+     */
+    public static final String OVERRIDE_VIDEO_CONTENT_ON_SERVER = "OverrideVideoContentOnServer";
+
+    /**
+     * This command overrides a given file on the server with the content of another one.
+     * Its main purpose it is simulate an update of a file.
+     *
+     * @example OverrideFileContent(target.txt,source.txt);
+     */
+    public static final String OVERRIDE_FILE_CONTENT_ON_SERVER = "OverrideFileContentOnServer";
     
     /**
      * This command creates a file in the mediahub folder
