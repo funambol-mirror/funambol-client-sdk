@@ -69,13 +69,15 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
     private String globalFilterByDirection = null;
     private String globalFilterByLocality = null;
 
+
+
     /**
      * Constructor
      * @param robot the BasicRobot object that runs the commands on the given
      * client implementation. This robot should be defined into the high level
      * as it is architecture specific.
      */
-    public BasicCommandRunner(BasicRobot robot, String filterByName, String filterBySourceType,
+    public BasicCommandRunner( BasicRobot robot, String filterByName, String filterBySourceType,
                               String filterByDirection, String filterByLocality)
     {
         super(robot);
@@ -373,7 +375,7 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
      * command
      * @throws Throwable if an error occurred
      */
-    private void endTest(String command, Vector args) throws Throwable {
+    protected void endTest(String command, Vector args) throws Throwable {
         currentTestName = null;
     }
 

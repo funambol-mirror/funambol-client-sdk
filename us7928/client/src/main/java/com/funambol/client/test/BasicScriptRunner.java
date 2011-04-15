@@ -298,7 +298,7 @@ public class BasicScriptRunner extends CommandRunner {
                     } else if (tagName.equals(currentCommand)) {
                         try {
                             Log.trace(TAG_LOG, "Executing accumulated command: " + currentCommand + "," + ignoreCurrentScript + "," + ignoreCurrentBranch);
-                            if (!ignoreCurrentScript && !ignoreCurrentBranch) {
+                            if ((!ignoreCurrentScript && !ignoreCurrentBranch) || "EndTest".equals(currentCommand)) {
                                 runCommand(currentCommand, args);
                             }
                         } catch (IgnoreScriptException ise) {
@@ -797,7 +797,7 @@ public class BasicScriptRunner extends CommandRunner {
      * @param args the command's related String formatted arguments
      * @throws Throwable if an error occurs
      */
-    private void includeScript(String command, Vector args) throws Throwable {
+    public void includeScript(String command, Vector args) throws Throwable {
         String scriptUrl = (String)args.elementAt(0);
         checkArgument(scriptUrl, "Missing script url in " + command);
 

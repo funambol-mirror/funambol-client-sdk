@@ -91,7 +91,7 @@ public class SapiSyncManager implements SyncManagerI {
 
     // Holds the list of twins found during the download phase, those items must
     // not be uploaded to the server later in the upload phase
-    private Vector twins = null;
+    private Hashtable twins = null;
 
     /**
      * Unique instance of a BasicSyncListener which is used when the user does
@@ -259,7 +259,7 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         // Init twins vector
-        twins = new Vector();
+        twins = new Hashtable();
         try {
             
             Throwable downloadNonBlockingError = null;
@@ -486,23 +486,36 @@ public class SapiSyncManager implements SyncManagerI {
                 syncFilter.getIncrementalUploadFilter() :
                 syncFilter.getFullUploadFilter();
             if(uploadFilter != null && uploadFilter.isEnabled() &&
-                    uploadFilter.getType() == Filter.ITEMS_COUNT_TYPE) {
+               uploadFilter.getType() == Filter.ITEMS_COUNT_TYPE)
+            {
                 maxSending = uploadFilter.getCount();
+                // If we are resuming a sync, then we must consider the items
+                // that were sent in previous sync
+                if (resume) {
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Since we are resuming count the items previously sent "
+                                           + syncStatus.getSentAddNumber());
+                    }
+                    maxSending = maxSending - syncStatus.getSentAddNumber();
+                }
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Setting up items count filter with maxSending=" + maxSending);
+                }
             }
         }
 
         // Exclude twins from total items count
         totalSending -= twins.size();
 
-        if (Log.isLoggable(Log.INFO)) {
-            Log.info(TAG_LOG, "Uploading items count: " + totalSending);
-        }
-
         if(totalSending > 0) {
             if(maxSending > 0 && totalSending > maxSending) {
                 totalSending = maxSending;
             }
             getSyncListenerFromSource(src).startSending(totalSending, 0, 0);
+        }
+
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Uploading items count: " + totalSending);
         }
 
         int uploadedCount = 0;
@@ -512,7 +525,7 @@ public class SapiSyncManager implements SyncManagerI {
             while(item != null && itemsCountFilter(maxSending, uploadedCount)) {
                 try {
                     // Exclude twins
-                    if(twins.contains(item.getKey())) {
+                    if(twins.get(item.getKey()) != null) {
                         if (Log.isLoggable(Log.INFO)) {
                             Log.info(TAG_LOG, "Exclude twin item to be uploaded: "
                                     + item.getKey());

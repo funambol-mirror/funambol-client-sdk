@@ -101,7 +101,7 @@ public class SapiSyncStrategy {
      */
     public void prepareSync(SyncSource src, int downloadSyncMode, int uploadSyncMode,
                             boolean resume, StringKeyValueStore mapping, boolean incrementalDownload,
-                            boolean incrementalUpload, Vector twins)
+                            boolean incrementalUpload, Hashtable twins)
     throws SyncException, JSONException
     {
         // Check what is available on the server and what changed locally to
@@ -179,7 +179,7 @@ public class SapiSyncStrategy {
         return localDeleted;
     }
 
-    private void prepareSyncIncrementalDownload(SyncSource src, StringKeyValueStore mapping, Vector twins)
+    private void prepareSyncIncrementalDownload(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
     throws SyncException, JSONException
     {
         String remoteUri = src.getConfig().getRemoteUri();
@@ -230,7 +230,7 @@ public class SapiSyncStrategy {
         }
     }
 
-    private void prepareSyncIncrementalUpload(SyncSource src, StringKeyValueStore mapping, Vector twins)
+    private void prepareSyncIncrementalUpload(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
     throws SyncException, JSONException
     {
         localUpdated = new Hashtable();
@@ -250,7 +250,7 @@ public class SapiSyncStrategy {
     }
 
     private void prepareSyncFullUpload(SyncSource src, StringKeyValueStore mapping,
-                                       int downloadSyncMode, boolean incrementalDownload, Vector twins)
+                                       int downloadSyncMode, boolean incrementalDownload, Hashtable twins)
     throws SyncException, JSONException {
 
         // In a full upload we need to know all the server items in order to
@@ -280,7 +280,7 @@ public class SapiSyncStrategy {
         }
     }
 
-    private void finalizePreparePhase(SyncSource src, StringKeyValueStore mapping, Vector twins)
+    private void finalizePreparePhase(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
     throws JSONException {
 
         // Now we have all the required information to decide what we need
@@ -353,7 +353,7 @@ public class SapiSyncStrategy {
         */
     }
 
-    private void prepareSyncFullDownload(SyncSource src, StringKeyValueStore mapping, Vector twins)
+    private void prepareSyncFullDownload(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
     throws SyncException, JSONException
     {
         if (Log.isLoggable(Log.TRACE)) {
@@ -487,7 +487,7 @@ public class SapiSyncStrategy {
     private void discardTwinAndConflictFromList(SyncSource src, JSONArray items,
                                                 Hashtable localMods, Hashtable localDel,
                                                 String serverUrl, StringKeyValueStore mapping,
-                                                Vector twins)
+                                                Hashtable twins)
     throws JSONException
     {
         if (src instanceof TwinDetectionSource) {
@@ -509,7 +509,7 @@ public class SapiSyncStrategy {
                         // This item exists already on client and server. We
                         // don't need to upload it again. This shall change once
                         // we support updates
-                        twins.addElement(twin.getKey());
+                        twins.put(twin.getKey(), twin);
                     }
                     // Now we check if the client has a pending delete for this
                     // item. If an item is scheduled for deletion, then its id
