@@ -47,7 +47,7 @@ import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.client.test.basic.BasicUserCommands;
-import com.funambol.platform.FileAdapter;
+
 import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.source.JSONFileObject;
 import com.funambol.sapisync.source.JSONSyncItem;
@@ -389,6 +389,36 @@ public abstract class MediaRobot extends Robot {
      * @throws IOException
      */
     public abstract void createFile(String fileName, long fileSize)
-            throws IOException; 
+            throws Exception;
+
+    /**
+     * Renames a file in mediahub directory
+     *
+     * @param oldFileName
+     * @param newFileName
+     * @throws IOException
+     */
+    public abstract void renameFile(String oldFileName, String newFileName)
+            throws Exception;
+
+    /**
+     * Renames a file in the server
+     *
+     * @param oldFileName
+     * @param newFileName
+     * @throws IOException
+     */
+    public void renameFileOnServer(String oldFileName, String newFileName)
+            throws Throwable {
+        
+        String type = BasicUserCommands.SOURCE_NAME_FILES;
+        SapiSyncHandler sapiHandler = getSapiSyncHandler();
+
+        String itemId = findMediaOnServer(type, oldFileName);
+
+        sapiHandler.login(null);
+        sapiHandler.updateItemName(getRemoteUri(type), getDataTag(type), itemId, newFileName);
+        sapiHandler.logout();
+    }
 
 }

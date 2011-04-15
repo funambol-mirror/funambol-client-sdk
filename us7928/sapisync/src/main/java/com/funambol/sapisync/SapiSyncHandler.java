@@ -285,7 +285,6 @@ public class SapiSyncHandler {
             Hashtable headers = new Hashtable();
             InputStream is = item.getInputStream();
 
-            JSONObject metadata = new JSONObject();
             JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
 
             String remoteKey = item.getGuid();
@@ -342,6 +341,39 @@ public class SapiSyncHandler {
         }
     }
 
+    public void updateItemName(String remoteUri, String dataTag, String itemId,
+            String newItemName) throws SapiException {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Updating item name");
+        }
+        try {
+            JSONObject data = new JSONObject();
+            data.put("id", itemId);
+            data.put("name", newItemName);
+            JSONObject request = new JSONObject();
+            request.put("data", data);
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "Update request: " + request.toString());
+            }
+            JSONObject response = sapiQueryWithRetries("media/" + remoteUri,
+                    "update", null, null, request);
+            if (SapiResultError.hasError(response)) {
+                checkForCommonSapiErrorCodesAndThrowSapiException(response,
+                        "Error in update sapi call", true);
+                //TODO manage custom error code
+            }
+        } catch (NotSupportedCallException e) {
+            Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
+            throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Failed update item name", ioe);
+            throw SapiException.SAPI_EXCEPTION_NO_CONNECTION;
+        } catch(JSONException ex) {
+            Log.error(TAG_LOG, "Failed update item name", ex);
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        }
+    }
+    
     /**
      * Removes an item from server.
      * {@link SapiException} thrown in case of error could have a code equal to
@@ -378,7 +410,7 @@ public class SapiSyncHandler {
                     "delete", null, null, request);
             if (SapiResultError.hasError(response)) {
                 checkForCommonSapiErrorCodesAndThrowSapiException(response,
-                        "Error in incremental changes sapi call", true);
+                        "Error in delete sapi call", true);
                 //TODO manage custom error code
             }
         } catch (NotSupportedCallException e) {
@@ -398,9 +430,11 @@ public class SapiSyncHandler {
             Log.info(TAG_LOG, "Deleting all items");
         }
         try {
-            JSONObject response = sapiHandler.query("media/" + remoteUri, "reset", null, null, null);
+            JSONObject response = sapiHandler.query("media/" + remoteUri,
+                    "reset", null, null, null);
             if (SapiResultError.hasError(response)) {
-                checkForCommonSapiErrorCodesAndThrowSapiException(response, "Error in incremental changes sapi call", true);
+                checkForCommonSapiErrorCodesAndThrowSapiException(response,
+                        "Error in reset sapi call", true);
                 //TODO personalized error code
             }
         } catch (NotSupportedCallException e) {

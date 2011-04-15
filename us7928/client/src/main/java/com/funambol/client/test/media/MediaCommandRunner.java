@@ -124,6 +124,10 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             overrideMediaContentOnServer(BasicUserCommands.SOURCE_NAME_FILES, command, pars);
         } else if (CREATE_FILE.equals(command)) {
             createFile(command, pars);
+        } else if (RENAME_FILE.equals(command)) {
+            renameFile(command, pars);
+        } else if (RENAME_FILE_ON_SERVER.equals(command)) {
+            renameFileOnServer(command, pars);
         } else {
             return false;
         }
@@ -237,6 +241,23 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         getMediaRobot().createFile(fileName, fileSize);
     }
 
+    private void renameFile(String command, Vector args) throws Throwable {
+        String oldFileName = getParameter(args, 0);
+        checkArgument(oldFileName, "Missing oldFileName in " + command);
+        String newFileName = getParameter(args, 1);
+        checkArgument(newFileName, "Missing newFileName in " + command);
+
+        getMediaRobot().renameFile(oldFileName, newFileName);
+    }
+
+    private void renameFileOnServer(String command, Vector args) throws Throwable {
+        String oldFileName = getParameter(args, 0);
+        checkArgument(oldFileName, "Missing oldFileName in " + command);
+        String newFileName = getParameter(args, 1);
+        checkArgument(newFileName, "Missing newFileName in " + command);
+
+        getMediaRobot().renameFileOnServer(oldFileName, newFileName);
+    }
     
 }
 

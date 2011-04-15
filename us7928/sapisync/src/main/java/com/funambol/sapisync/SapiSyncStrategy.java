@@ -35,37 +35,23 @@
 
 package com.funambol.sapisync;
 
-import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Date;
-import java.util.Enumeration;
-import java.io.OutputStream;
-import java.io.IOException;
 
 import com.funambol.org.json.me.JSONArray;
 import com.funambol.org.json.me.JSONException;
 import com.funambol.org.json.me.JSONObject;
-import com.funambol.sync.BasicSyncListener;
-import com.funambol.sync.ItemStatus;
-import com.funambol.sync.SyncAnchor;
-import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
-import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
-import com.funambol.sync.ResumableSource;
-import com.funambol.sync.SyncManagerI;
 import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.sapisync.source.JSONSyncItem;
-import com.funambol.storage.StringKeyValueStoreFactory;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
-import com.funambol.sync.DeviceConfigI;
-import com.funambol.sync.NonBlockingSyncException;
 import com.funambol.util.Log;
-import com.funambol.util.StringUtil;
+
 
 public class SapiSyncStrategy {
 

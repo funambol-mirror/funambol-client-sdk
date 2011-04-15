@@ -359,6 +359,24 @@ public interface MediaUserCommands {
      * @example CreateFile(testfile.pdf,15000);
      */
     public static final String CREATE_FILE = "CreateFile";
+
+    /**
+     * This command rename a file from the mediahub folder
+     * First parameter is the old file name
+     * Second parameter is the new file name
+     *
+     * @example RenameFile(testfile1.pdf,testfile2.pdf);
+     */
+    public static final String RENAME_FILE = "RenameFile";
+
+    /**
+     * This command rename a file from the server
+     * First parameter is the old file name
+     * Second parameter is the new file name
+     *
+     * @example RenameFileOnServer(testfile1.pdf,testfile2.pdf);
+     */
+    public static final String RENAME_FILE_ON_SERVER = "RenameFileOnServer";
     
 }
     
