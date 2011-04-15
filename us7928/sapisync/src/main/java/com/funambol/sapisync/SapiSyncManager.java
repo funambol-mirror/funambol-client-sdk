@@ -749,9 +749,15 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private int countActualDeletedItems(JSONArray items) throws JSONException {
-        // At the moment server deletes cannot be filtered out
         if (items != null) {
-            return items.length();
+            int count = 0;
+            for(int i=0;i<items.length();++i) {
+                String guid = items.getString(i);
+                if (guid != null && guid.length() > 0) {
+                    count++;
+                }
+            }
+            return count;
         } else {
             return 0;
         }
@@ -1013,18 +1019,21 @@ public class SapiSyncManager implements SyncManagerI {
         Vector delItems = new Vector();
         for(int i=0;i < removed.length();++i) {
             String guid = removed.getString(i);
-            String luid = mapping.get(guid);
-            if (luid == null) {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Cannot delete item with unknown luid " + guid);
+
+            if (guid != null && guid.length() > 0) {
+                String luid = mapping.get(guid);
+                if (luid == null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Cannot delete item with unknown luid " + guid);
+                    }
+                } else {
+                    SyncItem delItem = new SyncItem(luid, src.getType(),
+                            SyncItem.STATE_DELETED, null);
+                    delItem.setGuid(guid);
+                    delItems.addElement(delItem);
+                    getSyncListenerFromSource(src).itemDeleted(delItem);
+                    syncStatus.addReceivedItem(guid, luid, delItem.getState(), SyncSource.SUCCESS_STATUS);
                 }
-            } else {
-                SyncItem delItem = new SyncItem(luid, src.getType(),
-                        SyncItem.STATE_DELETED, null);
-                delItem.setGuid(guid);
-                delItems.addElement(delItem);
-                getSyncListenerFromSource(src).itemDeleted(delItem);
-                syncStatus.addReceivedItem(guid, luid, delItem.getState(), SyncSource.SUCCESS_STATUS);
             }
         }
 

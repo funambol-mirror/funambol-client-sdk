@@ -328,15 +328,13 @@ public class SapiSyncStrategy {
                     localDeleted, addedServerUrl, mapping, twins);
         }
         if (updatedArray != null) {
-            discardTwinAndConflictFromList(src, updatedArray, localUpdated,
-                    localDeleted, updatedServerUrl, mapping, twins);
+            discardTwinAndConflictFromList(src, updatedArray,
+                                           localUpdated, localDeleted, updatedServerUrl, mapping, twins);
         }
-        /*
         if (deletedArray != null) {
-            discardTwinAndConflictFromList(src, deletedArray, localUpdated,
-                     localDeleted, updatedServerUrl, mapping, twins);
+            handleServerDeleteConflicts(src, deletedArray, localUpdated,
+                    localDeleted, mapping);
         }
-        */
     }
 
     private void prepareSyncFullDownload(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
@@ -470,6 +468,31 @@ public class SapiSyncStrategy {
         } while(!done);
     }
 
+    private void handleServerDeleteConflicts(SyncSource src, JSONArray serverDeletes,
+                                             Hashtable localMods, Hashtable localDel,
+                                             StringKeyValueStore mapping)
+    throws JSONException
+    {
+        for(int i=0;i<serverDeletes.length();++i) {
+            String guid = serverDeletes.getString(i);
+            String luid = mapping.get(guid);
+            if (mapping.get(guid) != null) {
+                // Check if we have a local update or delete for this item
+                if (localMods != null && localMods.get(luid) != null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Found a server delete local update conflict, client wins");
+                    }
+                    serverDeletes.put(i, "");
+                } else if (localDel != null && localDel.get(luid) != null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Found a server delete local delete conflict, ignore server delete");
+                    }
+                    serverDeletes.put(i, "");
+                }
+            }
+        }
+    }
+
     private void discardTwinAndConflictFromList(SyncSource src, JSONArray items,
                                                 Hashtable localMods, Hashtable localDel,
                                                 String serverUrl, StringKeyValueStore mapping,
@@ -504,9 +527,9 @@ public class SapiSyncStrategy {
                         String luid = (String)mapping.get(guid);
                         if (luid != null && localDel != null && localDel.get(luid) != null) {
                             if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Conflict detected, item sent by the server has been deleted on client. Ignoring " + luid);
+                                Log.info(TAG_LOG, "Conflict detected, item sent by the server has been deleted "
+                                                  + "on client. Receiving again " + luid);
                             }
-                            items.put(i, removedItemMarker);
                         } else if (luid != null && localMods != null && localMods.get(luid) != null) {
                             if (Log.isLoggable(Log.INFO)) {
                                 Log.info(TAG_LOG, "Conflict detected, item modified both on client and server side " + luid);
