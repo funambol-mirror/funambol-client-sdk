@@ -36,11 +36,8 @@
 package com.funambol.sapisync.source;
 
 import com.funambol.sync.SourceConfig;
-import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.ChangesTracker;
-
-import com.funambol.util.Log;
 
 /**
  * Basic sync source for all media types (pictures, files, videos etc).

@@ -44,7 +44,6 @@ import java.io.InputStream;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sync.SourceConfig;
-import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.client.ChangesTracker;
 
@@ -216,9 +215,17 @@ public class FileSyncSource extends BasicMediaSyncSource implements
                     getConfig().getType(), item.getState(), item.getParent(),
                     jsonFileObject);
 
+            // Set the item old key to handle rename operations
+            if(getTracker() instanceof CacheTrackerWithRenames) {
+                CacheTrackerWithRenames tracker = (CacheTrackerWithRenames)getTracker();
+                String oldKey = tracker.getRenamedFileName(item.getKey());
+                syncItem.setOldKey(oldKey);
+            }
+            
             return syncItem;
             
         } catch (Exception e) {
+            e.printStackTrace();
             throw new SyncException(SyncException.CLIENT_ERROR,
                                     "Cannot create SyncItem: " + e.toString());
         } finally {

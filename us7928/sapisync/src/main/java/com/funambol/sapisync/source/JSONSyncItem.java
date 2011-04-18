@@ -49,6 +49,9 @@ public class JSONSyncItem extends SyncItem {
 
     private JSONFileObject fileObject = null;
 
+    // This is used to handle rename operations
+    private String oldKey = null;
+
     public JSONSyncItem(String key) {
         super(key);
     }
@@ -67,6 +70,14 @@ public class JSONSyncItem extends SyncItem {
     public JSONSyncItem(JSONSyncItem that) {
         super(that);
         fileObject = that.getJSONFileObject();
+    }
+
+    public void setOldKey(String key) {
+        oldKey = key;
+    }
+
+    public String getOldKey() {
+        return oldKey;
     }
 
     public JSONFileObject getJSONFileObject() {
