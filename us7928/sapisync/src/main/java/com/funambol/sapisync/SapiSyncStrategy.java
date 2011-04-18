@@ -59,6 +59,11 @@ public class SapiSyncStrategy {
 
     private static final int FULL_SYNC_DOWNLOAD_LIMIT = 300;
 
+    private static final int IDENTICAL_ITEMS   = 0;
+    private static final int IDENTICAL_CONTENT = 1;
+    private static final int IDENTICAL_META    = 2;
+    private static final int DIFFERENT_ITEMS   = 3;
+
     private JSONArray addedArray   = null;
     private JSONArray updatedArray = null;
     private JSONArray deletedArray = null;
@@ -86,7 +91,7 @@ public class SapiSyncStrategy {
      * been consumed and the getNextNewItem and getNextUpdItem will return null.
      */
     public void prepareSync(SyncSource src, int downloadSyncMode, int uploadSyncMode,
-                            boolean resume, StringKeyValueStore mapping, boolean incrementalDownload,
+                            boolean resume, MappingTable mapping, boolean incrementalDownload,
                             boolean incrementalUpload, Hashtable twins)
     throws SyncException, JSONException
     {
@@ -165,7 +170,7 @@ public class SapiSyncStrategy {
         return localDeleted;
     }
 
-    private void prepareSyncIncrementalDownload(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
+    private void prepareSyncIncrementalDownload(SyncSource src, MappingTable mapping, Hashtable twins)
     throws SyncException, JSONException
     {
         String remoteUri = src.getConfig().getRemoteUri();
@@ -201,7 +206,6 @@ public class SapiSyncStrategy {
             SapiSyncHandler.FullSet deletedInfo = null;
 
             addedInfo   = fetchItemsInfo(src, changesSet.added);
-
             updatedInfo = fetchItemsInfo(src, changesSet.updated);
             deletedArray = changesSet.deleted;
 
@@ -216,7 +220,7 @@ public class SapiSyncStrategy {
         }
     }
 
-    private void prepareSyncIncrementalUpload(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
+    private void prepareSyncIncrementalUpload(SyncSource src, MappingTable mapping, Hashtable twins)
     throws SyncException, JSONException
     {
         localUpdated = new Hashtable();
@@ -235,7 +239,7 @@ public class SapiSyncStrategy {
         }
     }
 
-    private void prepareSyncFullUpload(SyncSource src, StringKeyValueStore mapping,
+    private void prepareSyncFullUpload(SyncSource src, MappingTable mapping,
                                        int downloadSyncMode, boolean incrementalDownload, Hashtable twins)
     throws SyncException, JSONException {
 
@@ -266,7 +270,7 @@ public class SapiSyncStrategy {
         }
     }
 
-    private void finalizePreparePhase(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
+    private void finalizePreparePhase(SyncSource src, MappingTable mapping, Hashtable twins)
     throws JSONException {
 
         // Now we have all the required information to decide what we need
@@ -280,19 +284,41 @@ public class SapiSyncStrategy {
                 JSONObject item = addedArray.getJSONObject(i);
                 String     guid = item.getString("id");
 
-                if (mapping.get(guid) != null) {
-                    // This is rather an update because the guid is already
-                    // in the mapping table
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Turning an add into an update");
+                String localItemId = mapping.getLuid(guid);
+
+                if (localItemId != null) {
+
+                    int itemsEquality = compareItems(item, mapping);
+
+                    if (itemsEquality == IDENTICAL_ITEMS) {
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Server sent an add which already exists on client, ignore it");
+                        }
+                        addedArray.put(i, removedItemMarker);
+                    } else {
+                        // This is rather an update because the guid is already
+                        // in the mapping table
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Turning an add into an update");
+                        }
+
+                        // Nullify this item
+                        addedArray.put(i, removedItemMarker);
+                        if (updatedArray == null) {
+                            updatedArray = new JSONArray();
+                            updatedServerUrl = addedServerUrl;
+                        }
+                        updatedArray.put(item);
+
+                        // Check if this is just a file rename
+                        if (itemsEquality == IDENTICAL_CONTENT) {
+                            // Only the metadata changed, this is a rename on
+                            // the server
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "This updates changes only the file name");
+                            }
+                        }
                     }
-                    // Nullify this item
-                    addedArray.put(i, removedItemMarker);
-                    if (updatedArray == null) {
-                        updatedArray = new JSONArray();
-                        updatedServerUrl = addedServerUrl;
-                    }
-                    updatedArray.put(item);
                 }
             }
         }
@@ -304,7 +330,9 @@ public class SapiSyncStrategy {
                 JSONObject item = updatedArray.getJSONObject(i);
                 String     guid = item.getString("id");
 
-                if (mapping.get(guid) == null) {
+                String localItemId = mapping.getLuid(guid);
+
+                if (localItemId == null) {
                     // This is rather an add because the guid is not in the
                     // mapping table
                     if (Log.isLoggable(Log.INFO)) {
@@ -317,6 +345,20 @@ public class SapiSyncStrategy {
                         addedServerUrl = updatedServerUrl;
                     }
                     addedArray.put(item);
+                } else {
+                    int itemsEquality = compareItems(item, mapping);
+                    if (itemsEquality == IDENTICAL_ITEMS) {
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Server sent an update for an item already on the client, ignore it");
+                        }
+                        updatedArray.put(i, removedItemMarker);
+                    } else if (itemsEquality == IDENTICAL_CONTENT) {
+                        // Only the metadata changed, this is a rename on
+                        // the server
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "This updates changes only the file name");
+                        }
+                    }
                 }
             }
         }
@@ -337,7 +379,7 @@ public class SapiSyncStrategy {
         }
     }
 
-    private void prepareSyncFullDownload(SyncSource src, StringKeyValueStore mapping, Hashtable twins)
+    private void prepareSyncFullDownload(SyncSource src, MappingTable mapping, Hashtable twins)
     throws SyncException, JSONException
     {
         if (Log.isLoggable(Log.TRACE)) {
@@ -470,13 +512,13 @@ public class SapiSyncStrategy {
 
     private void handleServerDeleteConflicts(SyncSource src, JSONArray serverDeletes,
                                              Hashtable localMods, Hashtable localDel,
-                                             StringKeyValueStore mapping)
+                                             MappingTable mapping)
     throws JSONException
     {
         for(int i=0;i<serverDeletes.length();++i) {
             String guid = serverDeletes.getString(i);
-            String luid = mapping.get(guid);
-            if (mapping.get(guid) != null) {
+            String luid = mapping.getLuid(guid);
+            if (luid != null) {
                 // Check if we have a local update or delete for this item
                 if (localMods != null && localMods.get(luid) != null) {
                     if (Log.isLoggable(Log.INFO)) {
@@ -495,7 +537,7 @@ public class SapiSyncStrategy {
 
     private void discardTwinAndConflictFromList(SyncSource src, JSONArray items,
                                                 Hashtable localMods, Hashtable localDel,
-                                                String serverUrl, StringKeyValueStore mapping,
+                                                String serverUrl, MappingTable mapping,
                                                 Hashtable twins)
     throws JSONException
     {
@@ -524,7 +566,7 @@ public class SapiSyncStrategy {
                     // item. If an item is scheduled for deletion, then its id
                     // must be in the mapping, so we can get its luid
                     if (mapping != null) {
-                        String luid = (String)mapping.get(guid);
+                        String luid = mapping.getLuid(guid);
                         if (luid != null && localDel != null && localDel.get(luid) != null) {
                             if (Log.isLoggable(Log.INFO)) {
                                 Log.info(TAG_LOG, "Conflict detected, item sent by the server has been deleted "
@@ -615,6 +657,30 @@ public class SapiSyncStrategy {
         return dataTag;
     }
 
+    private int compareItems(JSONObject item, MappingTable mapping) throws JSONException {
+        String guid = item.getString("id");
+        String remoteCRC  = item.getString("size");
+        String localCRC   = mapping.getCRC(guid);
+        String localName  = mapping.getName(guid);
+        String remoteName = item.getString("name");
 
+        // We need to know if the content or the metadata changed
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "Comparing items corresponding to id " + guid);
+            Log.debug(TAG_LOG, "Local name " + localName + " local CRC " + localCRC);
+            Log.debug(TAG_LOG, "Remote name " + remoteName + " remote CRC " + remoteCRC);
+        }
 
+        boolean contentEqual = (localCRC != null && localCRC.equals(remoteCRC));
+        boolean metaEqual    = (localName != null && localName.equals(remoteName));
+        if (contentEqual && metaEqual) {
+            return IDENTICAL_ITEMS;
+        } else if (contentEqual && !metaEqual) {
+            return IDENTICAL_CONTENT;
+        } else if (!contentEqual && metaEqual) {
+            return IDENTICAL_META;
+        } else {
+            return DIFFERENT_ITEMS;
+        }
+    }
 }

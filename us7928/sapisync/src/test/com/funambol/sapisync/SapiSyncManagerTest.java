@@ -45,8 +45,6 @@ import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncFilter;
 import com.funambol.sync.Filter;
 import com.funambol.sync.DeviceConfigI;
-import com.funambol.storage.StringKeyValueStoreFactory;
-import com.funambol.storage.StringKeyValueStore;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Log;
 
@@ -78,8 +76,7 @@ public class SapiSyncManagerTest extends TestCase {
         syncSource.setListener(syncSourceListener);
 
         try {
-            StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
-            StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
+            MappingTable mapping = new MappingTable(syncSource.getName());
             mapping.reset();
         } catch (Exception e) {
         }
@@ -109,10 +106,8 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(syncSourceListener.getNumSending(), 100);
         
         // Check mapping table
-        StringKeyValueStore mapping = null;
+        MappingTable mapping = new MappingTable(syncSource.getName());
         try {
-            StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
-            mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
             mapping.load();
         } catch (Exception e) { }
         
@@ -123,7 +118,7 @@ public class SapiSyncManagerTest extends TestCase {
         while(keys.hasMoreElements()) {
             mCount++;
             String guid = (String)keys.nextElement();
-            String luid = mapping.get(guid);
+            String luid = mapping.getLuid(guid);
             assertEquals(guid, "guid_"+luid);
         }
         assertEquals(mCount, 100);
@@ -152,10 +147,8 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(syncSourceListener.getNumSending(), 8);
         
         // Check mapping table
-        StringKeyValueStore mapping = null;
+        MappingTable mapping = new MappingTable(syncSource.getName());
         try {
-            StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
-            mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
             mapping.load();
         } catch (Exception e) { }
         
@@ -166,7 +159,7 @@ public class SapiSyncManagerTest extends TestCase {
         while(keys.hasMoreElements()) {
             mCount++;
             String guid = (String)keys.nextElement();
-            String luid = mapping.get(guid);
+            String luid = mapping.getLuid(guid);
             assertEquals(guid, "guid_"+luid);
         }
         assertEquals(mCount, 8);
@@ -188,6 +181,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("name", "" + i);
             items.put(item);
         }
         JSONArray allItems[] = new JSONArray[1];
@@ -222,6 +216,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("name", "" + i);
             items0.put(item);
         }
 
@@ -231,6 +226,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("name", "" + i);
             items1.put(item);
         }
 
@@ -266,10 +262,9 @@ public class SapiSyncManagerTest extends TestCase {
 
         // Setup the mapping with the items that we pretend are already in the
         // local store
-        StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
-        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
+        MappingTable mapping = new MappingTable(syncSource.getName());
         for(int i=10;i<25;++i) {
-            mapping.put(""+i, ""+i);
+            mapping.add(""+i, ""+i, ""+i, ""+i);
         }
         mapping.save();
 
@@ -287,6 +282,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("name", "" + i);
             addItems.put(item);
         }
         JSONArray updItemKeys = new JSONArray();
@@ -296,6 +292,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + (10 + i));
             item.put("size", "" + i);
+            item.put("name", "" + i);
             updItems.put(item);
         }
         JSONArray delItemKeys = new JSONArray();
@@ -305,6 +302,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + (18 + i));
             item.put("size", "" + i);
+            item.put("name", "" + i);
             delItems.put(item);
         }
         sapiSyncHandler.setIncrementalChanges(addItemKeys, updItemKeys, delItemKeys);
@@ -328,10 +326,9 @@ public class SapiSyncManagerTest extends TestCase {
     public void testIncrementalDownload2() throws Exception {
         // Setup the mapping with the items that we pretend are already in the
         // local store
-        StringKeyValueStoreFactory mappingFactory = StringKeyValueStoreFactory.getInstance();
-        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore("mapping_" + syncSource.getName());
+        MappingTable mapping = new MappingTable(syncSource.getName());
         for(int i=110;i<140;++i) {
-            mapping.put(""+i, ""+i);
+            mapping.add(""+i, ""+i, ""+i, ""+i);
         }
         mapping.save();
 
@@ -349,6 +346,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("name", "" + i);
             addItems.put(item);
         }
         JSONArray updItemKeys = new JSONArray();
@@ -358,6 +356,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + (110 + i));
             item.put("size", "" + i);
+            item.put("name", "" + i);
             updItems.put(item);
         }
         JSONArray delItemKeys = new JSONArray();
@@ -367,6 +366,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + (130 + i));
             item.put("size", "" + i);
+            item.put("name", "" + i);
             delItems.put(item);
         }
         sapiSyncHandler.setIncrementalChanges(addItemKeys, updItemKeys, delItemKeys);
@@ -501,6 +501,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("name", "" + i);
             items.put(item);
         }
         
@@ -510,6 +511,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("name", "" + i);
             items1.put(item);
         }
         
@@ -561,6 +563,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("name", "" + i);
             item.put("datecreated", (long)100);
             items.put(item);
         }

@@ -230,10 +230,7 @@ public class SapiSyncManager implements SyncManagerI {
             }
         }
 
-        StringKeyValueStoreFactory mappingFactory =
-                StringKeyValueStoreFactory.getInstance();
-        StringKeyValueStore mapping = mappingFactory.getStringKeyValueStore(
-                "mapping_" + src.getName());
+        MappingTable mapping = new MappingTable(src.getName());
 
         SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getSyncAnchor();
         if (sapiAnchor.getDownloadAnchor() == 0 && sapiAnchor.getUploadAnchor() == 0) {
@@ -389,7 +386,7 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private void performInitializationPhase(SyncSource src, int syncMode, boolean resume,
-                                            StringKeyValueStore mapping)
+                                            MappingTable mapping)
     throws SyncException, JSONException
     {
         // Prepare the source for the sync
@@ -449,7 +446,7 @@ public class SapiSyncManager implements SyncManagerI {
             // accordinlgly
             while(localDeletesEnum.hasMoreElements()) {
                 SyncItem item = (SyncItem)localDeletesEnum.nextElement();
-                String guid = getGuidFromLuid(item.getKey(), mapping);
+                String guid = mapping.getGuid(item.getKey());
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Removing entry from mapping " + guid);
                 }
@@ -459,8 +456,7 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
 
-    private void performUploadPhase(SyncSource src, int syncMode, 
-            boolean resume, StringKeyValueStore mapping) {
+    private void performUploadPhase(SyncSource src, int syncMode, boolean resume, MappingTable mapping) {
 
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Starting upload phase with mode: " + syncMode);
@@ -519,7 +515,7 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         int uploadedCount = 0;
-        SyncItem item = getNextItemToUpload(src, incremental);
+        JSONSyncItem item = getNextItemToUpload(src, incremental);
 
         try {
             while(item != null && itemsCountFilter(maxSending, uploadedCount)) {
@@ -565,7 +561,7 @@ public class SapiSyncManager implements SyncManagerI {
                             try {
                                 remoteKey = sapiSyncHandler.resumeItemUpload(item,
                                         remoteUri, getSyncListenerFromSource(src));
-                                mapping.add(remoteKey, item.getKey());
+                                mapping.add(remoteKey, item.getKey(), "" + item.getContentSize(), item.getContentName());
                             } catch (SapiException e) {
                                 verifyErrorInUploadResponse(e, item, remoteKey, sourceStatus);
                             }
@@ -584,7 +580,7 @@ public class SapiSyncManager implements SyncManagerI {
                             // client crashes badly we still remember this fact
                             if (item.getState() == SyncItem.STATE_UPDATED) {
                                 // We need the item guid
-                                remoteKey = getGuidFromLuid(item.getKey(), mapping);
+                                remoteKey = mapping.getGuid(item.getKey());
                                 item.setGuid(remoteKey);
                             }
 
@@ -603,7 +599,7 @@ public class SapiSyncManager implements SyncManagerI {
 
                             // Upload the item to the server
                             sapiSyncHandler.uploadItem(item, remoteUri, getSyncListenerFromSource(src));
-                            mapping.add(remoteKey, item.getKey());
+                            mapping.add(remoteKey, item.getKey(), "" + item.getContentSize(), item.getContentName());
                         } catch (SapiException e) {
                             verifyErrorInUploadResponse(e, item, item.getGuid(), sourceStatus);
                         }
@@ -650,22 +646,22 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private SyncItem getNextItemToUpload(SyncSource src, boolean incremental) {
+    private JSONSyncItem getNextItemToUpload(SyncSource src, boolean incremental) {
         if(incremental) {
-            SyncItem item = src.getNextNewItem();
+            JSONSyncItem item = (JSONSyncItem)src.getNextNewItem();
             if (item == null) {
                 // New items are over, now check for updates
                 if (localUpdatesEnum != null && localUpdatesEnum.hasMoreElements()) {
-                    item = (SyncItem)localUpdatesEnum.nextElement();
+                    item = (JSONSyncItem)localUpdatesEnum.nextElement();
                 }
             }
             return item;
         } else {
-            return src.getNextItem();
+            return (JSONSyncItem)src.getNextItem();
         }
     }
 
-    private void performDownloadPhase(SyncSource src, int syncMode, boolean resume, StringKeyValueStore mapping)
+    private void performDownloadPhase(SyncSource src, int syncMode, boolean resume, MappingTable mapping)
     throws SyncException {
 
         if (Log.isLoggable(Log.INFO)) {
@@ -778,7 +774,7 @@ public class SapiSyncManager implements SyncManagerI {
      */
     private boolean applyNewUpdToSyncSource(SyncSource src, JSONArray items,
                                             char state, String serverUrl,
-                                            StringKeyValueStore mapping, boolean resume)
+                                            MappingTable mapping, boolean resume)
     throws SyncException, JSONException
     {
 
@@ -806,7 +802,7 @@ public class SapiSyncManager implements SyncManagerI {
 
             String luid;
             if (state == SyncItem.STATE_UPDATED) {
-                luid = mapping.get(guid);
+                luid = mapping.getLuid(guid);
             } else {
                 // This is an add. If the item is already present in the mapping
                 // then this is an add
@@ -862,7 +858,7 @@ public class SapiSyncManager implements SyncManagerI {
 
         // Download and apply one item at a time
         for(int i=0;i<sourceItems.size();++i) {
-            SyncItem item = (SyncItem)sourceItems.elementAt(i);
+            JSONSyncItem item = (JSONSyncItem)sourceItems.elementAt(i);
 
             if (src instanceof ResumableSource) {
                 ResumableSource rss = (ResumableSource)src;
@@ -900,7 +896,7 @@ public class SapiSyncManager implements SyncManagerI {
                         Log.trace(TAG_LOG, "Updating mapping info for: " +
                                 item.getGuid() + "," + item.getKey());
                     }
-                    mapping.add(item.getGuid(), item.getKey());
+                    mapping.add(item.getGuid(), item.getKey(), "" + item.getContentSize(), item.getContentName());
                 }
             }
         }
@@ -1011,7 +1007,7 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private void applyDelItems(SyncSource src, JSONArray removed, 
-                               StringKeyValueStore mapping) throws SyncException, JSONException
+                               MappingTable mapping) throws SyncException, JSONException
     {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "applyDelItems");
@@ -1021,7 +1017,7 @@ public class SapiSyncManager implements SyncManagerI {
             String guid = removed.getString(i);
 
             if (guid != null && guid.length() > 0) {
-                String luid = mapping.get(guid);
+                String luid = mapping.getLuid(guid);
                 if (luid == null) {
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Cannot delete item with unknown luid " + guid);
@@ -1224,17 +1220,6 @@ public class SapiSyncManager implements SyncManagerI {
             Log.info(TAG_LOG, "Updating download anchor to " + newDownloadAnchor);
         }
         sapiAnchor.setDownloadAnchor(newDownloadAnchor);
-    }
-
-    private String getGuidFromLuid(String luid, StringKeyValueStore mapping) {
-        Enumeration keyValuePairs = mapping.keyValuePairs();
-        while (keyValuePairs.hasMoreElements()) {
-            StringKeyValuePair pair = (StringKeyValuePair)keyValuePairs.nextElement();
-            if (luid.equals(pair.getValue())) {
-                return pair.getKey();
-            }
-        }
-        return null;
     }
 
     
