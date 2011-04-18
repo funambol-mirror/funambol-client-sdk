@@ -219,15 +219,17 @@ public class FileSyncSource extends BasicMediaSyncSource implements
             if(getTracker() instanceof CacheTrackerWithRenames) {
                 CacheTrackerWithRenames tracker = (CacheTrackerWithRenames)getTracker();
                 String oldKey = tracker.getRenamedFileName(item.getKey());
+                if(Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Setting item old key: " + oldKey);
+                }
                 syncItem.setOldKey(oldKey);
             }
             
             return syncItem;
             
         } catch (Exception e) {
-            e.printStackTrace();
             throw new SyncException(SyncException.CLIENT_ERROR,
-                                    "Cannot create SyncItem: " + e.toString());
+                    "Cannot create SyncItem: " + e.toString());
         } finally {
             try {
                 if(file != null) {
