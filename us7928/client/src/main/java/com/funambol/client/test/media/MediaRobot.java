@@ -417,7 +417,7 @@ public abstract class MediaRobot extends Robot {
         String itemId = findMediaOnServer(type, oldFileName);
 
         sapiHandler.login(null);
-        sapiHandler.updateItemName(getRemoteUri(type), getDataTag(type), itemId, newFileName);
+        sapiHandler.updateItemName(getRemoteUri(type), itemId, newFileName);
         sapiHandler.logout();
     }
 

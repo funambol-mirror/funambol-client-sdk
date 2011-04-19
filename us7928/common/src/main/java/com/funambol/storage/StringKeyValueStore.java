@@ -36,7 +36,6 @@
 package com.funambol.storage;
 
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.io.IOException;
 
 /**

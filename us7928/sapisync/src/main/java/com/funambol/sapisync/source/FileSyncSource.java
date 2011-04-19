@@ -215,7 +215,7 @@ public class FileSyncSource extends BasicMediaSyncSource implements
                     getConfig().getType(), item.getState(), item.getParent(),
                     jsonFileObject);
 
-            // Set the item old key to handle rename operations
+            // Set the item old key to handle renames
             if(getTracker() instanceof CacheTrackerWithRenames) {
                 CacheTrackerWithRenames tracker = (CacheTrackerWithRenames)getTracker();
                 String oldKey = tracker.getRenamedFileName(item.getKey());
@@ -223,10 +223,18 @@ public class FileSyncSource extends BasicMediaSyncSource implements
                     Log.debug(TAG_LOG, "Setting item old key: " + oldKey);
                 }
                 syncItem.setOldKey(oldKey);
+                syncItem.setItemKeyUpdated(true);
             }
-            
+
+            // Check if the sync item content has been updated. 
+            if(getTracker() instanceof CacheTrackerWithRenames) {
+                CacheTrackerWithRenames tracker = (CacheTrackerWithRenames)getTracker();
+                if(tracker.isRenamedItem(item.getKey())) {
+                    boolean itemUpdated = tracker.isRenamedItemUpdated(item.getKey());
+                    syncItem.setItemContentUpdated(itemUpdated);
+                }
+            }
             return syncItem;
-            
         } catch (Exception e) {
             throw new SyncException(SyncException.CLIENT_ERROR,
                     "Cannot create SyncItem: " + e.toString());
@@ -242,7 +250,7 @@ public class FileSyncSource extends BasicMediaSyncSource implements
     private class FileSyncItem extends JSONSyncItem {
 
         private String fileName;
-        
+
         public FileSyncItem(String fileName, String key, String type, 
                 char state, String parent, JSONFileObject jsonFileObject)
                 throws JSONException {
@@ -279,7 +287,9 @@ public class FileSyncSource extends BasicMediaSyncSource implements
         public long getLastModified() {
             try {
                 FileAdapter file = new FileAdapter(fileName);
-                return file.lastModified();
+                long lastModified = file.lastModified();
+                file.close();
+                return lastModified;
             } catch(IOException ex) {
                 Log.error(TAG_LOG, "Failed to get file last modification time", ex);
                 return -1;

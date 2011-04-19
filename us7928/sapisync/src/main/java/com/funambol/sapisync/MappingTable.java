@@ -77,6 +77,11 @@ public class MappingTable {
         store.add(guid, value);
     }
 
+    public void update(String guid, String luid, String crc, String name) {
+        String value = createValue(luid, crc, name);
+        store.update(guid, value);
+    }
+
     public String getLuid(String guid) {
         String value = store.get(guid);
         return getFieldFromValue(value, 0);

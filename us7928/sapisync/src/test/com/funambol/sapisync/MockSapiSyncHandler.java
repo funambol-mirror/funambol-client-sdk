@@ -42,8 +42,8 @@ import com.funambol.org.json.me.JSONException;
 import com.funambol.org.json.me.JSONObject;
 import com.funambol.org.json.me.JSONArray;
 
-import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncListener;
+import com.funambol.sapisync.source.JSONSyncItem;
 
 /**
  * Implements a Mock for the SapiSyncHandler interface
@@ -81,11 +81,11 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         logoutCount++;
     }
 
-    public String prepareItemUpload(SyncItem item, String remoteUri) throws SapiException {
+    public String prepareItemUpload(JSONSyncItem item, String remoteUri) throws SapiException {
         return "guid_" + item.getKey();
     }
 
-    public void uploadItem(SyncItem item, String remoteUri, SyncListener listener)
+    public void uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener)
             throws SapiException {
         uploadedItems.addElement(item);
     }

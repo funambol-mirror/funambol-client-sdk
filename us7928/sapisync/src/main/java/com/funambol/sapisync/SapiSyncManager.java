@@ -55,16 +55,11 @@ import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.ResumableSource;
 import com.funambol.sync.SyncManagerI;
-import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.sapisync.source.JSONSyncItem;
-import com.funambol.sapisync.source.JSONFileObject;
 import com.funambol.sapisync.source.util.ResumeException;
 import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.sapisync.source.util.DownloadException;
-import com.funambol.storage.StringKeyValueStoreFactory;
-import com.funambol.storage.StringKeyValueStore;
-import com.funambol.storage.StringKeyValuePair;
 import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
 import com.funambol.sync.DeviceConfigI;
@@ -561,7 +556,16 @@ public class SapiSyncManager implements SyncManagerI {
                             try {
                                 remoteKey = sapiSyncHandler.resumeItemUpload(item,
                                         remoteUri, getSyncListenerFromSource(src));
-                                mapping.add(remoteKey, item.getKey(), "" + item.getContentSize(), item.getContentName());
+                                // Update the mapping table
+                                if(item.getState() == SyncItem.STATE_UPDATED) {
+                                    mapping.update(remoteKey, item.getKey(), 
+                                            Long.toString(item.getContentSize()),
+                                            item.getContentName());
+                                } else {
+                                    mapping.add(remoteKey, item.getKey(), 
+                                            Long.toString(item.getContentSize()),
+                                            item.getContentName());
+                                }
                             } catch (SapiException e) {
                                 verifyErrorInUploadResponse(e, item, remoteKey, sourceStatus);
                             }
@@ -579,33 +583,53 @@ public class SapiSyncManager implements SyncManagerI {
                             // Sets the status as interrupted so that if the
                             // client crashes badly we still remember this fact
                             if (item.getState() == SyncItem.STATE_UPDATED) {
-                                // We need the item guid
-                                remoteKey = mapping.getGuid(item.getKey());
+                                String luid = item.getKey();
+                                // Check if the item key has been updated
+                                if(item.isItemKeyUpdated()) {
+                                    luid = item.getOldKey();
+                                }
+                                remoteKey = mapping.getGuid(luid);
                                 item.setGuid(remoteKey);
                             }
-
-                            remoteKey = sapiSyncHandler.prepareItemUpload(item, remoteUri);
-                            item.setGuid(remoteKey);
-
-                            if (item.getState() == SyncItem.STATE_NEW || item.getState() == SyncItem.STATE_UPDATED) {
-                                syncStatus.addSentItem(item.getGuid(), item.getKey(), item.getState(),
-                                        SyncSource.INTERRUPTED_STATUS);
-                                try {
-                                    syncStatus.save();
-                                } catch (Exception e) {
-                                    Log.error(TAG_LOG, "Cannot save sync status", e);
+                            // Check if this is only a file rename.
+                            // Using save-metadata to update the file name doesn't
+                            // work becouse it requires the file content to be
+                            // re-uploaded
+                            if(item.isItemKeyUpdated() && !item.isItemContentUpdated()) {
+                                // This is only a item rename
+                                sapiSyncHandler.updateItemName(remoteUri, remoteKey,
+                                        item.getJSONFileObject().getName());
+                            } else {
+                                remoteKey = sapiSyncHandler.prepareItemUpload(item, remoteUri);
+                                item.setGuid(remoteKey);
+                                if (item.getState() == SyncItem.STATE_NEW || item.getState() == SyncItem.STATE_UPDATED) {
+                                    syncStatus.addSentItem(item.getGuid(), item.getKey(), item.getState(),
+                                            SyncSource.INTERRUPTED_STATUS);
+                                    try {
+                                        syncStatus.save();
+                                    } catch (Exception e) {
+                                        Log.error(TAG_LOG, "Cannot save sync status", e);
+                                    }
                                 }
+                                // Upload the item to the server
+                                sapiSyncHandler.uploadItem(item, remoteUri, getSyncListenerFromSource(src));
                             }
-
-                            // Upload the item to the server
-                            sapiSyncHandler.uploadItem(item, remoteUri, getSyncListenerFromSource(src));
-                            mapping.add(remoteKey, item.getKey(), "" + item.getContentSize(), item.getContentName());
+                            // Update the mapping table
+                            if(item.getState() == SyncItem.STATE_UPDATED) {
+                                mapping.update(remoteKey, item.getKey(), 
+                                        Long.toString(item.getContentSize()),
+                                        item.getContentName());
+                            } else {
+                                mapping.add(remoteKey, item.getKey(), 
+                                        Long.toString(item.getContentSize()),
+                                        item.getContentName());
+                            }
                         } catch (SapiException e) {
                             verifyErrorInUploadResponse(e, item, item.getGuid(), sourceStatus);
                         }
                     } 
-
-                    syncStatus.setSentItemStatus(item.getGuid(), item.getKey(), item.getState(), SyncSource.SUCCESS_STATUS);
+                    syncStatus.setSentItemStatus(item.getGuid(), item.getKey(),
+                            item.getState(), SyncSource.SUCCESS_STATUS);
                     try {
                         syncStatus.save();
                     } catch (Exception e) {
@@ -877,7 +901,7 @@ public class SapiSyncManager implements SyncManagerI {
 
             // Download the item content
             try {
-                downloadItemContent(src, (JSONSyncItem)item);
+                downloadItemContent(src, item);
             } catch (IOException ioe) {
                 Log.error(TAG_LOG, "Cannot write item content to local disk", ioe);
                 throw new SyncException(SyncException.STORAGE_ERROR, "Cannot write item content to local disk");

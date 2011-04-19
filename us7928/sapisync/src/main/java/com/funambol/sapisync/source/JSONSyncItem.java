@@ -49,6 +49,9 @@ public class JSONSyncItem extends SyncItem {
 
     private JSONFileObject fileObject = null;
 
+    private boolean itemKeyUpdated = false;
+    private boolean itemContentUpdated = true;
+
     // This is used to handle rename operations
     private String oldKey = null;
 
@@ -78,6 +81,22 @@ public class JSONSyncItem extends SyncItem {
 
     public String getOldKey() {
         return oldKey;
+    }
+
+    public void setItemKeyUpdated(boolean updated) {
+        itemKeyUpdated = updated;
+    }
+
+    public boolean isItemKeyUpdated() {
+        return itemKeyUpdated;
+    }
+
+    public void setItemContentUpdated(boolean updated) {
+        itemContentUpdated = updated;
+    }
+
+    public boolean isItemContentUpdated() {
+        return itemContentUpdated;
     }
 
     public JSONFileObject getJSONFileObject() {

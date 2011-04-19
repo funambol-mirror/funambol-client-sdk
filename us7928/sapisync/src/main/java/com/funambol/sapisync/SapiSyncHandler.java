@@ -132,85 +132,78 @@ public class SapiSyncHandler {
         }
     }
 
-    public String resumeItemUpload(SyncItem item, String remoteUri, SyncListener listener)
+    public String resumeItemUpload(JSONSyncItem item, String remoteUri, SyncListener listener)
     throws SapiException {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Resuming upload for item: " + item.getKey());
         }
-        if(!(item instanceof JSONSyncItem)) {
-            throw new UnsupportedOperationException("Not implemented.");
+        JSONFileObject json = item.getJSONFileObject();
+
+        // First of all we need to query the server to understand where we shall
+        // restart from. The item must have a valid guid, otherwise we cannot
+        // resume
+        String guid = item.getGuid();
+
+        if (guid == null) {
+            Log.error(TAG_LOG, "Cannot resume, a complete upload will be performed instead");
+            String remoteKey = prepareItemUpload(item, remoteUri);
+            item.setGuid(remoteKey);
+            uploadItem(item, remoteUri, listener);
+            return remoteUri;
         }
-            JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
 
-            // First of all we need to query the server to understand where we shall
-            // restart from. The item must have a valid guid, otherwise we cannot
-            // resume
-            String guid = item.getGuid();
+        Hashtable headers = new Hashtable();
+        headers.put("Content-Range","bytes */" + json.getSize());
 
-            if (guid == null) {
-                Log.error(TAG_LOG, "Cannot resume, a complete upload will be performed instead");
-                String remoteKey = prepareItemUpload(item, remoteUri);
-                item.setGuid(remoteKey);
-                uploadItem(item, remoteUri, listener);
-                return remoteUri;
-            }
+        long length = -1;
+        try {
+            length = sapiHandler.getMediaPartialUploadLength(remoteUri, guid, json.getSize());
+        } catch (NotSupportedCallException e) {
+            Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
+            throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
+        } catch(IOException ex) {
+            Log.error(TAG_LOG, "Failed to upload item", ex);
+            throw SapiException.SAPI_EXCEPTION_NO_CONNECTION;
+        }
 
-            Hashtable headers = new Hashtable();
-            headers.put("Content-Range","bytes */" + json.getSize());
-
-            long length = -1;
-            try {
-                length = sapiHandler.getMediaPartialUploadLength(remoteUri, guid, json.getSize());
-            } catch (NotSupportedCallException e) {
-                Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
-                throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
-            } catch(IOException ex) {
-                Log.error(TAG_LOG, "Failed to upload item", ex);
-                throw SapiException.SAPI_EXCEPTION_NO_CONNECTION;
-            }
-            
-            if (length > 0) {
-                if(length == json.getSize()) {
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "No need to resume item " + length);
-                    }
-                    return guid;
-                } else {
-                    long fromByte = length + 1;
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Upload can be resumed at byte " + fromByte);
-                    }
-                    uploadItem(item, remoteUri, listener, fromByte);
-                    return guid;
-                }
-            } else {
+        if (length > 0) {
+            if(length == json.getSize()) {
                 if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Upload cannot be resumed, perform a complete upload");
-                    guid = prepareItemUpload(item, remoteUri);
-                    item.setGuid(guid);
-                    uploadItem(item, remoteUri, listener);
-                    return guid;
+                    Log.info(TAG_LOG, "No need to resume item " + length);
                 }
+                return guid;
+            } else {
+                long fromByte = length + 1;
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Upload can be resumed at byte " + fromByte);
+                }
+                uploadItem(item, remoteUri, listener, fromByte);
+                return guid;
             }
-            return guid;
-
+        } else {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Upload cannot be resumed, perform a complete upload");
+                guid = prepareItemUpload(item, remoteUri);
+                item.setGuid(guid);
+                uploadItem(item, remoteUri, listener);
+                return guid;
+            }
+        }
+        return guid;
     }
 
-    public void uploadItem(SyncItem item, String remoteUri, SyncListener listener)
+    public void uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener)
     throws SapiException {
         uploadItem(item, remoteUri, listener, 0);
     }
 
-    public String prepareItemUpload(SyncItem item, String remoteUri) throws SapiException {
+    public String prepareItemUpload(JSONSyncItem item, String remoteUri) throws SapiException {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Preparing item upload: " + item.getKey());
         }
-        if(!(item instanceof JSONSyncItem)) {
-            throw new UnsupportedOperationException("Not implemented.");
-        }
         try {
             JSONObject metadata = new JSONObject();
-            JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
+            JSONFileObject json = item.getJSONFileObject();
 
             metadata.put("name", json.getName());
             metadata.put("modificationdate", DateUtil.formatDateTimeUTC(json.getLastModifiedDate()));
@@ -270,22 +263,28 @@ public class SapiSyncHandler {
      * from scratch, a non zero value means the method will try to resume a
      * resume
      */
-    public void uploadItem(SyncItem item, String remoteUri, SyncListener listener, long fromByte)
+    public void uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener, long fromByte)
     throws SapiException
     {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Uploading item: " + item.getKey());
         }
-        if(!(item instanceof JSONSyncItem)) {
-            throw new UnsupportedOperationException("Not implemented.");
-        }
         try {
+
             // If this is not a resume, we must perform the upload in two
             // phases. Send the metadata first and then the actual content
-            Hashtable headers = new Hashtable();
-            InputStream is = item.getInputStream();
 
-            JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
+            Hashtable headers = new Hashtable();
+
+            InputStream is = item.getInputStream();
+            if(is == null) {
+                if(Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Upload is not needed, item content is null");
+                }
+                return;
+            }
+
+            JSONFileObject json = item.getJSONFileObject();
 
             String remoteKey = item.getGuid();
 
@@ -341,7 +340,7 @@ public class SapiSyncHandler {
         }
     }
 
-    public void updateItemName(String remoteUri, String dataTag, String itemId,
+    public void updateItemName(String remoteUri, String itemId,
             String newItemName) throws SapiException {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Updating item name");

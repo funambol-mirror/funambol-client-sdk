@@ -107,13 +107,13 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
         Enumeration keys = renamesStore.keys();
         while(keys.hasMoreElements()) {
             if(Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Verifying rename operation");
+                Log.debug(TAG_LOG, "Checking renames");
             }
             String newFileName = (String)keys.nextElement();
             String oldFileName = (String)renamesStore.get(newFileName);
             if(newItems.get(newFileName) != null && deletedItems.get(oldFileName) != null) {
                 if(Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Detected rename operation. "
+                    Log.debug(TAG_LOG, "Detected file rename. "
                             + "oldFileName=" + oldFileName + " newFileName=" + newFileName);
                 }
                 // A rename operation (add + delete) shall be converted into an update
@@ -127,6 +127,16 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
 
     public String getRenamedFileName(String newFileName) {
         return renamesStore.get(newFileName);
+    }
+
+    public boolean isRenamedItemUpdated(String key) {
+        String oldFP = status.get(key);
+        String newFP = (String)updatedItems.get(key);
+        return oldFP != null && newFP != null && !oldFP.equals(newFP);
+    }
+
+    public boolean isRenamedItem(String key) {
+        return renamesStore.get(key) != null;
     }
 
     public void end() throws TrackerException {
