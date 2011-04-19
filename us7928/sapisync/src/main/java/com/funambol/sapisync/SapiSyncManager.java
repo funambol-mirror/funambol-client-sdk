@@ -809,7 +809,6 @@ public class SapiSyncManager implements SyncManagerI {
         boolean done = false;
         
         // Apply these changes into the sync source
-        Vector sourceItems = new Vector();
         for(int k=0; k<items.length() && !done; ++k) {
 
             cancelSyncIfNeeded(src);
@@ -839,88 +838,110 @@ public class SapiSyncManager implements SyncManagerI {
             }
 
             // Create the item
-            SyncItem syncItem = utils.createSyncItem(src, luid, state, size, item, serverUrl);
+            JSONSyncItem syncItem = (JSONSyncItem)utils.createSyncItem(src, luid, state, size, item, serverUrl);
             syncItem.setGuid(guid);
 
-            // Shall we resume this item download?
-            if (resume && syncStatus.getReceivedItemStatus(guid) == SyncSource.INTERRUPTED_STATUS) {
-                if (src instanceof ResumableSource) {
-                    long partialLength = 0;
-                    ResumableSource rss = (ResumableSource)src;
-                    partialLength = rss.getPartiallyReceivedItemSize(rss.getLuid(syncItem));
-                    if (partialLength > 0) {
-                        if (Log.isLoggable(Log.INFO)) {
-                            Log.info(TAG_LOG, "Found an item whose download can be resumed at " + partialLength);
+            // Check if this item just got renamed remotely
+            boolean downloadContent = !item.has("nocontent");
+
+            if (downloadContent) {
+                // Shall we resume this item download?
+                if (resume && syncStatus.getReceivedItemStatus(guid) == SyncSource.INTERRUPTED_STATUS) {
+                    if (src instanceof ResumableSource) {
+                        long partialLength = 0;
+                        ResumableSource rss = (ResumableSource)src;
+                        partialLength = rss.getPartiallyReceivedItemSize(rss.getLuid(syncItem));
+                        if (partialLength > 0) {
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "Found an item whose download can be resumed at " + partialLength);
+                            }
+                            // Notify the sync status that we are trying to resume
+                            syncStatus.addReceivedResumedItem(guid);
+                            syncItem.setPartialLength(partialLength);
                         }
-                        // Notify the sync status that we are trying to resume
-                        syncStatus.addReceivedResumedItem(guid);
-                        syncItem.setPartialLength(partialLength);
                     }
                 }
+                syncItem.setItemContentUpdated(true);
+            } else {
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "No content will be downloaded");
+                }
+                syncItem.setItemContentUpdated(false);
+            }
+
+            // Was the item renamed
+            if (item.has("oldkey")) {
+                syncItem.setOldKey(item.getString("oldkey"));
+                syncItem.setItemKeyUpdated(true);
+            } else {
+                syncItem.setItemKeyUpdated(false);
             }
 
             // Filter downloaded items for JSONSyncSources only
             if(src instanceof JSONSyncSource) {
-                if(((JSONSyncSource)src).filterSyncItem(syncItem)) {
-                    sourceItems.addElement(syncItem);
-                } else {
+                if(!((JSONSyncSource)src).filterSyncItem(syncItem)) {
                     if (Log.isLoggable(Log.DEBUG)) {
                         Log.debug(TAG_LOG, "Item rejected by the source: " + luid);
                     }
+                    continue;
                 }
-            } else {
-                sourceItems.addElement(syncItem);
             }
-            
+
             // Notify the listener
             if (state == SyncItem.STATE_NEW) {
                 getSyncListenerFromSource(src).itemAddReceivingEnded(luid, null);
             } else if(state == SyncItem.STATE_UPDATED) {
                 getSyncListenerFromSource(src).itemReplaceReceivingEnded(luid, null);
             }
-        }
 
-        // Download and apply one item at a time
-        for(int i=0;i<sourceItems.size();++i) {
-            JSONSyncItem item = (JSONSyncItem)sourceItems.elementAt(i);
-
-            if (src instanceof ResumableSource) {
-                ResumableSource rss = (ResumableSource)src;
-                if (item.getState() == SyncItem.STATE_NEW || item.getState() == SyncItem.STATE_UPDATED) {
-                    String luid = rss.getLuid(item);
-                    if (luid != null) {
-                        syncStatus.addReceivedItem(item.getGuid(), luid, item.getState(), SyncSource.INTERRUPTED_STATUS);
+            if (downloadContent) {
+                // Download and apply the item 
+                if (src instanceof ResumableSource) {
+                    ResumableSource rss = (ResumableSource)src;
+                    if (syncItem.getState() == SyncItem.STATE_NEW || syncItem.getState() == SyncItem.STATE_UPDATED) {
+                        String tmpLuid = rss.getLuid(syncItem);
+                        if (luid != null) {
+                            syncStatus.addReceivedItem(syncItem.getGuid(), tmpLuid, syncItem.getState(), SyncSource.INTERRUPTED_STATUS);
+                        }
+                    }
+                    try {
+                        syncStatus.save();
+                    } catch (IOException ioe) {
+                        Log.error(TAG_LOG, "Cannot save sync status", ioe);
                     }
                 }
-                try {
-                    syncStatus.save();
-                } catch (IOException ioe) {
-                    Log.error(TAG_LOG, "Cannot save sync status", ioe);
-                }
-            }
 
-            // Download the item content
-            try {
-                downloadItemContent(src, item);
-            } catch (IOException ioe) {
-                Log.error(TAG_LOG, "Cannot write item content to local disk", ioe);
-                throw new SyncException(SyncException.STORAGE_ERROR, "Cannot write item content to local disk");
+                // Download the item content
+                try {
+                    downloadItemContent(src, syncItem);
+                } catch (IOException ioe) {
+                    Log.error(TAG_LOG, "Cannot write item content to local disk", ioe);
+                    throw new SyncException(SyncException.STORAGE_ERROR, "Cannot write item content to local disk");
+                }
             }
 
             // Apply the item to the source
             Vector tmpItems = new Vector();
-            tmpItems.addElement(item);
+            tmpItems.addElement(syncItem);
             src.applyChanges(tmpItems);
 
-            if (item.getSyncStatus() != -1 && item.getGuid() != null && item.getKey() != null) {
-                syncStatus.setReceivedItemStatus(item.getGuid(), item.getKey(), item.getState(), item.getSyncStatus());
+            if (syncItem.getSyncStatus() != -1 && syncItem.getGuid() != null && syncItem.getKey() != null) {
+                syncStatus.setReceivedItemStatus(syncItem.getGuid(), syncItem.getKey(),
+                                                 syncItem.getState(), syncItem.getSyncStatus());
                 // and the mapping table (if luid and guid are different)
-                if (state == SyncItem.STATE_NEW && !item.getGuid().equals(item.getKey())) {
+                if (state == SyncItem.STATE_NEW && !syncItem.getGuid().equals(syncItem.getKey())) {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "Updating mapping info for: " +
-                                item.getGuid() + "," + item.getKey());
+                                syncItem.getGuid() + "," + syncItem.getKey());
                     }
-                    mapping.add(item.getGuid(), item.getKey(), "" + item.getContentSize(), item.getContentName());
+                    mapping.add(syncItem.getGuid(), syncItem.getKey(), "" + syncItem.getContentSize(),
+                                syncItem.getContentName());
+                } else if (state == SyncItem.STATE_UPDATED && item.has("oldkey")) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "Updating mapping info for renamed item: " +
+                                syncItem.getGuid() + "," + syncItem.getKey());
+                    }
+                    mapping.update(syncItem.getGuid(), syncItem.getKey(), "" + syncItem.getContentSize(), syncItem.getContentName());
                 }
             }
         }

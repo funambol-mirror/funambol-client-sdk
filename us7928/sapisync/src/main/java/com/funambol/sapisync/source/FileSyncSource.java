@@ -325,13 +325,34 @@ public class FileSyncSource extends BasicMediaSyncSource implements
         if(Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "addUpdateItem");
         }
-        JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
 
+        JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
         try {
-            // Move the file from the temporary directory to the final one
-            String tempFileName = createTempFileName(jsonSyncItem.getContentName());
+
             String fullName = getFileFullName(jsonSyncItem.getContentName());
-            renameTempFile(tempFileName, fullName);
+
+            if (update) {
+                if (jsonSyncItem.isItemContentUpdated()) {
+                    // The new content has been downloaded into a temporary file
+                    String sourceFileName = createTempFileName(jsonSyncItem.getContentName());
+                    renameTempFile(sourceFileName, fullName);
+                    if (jsonSyncItem.isItemKeyUpdated()) {
+                        // We shall remove the old file
+                        String oldFileName = getFileFullName(jsonSyncItem.getOldKey());
+                        FileAdapter fa = new FileAdapter(oldFileName);
+                        fa.delete();
+                    }
+                } else if (jsonSyncItem.isItemKeyUpdated()) {
+                    // This is just a rename
+                    String sourceFileName = getFileFullName(jsonSyncItem.getOldKey());
+                    renameTempFile(sourceFileName, fullName);
+                }
+            } else {
+                // This is a new file, rename the temp file
+                String sourceFileName = createTempFileName(jsonSyncItem.getContentName());
+                renameTempFile(sourceFileName, fullName);
+            }
+
             // Set the item key
             item.setKey(fullName);
             if(Log.isLoggable(Log.DEBUG)) {

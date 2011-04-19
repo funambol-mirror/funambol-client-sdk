@@ -288,9 +288,9 @@ public class SapiSyncStrategy {
 
                 if (localItemId != null) {
 
-                    int itemsEquality = compareItems(item, mapping);
+                    ItemComparisonResult equal = compareItems(item, mapping);
 
-                    if (itemsEquality == IDENTICAL_ITEMS) {
+                    if (equal.getIdentical()) {
                         if (Log.isLoggable(Log.INFO)) {
                             Log.info(TAG_LOG, "Server sent an add which already exists on client, ignore it");
                         }
@@ -310,14 +310,9 @@ public class SapiSyncStrategy {
                         }
                         updatedArray.put(item);
 
-                        // Check if this is just a file rename
-                        if (itemsEquality == IDENTICAL_CONTENT) {
-                            // Only the metadata changed, this is a rename on
-                            // the server
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "This updates changes only the file name");
-                            }
-                        }
+                        // Update the item's properties according to what
+                        // changed in this update
+                        setUpdatedProperties(item, equal, mapping.getName(guid));
                     }
                 }
             }
@@ -346,18 +341,17 @@ public class SapiSyncStrategy {
                     }
                     addedArray.put(item);
                 } else {
-                    int itemsEquality = compareItems(item, mapping);
-                    if (itemsEquality == IDENTICAL_ITEMS) {
+                    ItemComparisonResult equal = compareItems(item, mapping);
+
+                    if (equal.getIdentical()) {
                         if (Log.isLoggable(Log.INFO)) {
                             Log.info(TAG_LOG, "Server sent an update for an item already on the client, ignore it");
                         }
                         updatedArray.put(i, removedItemMarker);
-                    } else if (itemsEquality == IDENTICAL_CONTENT) {
-                        // Only the metadata changed, this is a rename on
-                        // the server
-                        if (Log.isLoggable(Log.INFO)) {
-                            Log.info(TAG_LOG, "This updates changes only the file name");
-                        }
+                    } else {
+                        // Update the item's properties according to what
+                        // changed in this update
+                        setUpdatedProperties(item, equal, mapping.getName(guid));
                     }
                 }
             }
@@ -657,7 +651,7 @@ public class SapiSyncStrategy {
         return dataTag;
     }
 
-    private int compareItems(JSONObject item, MappingTable mapping) throws JSONException {
+    private ItemComparisonResult compareItems(JSONObject item, MappingTable mapping) throws JSONException {
         String guid = item.getString("id");
         String remoteCRC  = item.getString("size");
         String localCRC   = mapping.getCRC(guid);
@@ -673,14 +667,46 @@ public class SapiSyncStrategy {
 
         boolean contentEqual = (localCRC != null && localCRC.equals(remoteCRC));
         boolean metaEqual    = (localName != null && localName.equals(remoteName));
-        if (contentEqual && metaEqual) {
-            return IDENTICAL_ITEMS;
-        } else if (contentEqual && !metaEqual) {
-            return IDENTICAL_CONTENT;
-        } else if (!contentEqual && metaEqual) {
-            return IDENTICAL_META;
-        } else {
-            return DIFFERENT_ITEMS;
+
+        return new ItemComparisonResult(contentEqual, metaEqual);
+    }
+
+    private void setUpdatedProperties(JSONObject item, ItemComparisonResult equal, String oldKey) throws JSONException {
+        // Set the content change properties
+        if (equal.getContentEqual()) {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "This update did not change the item content");
+            }
+            item.put("nocontent", true);
+        }
+        if (!equal.getMetaEqual()) {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "This update changed the item metadata");
+            }
+            item.put("oldkey", oldKey);
+        }
+    }
+
+    private class ItemComparisonResult {
+
+        private boolean contentEqual;
+        private boolean metaEqual;
+
+        public ItemComparisonResult(boolean contentEqual, boolean metaEqual) {
+            this.contentEqual = contentEqual;
+            this.metaEqual    = metaEqual;
+        }
+
+        public boolean getContentEqual() {
+            return contentEqual;
+        }
+
+        public boolean getMetaEqual() {
+            return metaEqual;
+        }
+
+        public boolean getIdentical() {
+            return getContentEqual() && getMetaEqual();
         }
     }
 }
