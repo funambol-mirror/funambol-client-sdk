@@ -230,7 +230,10 @@ public class FileSyncSource extends BasicMediaSyncSource implements
             if(getTracker() instanceof CacheTrackerWithRenames) {
                 CacheTrackerWithRenames tracker = (CacheTrackerWithRenames)getTracker();
                 if(tracker.isRenamedItem(item.getKey())) {
-                    boolean itemUpdated = tracker.isRenamedItemUpdated(item.getKey());
+                    boolean itemUpdated = tracker.isRenamedItemUpdated(syncItem.getOldKey(), syncItem.getKey());
+                    if(Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Setting item content updated: " + itemUpdated);
+                    }
                     syncItem.setItemContentUpdated(itemUpdated);
                 }
             }

@@ -129,10 +129,14 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
         return renamesStore.get(newFileName);
     }
 
-    public boolean isRenamedItemUpdated(String key) {
-        String oldFP = status.get(key);
-        String newFP = (String)updatedItems.get(key);
-        return oldFP != null && newFP != null && !oldFP.equals(newFP);
+    public boolean isRenamedItemUpdated(String oldKey, String newKey) {
+        String oldFP = status.get(oldKey);
+        String newFP = (String)updatedItems.get(newKey);
+        boolean updated = true;
+        if(oldFP != null && newFP != null) {
+            updated = !oldFP.equals(newFP);
+        }
+        return updated;
     }
 
     public boolean isRenamedItem(String key) {

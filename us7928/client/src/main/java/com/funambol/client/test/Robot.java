@@ -87,6 +87,14 @@ public class Robot {
         }
     }
 
+    protected void assertTrue(long l1, long l2, String msg) throws ClientTestException {
+        if (l1 != l2) {
+            Log.error(TAG_LOG, "Expected: " + l1 + " -- Found: " + l2);
+            Log.error(TAG_LOG, msg);
+            throw new ClientTestException(msg);
+        }
+    }
+
     protected void assertTrue(boolean cond, String msg) throws ClientTestException {
         if (!cond) {
             Log.error(TAG_LOG, msg);

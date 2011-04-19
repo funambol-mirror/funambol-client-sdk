@@ -128,6 +128,8 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             renameFile(command, pars);
         } else if (RENAME_FILE_ON_SERVER.equals(command)) {
             renameFileOnServer(command, pars);
+        } else if (CHECK_FILE_CONTENT_INTEGRITY.equals(command)) {
+            checkFileContentIntegrity(command, pars);
         } else {
             return false;
         }
@@ -257,6 +259,13 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         checkArgument(newFileName, "Missing newFileName in " + command);
 
         getMediaRobot().renameFileOnServer(oldFileName, newFileName);
+    }
+
+    private void checkFileContentIntegrity(String command, Vector args) throws Throwable {
+        String fileName = getParameter(args, 0);
+        checkArgument(fileName, "Missing fileName in " + command);
+
+        getMediaRobot().checkFileContentIntegrity(fileName);
     }
     
 }

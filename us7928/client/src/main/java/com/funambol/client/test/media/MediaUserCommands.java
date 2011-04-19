@@ -377,6 +377,16 @@ public interface MediaUserCommands {
      * @example RenameFileOnServer(testfile1.pdf,testfile2.pdf);
      */
     public static final String RENAME_FILE_ON_SERVER = "RenameFileOnServer";
+
+    /**
+     * This command checks the integrity of a file content on both client and
+     * server. This can be used to verify that a file content has been
+     * uploaded/download correctly
+     * First parameter is the file name to check
+     *
+     * @example CheckFileContentIntegrity(testfile.txt);
+     */
+    public static final String CHECK_FILE_CONTENT_INTEGRITY = "CheckFileContentIntegrity";
     
 }
     

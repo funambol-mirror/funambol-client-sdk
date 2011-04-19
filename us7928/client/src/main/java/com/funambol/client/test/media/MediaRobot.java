@@ -112,7 +112,7 @@ public abstract class MediaRobot extends Robot {
     }
 
     public void overrideMediaContentOnServer(String type, String targetFileName, String sourceFileName) throws Throwable {
-        String itemId = findMediaOnServer(type, targetFileName);
+        String itemId = findMediaIdOnServer(type, targetFileName);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         String contentType = getMediaFile(sourceFileName, os);
@@ -175,13 +175,22 @@ public abstract class MediaRobot extends Robot {
     public void deleteMediaOnServer(String type, String filename)
             throws Throwable {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
-        String itemId = findMediaOnServer(type, filename);
+        String itemId = findMediaIdOnServer(type, filename);
         sapiHandler.login(null);
         sapiHandler.deleteItem(itemId, getRemoteUri(type), getDataTag(type));
         sapiHandler.logout();
     }
 
-    private String findMediaOnServer(String type, String filename)
+    private String findMediaIdOnServer(String type, String filename)
+            throws Throwable {
+        JSONObject item = findMediaJSONObjectOnServer(type, filename);
+        if(item != null) {
+            return item.getString("id");
+        }
+        return null;
+    }
+
+    private JSONObject findMediaJSONObjectOnServer(String type, String filename)
             throws Throwable {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
         sapiHandler.login(null);
@@ -194,8 +203,7 @@ public abstract class MediaRobot extends Robot {
                 JSONObject item = items.getJSONObject(i);
                 String aFilename = item.getString("name");
                 if (filename.equals(aFilename)) {
-                    String id = item.getString("id");
-                    return id;
+                    return item;
                 }
             }
         } finally {
@@ -414,11 +422,37 @@ public abstract class MediaRobot extends Robot {
         String type = BasicUserCommands.SOURCE_NAME_FILES;
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
 
-        String itemId = findMediaOnServer(type, oldFileName);
+        String itemId = findMediaIdOnServer(type, oldFileName);
 
         sapiHandler.login(null);
         sapiHandler.updateItemName(getRemoteUri(type), itemId, newFileName);
         sapiHandler.logout();
     }
+    
+    /**
+     * Checks the integrity of a file content on both client and server
+     * @param filename
+     * @throws Throwable
+     */
+    public void checkFileContentIntegrity(String filename) throws Throwable {
+        
+        String type = BasicUserCommands.SOURCE_NAME_FILES;
+
+        JSONObject localItem = findMediaJSONObject(filename);
+        JSONObject serverItem = findMediaJSONObjectOnServer(type, filename);
+
+        assertTrue(localItem.getString("name"), serverItem.getString("name"),
+                "Item name mismatch");
+        assertTrue(localItem.getLong("size"), serverItem.getLong("size"),
+                "Item size mismatch");
+    }
+
+    /**
+     * Retrieves a JSONObject which describes the media item, given the file name
+     * @param filename
+     * @return
+     * @throws Exception
+     */
+    protected abstract JSONObject findMediaJSONObject(String filename) throws Exception;
 
 }
