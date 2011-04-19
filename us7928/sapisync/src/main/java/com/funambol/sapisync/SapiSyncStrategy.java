@@ -70,6 +70,8 @@ public class SapiSyncStrategy {
 
     private Hashtable localUpdated;
     private Hashtable localDeleted;
+    private Hashtable localRenamed;
+
     private SapiSyncHandler sapiSyncHandler;
     private JSONObject removedItemMarker;
     private long downloadNextAnchor;
@@ -124,6 +126,7 @@ public class SapiSyncStrategy {
         } else {
             localUpdated = null;
             localDeleted = null;
+            localRenamed = null;
         }
 
         // Resolve conflicts
@@ -225,11 +228,18 @@ public class SapiSyncStrategy {
     {
         localUpdated = new Hashtable();
         localDeleted = new Hashtable();
+        localRenamed = new Hashtable();
 
-        SyncItem localUpdatedItem = src.getNextUpdatedItem();
+        JSONSyncItem localUpdatedItem = (JSONSyncItem)src.getNextUpdatedItem();
         while(localUpdatedItem != null) {
+
+            if (localUpdatedItem.isItemKeyUpdated() && localUpdatedItem.getOldKey() != null) {
+                localRenamed.put(localUpdatedItem.getOldKey(), localUpdatedItem);
+            }
+
             localUpdated.put(localUpdatedItem.getKey(), localUpdatedItem);
-            localUpdatedItem = src.getNextUpdatedItem();
+            localUpdatedItem = (JSONSyncItem)src.getNextUpdatedItem();
+
         }
 
         SyncItem localDeletedItem = src.getNextDeletedItem();
@@ -369,7 +379,7 @@ public class SapiSyncStrategy {
         }
         if (deletedArray != null) {
             handleServerDeleteConflicts(src, deletedArray, localUpdated,
-                    localDeleted, mapping);
+                    localDeleted, localRenamed, mapping);
         }
     }
 
@@ -506,7 +516,7 @@ public class SapiSyncStrategy {
 
     private void handleServerDeleteConflicts(SyncSource src, JSONArray serverDeletes,
                                              Hashtable localMods, Hashtable localDel,
-                                             MappingTable mapping)
+                                             Hashtable localRenamed, MappingTable mapping)
     throws JSONException
     {
         for(int i=0;i<serverDeletes.length();++i) {
@@ -522,6 +532,11 @@ public class SapiSyncStrategy {
                 } else if (localDel != null && localDel.get(luid) != null) {
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Found a server delete local delete conflict, ignore server delete");
+                    }
+                    serverDeletes.put(i, "");
+                } else if (localRenamed != null && localRenamed.get(luid) != null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Found a server delete local rename conflict, ignore server delete");
                     }
                     serverDeletes.put(i, "");
                 }
@@ -565,6 +580,14 @@ public class SapiSyncStrategy {
                             if (Log.isLoggable(Log.INFO)) {
                                 Log.info(TAG_LOG, "Conflict detected, item sent by the server has been deleted "
                                                   + "on client. Receiving again " + luid);
+                            }
+                            if (item.has("nocontent")) {
+                                // Since the item was locally removed, we shall
+                                // remove the nocontent property and download
+                                // the content once again (we must also ignore
+                                // renaming as this is just like a new add)
+                                item.remove("nocontent");
+                                item.remove("oldkey");
                             }
                         } else if (luid != null && localMods != null && localMods.get(luid) != null) {
                             if (Log.isLoggable(Log.INFO)) {
