@@ -221,6 +221,7 @@ public class BasicScriptRunner extends CommandRunner {
 
             boolean ignoreCurrentScript = false;
             boolean ignoreCurrentBranch = false;
+            boolean ignoreFinalization  = false;
 
             while (parser.getEventType() != parser.END_DOCUMENT) {
 
@@ -298,8 +299,14 @@ public class BasicScriptRunner extends CommandRunner {
                     } else if (tagName.equals(currentCommand)) {
                         try {
                             Log.trace(TAG_LOG, "Executing accumulated command: " + currentCommand + "," + ignoreCurrentScript + "," + ignoreCurrentBranch);
-                            if ((!ignoreCurrentScript && !ignoreCurrentBranch) || "EndTest".equals(currentCommand)) {
+                            if ((!ignoreCurrentScript && !ignoreCurrentBranch) || ("EndTest".equals(currentCommand) && !ignoreFinalization)) {
                                 runCommand(currentCommand, args);
+                                // If we succesfully execute at least one
+                                // statement of the script, then we shall
+                                // execute its finalization at the end
+                                if ("BeginTest".equals(currentCommand)) {
+                                    ignoreFinalization = false;
+                                }
                             }
                         } catch (IgnoreScriptException ise) {
                             // This script must be ignored
@@ -309,6 +316,7 @@ public class BasicScriptRunner extends CommandRunner {
                             status.setStatus(TestStatus.SKIPPED);
                             testResults.addElement(status);
                             testKeys.put(scriptUrl, status);
+                            ignoreFinalization = true;
                         } catch (Throwable t) {
 
                             Log.error(TAG_LOG, "Error running command", t);
