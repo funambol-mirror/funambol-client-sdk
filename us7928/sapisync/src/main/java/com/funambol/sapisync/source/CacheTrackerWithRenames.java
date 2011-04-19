@@ -57,12 +57,17 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
 
     private StringKeyValueStore renamesStore;
 
-    public CacheTrackerWithRenames(String sourceName, StringKeyValueStore keyStore) {
-        super(keyStore);
+    public CacheTrackerWithRenames(String sourceName, StringKeyValueStore statusStore) {
+        super(statusStore);
         StringKeyValueStoreFactory storeFactory =
                 StringKeyValueStoreFactory.getInstance();
         this.renamesStore = storeFactory.getStringKeyValueStore(
                 "renames_" + sourceName);
+    }
+
+    public CacheTrackerWithRenames(StringKeyValueStore renamesStore, StringKeyValueStore statusStore) {
+        super(statusStore);
+        this.renamesStore = renamesStore;
     }
 
     /**
