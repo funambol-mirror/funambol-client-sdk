@@ -218,12 +218,19 @@ public class FileSyncSource extends BasicMediaSyncSource implements
             // Set the item old key to handle renames
             if(getTracker() instanceof CacheTrackerWithRenames) {
                 CacheTrackerWithRenames tracker = (CacheTrackerWithRenames)getTracker();
-                String oldKey = tracker.getRenamedFileName(item.getKey());
-                if(Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Setting item old key: " + oldKey);
+                if(tracker.isRenamedItem(item.getKey())) {
+                    String oldKey = tracker.getRenamedFileName(item.getKey());
+                    if(Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Setting item old key: " + oldKey);
+                    }
+                    syncItem.setOldKey(oldKey);
+                    if(oldKey != null) {
+                        syncItem.setItemKeyUpdated(true);
+                    }
+                } else {
+                    syncItem.setOldKey(null);
+                    syncItem.setItemKeyUpdated(false);
                 }
-                syncItem.setOldKey(oldKey);
-                syncItem.setItemKeyUpdated(true);
             }
 
             // Check if the sync item content has been updated. 
