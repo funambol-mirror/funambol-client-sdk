@@ -51,6 +51,7 @@ import com.funambol.sync.SyncReport;
 import com.funambol.sync.SyncSource;
 import com.funambol.syncml.spds.SyncStatus;
 import com.funambol.util.Log;
+import com.funambol.util.StringUtil;
 
 
 public abstract class BasicRobot extends Robot {
@@ -293,9 +294,37 @@ public abstract class BasicRobot extends Robot {
     
 
     public void syncAll() {
-       Log.debug("simulating Sync All button pressed");
+       Log.debug(TAG_LOG, "simulating Sync All button pressed");
        getController().getHomeScreenController().syncAllPressed();        
     }
+
+    public void saveSourceConfig(String sourceName) throws Exception {
+        getAppSyncSource(sourceName).getConfig().save();
+    }
+
+    public AppSyncSource getAppSyncSource(String sourceName) throws Exception {
+        AppSyncSource source = null;
+        if(StringUtil.equalsIgnoreCase(BasicUserCommands.SOURCE_NAME_CONTACTS,sourceName)) {
+            source = getAppSyncSourceManager().getSource(AppSyncSourceManager.CONTACTS_ID);
+        } else if(StringUtil.equalsIgnoreCase(BasicUserCommands.SOURCE_NAME_CALENDAR,sourceName)) {
+            source = getAppSyncSourceManager().getSource(AppSyncSourceManager.EVENTS_ID);
+        } else if(StringUtil.equalsIgnoreCase(BasicUserCommands.SOURCE_NAME_PICTURES,sourceName)) {
+            source = getAppSyncSourceManager().getSource(AppSyncSourceManager.PICTURES_ID);
+        } else if(StringUtil.equalsIgnoreCase(BasicUserCommands.SOURCE_NAME_VIDEOS,sourceName)) {
+            source = getAppSyncSourceManager().getSource(AppSyncSourceManager.VIDEOS_ID);
+        } else if(StringUtil.equalsIgnoreCase(BasicUserCommands.SOURCE_NAME_FILES,sourceName)) {
+            source = getAppSyncSourceManager().getSource(AppSyncSourceManager.FILES_ID);
+        } else {
+            Log.error(TAG_LOG, "Unknown source: " + sourceName);
+            throw new IllegalArgumentException("Unknown source: " + sourceName);
+        }
+        return source;
+    }
+
+    public SyncSource getSyncSource(String sourceName) throws Exception {
+        return getAppSyncSource(sourceName).getSyncSource();
+    }
+
 
     protected abstract void startMainApp() throws Throwable;
     protected abstract void closeMainApp() throws Throwable;
@@ -304,9 +333,6 @@ public abstract class BasicRobot extends Robot {
 
     public abstract void keyPress(String keyName, int count) throws Throwable;
     public abstract void writeString(String text) throws Throwable;
-
-    public abstract SyncSource getSyncSource(String sourceName) throws Exception;
-    public abstract void saveSourceConfig(String sourceName) throws Exception;
 
     protected abstract Configuration getConfiguration();
     protected abstract Controller getController();
