@@ -75,9 +75,16 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
      */
     public void fileRenamed(String oldFileName, String newFileName) {
         if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "fileRenamed");
+            Log.trace(TAG_LOG, "fileRenamed. oldFileName=" + oldFileName +
+                    " newFileName=" + newFileName);
         }
         try {
+            // If the renamed file was never synchronized we can ignore it
+            if(!status.contains(oldFileName)) {
+                Log.debug(TAG_LOG, "Ignoring renamed file: " + oldFileName +
+                        " becouse it was never synchronized");
+                return;
+            }
             // The new file name is the key
             // If the renames store already contains this file as renamed we
             // update the new file name
@@ -111,11 +118,11 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
             }
         }
         // Start detecting renames
+        if(Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "Checking renames");
+        }
         Enumeration keys = renamesStore.keys();
         while(keys.hasMoreElements()) {
-            if(Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Checking renames");
-            }
             String newFileName = (String)keys.nextElement();
             String oldFileName = (String)renamesStore.get(newFileName);
             if(newItems.get(newFileName) != null && deletedItems.get(oldFileName) != null) {
