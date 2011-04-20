@@ -800,7 +800,6 @@ public class SapiSyncHandler {
     private class SapiUploadSyncListener implements SapiHandler.SapiQueryListener {
 
         private SyncListener syncListener = null;
-        private String itemKey = null;
         private SyncItem item = null;
 
         public SapiUploadSyncListener(SyncItem item, SyncListener syncListener) {
@@ -808,15 +807,7 @@ public class SapiSyncHandler {
             this.item = item;
         }
 
-        public void queryStarted(int totalSize) {
-            if(syncListener != null) {
-                if (item.getState() == SyncItem.STATE_NEW) {
-                    syncListener.itemAddSendingStarted(item.getKey(), item.getParent(), totalSize);
-                } else if (item.getState() == SyncItem.STATE_UPDATED) {
-                    syncListener.itemReplaceSendingStarted(item.getKey(), item.getParent(), totalSize);
-                }
-
-            }
+        public void queryStarted(int totalSize) {      
         }
 
         public void queryProgress(int size) {
@@ -830,15 +821,6 @@ public class SapiSyncHandler {
         }
 
         public void queryEnded() {
-            if(syncListener != null) {
-                if (item.getState() == SyncItem.STATE_NEW) {
-                    syncListener.itemAddSendingEnded(item.getKey(), item.getParent());
-                } else if (item.getState() == SyncItem.STATE_UPDATED) {
-                    syncListener.itemReplaceSendingEnded(item.getKey(), item.getParent());
-                } else {
-                    syncListener.itemDeleteSent(item);
-                }
-            }
         }
     }
 

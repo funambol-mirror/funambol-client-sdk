@@ -43,8 +43,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+
 import javax.microedition.rms.RecordStore;
 
 import com.funambol.util.Log;

@@ -325,26 +325,36 @@ public class FileSyncSource extends BasicMediaSyncSource implements
         if(Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "addUpdateItem");
         }
-
         JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
         try {
-
             String fullName = getFileFullName(jsonSyncItem.getContentName());
-
+            item.setKey(fullName);
+            if(Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "key set to:" + fullName);
+            }
             if (update) {
+                if (jsonSyncItem.isItemKeyUpdated()) {
+                    // Update the tracker of the renamed item
+                    // Must be done before renaming the file since the rename
+                    // event will be notified to the tracker itself
+                    getTracker().removeItem(new SyncItem(jsonSyncItem.getOldKey(),
+                            null, SyncItem.STATE_DELETED, null));
+                    getTracker().removeItem(new SyncItem(jsonSyncItem.getKey(),
+                            null, SyncItem.STATE_NEW, null));
+                }
                 if (jsonSyncItem.isItemContentUpdated()) {
                     // The new content has been downloaded into a temporary file
                     String sourceFileName = createTempFileName(jsonSyncItem.getContentName());
                     renameTempFile(sourceFileName, fullName);
                     if (jsonSyncItem.isItemKeyUpdated()) {
                         // We shall remove the old file
-                        String oldFileName = getFileFullName(jsonSyncItem.getOldKey());
+                        String oldFileName = jsonSyncItem.getOldKey();
                         FileAdapter fa = new FileAdapter(oldFileName);
                         fa.delete();
                     }
                 } else if (jsonSyncItem.isItemKeyUpdated()) {
                     // This is just a rename
-                    String sourceFileName = getFileFullName(jsonSyncItem.getOldKey());
+                    String sourceFileName = jsonSyncItem.getOldKey();
                     renameTempFile(sourceFileName, fullName);
                 }
             } else {
@@ -353,11 +363,6 @@ public class FileSyncSource extends BasicMediaSyncSource implements
                 renameTempFile(sourceFileName, fullName);
             }
 
-            // Set the item key
-            item.setKey(fullName);
-            if(Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "key set to:" + fullName);
-            }
             if (update) {
                 super.updateItem(item);
             } else {
@@ -369,8 +374,6 @@ public class FileSyncSource extends BasicMediaSyncSource implements
             throw new SyncException(SyncException.CLIENT_ERROR, "Cannot rename temporary file");
         }
     }
-
-
 
     protected void renameTempFile(String tempFileName, String fullName) throws IOException {
         // Move the file from the temporary directory to the final one

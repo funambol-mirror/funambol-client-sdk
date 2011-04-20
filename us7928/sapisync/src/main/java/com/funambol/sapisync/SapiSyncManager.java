@@ -531,6 +531,14 @@ public class SapiSyncManager implements SyncManagerI {
                             SyncSource.SUCCESS_STATUS));
                         continue;
                     }
+
+                    // Notify the listener
+                    if (item.getState() == SyncItem.STATE_NEW) {
+                        getSyncListenerFromSource(src).itemAddSendingStarted(item.getKey(), null, 0);
+                    } else if (item.getState() == SyncItem.STATE_UPDATED) {
+                        getSyncListenerFromSource(src).itemReplaceSendingStarted(item.getKey(), null, 0);
+                    }
+
                     // If the item was already sent in a previously interrupted
                     // sync, then we do not send it again
                     boolean uploadDone = false;
@@ -542,15 +550,6 @@ public class SapiSyncManager implements SyncManagerI {
                             uploadDone = true;
                             if (Log.isLoggable(Log.INFO)) {
                                 Log.info(TAG_LOG, "Skipping upload for " + item.getKey() + " which has been previously uploaded");
-                            }
-                            // Notify the listener that this upload has already
-                            // been done
-                            if (item.getState() == SyncItem.STATE_NEW) {
-                                getSyncListenerFromSource(src).itemAddSendingStarted(item.getKey(), null, 0);
-                                getSyncListenerFromSource(src).itemAddSendingEnded(item.getKey(), null);
-                            } else if (item.getState() == SyncItem.STATE_UPDATED) {
-                                getSyncListenerFromSource(src).itemReplaceSendingStarted(item.getKey(), null, 0);
-                                getSyncListenerFromSource(src).itemReplaceSendingEnded(item.getKey(), null);
                             }
                         } else if (itemStatus == SyncSource.INTERRUPTED_STATUS) {
                             if (Log.isLoggable(Log.INFO)) {
@@ -658,6 +657,12 @@ public class SapiSyncManager implements SyncManagerI {
                     sourceStatus.addElement(new ItemStatus(item.getKey(),
                             SyncSource.ERROR_STATUS));
                 } finally {
+                    // Notify the listener
+                    if (item.getState() == SyncItem.STATE_NEW) {
+                        getSyncListenerFromSource(src).itemAddSendingEnded(item.getKey(), null);
+                    } else if (item.getState() == SyncItem.STATE_UPDATED) {
+                        getSyncListenerFromSource(src).itemReplaceSendingEnded(item.getKey(), null);
+                    }
                     uploadedCount++;
                     item = getNextItemToUpload(src, incremental);
                     cancelSyncIfNeeded(src);
@@ -847,6 +852,13 @@ public class SapiSyncManager implements SyncManagerI {
             JSONSyncItem syncItem = (JSONSyncItem)utils.createSyncItem(src, luid, state, size, item, serverUrl);
             syncItem.setGuid(guid);
 
+            // Notify the listener
+            if (syncItem.getState() == SyncItem.STATE_NEW) {
+                getSyncListenerFromSource(src).itemAddReceivingStarted(syncItem.getKey(), syncItem.getParent(), size);
+            } else if (syncItem.getState() == SyncItem.STATE_UPDATED) {
+                getSyncListenerFromSource(src).itemReplaceReceivingStarted(syncItem.getKey(), syncItem.getParent(), size);
+            }
+
             // Check if this item just got renamed remotely
             boolean downloadContent = !item.has("nocontent");
 
@@ -891,13 +903,6 @@ public class SapiSyncManager implements SyncManagerI {
                     }
                     continue;
                 }
-            }
-
-            // Notify the listener
-            if (state == SyncItem.STATE_NEW) {
-                getSyncListenerFromSource(src).itemAddReceivingEnded(luid, null);
-            } else if(state == SyncItem.STATE_UPDATED) {
-                getSyncListenerFromSource(src).itemReplaceReceivingEnded(luid, null);
             }
 
             if (downloadContent) {
@@ -949,6 +954,12 @@ public class SapiSyncManager implements SyncManagerI {
                     }
                     mapping.update(syncItem.getGuid(), syncItem.getKey(), "" + syncItem.getContentSize(), syncItem.getContentName());
                 }
+            }
+            // Notify the listener
+            if (syncItem.getState() == SyncItem.STATE_NEW) {
+                getSyncListenerFromSource(src).itemAddReceivingEnded(syncItem.getKey(), syncItem.getParent());
+            } else if (syncItem.getState() == SyncItem.STATE_UPDATED) {
+                getSyncListenerFromSource(src).itemReplaceReceivingEnded(syncItem.getKey(), syncItem.getParent());
             }
         }
 
@@ -1034,17 +1045,7 @@ public class SapiSyncManager implements SyncManagerI {
             OutputStream os = null;
             try {
                 os = item.getOutputStream();
-                if (item.getState() == SyncItem.STATE_NEW) {
-                    getSyncListenerFromSource(src).itemAddReceivingStarted(item.getKey(), item.getParent(), item.getObjectSize());
-                } else if (item.getState() == SyncItem.STATE_UPDATED) {
-                    getSyncListenerFromSource(src).itemReplaceReceivingStarted(item.getKey(), item.getParent(), item.getObjectSize());
-                }
                 os.write(item.getContent());
-                if (item.getState() == SyncItem.STATE_NEW) {
-                    getSyncListenerFromSource(src).itemAddReceivingEnded(item.getKey(), item.getParent());
-                } else if (item.getState() == SyncItem.STATE_UPDATED) {
-                    getSyncListenerFromSource(src).itemReplaceReceivingEnded(item.getKey(), item.getParent());
-                }
             } finally {
                 if (os != null) {
                     try {
@@ -1350,13 +1351,6 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         public void downloadStarted(long totalSize) {
-            if(syncListener != null) {
-                if(itemState == SyncItem.STATE_NEW) {
-                    syncListener.itemAddReceivingStarted(itemKey, itemParent, totalSize);
-                } else {
-                    syncListener.itemReplaceReceivingStarted(itemKey, itemParent, totalSize);
-                }
-            }
         }
 
         public void downloadProgress(long size) {
@@ -1370,13 +1364,6 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         public void downloadEnded() {
-            if(syncListener != null) {
-                if(itemState == SyncItem.STATE_NEW) {
-                    syncListener.itemAddReceivingEnded(itemKey, itemParent);
-                } else {
-                    syncListener.itemReplaceReceivingEnded(itemKey, itemParent);
-                }
-            }
         }
     }
 }

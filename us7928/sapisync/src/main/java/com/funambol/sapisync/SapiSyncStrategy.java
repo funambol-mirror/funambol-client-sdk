@@ -316,7 +316,7 @@ public class SapiSyncStrategy {
 
                         // Update the item's properties according to what
                         // changed in this update
-                        setUpdatedProperties(item, equal, mapping.getName(guid));
+                        setUpdatedProperties(item, equal, mapping.getLuid(guid));
                     }
                 }
             }
@@ -355,7 +355,7 @@ public class SapiSyncStrategy {
                     } else {
                         // Update the item's properties according to what
                         // changed in this update
-                        setUpdatedProperties(item, equal, mapping.getName(guid));
+                        setUpdatedProperties(item, equal, mapping.getLuid(guid));
                     }
                 }
             }
