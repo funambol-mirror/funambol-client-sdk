@@ -86,7 +86,9 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
                 renamesStore.remove(oldFileName);
                 oldFileName = savedOldFileName;
             }
-            renamesStore.add(newFileName, oldFileName);
+            if(!newFileName.equals(oldFileName)) {
+                renamesStore.add(newFileName, oldFileName);
+            }
             renamesStore.save();
         } catch(IOException ex) {
             Log.error(TAG_LOG, "Cannot track rename event: " + newFileName);

@@ -121,7 +121,7 @@ public class CacheTrackerWithRenamesTest extends TestCase {
         protected SyncItem getItemContent(SyncItem item) throws SyncException {
             return item;
         }
-}
+    }
 
     public void testRename() throws Throwable {
 
@@ -147,13 +147,128 @@ public class CacheTrackerWithRenamesTest extends TestCase {
 
         Enumeration updated = tracker.getUpdatedItems();
         assertEquals(updated.nextElement(), "new.txt");
-
-        
+ 
         tracker.setItemStatus("new.txt", SyncSource.SUCCESS_STATUS);
         tracker.end();
 
         assertEquals(statusStore.get("new.txt"), "fingerprint");
         assertTrue(!renamesStore.keys().hasMoreElements());
+    }
+
+    public void testRename_twice() throws Throwable {
+
+        ss.addItemKey("old.txt");
+        tracker.begin(SyncSource.FULL_UPLOAD, true);
+        tracker.setItemStatus("old.txt", SyncSource.SUCCESS_STATUS);
+        tracker.end();
+
+        tracker.fileRenamed("old.txt", "temp.txt");
+        assertEquals(renamesStore.get("temp.txt"), "old.txt");
+
+        tracker.fileRenamed("temp.txt", "new.txt");
+        assertEquals(renamesStore.get("new.txt"), "old.txt");
+
+        ss.resetItems();
+        ss.addItemKey("new.txt");
+
+        tracker.begin(SyncSource.INCREMENTAL_UPLOAD, true);
+
+        assertEquals(tracker.getNewItemsCount(), 0);
+        assertEquals(tracker.getDeletedItemsCount(), 0);
+        assertEquals(tracker.getUpdatedItemsCount(), 1);
+
+        assertTrue(tracker.isRenamedItem("new.txt"));
+        assertEquals(tracker.getRenamedFileName("new.txt"), "old.txt");
+
+        Enumeration updated = tracker.getUpdatedItems();
+        assertEquals(updated.nextElement(), "new.txt");
+
+        tracker.setItemStatus("new.txt", SyncSource.SUCCESS_STATUS);
+        tracker.end();
+
+        assertEquals(statusStore.get("new.txt"), "fingerprint");
+        assertTrue(!renamesStore.keys().hasMoreElements());
+    }
+
+    public void testRename_twice2() throws Throwable {
+
+        ss.addItemKey("old.txt");
+        tracker.begin(SyncSource.FULL_UPLOAD, true);
+        tracker.setItemStatus("old.txt", SyncSource.SUCCESS_STATUS);
+        tracker.end();
+
+        tracker.fileRenamed("old.txt", "temp.txt");
+        assertEquals(renamesStore.get("temp.txt"), "old.txt");
+
+        tracker.fileRenamed("temp.txt", "old.txt");
+        assertTrue(!renamesStore.keys().hasMoreElements());
+
+        ss.resetItems();
+        ss.addItemKey("old.txt");
+
+        tracker.begin(SyncSource.INCREMENTAL_UPLOAD, true);
+
+        assertEquals(tracker.getNewItemsCount(), 0);
+        assertEquals(tracker.getDeletedItemsCount(), 0);
+        assertEquals(tracker.getUpdatedItemsCount(), 0);
+
+        assertTrue(!tracker.isRenamedItem("old.txt"));
+
+        tracker.end();
+    }
+
+    public void testEmpty() throws Throwable {
+
+        ss.addItemKey("old.txt");
+        tracker.begin(SyncSource.FULL_UPLOAD, true);
+        tracker.setItemStatus("old.txt", SyncSource.SUCCESS_STATUS);
+        tracker.end();
+
+        tracker.fileRenamed("old.txt", "new.txt");
+
+        assertEquals(statusStore.get("old.txt"), "fingerprint");
+        assertEquals(renamesStore.get("new.txt"), "old.txt");
+        
+        tracker.empty();
+
+        assertTrue(!statusStore.keys().hasMoreElements());
+        assertTrue(!renamesStore.keys().hasMoreElements());
+
+        ss.resetItems();
+        
+        tracker.begin(SyncSource.INCREMENTAL_UPLOAD, true);
+
+        assertEquals(tracker.getNewItemsCount(), 0);
+        assertEquals(tracker.getDeletedItemsCount(), 0);
+        assertEquals(tracker.getUpdatedItemsCount(), 0);
+
+        tracker.end();
+    }
+
+    public void testReset() throws Throwable {
+
+        ss.addItemKey("old.txt");
+        tracker.begin(SyncSource.FULL_UPLOAD, true);
+        tracker.setItemStatus("old.txt", SyncSource.SUCCESS_STATUS);
+        tracker.end();
+
+        tracker.fileRenamed("old.txt", "new.txt");
+
+        assertEquals(statusStore.get("old.txt"), "fingerprint");
+        assertEquals(renamesStore.get("new.txt"), "old.txt");
+
+        tracker.reset();
+
+        assertEquals(statusStore.get("old.txt"), "fingerprint");
+        assertTrue(!renamesStore.keys().hasMoreElements());
+
+        tracker.begin(SyncSource.INCREMENTAL_UPLOAD, true);
+
+        assertEquals(tracker.getNewItemsCount(), 0);
+        assertEquals(tracker.getDeletedItemsCount(), 0);
+        assertEquals(tracker.getUpdatedItemsCount(), 0);
+
+        tracker.end();
     }
 
 }
