@@ -47,7 +47,14 @@ import com.funambol.platform.FileAdapter;
 import com.funambol.util.Log;
 
 /**
+ * This is an implementation of the key value store that stores items in a file.
+ * There is no real journaling mechanism, but as long as new items are just
+ * added we do not rewrite everything on save, but rather append the new items.
+ * One limitation of this implementation is that both keys and values cannot
+ * contain these sequences:
  *
+ * 1) line feeds
+ * 2) SEPARATOR (currently defined as =$^&amp;_~=)
  */
 public class StringKeyValueFileStore implements StringKeyValueStore {
 
@@ -58,7 +65,13 @@ public class StringKeyValueFileStore implements StringKeyValueStore {
     protected String    fileName;
 
     private static final int  LF = 10;
-    private static final char SEPARATOR = '=';
+    // This is the value used to separate keys from values. Neither of them is
+    // allowed to contain it.
+    private static final String SEPARATOR = "=$^&_~=";
+
+    // This is the old separator which was previously used. It is still
+    // defined/used to handle backward compatibility
+    private static final char OLD_SEPARATOR = '=';
 
     private boolean updated = false;
     private boolean appended = false;
@@ -152,9 +165,9 @@ public class StringKeyValueFileStore implements StringKeyValueStore {
                 while(keys.hasMoreElements()) {
                     String key = (String)keys.nextElement();
                     String value = this.get(key);
-                    os.write(key.getBytes());
-                    os.write((int)SEPARATOR);
-                    os.write(value.getBytes());
+                    os.write(key.getBytes("UTF-8"));
+                    os.write(SEPARATOR.getBytes("UTF-8"));
+                    os.write(value.getBytes("UTF-8"));
                     os.write((int)LF);
                 }
             } else {
@@ -164,9 +177,9 @@ public class StringKeyValueFileStore implements StringKeyValueStore {
                 while(keys.hasMoreElements()) {
                     String key = (String)keys.nextElement();
                     String value = this.get(key);
-                    os.write(key.getBytes());
-                    os.write((int)SEPARATOR);
-                    os.write(value.getBytes());
+                    os.write(key.getBytes("UTF-8"));
+                    os.write(SEPARATOR.getBytes("UTF-8"));
+                    os.write(value.getBytes("UTF-8"));
                     os.write((int)LF);
                 }
             }
@@ -207,8 +220,15 @@ public class StringKeyValueFileStore implements StringKeyValueStore {
                 if (b == (char)LF) {
                     // This is the end of a line
                     String line = currentLine.toString().trim();
-                    int pos = line.lastIndexOf(SEPARATOR);
+                    int pos = line.indexOf(SEPARATOR);
                     if (pos > 0) {
+                        String key = line.substring(0, pos);
+                        String value = line.substring(pos + SEPARATOR.length(), line.length());
+                        this.put(key, value);
+                    } else if (line.lastIndexOf(OLD_SEPARATOR) != -1) {
+                        // This is a version with the old separator. We load and
+                        // on writing we will migrate to the new one
+                        pos = line.lastIndexOf(OLD_SEPARATOR);
                         String key = line.substring(0, pos);
                         String value = line.substring(pos + 1, line.length());
                         this.put(key, value);
