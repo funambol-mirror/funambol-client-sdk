@@ -436,6 +436,7 @@ public class SapiSyncManager implements SyncManagerI {
         }
         localDeletes = strategy.getLocalDeletes();
         if (localDeletes != null) {
+            Vector itemStatuses = new Vector();
             localDeletesEnum = localDeletes.elements();
             // If the client reported deletes, then we can update the mapping
             // accordinlgly
@@ -446,7 +447,12 @@ public class SapiSyncManager implements SyncManagerI {
                     Log.debug(TAG_LOG, "Removing entry from mapping " + guid);
                 }
                 mapping.remove(guid);
+                // Also notify the source as this command was propagated with
+                // success so it won't provide it again
+                ItemStatus status = new ItemStatus(item.getKey(), SyncSource.SUCCESS_STATUS);
+                itemStatuses.addElement(status);
             }
+            src.applyItemsStatus(itemStatuses);
         }
     }
 
