@@ -47,7 +47,6 @@ import com.funambol.sync.SyncSource;
 import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sapisync.source.JSONSyncSource;
 import com.funambol.sapisync.source.JSONSyncItem;
-import com.funambol.storage.StringKeyValueStore;
 import com.funambol.sync.Filter;
 import com.funambol.sync.SyncFilter;
 import com.funambol.util.Log;
@@ -58,11 +57,6 @@ public class SapiSyncStrategy {
     private static final String TAG_LOG = "SapiSyncStrategy";
 
     private static final int FULL_SYNC_DOWNLOAD_LIMIT = 300;
-
-    private static final int IDENTICAL_ITEMS   = 0;
-    private static final int IDENTICAL_CONTENT = 1;
-    private static final int IDENTICAL_META    = 2;
-    private static final int DIFFERENT_ITEMS   = 3;
 
     private JSONArray addedArray   = null;
     private JSONArray updatedArray = null;
