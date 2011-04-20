@@ -79,12 +79,6 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
                     " newFileName=" + newFileName);
         }
         try {
-            // If the renamed file was never synchronized we can ignore it
-            if(!status.contains(oldFileName)) {
-                Log.debug(TAG_LOG, "Ignoring renamed file: " + oldFileName +
-                        " becouse it was never synchronized");
-                return;
-            }
             // The new file name is the key
             // If the renames store already contains this file as renamed we
             // update the new file name
@@ -92,6 +86,12 @@ public class CacheTrackerWithRenames extends CacheTracker implements FileRenameL
                 String savedOldFileName = renamesStore.get(oldFileName);
                 renamesStore.remove(oldFileName);
                 oldFileName = savedOldFileName;
+            }
+            // If the renamed file was never synchronized we can ignore it
+            if(!status.contains(oldFileName)) {
+                Log.debug(TAG_LOG, "Ignoring renamed file: " + oldFileName +
+                        " becouse it was never synchronized");
+                return;
             }
             if(!newFileName.equals(oldFileName)) {
                 renamesStore.add(newFileName, oldFileName);
