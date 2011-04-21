@@ -36,6 +36,7 @@ package com.funambol.platform;
 
 import java.util.TimeZone;
 
+import net.rim.device.api.i18n.Locale;
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.blackberry.api.mail.Session;
@@ -45,7 +46,6 @@ import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.ControlledAccessException;
 
 import com.funambol.util.Log;
-import net.rim.device.api.i18n.Locale;
 
 public class DeviceInfo implements DeviceInfoInterface {
 
@@ -75,10 +75,12 @@ public class DeviceInfo implements DeviceInfoInterface {
      * Funambol identification of the client build.
      */
     public String getFunambolPlatform() {
-        if (checkOS(4, 7, 0)) {
+        if (checkOS(6, 0, 0)) {
+            return "bbpim_os60";
+        } else if (checkOS(4, 7, 0)) {
             return "bbpim_os47";
         } else {
-            return "bbpim";
+            return "bbpim_os45";
         }
     }
 
