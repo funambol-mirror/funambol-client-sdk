@@ -41,7 +41,8 @@ import com.funambol.sync.client.ChangesTracker;
 
 /**
  * Basic sync source for all media types (pictures, files, videos etc).
- * It's abstract and 
+ * It's abstract and all method / fields common to Android/Blackberry media
+ * implementation should be put here to avoid code duplication  
  */
 public abstract class BasicMediaSyncSource extends JSONSyncSource {
 
@@ -73,11 +74,13 @@ public abstract class BasicMediaSyncSource extends JSONSyncSource {
 
     /**
      * Analyzes the item and searches if it must be filtered out
-     * (i.e. size too big, content not supported etc) 
+     * (i.e. size too big, content not supported etc)
+     * 
+     * Used by {@link FileSyncSource} and by {@link MediaSyncSource}
      * 
      * @return true if the item must be filtered out, otherwise false
      */
-    protected boolean isItemFilteredOut(long itemSize, long lastModifiedTimestamp) {
+    protected boolean isOutsideSizeOrDateRange(long itemSize, long lastModifiedTimestamp) {
         if ((maxItemSize != NO_LIMIT_ON_ITEM_SIZE) &&
                 (itemSize > maxItemSize)) {
             return true;
@@ -85,7 +88,7 @@ public abstract class BasicMediaSyncSource extends JSONSyncSource {
 
         // In the first sync we do not filter by timestamp because in the first
         // sync we send a fixed number of items
-        if (syncMode == SyncSource.FULL_SYNC || syncMode == SyncSource.FULL_UPLOAD) {
+        if (syncMode != SyncSource.FULL_SYNC && syncMode != SyncSource.FULL_UPLOAD) {
             if ((getOldestItemTimestamp() != NO_LIMIT_ON_ITEM_AGE) &&
                     (lastModifiedTimestamp < getOldestItemTimestamp())) {
                 return true;
@@ -102,6 +105,8 @@ public abstract class BasicMediaSyncSource extends JSONSyncSource {
     }
 
     /**
+     * Generally called when a source configuration changes
+     * 
      * @param value the oldestItemTimestamp to set
      */
     public void setOldestItemTimestamp(long value) {

@@ -44,15 +44,11 @@ import java.util.Enumeration;
 
 import com.funambol.platform.FileAdapter;
 import com.funambol.storage.StringKeyValueStore;
-import com.funambol.storage.StringKeyValueFileStore;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncItem;
-import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
 import com.funambol.util.ConsoleAppender;
-import com.funambol.util.Base64;
 import com.funambol.util.Log;
-import com.funambol.util.StringUtil;
 
 import junit.framework.*;
 
@@ -141,6 +137,10 @@ public class RawFileSyncSourceTest extends TestCase {
 
         public boolean hasChangedSinceLastSync(String key, long ts) {
             return true;
+        }
+
+        public boolean filterItem(String key) {
+            return false;
         }
     }
 

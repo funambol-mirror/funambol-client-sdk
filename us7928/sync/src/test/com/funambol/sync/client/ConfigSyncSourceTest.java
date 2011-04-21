@@ -36,19 +36,15 @@
 package com.funambol.sync.client;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.InputStream;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
-import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
 
 import com.funambol.storage.StringKeyValueStore;
-import com.funambol.storage.StringKeyValueFileStore;
 import com.funambol.storage.StringKeyValuePair;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Log;
@@ -57,11 +53,7 @@ import junit.framework.*;
 
 public class ConfigSyncSourceTest extends TestCase {
 
-    private StringKeyValueStore store;
-    private ConfigSyncSource      source;
-    private TestTracker         tracker;
-    private String              directory;
-    private SourceConfig        config;
+    private ConfigSyncSource source;
 
     private class TestStore implements StringKeyValueStore {
 
@@ -210,6 +202,10 @@ public class ConfigSyncSourceTest extends TestCase {
         public boolean hasChangedSinceLastSync(String key, long ts) {
             return true;
         }
+
+        public boolean filterItem(String key) {
+            return false;
+        }
     }
 
     public ConfigSyncSourceTest(String name) {
@@ -217,8 +213,6 @@ public class ConfigSyncSourceTest extends TestCase {
 
         Log.initLog(new ConsoleAppender());
         Log.setLogLevel(Log.TRACE);
-
-        directory = "file:///root1";
     }
 
     public void setUp() {

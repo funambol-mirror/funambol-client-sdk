@@ -191,6 +191,19 @@ public interface ChangesTracker {
      * @return true if the item has changed since the last sync
      */
     public boolean hasChangedSinceLastSync(String key, long ts);
+    
+    
+    /**
+     * Checks if an item should be filtered out or not.
+     * Typical implementation will call the {@link TrackableSyncSource#filterOutgoingItem(String)}
+     * method, leaving to SyncSource all the filtering logic.
+     * Simply return false if tracker (and linked SyncSource) don't implement
+     * any filters.
+     * 
+     * @param key
+     * @return true if the item must be filtered out, otherwise false
+     */
+    public boolean filterItem(String key);
 
 }
 

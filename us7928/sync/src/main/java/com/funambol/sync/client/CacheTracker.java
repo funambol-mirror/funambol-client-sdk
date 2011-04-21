@@ -202,6 +202,12 @@ public class CacheTracker implements ChangesTracker {
                     deletedItems.put(oldKey, (String)status.get(oldKey));
                 }
             }
+            
+            //now apply filters to items
+            filterOutOutgoingItems(newItems);
+            filterOutOutgoingItems(updatedItems);
+            filterOutOutgoingItems(deletedItems);
+            
         } else if(syncMode == SyncSource.FULL_SYNC ||
                   syncMode == SyncSource.FULL_UPLOAD ||
                   syncMode == SyncSource.FULL_DOWNLOAD) {
@@ -446,6 +452,7 @@ public class CacheTracker implements ChangesTracker {
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "Fingerpint is: " + fp);
             }
+            
             // Store the fingerprint for this item
             snapshot.put(item.getKey(), fp);
         }
@@ -534,6 +541,45 @@ public class CacheTracker implements ChangesTracker {
     private int getItemsCount(Hashtable items) {
         return items != null ? items.size() : 0;
     }
+
+    /**
+     * Takes lists of items (generally, new, updated and deleted items) and
+     * remove the items that doen't match filter criteria
+     * 
+     *  @param itemsToFilterOut
+     */
+    private void filterOutOutgoingItems(Hashtable itemsToFilterOut) {
+        if (null == itemsToFilterOut || 0 == itemsToFilterOut.size()) return;
+        
+        Vector keysToRemove = new Vector(); 
+
+        //detects items to filter out
+        Enumeration keys = itemsToFilterOut.keys();
+        while (keys.hasMoreElements()) {
+            String key = (String)keys.nextElement();
+            boolean filteredOut = filterItem(key);
+            if (filteredOut) {
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "Item with key " + key + " was filtered out");
+                }
+                keysToRemove.add(key);
+            }
+        }
+        
+        //remote these items from the list
+        for (int i=0; i<keysToRemove.size(); i++) {
+            String keyToRemove = (String)keysToRemove.get(i);
+            itemsToFilterOut.remove(keyToRemove);
+        }
+    }
     
+    /**
+     * Delegates to SyncSource all the logic for detecting items
+     * to filter out
+     */
+    public boolean filterItem(String key) {
+        return ss.filterOutgoingItem(key);
+    }
+
 }
 

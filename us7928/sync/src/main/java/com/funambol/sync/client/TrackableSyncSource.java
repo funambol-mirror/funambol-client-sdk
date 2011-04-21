@@ -182,6 +182,7 @@ public abstract class TrackableSyncSource implements SyncSource {
     public void beginSync(int syncMode, boolean resume) throws SyncException {
 
         cancel = false;
+        this.syncMode = syncMode;
         
         if (tracker == null) {
             throw new SyncException(SyncException.CLIENT_ERROR, "Trackable source without tracker");
@@ -207,6 +208,7 @@ public abstract class TrackableSyncSource implements SyncSource {
             case FULL_UPLOAD:
                 // A refresh from client is like a slow here
                 allItems = getAllItemsKeys();
+                allItems = applyFiltersForOutgoingItems(allItems);
                 // We guarantee that the getAllItemsCount is invoked after the
                 // getAllItemsKeys
                 clientItemsNumber = getAllItemsCount();
@@ -265,6 +267,27 @@ public abstract class TrackableSyncSource implements SyncSource {
                                         "SyncSource "+getName()+
                                         ": invalid sync mode "+getSyncMode());
         }
+    }
+
+    private Enumeration applyFiltersForOutgoingItems(Enumeration allItems) {
+        if (null == allItems || !allItems.hasMoreElements()) return allItems;
+
+        Vector goodItems = new Vector();
+        
+        //removed items
+        while (allItems.hasMoreElements()) {
+            String key = (String)allItems.nextElement();
+            boolean filteredOut = filterOutgoingItem(key);
+            if (!filteredOut) {
+                goodItems.add(key);
+            } else {
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "Item with key " + key + " was filtered out");
+                }
+            }
+        }
+        
+        return goodItems.elements();
     }
 
     public void endSync() throws SyncException {
@@ -621,6 +644,38 @@ public abstract class TrackableSyncSource implements SyncSource {
         }
         cancel = true;
     }
+    
+    /**
+     * Checks if the item received from server must be filtered out
+     * or not
+     * (for example, content type not supported, size too big etc)
+     * 
+     * TODO: move this method to new manipulator object
+     * 
+     * @param key
+     * @return true is the item must be discarded, otherwise false
+     */
+    public boolean filterIncomingItem(String key) {
+        //default implementation, item is always accepted
+        return false;
+    }
+    
+    /**
+     * Checks if the item that should be sent to server must be filtered out
+     * or not.
+     * (for example, size too big, item too old etc)
+     * 
+     * TODO: move this method to new manipulator object
+     * 
+     * @param key
+     * @return true if the item must be discarded, otherwise false
+     */
+    public boolean filterOutgoingItem(String key) {
+        //default implementation, item is always sent
+        return false;
+    }
+    
+    
     
     /**
      * This method return the number of items returned by the getAllItemsKeys.

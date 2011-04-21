@@ -165,11 +165,9 @@ public class FileSyncSource extends BasicMediaSyncSource implements
 
             while(files.hasMoreElements()) {
                 String file = (String)files.nextElement();
-                if (!isFileFilteredOut(file)) {
-                    String fullName = getFileFullName(file);
-                    keys.addElement(fullName);
-                    totalItemsCount++;
-                }
+                String fullName = getFileFullName(file);
+                keys.addElement(fullName);
+                totalItemsCount++;
             }
             return keys.elements();
         } catch (Exception e) {
@@ -492,10 +490,10 @@ public class FileSyncSource extends BasicMediaSyncSource implements
             if (file.isHidden()) {
                 reason = "it is hidden";
             } else {
-                // Filter files according to standard media sync criteria
-                if (isItemFilteredOut(file.getSize(), file.lastModified())) {
-                    reason = "it is too large or too old";
-                }
+//                // Filter files according to standard media sync criteria
+//                if (isItemFilteredOut(file.getSize(), file.lastModified())) {
+//                    reason = "it is too large or too old";
+//                }
             }
         } catch(IOException ex) {
             Log.error(TAG_LOG, "Cannot check file: " + name, ex);
@@ -593,6 +591,64 @@ public class FileSyncSource extends BasicMediaSyncSource implements
 
         String localFullName = getFileFullName(fileName);
         return localFullName;
+    }
+    
+    /**
+     * Checks if file must be filtered out
+     * 
+     * @param key full path of the file to check
+     */
+    public boolean filterOutgoingItem(String key) {
+        boolean filterOutItem = super.filterOutgoingItem(key);
+        if (filterOutItem) return filterOutItem;
+        
+        // As long as there's no reason to filter out this file, variable reason
+        // will remain null:
+        String reason = null; // if it gets a value, the item is not OK
+        FileAdapter file = null;
+        try {
+            // Filter hidden files
+            file = new FileAdapter(key);
+            if (file.isHidden()) {
+                reason = "it is hidden";
+            } else {
+                // Filter files according to standard media sync criteria
+                if (isOutsideSizeOrDateRange(file.getSize(), file.lastModified())) {
+                    reason = "it is too large or too old";
+                }
+            }
+        } catch(IOException ex) {
+            Log.error(TAG_LOG, "Cannot check file: " + key, ex);
+        } finally {
+            if(file != null) {
+                try {
+                    file.close();
+                } catch(Exception ex) { }
+            }
+        }
+        // Filter by extension
+        if (reason == null && extensions != null && extensions.length > 0) {
+            reason = "its extension is not accepted";
+            key = key.toLowerCase();
+            boolean matchExtension = false;
+            for(int i=0;i<extensions.length;++i) {
+                String ext = extensions[i].toLowerCase();
+                matchExtension = key.endsWith(ext);
+                if(matchExtension) {
+                    reason = null;
+                    break;
+                }
+            }
+        }
+        if (reason != null) {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Filtering file " + key + " because " +
+                        reason);
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
