@@ -351,7 +351,7 @@ public class SapiSyncHandler {
         }
         try {
             Vector params = new Vector();
-            params.add("lastupdate=true");
+            params.addElement("lastupdate=true");
 
             JSONObject data = new JSONObject();
             data.put(SapiSyncManager.ID_FIELD, itemId);
