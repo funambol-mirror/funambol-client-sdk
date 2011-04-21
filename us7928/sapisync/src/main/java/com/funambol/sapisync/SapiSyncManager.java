@@ -534,9 +534,9 @@ public class SapiSyncManager implements SyncManagerI {
 
                     // Notify the listener
                     if (item.getState() == SyncItem.STATE_NEW) {
-                        getSyncListenerFromSource(src).itemAddSendingStarted(item.getKey(), null, 0);
+                        getSyncListenerFromSource(src).itemAddSendingStarted(item.getKey(), null, item.getContentSize());
                     } else if (item.getState() == SyncItem.STATE_UPDATED) {
-                        getSyncListenerFromSource(src).itemReplaceSendingStarted(item.getKey(), null, 0);
+                        getSyncListenerFromSource(src).itemReplaceSendingStarted(item.getKey(), null, item.getContentSize());
                     }
 
                     // If the item was already sent in a previously interrupted
