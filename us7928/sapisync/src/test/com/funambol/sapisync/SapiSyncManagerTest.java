@@ -182,6 +182,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + i);
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             items.put(item);
         }
         JSONArray allItems[] = new JSONArray[1];
@@ -217,6 +218,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + i);
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             items0.put(item);
         }
 
@@ -227,6 +229,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + i);
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             items1.put(item);
         }
 
@@ -283,6 +286,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + i);
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             addItems.put(item);
         }
         JSONArray updItemKeys = new JSONArray();
@@ -293,6 +297,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + (10 + i));
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             updItems.put(item);
         }
         JSONArray delItemKeys = new JSONArray();
@@ -303,6 +308,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + (18 + i));
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             delItems.put(item);
         }
         sapiSyncHandler.setIncrementalChanges(addItemKeys, updItemKeys, delItemKeys);
@@ -347,6 +353,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + i);
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             addItems.put(item);
         }
         JSONArray updItemKeys = new JSONArray();
@@ -357,6 +364,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + (110 + i));
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             updItems.put(item);
         }
         JSONArray delItemKeys = new JSONArray();
@@ -367,6 +375,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + (130 + i));
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             delItems.put(item);
         }
         sapiSyncHandler.setIncrementalChanges(addItemKeys, updItemKeys, delItemKeys);
@@ -456,6 +465,7 @@ public class SapiSyncManagerTest extends TestCase {
             JSONObject item = new JSONObject();
             item.put("id", "" + i);
             item.put("size", "" + i);
+            item.put("date", (long)i);
             items.put(item);
         }
         JSONArray allItems[] = new JSONArray[1];
@@ -502,6 +512,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + i);
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             items.put(item);
         }
         
@@ -512,6 +523,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + i);
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             items1.put(item);
         }
         
@@ -564,6 +576,7 @@ public class SapiSyncManagerTest extends TestCase {
             item.put("id", "" + i);
             item.put("size", "" + i);
             item.put("name", "" + i);
+            item.put("date", (long)i);
             item.put("datecreated", (long)100);
             items.put(item);
         }

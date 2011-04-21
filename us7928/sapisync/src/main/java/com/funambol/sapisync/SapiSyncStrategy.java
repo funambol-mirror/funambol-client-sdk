@@ -124,7 +124,7 @@ public class SapiSyncStrategy {
         }
 
         // Resolve conflicts
-        finalizePreparePhase(src, mapping, twins);
+        finalizePreparePhase(src, mapping, twins, incrementalDownload, incrementalUpload);
     }
 
     public JSONArray getServerAddedItems() {
@@ -262,7 +262,7 @@ public class SapiSyncStrategy {
                 if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
                     // This will find all the twins that will be skipped during the upload
                     discardTwinAndConflictFromList(src, fullSet.items, null, null,
-                            fullSet.serverUrl, mapping, twins);
+                            fullSet.serverUrl, mapping, twins, true);
                     offset += fullSet.items.length();
                     if ((fullSet.items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
                         done = true;
@@ -274,7 +274,8 @@ public class SapiSyncStrategy {
         }
     }
 
-    private void finalizePreparePhase(SyncSource src, MappingTable mapping, Hashtable twins)
+    private void finalizePreparePhase(SyncSource src, MappingTable mapping, Hashtable twins,
+                                      boolean incrementalDownload, boolean incrementalUpload)
     throws JSONException {
 
         // Now we have all the required information to decide what we need
@@ -286,7 +287,7 @@ public class SapiSyncStrategy {
             // First of all check if this command is a real add or an update
             for(int i=0;i<addedArray.length();++i) {
                 JSONObject item = addedArray.getJSONObject(i);
-                String     guid = item.getString("id");
+                String     guid = item.getString(SapiSyncManager.ID_FIELD);
 
                 String localItemId = mapping.getLuid(guid);
 
@@ -327,7 +328,7 @@ public class SapiSyncStrategy {
         if (updatedArray != null) {
             for(int i=0;i<updatedArray.length();++i) {
                 JSONObject item = updatedArray.getJSONObject(i);
-                String     guid = item.getString("id");
+                String     guid = item.getString(SapiSyncManager.ID_FIELD);
 
                 String localItemId = mapping.getLuid(guid);
 
@@ -363,13 +364,16 @@ public class SapiSyncStrategy {
 
         // Now check the added/updated lists searching for twins and
         // conflicts
+        // If either full upload or download is needed, then we perform a deep
+        // twin search
+        boolean deepTwinSearch = !incrementalDownload || !incrementalUpload;
         if (addedArray != null) {
             discardTwinAndConflictFromList(src, addedArray, localUpdated,
-                    localDeleted, addedServerUrl, mapping, twins);
+                    localDeleted, addedServerUrl, mapping, twins, deepTwinSearch);
         }
         if (updatedArray != null) {
-            discardTwinAndConflictFromList(src, updatedArray,
-                                           localUpdated, localDeleted, updatedServerUrl, mapping, twins);
+            discardTwinAndConflictFromList(src, updatedArray, localUpdated,
+                    localDeleted, updatedServerUrl, mapping, twins, deepTwinSearch);
         }
         if (deletedArray != null) {
             handleServerDeleteConflicts(src, deletedArray, localUpdated,
@@ -463,7 +467,7 @@ public class SapiSyncStrategy {
                 // Search and discard twins, as there is no need to download
                 // them again
                 discardTwinAndConflictFromList(src, fullSet.items, null, null,
-                        fullSet.serverUrl, mapping, twins);
+                        fullSet.serverUrl, mapping, twins, true);
 
                 for(int i=0;i<fullSet.items.length();++i) {
                     JSONObject item = fullSet.items.getJSONObject(i);
@@ -480,10 +484,10 @@ public class SapiSyncStrategy {
                         }
                         // Apply filterfrom filter
                         boolean skip = false;
-                        if (item.has("date")) {
+                        if (item.has(SapiSyncManager.UPLOAD_DATE_FIELD)) {
 
-                            long creationDate = item.getLong("date");
-                            if (creationDate < filterFrom) {
+                            long uploadDate = item.getLong(SapiSyncManager.UPLOAD_DATE_FIELD);
+                            if (uploadDate < filterFrom) {
                                 skip = true;
                             }
                         }
@@ -541,29 +545,34 @@ public class SapiSyncStrategy {
     private void discardTwinAndConflictFromList(SyncSource src, JSONArray items,
                                                 Hashtable localMods, Hashtable localDel,
                                                 String serverUrl, MappingTable mapping,
-                                                Hashtable twins)
+                                                Hashtable twins, boolean deepTwinSearch)
     throws JSONException
     {
         if (src instanceof TwinDetectionSource) {
             for(int i=0;i<items.length();++i) {
                 JSONObject item = items.getJSONObject(i);
                 if (item != removedItemMarker) {
-                    // First of all we check if we already have the very same item
-                    String guid = item.getString("id");
-                    long   size = Long.parseLong(item.getString("size"));
-                    SyncItem syncItem = utils.createSyncItem(src, guid, SyncItem.STATE_NEW, size, item, serverUrl);
-                    syncItem.setGuid(guid);
-                    TwinDetectionSource twinSource = (TwinDetectionSource)src;
-                    SyncItem twin = twinSource.findTwin(syncItem);
-                    if (twin != null) {
-                        if (Log.isLoggable(Log.INFO)) {
-                            Log.info(TAG_LOG, "Found a twin for incoming command, ignoring it " + guid);
+                    // If a twin search is needed, then we perform it here
+                    String guid = item.getString(SapiSyncManager.ID_FIELD);
+                    if (deepTwinSearch) {
+                        long   size = Long.parseLong(item.getString(SapiSyncManager.SIZE_FIELD));
+                        SyncItem syncItem = utils.createSyncItem(src, guid, SyncItem.STATE_NEW, size, item, serverUrl);
+                        syncItem.setGuid(guid);
+                        TwinDetectionSource twinSource = (TwinDetectionSource)src;
+                        SyncItem twin = twinSource.findTwin(syncItem);
+                        if (twin != null) {
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "Found a twin for incoming command, ignoring it " + guid);
+                            }
+                            items.put(i, removedItemMarker);
+                            // This item exists already on client and server. We
+                            // don't need to upload it again. This shall change once
+                            // we support updates
+                            twins.put(twin.getKey(), twin);
                         }
-                        items.put(i, removedItemMarker);
-                        // This item exists already on client and server. We
-                        // don't need to upload it again. This shall change once
-                        // we support updates
-                        twins.put(twin.getKey(), twin);
+                    } else {
+                        // We simply check if we have this same item in the
+                        // mapping already
                     }
                     // Now we check if the client has a pending delete for this
                     // item. If an item is scheduled for deletion, then its id
@@ -591,8 +600,8 @@ public class SapiSyncStrategy {
                             JSONSyncItem localItem = (JSONSyncItem)localMods.get(luid);
                             long localLastMod = localItem.getLastModified();
                             long remoteLastMod;
-                            if (item.has("date")) {
-                               remoteLastMod = item.getLong("date");
+                            if (item.has(SapiSyncManager.UPLOAD_DATE_FIELD)) {
+                               remoteLastMod = item.getLong(SapiSyncManager.UPLOAD_DATE_FIELD);
                             } else {
                                 remoteLastMod = -1;
                             }
@@ -669,11 +678,11 @@ public class SapiSyncStrategy {
     }
 
     private ItemComparisonResult compareItems(JSONObject item, MappingTable mapping) throws JSONException {
-        String guid = item.getString("id");
-        String remoteCRC  = item.getString("size");
+        String guid = item.getString(SapiSyncManager.ID_FIELD);
+        String remoteCRC  = item.getString(SapiSyncManager.CRC_FIELD);
         String localCRC   = mapping.getCRC(guid);
         String localName  = mapping.getName(guid);
-        String remoteName = item.getString("name");
+        String remoteName = item.getString(SapiSyncManager.NAME_FIELD);
 
         // We need to know if the content or the metadata changed
         if (Log.isLoggable(Log.DEBUG)) {

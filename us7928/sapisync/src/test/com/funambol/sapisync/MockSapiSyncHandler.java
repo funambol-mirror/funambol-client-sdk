@@ -85,9 +85,10 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         return "guid_" + item.getKey();
     }
 
-    public void uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener)
+    public String uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener)
             throws SapiException {
         uploadedItems.addElement(item);
+        return "" + System.currentTimeMillis();
     }
 
     public ChangesSet getIncrementalChanges(Date from, String dataType) throws SapiException {

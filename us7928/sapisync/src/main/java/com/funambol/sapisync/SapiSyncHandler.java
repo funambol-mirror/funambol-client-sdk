@@ -132,7 +132,7 @@ public class SapiSyncHandler {
         }
     }
 
-    public String resumeItemUpload(JSONSyncItem item, String remoteUri, SyncListener listener)
+    public ResumeResult resumeItemUpload(JSONSyncItem item, String remoteUri, SyncListener listener)
     throws SapiException {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Resuming upload for item: " + item.getKey());
@@ -148,8 +148,8 @@ public class SapiSyncHandler {
             Log.error(TAG_LOG, "Cannot resume, a complete upload will be performed instead");
             String remoteKey = prepareItemUpload(item, remoteUri);
             item.setGuid(remoteKey);
-            uploadItem(item, remoteUri, listener);
-            return remoteUri;
+            String crc = uploadItem(item, remoteUri, listener);
+            return new ResumeResult(remoteUri, crc);
         }
 
         Hashtable headers = new Hashtable();
@@ -171,30 +171,29 @@ public class SapiSyncHandler {
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "No need to resume item " + length);
                 }
-                return guid;
+                return new ResumeResult(guid, null);
             } else {
                 long fromByte = length + 1;
                 if (Log.isLoggable(Log.INFO)) {
                     Log.info(TAG_LOG, "Upload can be resumed at byte " + fromByte);
                 }
-                uploadItem(item, remoteUri, listener, fromByte);
-                return guid;
+                String crc = uploadItem(item, remoteUri, listener, fromByte);
+                return new ResumeResult(guid, crc);
             }
         } else {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Upload cannot be resumed, perform a complete upload");
-                guid = prepareItemUpload(item, remoteUri);
-                item.setGuid(guid);
-                uploadItem(item, remoteUri, listener);
-                return guid;
             }
+            guid = prepareItemUpload(item, remoteUri);
+            item.setGuid(guid);
+            String crc = uploadItem(item, remoteUri, listener);
+            return new ResumeResult(guid, crc);
         }
-        return guid;
     }
 
-    public void uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener)
+    public String uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener)
     throws SapiException {
-        uploadItem(item, remoteUri, listener, 0);
+        return uploadItem(item, remoteUri, listener, 0);
     }
 
     public String prepareItemUpload(JSONSyncItem item, String remoteUri) throws SapiException {
@@ -205,12 +204,12 @@ public class SapiSyncHandler {
             JSONObject metadata = new JSONObject();
             JSONFileObject json = item.getJSONFileObject();
 
-            metadata.put("name", json.getName());
+            metadata.put(SapiSyncManager.NAME_FIELD, json.getName());
             metadata.put("modificationdate", DateUtil.formatDateTimeUTC(json.getLastModifiedDate()));
             metadata.put("contenttype", json.getMimetype());
-            metadata.put("size", json.getSize());
+            metadata.put(SapiSyncManager.SIZE_FIELD, json.getSize());
             if (item.getState() == SyncItem.STATE_UPDATED) {
-                metadata.put("id", item.getGuid());
+                metadata.put(SapiSyncManager.ID_FIELD, item.getGuid());
                 metadata.put("creationdate", DateUtil.formatDateTimeUTC(json.getCreationDate()));
             } else {
                 // We set the creation date only when the item is first added.
@@ -239,7 +238,7 @@ public class SapiSyncHandler {
                 checkForCommonSapiErrorCodesAndThrowSapiException(addMetadataResponse, null, true);
             }
 
-            String remoteKey = addMetadataResponse.getString("id");
+            String remoteKey = addMetadataResponse.getString(SapiSyncManager.ID_FIELD);
             return remoteKey;
         } catch (NotSupportedCallException e) {
             Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
@@ -262,8 +261,9 @@ public class SapiSyncHandler {
      * @param fromByte a zero value means the method shall upload a new item
      * from scratch, a non zero value means the method will try to resume a
      * resume
+     * @return the item upload time
      */
-    public void uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener, long fromByte)
+    public String uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener, long fromByte)
     throws SapiException
     {
         if (Log.isLoggable(Log.INFO)) {
@@ -281,7 +281,7 @@ public class SapiSyncHandler {
                 if(Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Upload is not needed, item content is null");
                 }
-                return;
+                return "";
             }
 
             JSONFileObject json = item.getJSONFileObject();
@@ -312,8 +312,11 @@ public class SapiSyncHandler {
             // Send the upload request
             JSONObject uploadResponse = null;
             try {
+                Vector params = new Vector();
+                params.addElement("lastupdate=true");
+
                 uploadResponse = sapiHandler.query("upload/" + remoteUri,
-                        "save", null, headers, is, json.getMimetype(),
+                        "save", params, headers, is, json.getMimetype(),
                         json.getSize(), fromByte, json.getName());
             } catch (NotSupportedCallException e) {
                 Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
@@ -330,6 +333,7 @@ public class SapiSyncHandler {
             }
 
             sapiHandler.setSapiRequestListener(null);
+            return uploadResponse.getString("lastupdate");
         } catch (NotSupportedCallException e) {
             Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
             throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
@@ -340,27 +344,32 @@ public class SapiSyncHandler {
         }
     }
 
-    public void updateItemName(String remoteUri, String itemId,
+    public String updateItemName(String remoteUri, String itemId,
             String newItemName) throws SapiException {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Updating item name");
         }
         try {
+            Vector params = new Vector();
+            params.add("lastupdate=true");
+
             JSONObject data = new JSONObject();
-            data.put("id", itemId);
-            data.put("name", newItemName);
+            data.put(SapiSyncManager.ID_FIELD, itemId);
+            data.put(SapiSyncManager.NAME_FIELD, newItemName);
             JSONObject request = new JSONObject();
             request.put("data", data);
+
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "Update request: " + request.toString());
             }
             JSONObject response = sapiQueryWithRetries("media/" + remoteUri,
-                    "update", null, null, request);
+                    "update", params, null, request);
             if (SapiResultError.hasError(response)) {
                 checkForCommonSapiErrorCodesAndThrowSapiException(response,
                         "Error in update sapi call", true);
                 //TODO manage custom error code
             }
+            return response.getString("lastupdate");
         } catch (NotSupportedCallException e) {
             Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
             throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
@@ -515,13 +524,7 @@ public class SapiSyncHandler {
         }
     }
 
-    public FullSet getItems(
-            String remoteUri,
-            String dataTag,
-            JSONArray ids,
-            String limit,
-            String offset,
-            Date from)
+    public FullSet getItems(String remoteUri, String dataTag, JSONArray ids, String limit, String offset, Date from)
     throws SapiException {
 
         JSONObject response = null;
@@ -665,6 +668,28 @@ public class SapiSyncHandler {
             throw SapiException.SAPI_EXCEPTION_NO_CONNECTION;
         } catch (JSONException e) {
             throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        }
+    }
+
+    public class ResumeResult {
+        private String key;
+        private String crc;
+
+        public ResumeResult(String key, String crc) {
+            this.key = key;
+            this.crc = crc;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getCRC() {
+            return crc;
+        }
+
+        public boolean uploadPerformed() {
+            return crc != null;
         }
     }
 

@@ -79,6 +79,12 @@ public class SapiSyncManager implements SyncManagerI {
 
     private static final JSONObject REMOVED_ITEM = new JSONObject();
 
+    protected static final String UPLOAD_DATE_FIELD = "date";
+    protected static final String CRC_FIELD = "date";
+    protected static final String SIZE_FIELD = "size";
+    protected static final String ID_FIELD = "id";
+    protected static final String NAME_FIELD = "name";
+
     private SyncConfig syncConfig = null;
     private SapiSyncHandler sapiSyncHandler = null;
     private SapiSyncStatus syncStatus = null;
@@ -559,17 +565,20 @@ public class SapiSyncManager implements SyncManagerI {
                             String origGuid = remoteKey;
                             item.setGuid(remoteKey);
                             try {
-                                remoteKey = sapiSyncHandler.resumeItemUpload(item,
-                                        remoteUri, getSyncListenerFromSource(src));
-                                // Update the mapping table
-                                if(item.getState() == SyncItem.STATE_UPDATED) {
-                                    mapping.update(remoteKey, item.getKey(), 
-                                            Long.toString(item.getContentSize()),
-                                            item.getContentName());
-                                } else {
-                                    mapping.add(remoteKey, item.getKey(), 
-                                            Long.toString(item.getContentSize()),
-                                            item.getContentName());
+                                SapiSyncHandler.ResumeResult resumeResult = sapiSyncHandler.resumeItemUpload(item,
+                                                                        remoteUri, getSyncListenerFromSource(src));
+                                remoteKey = resumeResult.getKey();
+                                // Update the mapping table (if the resume took
+                                // place)
+                                if (resumeResult.uploadPerformed()) {
+                                    String crc = resumeResult.getCRC();
+                                    if(item.getState() == SyncItem.STATE_UPDATED) {
+                                        mapping.update(remoteKey, item.getKey(), 
+                                                crc, item.getContentName());
+                                    } else {
+                                        mapping.add(remoteKey, item.getKey(), 
+                                                crc, item.getContentName());
+                                    }
                                 }
                             } catch (SapiException e) {
                                 verifyErrorInUploadResponse(e, item, remoteKey, sourceStatus);
@@ -600,10 +609,11 @@ public class SapiSyncManager implements SyncManagerI {
                             // Using save-metadata to update the file name doesn't
                             // work becouse it requires the file content to be
                             // re-uploaded
+                            String newCrc;
                             if(item.isItemKeyUpdated() && !item.isItemContentUpdated()) {
                                 // This is only a item rename
-                                sapiSyncHandler.updateItemName(remoteUri, remoteKey,
-                                        item.getJSONFileObject().getName());
+                                newCrc = sapiSyncHandler.updateItemName(remoteUri, remoteKey,
+                                                                        item.getJSONFileObject().getName());
                             } else {
                                 remoteKey = sapiSyncHandler.prepareItemUpload(item, remoteUri);
                                 item.setGuid(remoteKey);
@@ -617,17 +627,15 @@ public class SapiSyncManager implements SyncManagerI {
                                     }
                                 }
                                 // Upload the item to the server
-                                sapiSyncHandler.uploadItem(item, remoteUri, getSyncListenerFromSource(src));
+                                newCrc = sapiSyncHandler.uploadItem(item, remoteUri, getSyncListenerFromSource(src));
                             }
                             // Update the mapping table
                             if(item.getState() == SyncItem.STATE_UPDATED) {
                                 mapping.update(remoteKey, item.getKey(), 
-                                        Long.toString(item.getContentSize()),
-                                        item.getContentName());
+                                        newCrc, item.getContentName());
                             } else {
                                 mapping.add(remoteKey, item.getKey(), 
-                                        Long.toString(item.getContentSize()),
-                                        item.getContentName());
+                                        newCrc, item.getContentName());
                             }
                         } catch (SapiException e) {
                             verifyErrorInUploadResponse(e, item, item.getGuid(), sourceStatus);
@@ -831,8 +839,10 @@ public class SapiSyncManager implements SyncManagerI {
                 continue;
             }
 
-            String guid = item.getString("id");
-            long size = Long.parseLong(item.getString("size"));
+            String guid = item.getString(ID_FIELD);
+            long size = Long.parseLong(item.getString(SIZE_FIELD));
+            // Get the lastupdated property used as item crc
+            String crc = "" + item.getLong(CRC_FIELD);
 
             String luid;
             if (state == SyncItem.STATE_UPDATED) {
@@ -945,14 +955,14 @@ public class SapiSyncManager implements SyncManagerI {
                         Log.trace(TAG_LOG, "Updating mapping info for: " +
                                 syncItem.getGuid() + "," + syncItem.getKey());
                     }
-                    mapping.add(syncItem.getGuid(), syncItem.getKey(), "" + syncItem.getContentSize(),
+                    mapping.add(syncItem.getGuid(), syncItem.getKey(), crc,
                                 syncItem.getContentName());
                 } else if (state == SyncItem.STATE_UPDATED && item.has("oldkey")) {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "Updating mapping info for renamed item: " +
                                 syncItem.getGuid() + "," + syncItem.getKey());
                     }
-                    mapping.update(syncItem.getGuid(), syncItem.getKey(), "" + syncItem.getContentSize(), syncItem.getContentName());
+                    mapping.update(syncItem.getGuid(), syncItem.getKey(), crc, syncItem.getContentName());
                 }
             }
             // Notify the listener
