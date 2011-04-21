@@ -58,6 +58,22 @@ public interface DeviceInfoInterface {
             }
             return this.role == ((DeviceRole) o).role;
         }
+        
+        public String toString() {
+            String value;
+            switch (role) {
+            case 1:
+                value = "Smartphone";
+                break;
+            case 2:
+                value = "Tablet";
+                break;
+            default:
+                value = "Unknown";
+                break;
+            }
+            return value;
+        }
     }
   
     /**

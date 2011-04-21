@@ -1,4 +1,4 @@
-/*
+/**
  * Funambol is a mobile platform developed by Funambol, Inc.
  * Copyright (C) 2010 Funambol, Inc.
  *
@@ -35,25 +35,11 @@
 
 package com.funambol.syncml.spds;
 
-import java.util.Date;
-import java.util.Vector;
-import java.util.Hashtable;
-
-import com.funambol.sync.SyncItem;
-import com.funambol.sync.SyncException;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncConfig;
-import com.funambol.sync.client.BaseSyncSource;
 
-import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.protocol.Sync;
-import com.funambol.syncml.protocol.Cred;
-import com.funambol.syncml.protocol.Meta;
-import com.funambol.syncml.protocol.Target;
-import com.funambol.util.CodedException;
 import com.funambol.util.Log;
 import com.funambol.util.ConsoleAppender;
-import com.funambol.util.TransportAgent;
 
 import junit.framework.*;
 
@@ -74,7 +60,7 @@ public class SyncManagerPerfTest extends TestCase {
     private SourceConfig ssc = null;
     private TestSyncSource tss = null;
 
-    private final String JSESSION_ID      = ";jsessionid=F2EA56F802D65950FAC3E37336BE1EEA.NODE01";
+    private final String JSESSION_ID = ";jsessionid=F2EA56F802D65950FAC3E37336BE1EEA.NODE01";
     private int sentMessagesCount = 0;
 
     private static final int NUM_ITERATIONS = 80;
@@ -95,6 +81,8 @@ public class SyncManagerPerfTest extends TestCase {
         dc = new DeviceConfig();
 
         ssc = new SourceConfig("briefcase", SourceConfig.BRIEFCASE_TYPE, "briefcase");
+        SyncMLAnchor anchor = new SyncMLAnchor();
+        ssc.setSyncAnchor(anchor);
         
         sm = new SyncManager(sc, dc);
 
@@ -160,7 +148,7 @@ public class SyncManagerPerfTest extends TestCase {
                 }
 
                 // Note that we don't send the status to the map command, but
-                // currenly the SyncManager does not really care ;)
+                // currently the SyncManager does not really care ;)
 
                 tss.resetLuidCounters();
                 return response;
@@ -326,6 +314,8 @@ public class SyncManagerPerfTest extends TestCase {
 
         res.append("<Status>\n")
            .append("<CmdID>").append(cmdId++).append("</CmdID>\n")
+           //FIXME this number should refers to right message number, but
+           //      actually client doesn't take care of it
            .append("<MsgRef>1</MsgRef>\n")
            .append("<CmdRef>0</CmdRef>\n")
            .append("<Cmd>SyncHdr</Cmd>\n")
@@ -370,125 +360,5 @@ public class SyncManagerPerfTest extends TestCase {
         return res.toString().getBytes();
     }
 
-    private class TestTransportAgent implements TransportAgent {
-
-        private TestMessageHandler handler;
-
-        public TestTransportAgent(TestMessageHandler h) {
-            handler = h;
-        }
-
-        public String sendMessage(String request, String charset) throws CodedException {
-            try {
-                return handler.handleMessage(request);
-            } catch (Exception e) {
-                throw new CodedException(-1, e.toString());
-            }
-        }
-
-        public String sendMessage(String request) throws CodedException {
-            return sendMessage(request, null);
-        }
-
-        public byte[] sendMessage(byte[] request) throws CodedException {
-            try {
-                return handler.handleMessage(request);
-            } catch (Exception e) {
-                throw new CodedException(-1, e.toString());
-            }
-        }
-
-        public void setRetryOnWrite(int retries) { }
-        public void setRequestURL(String requestUrl) { }
-        public String getResponseDate() { return new Date().toString(); }
-
-        public void setRequestContentType(String contentType) {
-        }
-
-        public void setCustomHeaders(Hashtable headers) {
-        }
-    }
-
-    private interface TestMessageHandler {
-        public String handleMessage(String message) throws Exception;
-        public byte[] handleMessage(byte[] message) throws Exception;
-    }
-
-    private class TestSyncSource extends BaseSyncSource {
-
-        private boolean done = false;
-        private int luid = 0;
-        private int firstLuid = -1;
-        private int lastLuid  = -1;
-
-        public TestSyncSource(SourceConfig sc) {
-            super(sc);
-        }
-
-        public int addItem(SyncItem item) throws SyncException {
-            return 200;
-        }
-    
-        public int updateItem(SyncItem item) throws SyncException {
-            return 200;
-        }
-    
-        public int deleteItem(String key) throws SyncException {
-            return 200;
-        }
-
-        public SyncItem getNextItem() throws SyncException {
-
-            if (firstLuid == -1) {
-                firstLuid = luid;
-            }
-            lastLuid = luid;
-
-            if (!done) {
-                SyncItem res = new SyncItem("" + luid);
-                res.setContent("Test item, make is of a signficant length".getBytes());
-                luid++;
-                return res;
-            } else {
-                return null;
-            }
-        }
-
-        public void endSending() {
-            done = true;
-        }
-
-        public void resetLuidCounters() {
-            firstLuid = -1;
-            lastLuid  = -1;
-        }
-
-        public int getFirstLuid() {
-            return firstLuid;
-        }
-
-        public int getLastLuid() {
-            return lastLuid;
-        }
-
-        protected void initAllItems() throws SyncException {
-        }
-
-        protected void initNewItems() throws SyncException {
-        }
-
-        protected void initUpdItems() throws SyncException {
-        }
-
-        protected void initDelItems() throws SyncException {
-        }
-
-        protected SyncItem getItemContent(final SyncItem item) throws SyncException {
-            return null;
-        }
-
-        public void cancel() {
-        }
-    }
 }
 

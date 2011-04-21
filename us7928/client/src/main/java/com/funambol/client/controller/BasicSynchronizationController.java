@@ -37,7 +37,11 @@ package com.funambol.client.controller;
 
 import java.util.Vector;
 
+import com.funambol.client.configuration.Configuration;
+import com.funambol.client.engine.SyncEngineListener;
 import com.funambol.client.source.AppSyncSource;
+import com.funambol.client.source.AppSyncSourceConfig;
+import com.funambol.platform.NetworkStatus;
 import com.funambol.sync.SyncListener;
 import com.funambol.util.ConnectionListener;
 import com.funambol.util.Log;
@@ -48,7 +52,7 @@ import com.funambol.util.Log;
  * versions of SynchronizationController.
  */
 public abstract class BasicSynchronizationController
-        implements ConnectionListener {
+        implements ConnectionListener, SyncEngineListener {
 
     private static final String TAG_LOG = "SynchronizationController"; // sic
 
@@ -58,6 +62,10 @@ public abstract class BasicSynchronizationController
 
     protected String syncType        = null;
 
+    protected Configuration configuration;
+
+    protected NetworkStatus networkStatus;
+    
     private Vector localStorageFullSources = new Vector();
     private Vector serverQuotaFullSources = new Vector();
 
@@ -65,7 +73,7 @@ public abstract class BasicSynchronizationController
      * Displays warnings in the proper form if the outcome of the latest sync requires so.
      * This method must be called when all synchronization operations are finished and the
      * user can be warned about problems that trigger a notification or a pop-up message
-     * like those connected with storage limits (locally or in the cloud).
+     * like those connected with storage limits (locally or in the cloud). 
      */
     protected void displayEndOfSyncWarnings() {
 
@@ -121,4 +129,62 @@ public abstract class BasicSynchronizationController
     }
 
     protected abstract BasicController getBasicController();
+    
+    /**
+     * Applies the Bandwidth Saver by filtering out some sources or by populating
+     * the Vector of sources that need to be synchronized only if the user accepts
+     * to do so.
+     * The synchronizations for sources that are filtered out are immediately set 
+     * as pending and terminated.
+     * This method has to be called before the synchronizations actually start.
+     * 
+     * @param syncSources all sources to be synchronized
+     * @param sourcesWithQuestion an empty Vector
+     * @return a sub-vector of sync sources containing only those sources that have
+     *         passed the check
+     */
+    protected Vector applyBandwidthSaver(Vector syncSources, Vector sourcesWithQuestion) {
+        
+        if (configuration.getBandwidthSaverActivated() && !networkStatus.isWiFiConnected()) {
+            
+            // If the syncType is automatic (i.e. not manual) and WiFi is not available, 
+            // we shall skip all the sources which are to be synchronized only in WiFi 
+            if (!MANUAL.equals(syncType)) {
+                Vector prefilteredSources = new Vector();
+                for (int i = 0; i < syncSources.size(); ++i) {
+                    AppSyncSource appSource = (AppSyncSource)syncSources.elementAt(i);
+                    // We need to check if the source requires to be sync'ed only in WiFi
+                    // In v9 we excluded also sync sources with online quota full, but this
+                    // behavior was modified in v10 
+                    if (appSource.getBandwidthSaverUse()) {
+                        // Skip this source because of the Bandwidth Saver.
+                        // Remember that we have a pending sync now
+                        AppSyncSourceConfig sourceConfig = appSource.getConfig();
+                        sourceConfig.setPendingSync(syncType, sourceConfig.getSyncMode());
+                        configuration.save();
+                        // The sync for this source is terminated
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Ignoring sync for source: " + appSource.getName());
+                        }
+                        sourceEnded(appSource);
+                    } else {
+                        // It's OK
+                        prefilteredSources.addElement(appSource);
+                    }
+                }
+                syncSources = prefilteredSources;
+                
+            } else {
+                // Now check if any source to be synchronized requires user confirmation
+                // because of the bandwidth saver
+                for(int y = 0; y < syncSources.size(); ++y) {
+                    AppSyncSource appSource = (AppSyncSource)syncSources.elementAt(y);
+                    if(appSource.getBandwidthSaverUse()){
+                        sourcesWithQuestion.addElement(appSource);
+                    }
+                }
+            }
+        }
+        return syncSources;
+    }
 }

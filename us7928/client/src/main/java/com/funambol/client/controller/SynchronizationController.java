@@ -79,8 +79,6 @@ public class SynchronizationController extends BasicSynchronizationController
     
     protected Customization customization;
 
-    protected Configuration configuration;
-
     protected AppSyncSourceManager appSyncSourceManager;
 
     protected Localization localization;
@@ -107,9 +105,6 @@ public class SynchronizationController extends BasicSynchronizationController
     private RequestHandler reqHandler;
 
     private int            RETRY_POLL_TIME = 1;
-
-    private NetworkStatus networkStatus;
-
 
     private boolean isUserConfirmationNeeded = false;
 
@@ -329,65 +324,10 @@ public class SynchronizationController extends BasicSynchronizationController
     {
         // Search if at least one of the selected sources has a warning on the
         // first sync
-        Vector filteredSources = new Vector();
         Vector sourcesWithQuestion = new Vector();
+        syncSources = applyBandwidthSaver(syncSources, sourcesWithQuestion);
 
-        // if the syncType is automatic (e.g. not manual), we shall skip all the
-        // sources which have a device full error or that are to be synchronized
-        // only in WiFi if WiFi is not available
-        if (!MANUAL.equals(syncType)) {
-            Vector prefilteredSources = new Vector();
-            for(int i=0;i<syncSources.size();++i) {
-                AppSyncSource appSource = (AppSyncSource)syncSources.elementAt(i);
-
-                // If the source is not in quota error or this is the first sync
-                // in this session, then we include the source, otherwise we
-                // skip it
-                boolean toBeSynced = appSource.getConfig().getLastSyncStatus() != SyncListener.SERVER_FULL_ERROR ||
-                                     !appSource.getSyncedInSession();
-                // We still need to check if the source requires to be synced
-                // only in WiFi and this connection is available
-                if (toBeSynced) {
-                    if (configuration.getBandwidthSaverActivated()) {
-                        if (appSource.getBandwidthSaverUse() && !networkStatus.isWiFiConnected()) {
-                            // Skip this source beacuse of the bandwidth saver.
-                            // Remember that we have a pending sync now
-                            AppSyncSourceConfig sourceConfig = appSource.getConfig();
-                            sourceConfig.setPendingSync(syncType, sourceConfig.getSyncMode());
-                            configuration.save();
-                            toBeSynced = false;
-                        }
-                    }
-                }
-
-                if (toBeSynced) {
-                    prefilteredSources.addElement(appSource);
-                } else {
-                    // The sync for this source is terminated
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Ignoring sync for source: " + appSource.getName());
-                    }
-                    sourceEnded(appSource);
-                }
-            }
-            syncSources = prefilteredSources;
-        }
-
-
-        // Now check if any source to be synchronized requires user confirmation
-        // because of the bandwidth saver
-        if(MANUAL.equals(syncType)) {
-            for(int y=0;y<syncSources.size();++y) {
-                AppSyncSource appSource = (AppSyncSource)syncSources.elementAt(y);
-                if(appSource.getBandwidthSaverUse() && configuration.getBandwidthSaverActivated()){
-                    if(!networkStatus.isWiFiConnected()){
-                        sourcesWithQuestion.addElement(appSource);
-                    }
-                }
-            }
-        }
-
-        // We cannot ask the question if there is no app visible
+        // We cannot ask the question if there is no app visible 
         if (screen == null && sourcesWithQuestion.size() > 0) {
             // Remember this so that on the next home screen startup, we will be
             // able to show the dialog. We don't continue the sync here because

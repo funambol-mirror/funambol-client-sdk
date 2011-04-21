@@ -75,7 +75,10 @@ public class SyncConfig {
 
     public boolean forceCookies;
 
-    /** to contain the value of lastSyncUrl from SyncmlMPIConfig */
+    /** to contain the value of lastSyncUrl from SyncmlMPIConfig
+     * 
+     * @deprecated DO NOT USE IT, will be removed in next release 
+     **/
     public String lastServerUrl;
     
     /** Communications with server compressed or not */
@@ -106,7 +109,6 @@ public class SyncConfig {
         password = "guest";
         userAgent = null;
 
-        lastServerUrl = syncUrl;     
         compress = true;
         
         proxyConfig = null;

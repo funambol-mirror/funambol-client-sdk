@@ -1,4 +1,4 @@
-/*
+/**
  * Funambol is a mobile platform developed by Funambol, Inc. 
  * Copyright (C) 2008 Funambol, Inc.
  * 
@@ -41,11 +41,9 @@ import java.util.Hashtable;
 import com.funambol.util.Log;
 import com.funambol.util.ConsoleAppender;
 import com.funambol.util.Base64;
-import com.funambol.util.ConsoleAppender;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
-import com.funambol.sync.SyncListener;
 import com.funambol.sync.BasicSyncListener;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.ResumableSource;
@@ -60,8 +58,6 @@ import com.funambol.syncml.protocol.Data;
 import com.funambol.syncml.protocol.Source;
 import com.funambol.syncml.protocol.SourceParent;
 import com.funambol.syncml.protocol.TargetParent;
-import com.funambol.storage.StringKeyValueStore;
-import com.funambol.storage.StringKeyValueFileStore;
 
 import junit.framework.*;
 

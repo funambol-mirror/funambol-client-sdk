@@ -181,6 +181,7 @@ public abstract class TrackableSyncSource implements SyncSource {
 
     public void beginSync(int syncMode, boolean resume) throws SyncException {
 
+        this.syncMode = syncMode;
         cancel = false;
         this.syncMode = syncMode;
         

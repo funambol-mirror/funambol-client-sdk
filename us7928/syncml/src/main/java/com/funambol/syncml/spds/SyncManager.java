@@ -36,6 +36,7 @@ package com.funambol.syncml.spds;
 
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -109,6 +110,9 @@ public class SyncManager implements SyncManagerI {
     private String deviceId;
     /* Max SyncML Message Size taken from DeviceConfig*/
     protected int maxMsgSize;
+    
+    /** used to store the command ID where DevInf are sent to the server */
+    private String devIntPutCmdID;
 
     /**
      * A flag indicating if the client has to prepare the <DevInf> part of the
@@ -120,7 +124,7 @@ public class SyncManager implements SyncManagerI {
      *
      * b) the device configuration is changed
      */
-    private boolean sendDevInf = false;
+    private boolean forceSendDevInf = false;
     /**
      * A value indicating if the client has to add the device capabilities to the
      * modification message as content of a <Results> element. This occurs when
@@ -130,10 +134,6 @@ public class SyncManager implements SyncManagerI {
      * no get command was sent by the server.
      */
     private String addDevInfResults = null;
-    /**
-     * String containing the last Url of the server the client was connected to
-     */
-    private String lastServerUrl;
     // state used for fast sync
     int state;
     // The alerts sent by server, indexed by source name, instantiated in
@@ -360,6 +360,7 @@ public class SyncManager implements SyncManagerI {
         cancel = false;
         resume = false;
         suspendAlertSent = false;
+        devIntPutCmdID = null;
 
         // Initialize the mapping message manager
         if (Log.isLoggable(Log.DEBUG)) {
@@ -467,11 +468,6 @@ public class SyncManager implements SyncManagerI {
 
             // init status commands list
             this.statusList = new Vector();
-
-            //deciding if the device capabilities have to be sent
-            if (isNewServerUrl(serverUrl)) {
-                setFlagSendDevInf();
-            }
 
             // ================================================================
             // Initialization phase
@@ -809,7 +805,7 @@ public class SyncManager implements SyncManagerI {
      * <code>lastServerUrl</code>
      */
     public void setFlagSendDevInf() {
-        sendDevInf = true;
+        forceSendDevInf = true;
     }
 
     /**
@@ -886,9 +882,51 @@ public class SyncManager implements SyncManagerI {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Sending init message " + md5);
             }
+            
+            //find device capabilities hash
+            
+            DevInf devInf = null;
+            devInf = createDevInf(deviceConfig, source);
+            String newDevInfHash = null;
+            //check, for a SyncML sync, if the device capabilities
+            //must be sent to the server
+            if (source.getConfig() instanceof SyncMLSourceConfig) {
+                String xmlDevInfPlain = null;
+                try {
+                    StringBuffer sb = new StringBuffer(createXmlDevInf(devInf));
+                    //hash depends on devinf, server url and username
+                    sb.append("-")
+                        .append(config.getSyncUrl())
+                        .append("-")
+                        .append(config.getUserName());
+                    //calculate MD5
+                    xmlDevInfPlain = sb.toString();
+                } catch (IOException ioe) {
+                    String msg = "Cannot prepare output message: " + ioe.toString();
+                    Log.error(TAG_LOG, msg);
+                    throw new SyncException(SyncException.CLIENT_ERROR, msg);
+                }
+
+                try {
+                    byte[] newDevInfHashBytes = new MD5().calculateMD5(xmlDevInfPlain.getBytes("UTF-8"));
+                    newDevInfHash = new String(newDevInfHashBytes);
+                } catch (UnsupportedEncodingException e) {
+                    //really, not a big problem
+                    newDevInfHash = "";
+                }
+          
+                SyncMLSourceConfig syncMLSourceConfig = (SyncMLSourceConfig)source.getConfig();
+                String lastDevInfHash = syncMLSourceConfig.getLastDevInfHash();
+                if (!forceSendDevInf && newDevInfHash.equals(lastDevInfHash)) {
+                    //doesn't send DevInf
+                    devInf = null;
+                }
+            }
+          
             //Format request message to be sent to the server
-            byte initMsg[] = prepareInitializationMessage(syncMode, askServerDevInf,
-                                                          md5);
+            byte initMsg[] = prepareInitializationMessage(
+                    syncMode, devInf, askServerDevInf, md5);
+            
             if (isSyncToBeCancelled()) {
                 cancelSync();
             }
@@ -899,6 +937,7 @@ public class SyncManager implements SyncManagerI {
             }
 
             byte response[] = postRequest(initMsg);
+            
             initMsg = null;
             logMessage(response, false);
             if (wbxml) {
@@ -909,7 +948,7 @@ public class SyncManager implements SyncManagerI {
 
             SyncML syncMLMsg = parser.parse(response);
             try {
-                DevInf devInf = processInitMessage(syncMLMsg, source);
+                DevInf serverDevInf = processInitMessage(syncMLMsg, source, newDevInfHash);
                 // If we asked for server caps but did not get them, then we throw an
                 // exception
                 if (Log.isLoggable(Log.INFO)) {
@@ -917,7 +956,7 @@ public class SyncManager implements SyncManagerI {
                 }
                 logMessage(response, false);
 
-                if (askServerDevInf && devInf == null) {
+                if (askServerDevInf && serverDevInf == null) {
                     Log.error(TAG_LOG, "Server did not send requested capabilities");
                     // TODO: the server could return a 204 status. In such a
                     // case we should not throw an exception
@@ -925,7 +964,7 @@ public class SyncManager implements SyncManagerI {
                             "Cannot find server capabilities in server response");
                 }
 
-                return devInf;
+                return serverDevInf;
             } catch (AuthenticationException ae) {
                 // Handle authentication errors and retries
                 String authMethod = ae.getAuthMethod();
@@ -970,7 +1009,11 @@ public class SyncManager implements SyncManagerI {
         throw new SyncException(SyncException.CLIENT_ERROR, "Cannot authenticate");
     }
 
-    protected DevInf processInitMessage(SyncML message, SyncSource source) throws SyncException {
+    protected DevInf processInitMessage(
+            SyncML message,
+            SyncSource source,
+            String newDevInfHash)
+    throws SyncException {
 
         String sourceName   = source.getName();
         SyncBody body       = message.getSyncBody();
@@ -1117,9 +1160,7 @@ public class SyncManager implements SyncManagerI {
                 if (SyncML.TAG_SYNCHDR.equals(cmd)) {
                     checkStatusCode(status);
                     hdrStatus = true;
-                }
-
-                if (SyncML.TAG_ALERT.equals(cmd)) {
+                } else if (SyncML.TAG_ALERT.equals(cmd)) {
                     checkStatusCode(status);
 
                     int statusCode = getStatusCode(status);
@@ -1147,7 +1188,32 @@ public class SyncManager implements SyncManagerI {
                         }
                     }
                     alertStatus = true;
+                } else if (SyncML.TAG_PUT.equals(cmd)) {
+                    //check for DevInf from client to server, only needed for some kind of SyncSource objects
+                    if (source.getConfig() instanceof SyncMLSourceConfig) {
+
+                        int code = getStatusCode(status);
+                        String cmdRef = status.getCmdRef();
+                        
+                        if (!StringUtil.isNullOrEmpty(devIntPutCmdID) &&
+                                devIntPutCmdID.equalsIgnoreCase(cmdRef)) {
+                            Log.trace(TAG_LOG, "Server DevInf from client status: " + code);
+                            
+                            if (SyncMLStatus.SUCCESS == code) {
+                                //check for correct reply in correct task
+                                if (Log.isLoggable(Log.DEBUG)) {
+                                    Log.debug(TAG_LOG, "Updating last dev inf hash to " + newDevInfHash);
+                                }
+                                SyncMLSourceConfig syncMLSourceConfig = (SyncMLSourceConfig)source.getConfig();
+                                syncMLSourceConfig.setLastDevInfHash(newDevInfHash);
+                                //somewhere, over the rainbow, the configuration will be saved
+                            }
+                            //just in case ;)
+                            devIntPutCmdID = null;
+                        }
+                    }
                 }
+                
             } else if (command instanceof Get) {
                 // TODO Today we only support dev cap get
                 addDevInfResults = checkIfServerRequiredDevInf((Get)command);
@@ -1190,32 +1256,6 @@ public class SyncManager implements SyncManagerI {
         return serverDevInf;
     }
 
-
-    /**
-     * Checks if the current server URL is the same as by the last connection.
-     * If not, the current server URL is persisted in a record store on the
-     * device
-     *
-     * @param url
-     *            The server URL coming from the SyncConfig
-     * @return true if the client wasn't ever connected to the corresponding
-     *         server, false elsewhere
-     */
-    private boolean isNewServerUrl(String url) {
-
-        //retrieve last server URL from the configuration
-        lastServerUrl = config.lastServerUrl;
-
-        if (StringUtil.equalsIgnoreCase(lastServerUrl, url)) {
-            // the server url is the same as by the last connection, the client
-            // may not send the device capabilities
-            return false;
-        } else {
-            // the server url is new, the value has to be stored (this is let to
-            // the SyncmlMPIConfig, while the SyncConfig isn't currently stored)
-            return true;//the url is different, client can send the device info
-        }
-    }
 
     /**
      * Posts the given message to the url specified by <code>serverUrl</code>.
@@ -1416,11 +1456,21 @@ public class SyncManager implements SyncManagerI {
     }
 
 
+    protected byte[] prepareInitializationMessage(int syncMode, boolean requireDevInf,
+            boolean md5Auth)
+    throws SyncException
+    {
+        DevInf devInf = createDevInf(deviceConfig, source);
+        return prepareInitializationMessage(syncMode, devInf, requireDevInf, md5Auth);
+    }
+
     /**
      * Prepares inizialization SyncML message
      */
-    protected byte[] prepareInitializationMessage(int syncMode, boolean requireDevInf,
-                                                  boolean md5Auth)
+    protected byte[] prepareInitializationMessage(
+            int syncMode, DevInf devInf,
+            boolean requireDevInf,
+            boolean md5Auth)
     throws SyncException
     {
         try {
@@ -1542,9 +1592,10 @@ public class SyncManager implements SyncManagerI {
 
             // Handle DevInf (both ways)
             // Add DevInf if we need to put them
-            if (sendDevInf) {
+            if (null != devInf) {
                 Put devInfPut = new Put();
-                devInfPut.setCmdID(getNextCmdID());
+                devIntPutCmdID = getNextCmdID();
+                devInfPut.setCmdID(devIntPutCmdID);
                 Meta putMeta = Meta.newInstance();
 
                 devInfPut.setMeta(putMeta);
@@ -1556,15 +1607,13 @@ public class SyncManager implements SyncManagerI {
                 if (wbxml && forceCapsInXml) {
                     // We always send caps in xml, even if the sync is in wbxml
                     putMeta.setType("application/vnd.syncml-devinf+xml");
-                    String xmlDevInf = createXmlDevInf(deviceConfig, source);
+                    String xmlDevInf = createXmlDevInf(devInf);
                     putItem.setData(Data.newInstance(xmlDevInf));
                 } else if (!wbxml) {
                     putMeta.setType("application/vnd.syncml-devinf+xml");
-                    DevInf devInf = createDevInf(deviceConfig, source);
                     putItem.setData(Data.newInstance(devInf));
                 } else {
                     putMeta.setType("application/vnd.syncml-devinf+wbxml");
-                    DevInf devInf = createDevInf(deviceConfig, source);
                     putItem.setData(Data.newInstance(devInf));
                 }
 
@@ -1575,7 +1624,7 @@ public class SyncManager implements SyncManagerI {
                 bodyCommands.addElement(devInfPut);
 
                 //reset the flag
-                sendDevInf = false;
+                forceSendDevInf = false;
             }
 
             // Add a get command to query the server for its caps
@@ -1626,8 +1675,7 @@ public class SyncManager implements SyncManagerI {
         }
     }
 
-    private String createXmlDevInf(DeviceConfig deviceConfig, SyncSource source) throws IOException {
-        DevInf devInf = createDevInf(deviceConfig, source);
+    private String createXmlDevInf(DevInf devInf) throws IOException {
         SyncMLFormatter xmlFormatter = new SyncMLFormatter(false);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         xmlFormatter.formatXmlDevInf(devInf, os, "UTF-8");
@@ -2931,6 +2979,7 @@ public class SyncManager implements SyncManagerI {
         this.serverUrl = null;
 
         this.busy = false;
+        this.devIntPutCmdID = null;
         ObjectsPool.releaseAll();
     }
 

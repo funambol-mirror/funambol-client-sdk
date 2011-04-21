@@ -159,7 +159,26 @@ public class DeviceInfo implements DeviceInfoInterface {
             float screenHeight = dm.heightPixels / dm.ydpi;
             double size = Math.sqrt(Math.pow(screenWidth, 2) +
                                     Math.pow(screenHeight, 2));
-            // Tablet devices should have a screen size greater than 6 inches
+            //some debug info
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "Device recognition data:" +
+                        " final size: " + size +
+                        ", width pixels: " + dm.widthPixels +
+                        ", height pixels: " + dm.heightPixels +
+                        ", xdpi: " + dm.xdpi +
+                        ", ydpi: " + dm.ydpi);
+            }
+            
+            //fix for Motorola Droid Pro II, wrongly recognized as a tablet
+            //Log shows: Device recognition data: final size: 6.803131430828442,
+            //           width pixels: 480, height pixels: 854, xdpi: 144.0, ydpi: 144.0
+            if ((((480 == screenWidth) && (854 == screenHeight)) ||
+                    ((854 == screenWidth) && (480 == screenHeight))) &&
+                    (144 == dm.xdpi) &&
+                    (144 == dm.ydpi)) {
+                return DeviceRole.SMARTPHONE;
+            }
+            
             return size >= 6 ? DeviceRole.TABLET : DeviceRole.SMARTPHONE;
         } catch(Throwable t) {
             Log.error(TAG_LOG, "Failed to compute screen size", t);

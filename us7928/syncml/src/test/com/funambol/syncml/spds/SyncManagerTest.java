@@ -35,7 +35,6 @@
 package com.funambol.syncml.spds;
 
 import java.util.Vector;
-import java.util.Hashtable;
 import junit.framework.*;
 
 import com.funambol.sync.SyncConfig;
@@ -50,8 +49,6 @@ import com.funambol.syncml.protocol.Status;
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.protocol.SyncHdr;
 import com.funambol.syncml.protocol.Sync;
-
-import com.funambol.util.Log;
 
 public class SyncManagerTest extends TestCase {
 
@@ -196,7 +193,7 @@ public class SyncManagerTest extends TestCase {
         hdr.setNoResp(new Boolean(true));
         msg.setSyncHdr(hdr);
 
-        sm.processInitMessage(msg, src);
+        sm.processInitMessage(msg, src, null);
 
         assertTrue(sm.statusList.size() == 0);
         assertTrue(sm.globalNoResp);

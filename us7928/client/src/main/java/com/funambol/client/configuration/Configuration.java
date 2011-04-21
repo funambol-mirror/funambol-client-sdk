@@ -788,7 +788,6 @@ public abstract class Configuration {
 
         // TODO set before this runs
         syncConfig.syncUrl = getSyncUrl();
-        syncConfig.lastServerUrl = getSyncUrl();
         syncConfig.userName = getUsername();
         syncConfig.password = getPassword();
 

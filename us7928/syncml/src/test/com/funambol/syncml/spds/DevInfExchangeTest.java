@@ -38,7 +38,6 @@ package com.funambol.syncml.spds;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-import java.util.Hashtable;
 import java.util.Vector;
 import junit.framework.*;
 
@@ -99,7 +98,6 @@ public class DevInfExchangeTest extends TestCase {
 
         SyncConfig sc = new SyncConfig();
         sc.syncUrl = "http://my.funambol.com/sync";
-        sc.lastServerUrl = "http://my.funambol.com/sync";
         sc.userName = "test";
         sc.password = "test";
         sc.preferredAuthType = SyncConfig.AUTH_TYPE_BASIC;
@@ -256,7 +254,7 @@ public class DevInfExchangeTest extends TestCase {
         }
         public DevInf processInitMessage_T(SyncML message, SyncSource source)
                 throws SyncException {
-            return processInitMessage(message, source);
+            return processInitMessage(message, source, null);
         }
         public byte[] prepareModificationMessage_T() throws SyncException {
             return prepareModificationMessage();

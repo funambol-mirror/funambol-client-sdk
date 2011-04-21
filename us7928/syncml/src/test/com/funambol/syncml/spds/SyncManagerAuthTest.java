@@ -35,8 +35,6 @@
 
 package com.funambol.syncml.spds;
 
-import java.util.Date;
-import java.util.Hashtable;
 import java.util.Vector;
 
 import com.funambol.sync.SyncException;
@@ -49,10 +47,7 @@ import com.funambol.syncml.protocol.Sync;
 import com.funambol.syncml.protocol.Cred;
 import com.funambol.syncml.protocol.Meta;
 import com.funambol.syncml.protocol.Target;
-import com.funambol.util.CodedException;
 import com.funambol.util.Log;
-import com.funambol.util.TransportAgent;
-
 import junit.framework.*;
 
 /**
@@ -956,50 +951,6 @@ public class SyncManagerAuthTest extends TestCase {
             }
         }
         return found;
-    }
-    
-    private class TestTransportAgent implements TransportAgent {
-
-        private TestMessageHandler handler;
-
-        public TestTransportAgent(TestMessageHandler h) {
-            handler = h;
-        }
-
-        public String sendMessage(String request, String charset) throws CodedException {
-            try {
-                return handler.handleMessage(request);
-            } catch (Exception e) {
-                throw new CodedException(-1, e.toString());
-            }
-        }
-
-        public String sendMessage(String request) throws CodedException {
-            return sendMessage(request, null);
-        }
-
-        public byte[] sendMessage(byte[] request) throws CodedException {
-            try {
-                return handler.handleMessage(request);
-            } catch (Exception e) {
-                throw new CodedException(-1, e.toString());
-            }
-        }
-
-        public void setRetryOnWrite(int retries) { }
-        public void setRequestURL(String requestUrl) { }
-        public String getResponseDate() { return new Date().toString(); }
-
-        public void setRequestContentType(String contentType) {
-        }
-
-        public void setCustomHeaders(Hashtable headers) {
-        }
-    }
-
-    private interface TestMessageHandler {
-        public String handleMessage(String message) throws Exception;
-        public byte[] handleMessage(byte[] message) throws Exception;
     }
 }
 

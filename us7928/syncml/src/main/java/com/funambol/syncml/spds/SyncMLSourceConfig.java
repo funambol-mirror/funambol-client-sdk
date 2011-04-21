@@ -35,6 +35,9 @@
 
 package com.funambol.syncml.spds;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Vector;
 
 import com.funambol.syncml.protocol.DataStore;
@@ -48,6 +51,9 @@ public class SyncMLSourceConfig extends SourceConfig {
     private Vector devInfExts;
 
     //------------------------------------------------------------- Constructors
+
+    /** Hash of last DevInf sent to server. */
+    private String lastDevInfHash;
     
     /**
      * Creates a new source configuration. This is the configuration of
@@ -78,6 +84,21 @@ public class SyncMLSourceConfig extends SourceConfig {
         this.dataStore = dataStore;
     }
     
+    public void serialize(DataOutputStream out) throws IOException {
+        super.serialize(out);
+        out.writeUTF(lastDevInfHash);
+    }
+    
+    public void deserialize(DataInputStream in) throws IOException {
+        super.deserialize(in);
+        try {
+            lastDevInfHash = in.readUTF();
+        } catch(IOException e) {
+            //previous version of input stream, no problem
+            lastDevInfHash = "";
+        }
+    }
+    
     /**
      * This method returns the source DataStore. This store describe the source
      * capabilities from a SyncML standpoint and this info is used to build the
@@ -95,5 +116,19 @@ public class SyncMLSourceConfig extends SourceConfig {
     public Vector getDevInfExts() {
         return devInfExts;
     }
+    
+    /**
+     * Gets the value of last DevInf hash sent to server
+     * @return
+     */
+    public String getLastDevInfHash() {
+        return lastDevInfHash;
+    }
+    /**
+     * Sets the value of last DevInf hash sent to server
+     */
+    public void setLastDevInfHash(String newValue) {
+        this.lastDevInfHash = newValue;
+    }
+    
 }
-

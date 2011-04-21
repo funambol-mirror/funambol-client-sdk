@@ -300,8 +300,6 @@ public class SyncEngine implements SyncSchedulerListener {
                 sm.addTranportAgentHeaders(customHeaders);
             }
 
-            // TODO not always necessary
-            sm.setFlagSendDevInf();
             return sm;
         }
     }
