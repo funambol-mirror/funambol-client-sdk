@@ -562,13 +562,13 @@ public class CacheTracker implements ChangesTracker {
                 if (Log.isLoggable(Log.TRACE)) {
                     Log.trace(TAG_LOG, "Item with key " + key + " was filtered out");
                 }
-                keysToRemove.add(key);
+                keysToRemove.addElement(key);
             }
         }
         
         //remote these items from the list
         for (int i=0; i<keysToRemove.size(); i++) {
-            String keyToRemove = (String)keysToRemove.get(i);
+            String keyToRemove = (String)keysToRemove.elementAt(i);
             itemsToFilterOut.remove(keyToRemove);
         }
     }

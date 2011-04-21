@@ -280,7 +280,7 @@ public abstract class TrackableSyncSource implements SyncSource {
             String key = (String)allItems.nextElement();
             boolean filteredOut = filterOutgoingItem(key);
             if (!filteredOut) {
-                goodItems.add(key);
+                goodItems.addElement(key);
             } else {
                 if (Log.isLoggable(Log.TRACE)) {
                     Log.trace(TAG_LOG, "Item with key " + key + " was filtered out");
