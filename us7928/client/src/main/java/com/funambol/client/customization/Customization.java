@@ -166,5 +166,22 @@ public interface Customization {
     // Max allowed file size for media
     public long getMaxAllowedFileSizeForFiles();
     public long getMaxAllowedFileSizeForVideos();
+
+    /**
+     * First sync behavior on upload for media
+     * @param sourceId id of the media sync source
+     * @param deviceRole kind of device
+     *
+     * @return max number of items to send to server upon first sync
+     */
+    public int getFirstSyncMediaUploadLimit(int sourceId, DeviceInfoInterface.DeviceRole deviceRole);
+    /**
+     * First sync behavior on download for media
+     * @param sourceId id of the media sync source
+     * @param deviceRole kind of device
+     *
+     * @return max number of items to receive from server upon first sync
+     */
+    public int getFirstSyncMediaDownloadLimit(int sourceId, DeviceInfoInterface.DeviceRole deviceRole);
 }
 
