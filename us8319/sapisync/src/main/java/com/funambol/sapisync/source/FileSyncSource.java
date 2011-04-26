@@ -46,8 +46,6 @@ import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.client.ChangesTracker;
-import com.funambol.sync.client.StorageLimit;
-import com.funambol.sync.client.StorageLimitException;
 import com.funambol.sync.ResumableSource;
 import com.funambol.sync.SyncSource;
 
@@ -67,6 +65,8 @@ public class FileSyncSource extends BasicMediaSyncSource implements
     protected String extensions[] = {};
 
     private int totalItemsCount = -1;
+
+    private AllItemsSorter itemsSorter = null;
 
     //------------------------------------------------------------- Constructors
 
@@ -98,6 +98,15 @@ public class FileSyncSource extends BasicMediaSyncSource implements
      */
     public String getDirectory() {
         return directory;
+    }
+
+    /**
+     * Sets a specific AllItemsSorter that will be used by the getAllItemsKeys
+     * to sort the returned items.
+     * @param sorter
+     */
+    public void setAllItemsSorter(AllItemsSorter sorter) {
+        itemsSorter = sorter;
     }
 
     /**
@@ -169,7 +178,15 @@ public class FileSyncSource extends BasicMediaSyncSource implements
                 keys.addElement(fullName);
                 totalItemsCount++;
             }
-            return keys.elements();
+
+            Enumeration result = keys.elements();
+            if(itemsSorter != null) {
+                if(Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Sorting all items keys");
+                }
+                result = itemsSorter.sort(result);
+            }
+            return result;
         } catch (Exception e) {
             Log.error(TAG_LOG, "Cannot get list of files", e);
             throw new SyncException(SyncException.CLIENT_ERROR, e.toString());
@@ -651,6 +668,14 @@ public class FileSyncSource extends BasicMediaSyncSource implements
         } else {
             return false;
         }
+    }
+
+    /**
+     * Can be used to define a sorter to be used in the getAllItemsKeys method
+     */
+    public interface AllItemsSorter {
+
+        public Enumeration sort(Enumeration items);
     }
 }
 
