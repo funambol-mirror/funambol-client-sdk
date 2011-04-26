@@ -40,8 +40,6 @@ import com.funambol.util.Log;
 /**
  * This class represents the criteria used to limit the local storage space on a
  * device.
- * 
- * @version $Id$
  */
 public abstract class StorageLimit {
 
