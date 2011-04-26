@@ -46,11 +46,13 @@ import com.funambol.sync.TwinDetectionSource;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.client.ChangesTracker;
+import com.funambol.sync.client.StorageLimit;
+import com.funambol.sync.client.StorageLimitException;
+import com.funambol.sync.ResumableSource;
+import com.funambol.sync.SyncSource;
 
 import com.funambol.platform.FileAdapter;
 import com.funambol.org.json.me.JSONException;
-import com.funambol.sync.ResumableSource;
-import com.funambol.sync.SyncSource;
 import com.funambol.util.Base64;
 import com.funambol.util.Log;
 
@@ -65,7 +67,7 @@ public class FileSyncSource extends BasicMediaSyncSource implements
     protected String extensions[] = {};
 
     private int totalItemsCount = -1;
-    
+
     //------------------------------------------------------------- Constructors
 
     /**
@@ -83,11 +85,9 @@ public class FileSyncSource extends BasicMediaSyncSource implements
      *   uploaded. {@link BasicMediaSyncSource#NO_LIMIT_ON_ITEM_AGE} could
      *   be used to remove this filter
      */
-    public FileSyncSource(SourceConfig config,
-            ChangesTracker tracker, String directory,
-            String tempDirectory,
-            long maxItemSize,
-            long oldestItemTimestamp) {
+    public FileSyncSource(SourceConfig config, ChangesTracker tracker, String directory,
+                          String tempDirectory, long maxItemSize, long oldestItemTimestamp)
+    {
         super(config, tracker, maxItemSize, oldestItemTimestamp);
         this.directory = directory;
         this.tempDirectory = tempDirectory;
@@ -384,10 +384,12 @@ public class FileSyncSource extends BasicMediaSyncSource implements
 
     protected OutputStream getDownloadOutputStream(String name, long size, boolean isUpdate,
             boolean isThumbnail, boolean append) throws IOException {
+
         String tempFileName = createTempFileName(name);
         if(Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "getDownloadOutputStream: " + tempFileName);
         }
+
         FileAdapter file = createTempFile(tempFileName);
         OutputStream os = file.openOutputStream(append);
         file.close();
