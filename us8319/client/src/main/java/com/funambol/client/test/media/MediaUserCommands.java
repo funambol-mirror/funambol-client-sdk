@@ -379,12 +379,38 @@ public interface MediaUserCommands {
     public static final String RENAME_FILE_ON_SERVER = "RenameFileOnServer";
 
     /**
+     * This command checks the integrity of a picture content on both client and
+     * server. This can be used to verify that a picture content has been
+     * uploaded/download correctly
+     * First parameter is the file name to check
+     * If the second parameter is present it is the file name on the server.
+     *
+     * @example CheckPictureContentIntegrity(testpic.jpg);
+     * @example CheckPictureContentIntegrity(testpic_client.jpg, testpic_server.jpg);
+     */
+    public static final String CHECK_PICTURE_CONTENT_INTEGRITY = "CheckPictureContentIntegrity";
+
+    /**
+     * This command checks the integrity of a video content on both client and
+     * server. This can be used to verify that a video content has been
+     * uploaded/download correctly
+     * First parameter is the file name to check
+     * If the second parameter is present it is the file name on the server.
+     *
+     * @example CheckVideoContentIntegrity(testvid.3gp);
+     * @example CheckVideoContentIntegrity(testvid_client.3gp, testvid_server.3gp);
+     */
+    public static final String CHECK_VIDEO_CONTENT_INTEGRITY = "CheckVideoContentIntegrity";
+    
+    /**
      * This command checks the integrity of a file content on both client and
      * server. This can be used to verify that a file content has been
      * uploaded/download correctly
      * First parameter is the file name to check
+     * If the second parameter is present it is the file name on the server.
      *
      * @example CheckFileContentIntegrity(testfile.txt);
+     * @example CheckFileContentIntegrity(testfile_client.txt, testfile_server.txt);
      */
     public static final String CHECK_FILE_CONTENT_INTEGRITY = "CheckFileContentIntegrity";
     

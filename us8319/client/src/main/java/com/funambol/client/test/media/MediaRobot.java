@@ -434,12 +434,11 @@ public abstract class MediaRobot extends Robot {
      * @param filename
      * @throws Throwable
      */
-    public void checkFileContentIntegrity(String filename) throws Throwable {
+    public void checkFileContentIntegrity(String type, String fileNameClient,
+            String fileNameServer) throws Throwable {
         
-        String type = BasicUserCommands.SOURCE_NAME_FILES;
-
-        JSONObject localItem = findMediaJSONObject(filename);
-        JSONObject serverItem = findMediaJSONObjectOnServer(type, filename);
+        JSONObject localItem = findMediaJSONObject(fileNameClient);
+        JSONObject serverItem = findMediaJSONObjectOnServer(type, fileNameServer);
 
         assertTrue(localItem.getString("name"), serverItem.getString("name"),
                 "Item name mismatch");
