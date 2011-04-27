@@ -50,6 +50,7 @@ import com.funambol.sync.Filter;
 import com.funambol.org.json.me.JSONObject;
 import com.funambol.org.json.me.JSONException;
 import com.funambol.sync.NonBlockingSyncException;
+import com.funambol.util.Log;
 
 /**
  * Represents a SyncSource which handles JSON file objects as input SyncItems.
@@ -175,29 +176,4 @@ public abstract class JSONSyncSource extends TrackableSyncSource {
     protected abstract OutputStream getDownloadOutputStream(String name,
             long size, boolean isUpdate, boolean isThumbnail, boolean append) throws IOException;
 
-    /**
-     * Return whether the given item is supported by the source
-     * @param item
-     * @return
-     */
-    public boolean filterSyncItem(SyncItem item) {
-
-        //
-        // TODO: FIXME remove date filtering once implemented server side
-        //
-        if(item instanceof JSONSyncItem) {
-            if(filter != null) {
-                Filter df = filter.getFullDownloadFilter();
-                if(df != null && df.getType() == Filter.DATE_RECENT_TYPE) {
-                    long dateFilter = df.getDate();
-                    JSONFileObject json = ((JSONSyncItem)item).getJSONFileObject();
-                    // Reject the item if it doesn't respect the date filter
-                    if(json.getCreationDate() < dateFilter) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
 }

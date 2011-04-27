@@ -916,16 +916,6 @@ public class SapiSyncManager implements SyncManagerI {
                 syncItem.setItemKeyUpdated(false);
             }
 
-            // Filter downloaded items for JSONSyncSources only
-            if(src instanceof JSONSyncSource) {
-                if(!((JSONSyncSource)src).filterSyncItem(syncItem)) {
-                    if (Log.isLoggable(Log.DEBUG)) {
-                        Log.debug(TAG_LOG, "Item rejected by the source: " + luid);
-                    }
-                    continue;
-                }
-            }
-
             if (downloadContent) {
                 // Download and apply the item 
                 if (src instanceof ResumableSource) {
