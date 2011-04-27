@@ -182,9 +182,13 @@ public class FileSyncSource extends JSONSyncSource implements
 
             while(files.hasMoreElements()) {
                 String file = (String)files.nextElement();
-                String fullName = getFileFullName(file);
-                keys.addElement(fullName);
-                totalItemsCount++;
+                // We better filter by extension right here, so we have the
+                // proper number of items to be returned
+                if (isSupportedExtension(file, extensions)) {
+                    String fullName = getFileFullName(file);
+                    keys.addElement(fullName);
+                    totalItemsCount++;
+                }
             }
 
             Enumeration result = keys.elements();
@@ -637,27 +641,36 @@ public class FileSyncSource extends JSONSyncSource implements
         }
         // Filter by extension
         if (reason == null && extensions != null && extensions.length > 0) {
-            reason = "its extension is not accepted";
-            key = key.toLowerCase();
-            boolean matchExtension = false;
-            for(int i=0;i<extensions.length;++i) {
-                String ext = extensions[i].toLowerCase();
-                matchExtension = key.endsWith(ext);
-                if(matchExtension) {
-                    reason = null;
-                    break;
-                }
+            if (!isSupportedExtension(key, extensions)) {
+                reason = "its extension is not accepted";
             }
         }
         if (reason != null) {
             if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "Filtering file " + key + " because " +
-                        reason);
+                Log.info(TAG_LOG, "Filtering file " + key + " because " + reason);
             }
             return true;
         } else {
             return false;
         }
+    }
+
+    /**
+     * Check if a filename has an extension which is supported (belongs to the
+     * source supported extensions)
+     */
+    protected boolean isSupportedExtension(String name, String extensions[]) {
+        if (extensions == null) {
+            return true;
+        }
+        name = name.toLowerCase();
+        for(int i=0;i<extensions.length;++i) {
+            String ext = extensions[i].toLowerCase();
+            if (name.endsWith(ext)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
