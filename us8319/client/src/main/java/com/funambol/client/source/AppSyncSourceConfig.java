@@ -42,7 +42,7 @@ import java.io.DataInputStream;
 
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.customization.Customization;
-import com.funambol.sapisync.source.BasicMediaSyncSource;
+import com.funambol.sapisync.source.FileSyncSource;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncListener;
@@ -93,7 +93,7 @@ public class AppSyncSourceConfig {
     protected boolean uploadContentViaHttp = false;
     protected String pendingSyncType = "";
     protected int    pendingSyncMode = -1;
-    protected long maxItemSize = BasicMediaSyncSource.NO_LIMIT_ON_ITEM_SIZE;
+    protected long maxItemSize = FileSyncSource.NO_LIMIT_ON_ITEM_SIZE;
     protected String version;
 
     protected boolean loaded = false;

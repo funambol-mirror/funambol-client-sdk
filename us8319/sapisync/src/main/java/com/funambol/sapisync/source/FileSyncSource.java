@@ -55,7 +55,7 @@ import com.funambol.util.Base64;
 import com.funambol.util.Log;
 
 
-public class FileSyncSource extends BasicMediaSyncSource implements
+public class FileSyncSource extends JSONSyncSource implements
         TwinDetectionSource, ResumableSource {
 
     private static final String TAG_LOG = "FileSyncSource";
@@ -67,6 +67,12 @@ public class FileSyncSource extends BasicMediaSyncSource implements
     private int totalItemsCount = -1;
 
     private AllItemsSorter itemsSorter = null;
+
+    private long maxItemSize;
+    private long oldestItemTimestamp;
+
+    public static final long NO_LIMIT_ON_ITEM_SIZE = 0;
+    public static final long NO_LIMIT_ON_ITEM_AGE = 0;
 
     //------------------------------------------------------------- Constructors
 
@@ -88,9 +94,11 @@ public class FileSyncSource extends BasicMediaSyncSource implements
     public FileSyncSource(SourceConfig config, ChangesTracker tracker, String directory,
                           String tempDirectory, long maxItemSize, long oldestItemTimestamp)
     {
-        super(config, tracker, maxItemSize, oldestItemTimestamp);
+        super(config, tracker);
         this.directory = directory;
         this.tempDirectory = tempDirectory;
+        this.maxItemSize = maxItemSize;
+        this.oldestItemTimestamp = oldestItemTimestamp;
     }
 
     /**
@@ -668,6 +676,47 @@ public class FileSyncSource extends BasicMediaSyncSource implements
         } else {
             return false;
         }
+    }
+
+    /**
+     * Analyzes the item and searches if it must be filtered out
+     * (i.e. size too big, content not supported etc)
+     *
+     * Used by {@link FileSyncSource} and by {@link MediaSyncSource}
+     *
+     * @return true if the item must be filtered out, otherwise false
+     */
+    protected boolean isOutsideSizeOrDateRange(long itemSize, long lastModifiedTimestamp) {
+        if ((maxItemSize != NO_LIMIT_ON_ITEM_SIZE) &&
+                (itemSize > maxItemSize)) {
+            return true;
+        }
+
+        // In the first sync we do not filter by timestamp because in the first
+        // sync we send a fixed number of items
+        if (syncMode != SyncSource.FULL_SYNC && syncMode != SyncSource.FULL_UPLOAD) {
+            if ((getOldestItemTimestamp() != NO_LIMIT_ON_ITEM_AGE) &&
+                    (lastModifiedTimestamp < getOldestItemTimestamp())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return the oldestItemTimestamp
+     */
+    public long getOldestItemTimestamp() {
+        return oldestItemTimestamp;
+    }
+
+    /**
+     * Generally called when a source configuration changes
+     *
+     * @param value the oldestItemTimestamp to set
+     */
+    public void setOldestItemTimestamp(long value) {
+        this.oldestItemTimestamp = value;
     }
 
     private String getContentTypeFromFileName(String fileName) {

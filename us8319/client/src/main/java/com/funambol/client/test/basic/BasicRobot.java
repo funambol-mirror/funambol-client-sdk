@@ -37,7 +37,6 @@ package com.funambol.client.test.basic;
 
 import java.util.Enumeration;
 
-import com.funambol.sapisync.source.BasicMediaSyncSource;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.controller.Controller;
 import com.funambol.client.controller.NotificationData;
@@ -47,6 +46,7 @@ import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.client.test.util.TestFileManager;
+import com.funambol.sapisync.source.FileSyncSource;
 import com.funambol.sync.SyncReport;
 import com.funambol.sync.SyncSource;
 import com.funambol.syncml.spds.SyncStatus;
@@ -286,8 +286,8 @@ public abstract class BasicRobot extends Robot {
         while(sources.hasMoreElements()) {
             AppSyncSource appSource = (AppSyncSource)sources.nextElement();
             SyncSource source = appSource.getSyncSource();
-            if (source instanceof BasicMediaSyncSource) {
-                ((BasicMediaSyncSource)source).setOldestItemTimestamp(newTS);
+            if (source instanceof FileSyncSource) {
+                ((FileSyncSource)source).setOldestItemTimestamp(newTS);
             }
         }
     }
