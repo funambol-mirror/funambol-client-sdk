@@ -183,8 +183,7 @@ public abstract class TrackableSyncSource implements SyncSource {
 
         this.syncMode = syncMode;
         cancel = false;
-        this.syncMode = syncMode;
-        
+
         if (tracker == null) {
             throw new SyncException(SyncException.CLIENT_ERROR, "Trackable source without tracker");
         }

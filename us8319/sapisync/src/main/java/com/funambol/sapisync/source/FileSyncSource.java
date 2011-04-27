@@ -184,7 +184,7 @@ public class FileSyncSource extends BasicMediaSyncSource implements
                 if(Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Sorting all items keys");
                 }
-                result = itemsSorter.sort(result, getSyncMode());
+                result = itemsSorter.sort(result, syncMode);
             }
             return result;
         } catch (Exception e) {
