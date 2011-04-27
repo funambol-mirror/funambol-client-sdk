@@ -534,67 +534,8 @@ public class FileSyncSource extends JSONSyncSource implements
         }
     }
 
-
-
     public void setSupportedExtensions(String[] extensions) {
         this.extensions = extensions;
-    }
-
-    /**
-     * Return whether a given file is filtered out by the SyncSource.
-     * @param filename
-     * @return true if the file is not OK, false if the file is OK
-     */
-    public boolean isFileFilteredOut(String name) {
-        
-        String fullName = getFileFullName(name);
-        // As long as there's no reason to filter out this file, variable reason
-        // will remain null:
-        String reason = null; // if it gets a value, the item is not OK
-        FileAdapter file = null;
-        try {
-            // Filter hidden files
-            file = new FileAdapter(fullName);
-            if (file.isHidden()) {
-                reason = "it is hidden";
-            } else {
-//                // Filter files according to standard media sync criteria
-//                if (isItemFilteredOut(file.getSize(), file.lastModified())) {
-//                    reason = "it is too large or too old";
-//                }
-            }
-        } catch(IOException ex) {
-            Log.error(TAG_LOG, "Cannot check file: " + name, ex);
-        } finally {
-            if(file != null) {
-                try {
-                    file.close();
-                } catch(Exception ex) { }
-            }
-        }
-        // Filter by extension
-        if (reason == null && extensions != null && extensions.length > 0) {
-            reason = "its extension is not accepted";
-            name = name.toLowerCase();
-            boolean matchExtension = false;
-            for(int i=0;i<extensions.length;++i) {
-                String ext = extensions[i].toLowerCase();
-                matchExtension = name.endsWith(ext);
-                if(matchExtension) {
-                    reason = null;
-                    break;
-                }
-            }
-        }
-        if (reason != null) {
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "Filtering file " + fullName + " because " +
-                        reason);
-            }
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public String getFileFullName(String name) {
