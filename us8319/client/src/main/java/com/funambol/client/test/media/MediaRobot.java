@@ -437,8 +437,11 @@ public abstract class MediaRobot extends Robot {
     public void checkFileContentIntegrity(String type, String fileNameClient,
             String fileNameServer) throws Throwable {
         
-        JSONObject localItem = findMediaJSONObject(fileNameClient);
+        JSONObject localItem = findMediaJSONObject(type, fileNameClient);
         JSONObject serverItem = findMediaJSONObjectOnServer(type, fileNameServer);
+
+        assertTrue(localItem != null, "Item not found on client");
+        assertTrue(serverItem != null, "Item not found on server");
 
         assertTrue(localItem.getString("name"), serverItem.getString("name"),
                 "Item name mismatch");
@@ -452,6 +455,7 @@ public abstract class MediaRobot extends Robot {
      * @return
      * @throws Exception
      */
-    protected abstract JSONObject findMediaJSONObject(String filename) throws Exception;
+    protected abstract JSONObject findMediaJSONObject(String type,
+            String filename) throws Exception;
 
 }
