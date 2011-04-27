@@ -184,7 +184,7 @@ public class FileSyncSource extends BasicMediaSyncSource implements
                 if(Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Sorting all items keys");
                 }
-                result = itemsSorter.sort(result);
+                result = itemsSorter.sort(result, getSyncMode());
             }
             return result;
         } catch (Exception e) {
@@ -675,7 +675,7 @@ public class FileSyncSource extends BasicMediaSyncSource implements
      */
     public interface AllItemsSorter {
 
-        public Enumeration sort(Enumeration items);
+        public Enumeration sort(Enumeration items, int syncMode);
     }
 }
 

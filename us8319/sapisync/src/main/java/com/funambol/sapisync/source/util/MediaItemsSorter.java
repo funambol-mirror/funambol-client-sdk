@@ -37,6 +37,7 @@ package com.funambol.sapisync.source.util;
 
 import com.funambol.platform.FileAdapter;
 import com.funambol.sapisync.source.FileSyncSource;
+import com.funambol.sync.SyncSource;
 import com.funambol.util.Log;
 
 import java.util.Enumeration;
@@ -56,7 +57,15 @@ public class MediaItemsSorter implements FileSyncSource.AllItemsSorter {
         this.mostRecentFirst = mostRecentFirst;
     }
     
-    public Enumeration sort(Enumeration items) {
+    public Enumeration sort(Enumeration items, int syncMode) {
+        if(syncMode != SyncSource.FULL_DOWNLOAD &&
+           syncMode != SyncSource.FULL_UPLOAD &&
+           syncMode != SyncSource.FULL_SYNC) {
+            if(Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "No need to sort items");
+            }
+            return items;
+        }
         try {
             // Prepare items to sort
             if(Log.isLoggable(Log.DEBUG)) {
