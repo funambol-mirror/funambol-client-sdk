@@ -224,7 +224,7 @@ public class FileSyncSource extends BasicMediaSyncSource implements
             jsonFileObject.setSize(size);
             jsonFileObject.setCreationdate(modified);
             jsonFileObject.setLastModifiedDate(modified);
-            jsonFileObject.setMimetype("application/octet-stream");
+            jsonFileObject.setMimetype(getContentTypeFromFileName(fileName));
 
             FileSyncItem syncItem = new FileSyncItem(fileFullName, item.getKey(),
                     getConfig().getType(), item.getState(), item.getParent(),
@@ -667,6 +667,31 @@ public class FileSyncSource extends BasicMediaSyncSource implements
             return true;
         } else {
             return false;
+        }
+    }
+
+    private String getContentTypeFromFileName(String fileName) {
+        int start = fileName.indexOf('.');
+        String extension = fileName.substring(start+1);
+        if(extension.equalsIgnoreCase("jpg") ||
+                extension.equalsIgnoreCase("jpeg") ||
+                extension.equalsIgnoreCase("jpe")) {
+            return "image/jpeg";
+        } else if(extension.equalsIgnoreCase("gif")) {
+            return "image/gif";
+        } else if(extension.equalsIgnoreCase("png")) {
+            return "image/png";
+        } else if(extension.equalsIgnoreCase("svg")) {
+            return "image/svg+xml";
+        } else if(extension.equalsIgnoreCase("3gp")) {
+            return "video/3gpp";
+        } else if(extension.equalsIgnoreCase("mp4")) {
+            return "video/mp4";
+        } else if(extension.equalsIgnoreCase("avi")) {
+            return "video/avi";
+        } else {
+            // generic mime type for a file
+            return "application/octet-stream";
         }
     }
 
