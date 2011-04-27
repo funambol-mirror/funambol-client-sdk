@@ -49,6 +49,12 @@ import java.util.Vector;
 public class MediaItemsSorter implements FileSyncSource.AllItemsSorter {
 
     private static final String TAG_LOG = "MediaItemsSorter";
+
+    private boolean mostRecentFirst;
+    
+    public MediaItemsSorter(boolean mostRecentFirst) {
+        this.mostRecentFirst = mostRecentFirst;
+    }
     
     public Enumeration sort(Enumeration items) {
         try {
@@ -69,7 +75,7 @@ public class MediaItemsSorter implements FileSyncSource.AllItemsSorter {
                 Log.debug(TAG_LOG, "Sorting items");
             }
             QuickSort sort = new QuickSort();
-            sort.quicksort(fileItems, false);
+            sort.quicksort(fileItems, !mostRecentFirst);
 
             // Prepare result
             if(Log.isLoggable(Log.DEBUG)) {
