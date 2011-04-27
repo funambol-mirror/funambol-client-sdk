@@ -334,19 +334,71 @@ public class FileSyncSource extends JSONSyncSource implements
         if(Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "addItem");
         }
-        return addUpdateItem(item, false);
+        JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
+        try {
+            String fullName = getFileFullName(jsonSyncItem.getContentName());
+
+            FileAdapter tgtFile = new FileAdapter(fullName);
+            if (tgtFile.exists()) {
+                // This is the case where the client and the server have a file
+                // with the very same name but different content. In this case
+                // we rename the destination file
+                fullName = createUniqueFileName(fullName);
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Changing target file name to avoid clashing " + fullName);
+                }
+            }
+            tgtFile.close();
+
+            item.setKey(fullName);
+            if(Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "key set to:" + fullName);
+            }
+            // This is a new file, rename the temp file
+            String sourceFileName = createTempFileName(jsonSyncItem.getContentName());
+            renameTempFile(sourceFileName, fullName);
+
+            super.addItem(item);
+            return SyncSource.SUCCESS_STATUS;
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Cannot rename temporary file", ioe);
+            throw new SyncException(SyncException.CLIENT_ERROR, "Cannot rename temporary file");
+        }
+    }
+
+    private String createUniqueFileName(String origFileName) throws IOException {
+        // Search for the extension
+        int lastPeriodIdx = origFileName.lastIndexOf('.');
+        String prefix = "";
+        String suffix = "";
+        if (lastPeriodIdx == -1) {
+            prefix = origFileName;
+        } else {
+            prefix = origFileName.substring(0, lastPeriodIdx);
+            if (lastPeriodIdx < origFileName.length() - 1) {
+                suffix = origFileName.substring(lastPeriodIdx + 1);
+            }
+        }
+        // Search for a possible file name
+        for(int i=0;i<1000;++i) {
+            StringBuffer n = new StringBuffer();
+            n.append(prefix).append("-").append(i).append(".").append(suffix);
+            String newName = n.toString();
+            FileAdapter f = new FileAdapter(newName);
+            try {
+                if (!f.exists()) {
+                    return newName;
+                }
+            } finally {
+                f.close();
+            }
+        }
+        return origFileName;
     }
 
     protected int updateItem(SyncItem item) throws SyncException {
         if(Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "updateItem");
-        }
-        return addUpdateItem(item, true);
-    }
-
-    protected int addUpdateItem(SyncItem item, boolean update) throws SyncException {
-        if(Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "addUpdateItem");
         }
         JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
         try {
@@ -355,42 +407,31 @@ public class FileSyncSource extends JSONSyncSource implements
             if(Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "key set to:" + fullName);
             }
-            if (update) {
-                if (jsonSyncItem.isItemKeyUpdated()) {
-                    // Update the tracker of the renamed item
-                    // Must be done before renaming the file since the rename
-                    // event will be notified to the tracker itself
-                    getTracker().removeItem(new SyncItem(jsonSyncItem.getOldKey(),
-                            null, SyncItem.STATE_DELETED, null));
-                    getTracker().removeItem(new SyncItem(jsonSyncItem.getKey(),
-                            null, SyncItem.STATE_NEW, null));
-                }
-                if (jsonSyncItem.isItemContentUpdated()) {
-                    // The new content has been downloaded into a temporary file
-                    String sourceFileName = createTempFileName(jsonSyncItem.getContentName());
-                    renameTempFile(sourceFileName, fullName);
-                    if (jsonSyncItem.isItemKeyUpdated()) {
-                        // We shall remove the old file
-                        String oldFileName = jsonSyncItem.getOldKey();
-                        FileAdapter fa = new FileAdapter(oldFileName);
-                        fa.delete();
-                    }
-                } else if (jsonSyncItem.isItemKeyUpdated()) {
-                    // This is just a rename
-                    String sourceFileName = jsonSyncItem.getOldKey();
-                    renameTempFile(sourceFileName, fullName);
-                }
-            } else {
-                // This is a new file, rename the temp file
+            if (jsonSyncItem.isItemKeyUpdated()) {
+                // Update the tracker of the renamed item
+                // Must be done before renaming the file since the rename
+                // event will be notified to the tracker itself
+                getTracker().removeItem(new SyncItem(jsonSyncItem.getOldKey(),
+                        null, SyncItem.STATE_DELETED, null));
+                getTracker().removeItem(new SyncItem(jsonSyncItem.getKey(),
+                        null, SyncItem.STATE_NEW, null));
+            }
+            if (jsonSyncItem.isItemContentUpdated()) {
+                // The new content has been downloaded into a temporary file
                 String sourceFileName = createTempFileName(jsonSyncItem.getContentName());
                 renameTempFile(sourceFileName, fullName);
+                if (jsonSyncItem.isItemKeyUpdated()) {
+                    // We shall remove the old file
+                    String oldFileName = jsonSyncItem.getOldKey();
+                    FileAdapter fa = new FileAdapter(oldFileName);
+                    fa.delete();
+                }
+            } else if (jsonSyncItem.isItemKeyUpdated()) {
+                // This is just a rename
+                String sourceFileName = jsonSyncItem.getOldKey();
+                renameTempFile(sourceFileName, fullName);
             }
-
-            if (update) {
-                super.updateItem(item);
-            } else {
-                super.addItem(item);
-            }
+            super.updateItem(item);
             return SyncSource.SUCCESS_STATUS;
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Cannot rename temporary file", ioe);
