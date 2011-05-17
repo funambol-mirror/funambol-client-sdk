@@ -312,8 +312,6 @@ public class HttpConnectionAdapter {
         StatusLine statusLine = httpResponse.getStatusLine();
         responseCode = statusLine.getStatusCode();
 
-        Log.error("MARCO", "responseCode=" + responseCode);
-
         HttpEntity respEntity = httpResponse.getEntity();
         if (respEntity != null) {
             respInputStream = respEntity.getContent();
