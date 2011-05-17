@@ -135,6 +135,8 @@ public class HttpConnectionAdapter {
     public static final String POST             = "POST";
     public static final String HEAD             = "HEAD";
 
+    private static final int DEFAULT_CHUNK_SIZE = 4096;
+
 
     /** This is the underlying connection */
     private HttpURLConnection conn;
@@ -209,16 +211,38 @@ public class HttpConnectionAdapter {
      *
      * @throws IOException if the output stream cannot be opened.
      */
-    public OutputStream openOutputStream() throws IOException {
+    public void execute(InputStream is) throws IOException {
         if (conn == null) {
             throw new IOException("Cannot open output stream on non opened connection");
         }
+        OutputStream os = null;
         try {
-            return conn.getOutputStream();
+            os = conn.getOutputStream();
+            byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
+            int read;
+            do {
+                read = is.read(chunk);
+                if (read > 0) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "Writing chunk size: " + read);
+                    }
+                    os.write(chunk, 0, read);
+                }
+            } while(read != -1);
+            os.flush();
         } catch (UnknownHostException ue) {
             // Translate this exception into a platform independent one
             throw new ConnectionNotFoundException(ue.getMessage());
+        } finally {
+            // Release all resources
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {}
+                os = null;
+            }
         }
+
     }
 
     /**

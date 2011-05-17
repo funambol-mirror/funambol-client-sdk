@@ -225,7 +225,6 @@ public class SapiHandler {
             listener.queryStarted((int)contentLength);
         }
         try {
-            os = conn.openOutputStream();
             // In case of SAPI that require a body, this must be written here
             // Note that the length is not handled here because we don't know
             // the length of the stream. Callers shall put it in the custom
@@ -240,27 +239,17 @@ public class SapiHandler {
                     requestIs.skip(fromByte);
                     total += fromByte;
                 }
-                byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
-                do {
-                    read = requestIs.read(chunk);
-                    if (read > 0) {
-                        if (Log.isLoggable(Log.TRACE)) {
-                            Log.trace(TAG_LOG, "Writing chunk size: " + read);
-                        }
-                        total += read;
-                        os.write(chunk, 0, read);
-                        if(listener != null) {
-                            listener.queryProgress(total);
-                        }
-                    }
-                } while(read != -1 && !isQueryCancelled());
-                
+
+                SapiInputStream sapiIs = new SapiInputStream(requestIs, total, listener);
+                conn.execute(sapiIs);
+
                 if(isQueryCancelled()) {
                     Log.debug(TAG_LOG, "Query cancelled");
                     throw new IOException("Query cancelled");
                 }
+            } else {
+                conn.execute(null);
             }
-            os.flush();
 
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "Response code is: " + conn.getResponseCode());
@@ -406,13 +395,6 @@ public class SapiHandler {
             }
             throw ioe;
         } finally {
-            // Release all resources
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {}
-                os = null;
-            }
             if (is != null) {
                 try {
                     is.close();
@@ -475,8 +457,7 @@ public class SapiHandler {
             // Ask for the current length
             conn.setRequestProperty("Content-Range", "bytes */" + size);
 
-            os = conn.openOutputStream();
-            os.flush();
+            conn.execute(null);
 
             if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
                 // We have uploaded the item completely or the SAPI returned an
@@ -554,12 +535,6 @@ public class SapiHandler {
             Log.error(TAG_LOG, "Cannot open http connection", ioe);
             throw ioe;
         } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {}
-                os = null;
-            }
             if (conn != null) {
                 try {
                     conn.close();
@@ -666,6 +641,55 @@ public class SapiHandler {
          */
         public void queryEnded();
         
+    }
+
+    private class SapiInputStream extends InputStream {
+
+        private InputStream is;
+        private SapiQueryListener listener;
+        private int offset;
+
+        public SapiInputStream(InputStream is, int offset, SapiQueryListener listener) {
+            this.is = is;
+            this.offset = offset;
+            this.listener = listener;
+        }
+
+        public int read() throws IOException {
+            if(isQueryCancelled()) {
+                Log.debug(TAG_LOG, "Query cancelled");
+                throw new IOException("Query cancelled");
+            }
+            int res = is.read();
+            if (listener != null) {
+                listener.queryProgress(offset++);
+            }
+            return res;
+        }
+
+        public void close() throws IOException {
+            is.close();
+        }
+
+        public int available() throws IOException {
+            return is.available();
+        }
+
+        public void mark(int readlimit) {
+            is.mark(readlimit);
+        }
+
+        public boolean markSupported() {
+            return is.markSupported();
+        }
+
+        public void reset() throws IOException {
+            is.reset();
+        }
+
+        public long skip(long n) throws IOException {
+            return is.skip(n);
+        }
     }
 
 }

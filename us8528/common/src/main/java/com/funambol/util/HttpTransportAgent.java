@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.io.ByteArrayInputStream;
 import java.util.TimerTask;
 import java.util.Timer;
 import java.util.Hashtable;
@@ -537,9 +538,9 @@ public final class HttpTransportAgent implements TransportAgent {
                     status = WRITE_REQUEST;
                     //Write the message to send into the stream
                     //forceBreakConnection();
-                    os = c.openOutputStream();
 
-                    os.write(request);
+                    c.execute(new ByteArrayInputStream(request));
+
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Message sent at attempt " + (i + 1) + ", waiting for response.");
                     }

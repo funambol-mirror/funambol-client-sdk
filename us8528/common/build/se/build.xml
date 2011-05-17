@@ -106,8 +106,7 @@ Build file for Funambol Java Common API.
     <target name="compile" depends="init">
         <mkdir dir="${dir.classes}"/>
         <javac srcdir="${dir.src}" destdir="${dir.classes}"
-               target="1.1" source="1.2" debug="${debug}"
-               listfiles="no" >
+               debug="${debug}" listfiles="no" >
                <classpath>
                    <pathelement location="${lib.gzip}"/>
                </classpath>
