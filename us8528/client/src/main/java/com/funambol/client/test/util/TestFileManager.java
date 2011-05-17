@@ -161,7 +161,7 @@ public class TestFileManager {
         try {
             conn = ConnectionManager.getInstance().openHttpConnection(url, null);
             conn.setRequestMethod(HttpConnectionAdapter.GET);
-            conn.execute(null);
+            conn.execute(null, -1);
             if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
                 is = conn.openInputStream();
                 int b;

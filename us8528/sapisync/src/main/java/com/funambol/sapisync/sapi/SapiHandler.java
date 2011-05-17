@@ -159,6 +159,8 @@ public class SapiHandler {
         String url = createUrl(name, action, params);
         HttpConnectionAdapter conn;
         
+        long uploadContentLength = contentLength - fromByte;
+
         try {
             // Open the connection with a given size to prevent the output
             // stream from buffering all data
@@ -178,7 +180,6 @@ public class SapiHandler {
                 conn.setRequestProperty(CONTENT_TYPE_HEADER, contentType);
             }
 
-            long uploadContentLength = contentLength - fromByte;
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Setting content length to " + uploadContentLength);
             }
@@ -241,14 +242,14 @@ public class SapiHandler {
                 }
 
                 SapiInputStream sapiIs = new SapiInputStream(requestIs, total, listener);
-                conn.execute(sapiIs);
+                conn.execute(sapiIs, uploadContentLength);
 
                 if(isQueryCancelled()) {
                     Log.debug(TAG_LOG, "Query cancelled");
                     throw new IOException("Query cancelled");
                 }
             } else {
-                conn.execute(null);
+                conn.execute(null, -1);
             }
 
             if (Log.isLoggable(Log.TRACE)) {
@@ -268,7 +269,6 @@ public class SapiHandler {
                         String headerValue = conn.getHeaderField(headerKey);
                         Log.trace(TAG_LOG, "Header key: " + headerKey + "=" + headerValue);
                         headerKey = conn.getHeaderFieldKey(h++);
-
                     }
                 }
 
@@ -457,7 +457,7 @@ public class SapiHandler {
             // Ask for the current length
             conn.setRequestProperty("Content-Range", "bytes */" + size);
 
-            conn.execute(null);
+            conn.execute(null, -1);
 
             if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
                 // We have uploaded the item completely or the SAPI returned an
@@ -502,6 +502,7 @@ public class SapiHandler {
                     return size;
                 }
             } else if (conn.getResponseCode() == 308) {
+
                 String length = conn.getHeaderField("Range");
                 if (length == null) {
                     Log.error(TAG_LOG, "Server did not return a valid range");
@@ -514,6 +515,9 @@ public class SapiHandler {
                     return 0;
                 }
                 length = length.substring(minusIdx+1).trim();
+
+                Log.trace("MARCO", "Partial content length is: " + length);
+
                 try {
                     long res = Long.parseLong(length);
                     return res;

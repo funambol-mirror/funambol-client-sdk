@@ -62,13 +62,13 @@ public class TestableHttpConnectionAdapter extends HttpConnectionAdapter {
         return is;
     }
 
-    public void execute(InputStream is) throws IOException {
+    public void execute(InputStream is, long length) throws IOException {
         if (StringUtil.equalsIgnoreCase("sending", breakOnPhase)) {
             TestableInputStream tis = new TestableInputStream(is);
             tis.breakOnByte(breakOnPos);
             is = tis;
         }
-        super.execute(is);
+        super.execute(is, length);
     }
 
     public void setBreakInfo(String phase, int breakOnPos) {

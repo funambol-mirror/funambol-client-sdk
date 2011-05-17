@@ -178,6 +178,7 @@ public class HttpConnectionAdapter {
     private HttpResponse httpResponse = null;
     private InputStream respInputStream;
     private ProxyConfig proxyConfig;
+    private int chunkLength = -1;
 
     public HttpConnectionAdapter() {
         HttpParams params = new BasicHttpParams();
@@ -223,36 +224,16 @@ public class HttpConnectionAdapter {
         if (request == null) {
             // This is a GET request
             HttpGet req = new HttpGet(url);
-
-            if (requestHeaders != null) {
-                for(String key : requestHeaders.keySet()) {
-                    String value = requestHeaders.get(key);
-                    if (!"Content-Length".equals(key)) {
-                        Log.trace(TAG_LOG, "Setting header: " + key + "=" + value);
-                        req.addHeader(key, value);
-                    }
-                }
-            }
-
-            try {
-                Log.trace(TAG_LOG, "Executing request");
-                httpResponse = httpClient.execute(req);
-            } catch (Exception e) {
-                Log.error(TAG_LOG, "Exception while executing request", e);
-                throw new IOException(e.toString());
-            }
-            // Set the response
-            StatusLine statusLine = httpResponse.getStatusLine();
-            responseCode = statusLine.getStatusCode();
-
-            HttpEntity respEntity = httpResponse.getEntity();
-            if (respEntity != null) {
-                respInputStream = respEntity.getContent();
-            }
-            responseHeaders = httpResponse.getAllHeaders();
+            performRequest(req);
         }
         return respInputStream;
     }
+
+    /*
+    public void execute(InputStream is) throws IOException {
+        execute(is, -1);
+    }
+    */
 
     /**
      * Open the output stream. The ownership of the stream is transferred to the
@@ -261,62 +242,44 @@ public class HttpConnectionAdapter {
      *
      * @throws IOException if the output stream cannot be opened.
      */
-    public void execute(InputStream is) throws IOException {
+    public void execute(InputStream is, long length) throws IOException {
 
         Log.debug(TAG_LOG, "Opening url: " + url);
         Log.debug(TAG_LOG, "Opening with method " + requestMethod);
 
+        String contentType = null;
+        if (requestHeaders != null) {
+            contentType = requestHeaders.get("Content-Type");
+        }
+        if (contentType == null) {
+            contentType = "binary/octet-stream";
+        }
+
         if (POST.equals(requestMethod)) {
             request = new HttpPost(url);
             if (is != null) {
-                InputStreamEntity reqEntity = new InputStreamEntity(is, -1); 
-                reqEntity.setContentType("binary/octet-stream"); 
-                reqEntity.setChunked(true); 
+                InputStreamEntity reqEntity = new InputStreamEntity(is, length); 
+                reqEntity.setContentType(contentType); 
+                if (chunkLength > 0) {
+                    reqEntity.setChunked(true); 
+                }
                 ((HttpPost)request).setEntity(reqEntity);
             }
         } else if (PUT.equals(requestMethod)) {
             request = new HttpPut(url);
             if (is != null) {
-                InputStreamEntity reqEntity = new InputStreamEntity(is, -1); 
-                reqEntity.setContentType("binary/octet-stream"); 
-                reqEntity.setChunked(true); 
+                InputStreamEntity reqEntity = new InputStreamEntity(is, length); 
+                reqEntity.setContentType(contentType); 
+                if (chunkLength > 0) {
+                    reqEntity.setChunked(true); 
+                }
                 ((HttpPost)request).setEntity(reqEntity);
             }
         } else {
             request = new HttpGet(url);
         }
 
-        if (requestHeaders != null) {
-            for(String key : requestHeaders.keySet()) {
-                String value = requestHeaders.get(key);
-                if (!"Content-Length".equals(key)) {
-                    Log.trace(TAG_LOG, "Setting header: " + key + "=" + value);
-                    request.addHeader(key, value);
-                }
-            }
-        }
-
-        // Set the proxy if necessary
-        if (proxyConfig != null) {
-            HttpParams params = new BasicHttpParams();
-            ConnRouteParams.setDefaultProxy(params, new HttpHost(proxyConfig.getAddress(), proxyConfig.getPort()));
-            httpClient.setParams(params);
-        }
-
-        if (request == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
-        }
-
-        httpResponse = httpClient.execute(request);
-
-        StatusLine statusLine = httpResponse.getStatusLine();
-        responseCode = statusLine.getStatusCode();
-
-        HttpEntity respEntity = httpResponse.getEntity();
-        if (respEntity != null) {
-            respInputStream = respEntity.getContent();
-        }
-        responseHeaders = httpResponse.getAllHeaders();
+        performRequest(request);
     }
 
     /**
@@ -366,14 +329,15 @@ public class HttpConnectionAdapter {
     }
 
     /**
-     * Set chunked encoding for the file to be uploaded. This avoid the output
+     * Set chunked encoding for the content to be uploaded. This avoid the output
      * stream to buffer all data before transmitting it.
      * This is currently not supported by this implementation and the method has
-     * no effect.
+     * no effect because httpclient performs chunking by default.
      *
      * @param chunkLength the length of the single chunk
      */
     public void setChunkedStreamingMode(int chunkLength) throws IOException {
+        this.chunkLength = chunkLength;
     }
     
     /**
@@ -403,7 +367,19 @@ public class HttpConnectionAdapter {
      */
     public String getHeaderField(String key) throws IOException {
         if (request != null) {
-            Header header = httpResponse.getLastHeader(key);
+
+
+            //////////////////////////////////////////////////////////////
+            Header headers[] = httpResponse.getHeaders(key);
+            if (headers != null) {
+                for(int i=0;i<headers.length;++i) {
+                    Header h = headers[i];
+                    Log.error("MARCO", "Header " + key + " has value " + h.getValue());
+                }
+            }
+            //////////////////////////////////////////////////////////////
+
+            Header header = httpResponse.getFirstHeader(key);
             if (header != null) {
                 return header.getValue();
             }
@@ -483,6 +459,46 @@ public class HttpConnectionAdapter {
      */
     public void connect() throws IOException {
     }
+
+    private void performRequest(HttpRequestBase req) throws IOException {
+        // Set all the headers
+        if (requestHeaders != null) {
+            for(String key : requestHeaders.keySet()) {
+                String value = requestHeaders.get(key);
+                // The content length is set by httpclient and it is feteched
+                // from the request stream
+                if (!"Content-Length".equals(key)) {
+                    Log.trace(TAG_LOG, "Setting header: " + key + "=" + value);
+                    req.addHeader(key, value);
+                }
+            }
+        }
+
+        // Set the proxy if necessary
+        if (proxyConfig != null) {
+            HttpParams params = new BasicHttpParams();
+            ConnRouteParams.setDefaultProxy(params, new HttpHost(proxyConfig.getAddress(), proxyConfig.getPort()));
+            httpClient.setParams(params);
+        }
+
+        try {
+            Log.trace(TAG_LOG, "Executing request");
+            httpResponse = httpClient.execute(req);
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Exception while executing request", e);
+            throw new IOException(e.toString());
+        }
+        // Set the response
+        StatusLine statusLine = httpResponse.getStatusLine();
+        responseCode = statusLine.getStatusCode();
+
+        HttpEntity respEntity = httpResponse.getEntity();
+        if (respEntity != null) {
+            respInputStream = respEntity.getContent();
+        }
+        responseHeaders = httpResponse.getAllHeaders();
+    }
+
 }
 
 

@@ -90,7 +90,7 @@ public class HttpConnectionAdapterMock extends HttpConnectionAdapter {
         }
     }
 
-    public void execute(InputStream is) throws IOException {
+    public void execute(InputStream is, long length) throws IOException {
         // Simulate reading the input stream
         int read = -1;
         byte buf[] = new byte[4096];

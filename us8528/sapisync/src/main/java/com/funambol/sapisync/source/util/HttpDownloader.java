@@ -205,7 +205,7 @@ public class HttpDownloader  {
             }
 
             boolean ok;
-            conn.execute(null);
+            conn.execute(null, -1);
 
             int respCode = conn.getResponseCode();
             if (resume) {

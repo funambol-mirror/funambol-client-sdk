@@ -204,6 +204,12 @@ public class HttpConnectionAdapter {
         return conn.getInputStream();
     }
 
+    /*
+    public void execute(InputStream is) throws IOException {
+        execute(is, -1);
+    }
+    */
+
     /**
      * Open the output stream. The ownership of the stream is transferred to the
      * caller which is responsbile to close and release the resource once it is
@@ -211,7 +217,7 @@ public class HttpConnectionAdapter {
      *
      * @throws IOException if the output stream cannot be opened.
      */
-    public void execute(InputStream is) throws IOException {
+    public void execute(InputStream is, long length) throws IOException {
         if (conn == null) {
             throw new IOException("Cannot open output stream on non opened connection");
         }

@@ -539,7 +539,7 @@ public final class HttpTransportAgent implements TransportAgent {
                     //Write the message to send into the stream
                     //forceBreakConnection();
 
-                    c.execute(new ByteArrayInputStream(request));
+                    c.execute(new ByteArrayInputStream(request), request.length);
 
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Message sent at attempt " + (i + 1) + ", waiting for response.");
