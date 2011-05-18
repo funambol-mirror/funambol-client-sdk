@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<!--
+================================================================================
+Build file for Funambol Java Client
+================================================================================
+-->
+<project name="Funambol Java Client" default="build" basedir="../..">
+    <!--
+    ========================================================================
+     Setting variable
+    ========================================================================
+    -->
+    <target name="init">
+        <tstamp>
+            <format property="timestamp.MM" pattern="MM" />
+            <format property="timestamp.dd" pattern="dd" />
+            <format property="timestamp.HH" pattern="HH" />
+        </tstamp>
+
+        <property file="${user.home}/funambol/build/android/build.properties"/>
+        <property file="build/common.properties"/>
+        <property file="build/android/build.properties"/>
+
+        <property name="dir.src"          value="${basedir}/src/main/java"   />
+        <property name="dir.test.src"     value="${basedir}/src/test"        />
+        <property name="dir.res"          value="${dir.test.src}/res"        />     
+        <property name="dir.output"       value="${basedir}/output/android"  />    
+        <property name="dir.docs"         value="${basedir}/docs"            />      
+        <property name="dir.output.html"  value="${dir.output}/html"         />
+        <property name="dir.classes"      value="${dir.output}/classes"      />
+        <property name="dir.tools"        value="${basedir}/../tools"        />
+        <property name="dir.html"         value="${dir.output}/html"     />
+        <property name="lib.funambol.common" value="${basedir}/../common/output/android/funambol-android-common.jar"/>
+        <property name="lib.funambol.sync"   value="${basedir}/../sync/output/android/funambol-android-sync.jar"/>
+        <property name="lib.funambol.syncml" value="${basedir}/../syncml/output/android/funambol-android-syncml.jar"/>
+        <property name="lib.funambol.sapisync" value="${basedir}/../sapisync/output/android/funambol-android-sapisync.jar"/>
+
+        <property name="sdk-folder"          value="../android_sdk" />
+        <property name="android-jar"         value="${sdk-folder}/android.jar" />
+    </target>
+   
+    <target name="compile" depends="init">
+        <mkdir dir="${dir.classes}"/>
+        <javac srcdir="${dir.src}" destdir="${dir.classes}"
+               target="1.1" source="1.2" debug="${debug}"
+               listfiles="yes" >
+               <classpath>
+                   <pathelement location="${lib.funambol.common}"/>
+                   <pathelement location="${lib.funambol.sync}"/>
+                   <pathelement location="${lib.funambol.syncml}"/>
+                   <pathelement location="${lib.funambol.sapisync}"/>
+               </classpath>
+               <bootclasspath>
+                   <pathelement location="${android-jar}"/>
+               </bootclasspath>
+        </javac>
+    </target>
+
+    <!-- =============================================== -->
+    <!-- CLEAN                                           -->
+    <!-- =============================================== -->
+    <target name="clean" depends="init">
+        <echo message="Clean output tree ${dir.output}"/>
+        <delete dir="${dir.output}"/>
+        <delete>
+            <fileset dir="." includes="**/*.bak"/>
+        </delete>
+    </target>
+
+    <!-- =============================================== -->
+    <!-- BUILD                                           -->
+    <!-- =============================================== -->
+    <target name="build" depends="compile">
+
+        <echo message="Packaging library"/>
+        <jar destfile="${dir.output}/${jar.name}.jar">
+            <fileset dir="${dir.classes}" includes="**/*.class"/>
+        </jar>
+    </target>
+
+    
+    <!-- =================================================================== -->
+    <!-- RELEASE                                                             -->
+    <!-- When a new release is created, the release.properties file is       -->
+    <!-- updated with the current date and incrementing the build number.    -->
+    <!-- ====================================================================-->
+    <target name="release">
+        <antcall target="compile"/>
+        <antcall target="docs"/> <!-- public javadocs for release -->
+        <zip zipfile="${dir.output}/${j2me.name}-${j2me.version}.zip">
+            <zipfileset dir="." includes="**/*" excludes="CVS/, **/nbproject/"/>
+        </zip>
+        
+    </target>
+
+    <!-- =============================================== -->
+    <!-- DOCS                                            -->
+    <!-- =============================================== -->
+    <target name="docs" depends="init">
+        <ant antfile="${basedir}/build/build.xml" target="docs">
+            <property name="dir.html"            value="${dir.html}"/>
+            <property name="dir.src"             value="${dir.src}"/>
+            <property name="lib.funambol.common" value="${lib.funambol.common}"/>
+            <property name="lib.funambol.sync"   value="${lib.funambol.sync}"/>
+            <property name="lib.funambol.syncml" value="${lib.funambol.syncml}"/>
+            <property name="lib.funambol.sapisync" value="${lib.funambol.sapisync}"/>
+            <property name="wtk.home"            value="${wtk.home}"/>
+            <property name="classpath"           value="${classpath}"/>
+            <property name="platform"            value="Java SE"/>
+        </ant>
+    </target>
+</project>
+
