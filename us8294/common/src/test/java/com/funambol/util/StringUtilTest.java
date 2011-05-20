@@ -311,13 +311,19 @@ public class StringUtilTest extends TestCase {
         String res = StringUtil.removePortFromUrl(url, "http");
         assertEquals(res, "http://my.funambol.com/sync");
 
-        Log.error("Removed port = "  + res);
-
         url = "http://my.funambol.com/sync";
         res = StringUtil.removePortFromUrl(url, "http");
         assertEquals(res, "http://my.funambol.com/sync");
+    }
 
-        Log.error("Removed port = "  + res);
+    public void testRemoveProtocolFromUrl() throws Exception {
+        String url = "http://my.funambol.com:8080/sync";
+        String res = StringUtil.removeProtocolFromUrl(url);
+        assertEquals(res, "my.funambol.com:8080/sync");
+
+        url = "https://my.funambol.com/sync";
+        res = StringUtil.removeProtocolFromUrl(url);
+        assertEquals(res, "my.funambol.com/sync");
     }
     
     public void testGetProtocolFromUrl() throws Exception {

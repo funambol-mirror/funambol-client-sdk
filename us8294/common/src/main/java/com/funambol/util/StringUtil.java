@@ -447,6 +447,19 @@ public class StringUtil {
         }
         return url;
     }
+
+    /**
+     * This method removes the protocol from a URI
+     * @param url eg. http://127.0.0.1:8080/sync
+     * @return 127.0.0.1:8080
+     */
+    public static String removeProtocolFromUrl(String url) {
+        int idx = url.indexOf("://");
+        if (idx != -1) {
+            url = url.substring(idx + 3);
+        }
+        return url;
+    }
     
     /**
      * This method retrieves the protocol used in the given url.
@@ -553,6 +566,7 @@ public class StringUtil {
 
         return sb.toString();
     }
+
 
     public static int lastIndexOf(String s, char ch) {
         if (s == null) {
