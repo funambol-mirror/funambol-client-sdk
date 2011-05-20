@@ -122,6 +122,11 @@ public abstract class Configuration {
 
     protected static final String CONF_KEY_CURRENT_SYNC_RETRY_COUNT = "CURRENT_SYNC_RETRY_COUNT";
 
+
+    protected static final String CONF_KEY_PROFILE_EXPIRE_DATE = "PROFILE_EXPIRE_DATE";
+    protected static final String CONF_KEY_PROFILE_MANUAL_ONLY = "PROFILE_MANUAL_ONLY";
+    protected static final String CONF_KEY_PROFILE_NETWORK_USAGE_WARNING = "PROFILE_NETWORK_USAGE_WARNING";
+
     protected static final String CONFIG_VERSION = "10";
 
     protected String       version;
@@ -173,6 +178,14 @@ public abstract class Configuration {
      * These are the server dev inf. The information must be wiped each time the sync url gets changed.
      */
     protected DevInf       serverDevInf              = null;
+
+    /**
+     * Profile information
+     */
+    protected long profileExpireDate                 = -1;
+    protected boolean profileManualOnly              = false;
+    protected boolean profileNetworkUsageWarning     = false;
+
 
     // These values don't need to be saved/restored
     protected boolean      initialized               = false;
@@ -312,6 +325,11 @@ public abstract class Configuration {
 
             Date now = new Date();
             firstRunTimestamp = loadLongKey(CONF_KEY_FIRST_RUN_TIMESTAMP, now.getTime());
+
+            // Profile properties
+            profileExpireDate = loadLongKey(CONF_KEY_PROFILE_EXPIRE_DATE, -1);
+            profileManualOnly = loadBooleanKey(CONF_KEY_PROFILE_MANUAL_ONLY, false);
+            profileNetworkUsageWarning = loadBooleanKey(CONF_KEY_PROFILE_NETWORK_USAGE_WARNING, false);
 
             String devInf = loadStringKey(CONF_KEY_SERVER_DEV_INF, null);
             if (devInf != null && devInf.length() > 0) {
@@ -456,6 +474,11 @@ public abstract class Configuration {
         saveLongKey(CONF_KEY_LAST_REMINDER, lastReminder);
         saveBooleanKey(CONF_KEY_SKIP_UPDATE, skip);
         saveLongKey(CONF_KEY_ACTIVATION_DATE, activationDate);
+
+        // Profile information
+        saveLongKey(CONF_KEY_PROFILE_EXPIRE_DATE, profileExpireDate);
+        saveBooleanKey(CONF_KEY_PROFILE_MANUAL_ONLY, profileManualOnly);
+        saveBooleanKey(CONF_KEY_PROFILE_NETWORK_USAGE_WARNING, profileNetworkUsageWarning);
 
         if (serverDevInf != null) {
             DevInfSerializer devInfStore = new DevInfSerializer();
@@ -782,6 +805,32 @@ public abstract class Configuration {
             this.skip = skip;
         }
     }
+
+    // Profile information section
+    public long getProfileExpireDate() {
+        return profileExpireDate;
+    }
+
+    public void setProfileExpireDate(long expireDate) {
+        this.profileExpireDate = expireDate;
+    }
+
+    public boolean getProfileManualOnly() {
+        return profileManualOnly;
+    }
+
+    public void setProfileManualOnly(boolean manualOnly) {
+        this.profileManualOnly = manualOnly;
+    }
+
+    public boolean getProfileNetworkUsageWarning() {
+        return profileNetworkUsageWarning;
+    }
+
+    public void setProfileNetworkUsageWarning(boolean value) {
+        this.profileNetworkUsageWarning = value;
+    }
+
 
     public SyncConfig getSyncConfig() {
         SyncConfig syncConfig = new SyncConfig();

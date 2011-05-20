@@ -72,9 +72,14 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
         super(TEST_SERVER, TEST_USERNAME, TEST_PASSWORD);
     }
 
-    protected long login(String deviceId, int attempt) throws SapiException {
-        loginCount++;
-        return loginCount;
+    protected JSONObject login(String deviceId, int attempt) throws SapiException {
+        try {
+            JSONObject res = new JSONObject();
+            res.put("responsetime", (long)loginCount++);
+            return res;
+        } catch (JSONException jse) {
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        }
     }
 
     public void logout() throws SapiException {

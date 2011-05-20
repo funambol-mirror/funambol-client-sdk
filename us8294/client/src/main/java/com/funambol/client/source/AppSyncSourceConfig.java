@@ -67,6 +67,7 @@ public class AppSyncSourceConfig {
     protected static final String CONF_KEY_SOURCE_SYNCED          = "SYNC_SOURCE_SYNCED";
     protected static final String CONF_KEY_SOURCE_ACTIVE          = "SYNC_SOURCE_ACTIVE";
     protected static final String CONF_KEY_SOURCE_ENABLED         = "SYNC_SOURCE_ENABLED";
+    protected static final String CONF_KEY_SOURCE_ALLOWED         = "SYNC_SOURCE_ALLOWED";
     protected static final String CONF_KEY_SYNC_STATUS            = "SOURCE_STATUS";
     protected static final String CONF_KEY_SOURCE_CONFIG          = "SOURCE_CONFIG";
     protected static final String CONF_KEY_UPLOAD_CONTENT_VIA_HTTP= "UPLOAD_CONTENT_VIA_HTTP";
@@ -79,8 +80,21 @@ public class AppSyncSourceConfig {
     private static final String VERSION   = "2";
 
     protected String uri;
+    /**
+     * A source is enabled/disabled according to the user settings
+     */
     protected boolean enabled = true;
+    /**
+     * A source is active if it is available on the client/server. An active
+     * source has chances to work, while an inactive one cannot work and is
+     * usually hidden.
+     */
     protected boolean active;
+    /**
+     * A source is allowed if the server allows its synchronization
+     */
+    protected boolean allowed = true;
+
     protected AppSyncSource appSource;
     public static final int UNDEFINED_SYNC_MODE = -1;
     /** It should be called syncMode but it is syncType for historical reasons */
@@ -123,6 +137,15 @@ public class AppSyncSourceConfig {
 
     public void setActive(boolean active) {
         this.active = active;
+        dirty = true;
+    }
+
+    public boolean getAllowed() {
+        return allowed;
+    }
+
+    public void setAllowed(boolean allowed) {
+        this.allowed = allowed;
         dirty = true;
     }
 
@@ -372,6 +395,11 @@ public class AppSyncSourceConfig {
         key.append(CONF_KEY_SOURCE_ENABLED).append("-").append(sourceId);
         configuration.saveBooleanKey(key.toString(), enabled);
 
+        // Save the allowed/flag
+        key = new StringBuffer();
+        key.append(CONF_KEY_SOURCE_ALLOWED).append("-").append(sourceId);
+        configuration.saveBooleanKey(key.toString(), allowed);
+
         // Save if the source showed device full already
         key = new StringBuffer();
         key.append(CONF_KEY_SOURCE_FULL).append("-").append(sourceId);
@@ -479,6 +507,11 @@ public class AppSyncSourceConfig {
         key = new StringBuffer();
         key.append(CONF_KEY_SOURCE_ENABLED).append("-").append(sourceId);
         enabled = configuration.loadBooleanKey(key.toString(), enabled);
+
+        // Load the allowed property
+        key = new StringBuffer();
+        key.append(CONF_KEY_SOURCE_ALLOWED).append("-").append(sourceId);
+        allowed = configuration.loadBooleanKey(key.toString(), allowed);
 
         // Load if the source is active
         key = new StringBuffer();

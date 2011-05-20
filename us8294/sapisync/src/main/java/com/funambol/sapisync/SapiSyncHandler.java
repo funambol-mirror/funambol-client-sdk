@@ -102,7 +102,38 @@ public class SapiSyncHandler {
      * @throws SapiException
      */
     public long login(String deviceId) throws SapiException {
-        return login(deviceId, 0);
+        JSONObject response = login(deviceId, 0);
+        try {
+            long responseTime = -1;
+            if (response.has("responsetime")) {
+                String ts = response.getString("responsetime");
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
+                }
+                try {
+                    responseTime = Long.parseLong(ts);
+                } catch (Exception e) {
+                    Log.error(TAG_LOG, "Cannot parse server responsetime");
+                }
+                return responseTime;
+            } else {
+                Log.error(TAG_LOG, "Cannot find server responsetime");
+                throw new NotSupportedCallException();
+            }
+        } catch (NotSupportedCallException e) {
+            Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
+            throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
+        } catch(IOException ex) {
+            Log.error(TAG_LOG, "Failed to login", ex);
+            throw SapiException.SAPI_EXCEPTION_NO_CONNECTION;
+        } catch(JSONException ex) {
+            Log.error(TAG_LOG, "Failed to login", ex);
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        }
+    }
+
+    public JSONObject loginAndGetServerInfo() throws SapiException {
+        return login(null, 0);
     }
 
     /**
@@ -692,7 +723,7 @@ public class SapiSyncHandler {
         public String    serverUrl = null;
     }
 
-    protected long login(String deviceId, int attempt) throws SapiException {
+    protected JSONObject login(String deviceId, int attempt) throws SapiException {
         try {
             long responseTime = -1;
             sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_IN_QUERY_STRING);
@@ -735,21 +766,6 @@ public class SapiSyncHandler {
                 }
             }
 
-            if (response.has("responsetime")) {
-                String ts = response.getString("responsetime");
-                if (Log.isLoggable(Log.TRACE)) {
-                    Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
-                }
-                try {
-                    responseTime = Long.parseLong(ts);
-                } catch (Exception e) {
-                    Log.error(TAG_LOG, "Cannot parse server responsetime");
-                }
-            } else {
-                Log.error(TAG_LOG, "Cannot find server responsetime");
-                throw new NotSupportedCallException();
-            }
-
             JSONObject resData = response.getJSONObject(JSON_OBJECT_DATA);
             if(resData != null) {
                 String jsessionid = resData.getString(JSON_OBJECT_DATA_FIELD_JSESSIONID);
@@ -759,7 +775,7 @@ public class SapiSyncHandler {
             } else {
                 throw SapiException.SAPI_EXCEPTION_UNKNOWN;
             }
-            return responseTime;
+            return response;
         } catch (NotSupportedCallException e) {
             Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
             throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
