@@ -120,6 +120,11 @@ public class AccountScreenController extends SynchronizationController {
         }
     }
 
+    public void synchronize(String syncType, Vector sources) throws SyncException {
+        checkStarted();
+        super.synchronize(syncType, sources);
+    }
+
     public void saveAndCheck(String serverUri, String username, String password) {
 
         if (Log.isLoggable(Log.TRACE)) {
@@ -229,108 +234,14 @@ public class AccountScreenController extends SynchronizationController {
         }
     }
 
-    private void loginViaSapi(String serverUri, String username, String password) {
-        // In this case we can simply check credentials invoking the
-        // login SAPI and fecthing the list of available sources and
-        // their status for the user
-        AppSyncSource configAppSource = appSyncSourceManager.getSource(AppSyncSourceManager.CONFIG_ID);
-        try {
-            sourceStarted(configAppSource);
-
-            configuration.setTempLogLevel(Log.TRACE);
-            String baseUrl = StringUtil.extractAddressFromUrl(serverUri);
-            SapiSyncHandler sapiHandler = new SapiSyncHandler(baseUrl, username, password);
-
-            // TODO FIXME: use the real sapi instead of the mocked one
-            //JSONObject response = sapiHandler.loginAndGetServerInfo();
-
-            JSONObject response = mockLoginSapi(baseUrl, username, password);
-
-            JSONObject data = response.getJSONObject("data");
-            JSONObject details = data.getJSONObject("details");
-            if (details.has("expiretime")) {
-                long expireDate = details.getLong("expiretime");
-                configuration.setProfileExpireDate(expireDate);
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Found a new profile expire date set to " + expireDate);
-                }
-            }
-            JSONArray remoteSources = details.getJSONArray("sources");
-
-            // Analyse the server response and check what's
-            // available/allowed on the server
-            Enumeration sources = appSyncSourceManager.getWorkingSources();
-            while(sources.hasMoreElements()) {
-                AppSyncSource appSource = (AppSyncSource)sources.nextElement();
-                AppSyncSourceConfig appSourceConfig = appSource.getConfig();
-
-                // Search if this source is available on server
-                boolean found = false;
-                for(int i=0;i<remoteSources.length();++i) {
-                    JSONObject s = remoteSources.getJSONObject(i);
-                    String sourceName  = s.getString("name");
-                    String sourceValue = s.getString("value");
-
-                    if (appSource.getSyncSource().getConfig().getRemoteUri().equals(sourceName)) {
-                        if (Log.isLoggable(Log.INFO)) {
-                            Log.info(TAG_LOG, "Found a source available locally and on server " + sourceName
-                                              + "," + sourceValue);
-                        }
-                        // Source is available on server
-                        if ("enabled".equals(sourceValue)) {
-                            appSourceConfig.setAllowed(true);
-                        } else {
-                            appSourceConfig.setAllowed(false);
-                        }
-                        found = true;
-                    }
-                }
-
-                if (!found) {
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Source " + appSource.getName() + " not available on server, will be disabled");
-                    }
-                    appSourceConfig.setActive(false);
-                }
-
-                appSourceConfig.save();
-            }
-
-            // Now grab the other properties
-            if (details.has("properties")) {
-                JSONArray properties = details.getJSONArray("properties");
-                for(int i=0;i<properties.length();++i) {
-                    JSONObject prop = properties.getJSONObject(i);
-                    String propName = prop.getString("name");
-                    String propValue = prop.getString("value");
-                    if ("auto-sync".equals(propName)) {
-                        configuration.setProfileManualOnly("disabled".equals(propValue));
-                    } else if ("network-warning".equals(propName)) {
-                        configuration.setProfileNetworkUsageWarning("enabled".equals(propValue));
-                    } else {
-                        if (Log.isLoggable(Log.INFO)) {
-                            Log.info(TAG_LOG, "Unsupported property " + propName);
-                        }
-                    }
-                }
-            }
-
-            configuration.save();
-
-            sourceEnded(configAppSource);
-
-        // TODO FIXME: handle errors properly
-        } catch (Exception e) {
-            Log.error(TAG_LOG, "Config sync failed ", e);
-            SyncException se = new SyncException(SyncException.CLIENT_ERROR, e.toString());
-            sourceFailed(configAppSource, se);
-        } finally {
-            syncEnded();
-            // Restore the original log level
-            configuration.restoreLogLevel();
-            controller.reapplyMiscConfiguration();
-        }
+    protected void checkStarted() {
     }
+
+    private void loginViaSapi(String serverUri, String username, String password) {
+        SapiLoginThread th = new SapiLoginThread(serverUri, username, password);
+        th.start();
+    }
+
 
     private JSONObject mockLoginSapi(String baseUrl, String username, String password) throws JSONException {
 
@@ -343,6 +254,27 @@ public class AccountScreenController extends SynchronizationController {
         user1Source1.put("name","card");
         user1Source1.put("value","enabled");
         user1Sources.put(user1Source1);
+
+        JSONObject user1Source2 = new JSONObject();
+        user1Source2.put("name","event");
+        user1Source2.put("value","enabled");
+        user1Sources.put(user1Source2);
+
+        JSONObject user1Source3 = new JSONObject();
+        user1Source3.put("name","picture");
+        user1Source3.put("value","enabled");
+        user1Sources.put(user1Source3);
+
+        JSONObject user1Source4 = new JSONObject();
+        user1Source4.put("name","video");
+        user1Source4.put("value","enabled");
+        user1Sources.put(user1Source4);
+
+        JSONObject user1Source5 = new JSONObject();
+        user1Source5.put("name","file");
+        user1Source5.put("value","enabled");
+        user1Sources.put(user1Source5);
+
         user1Details.put("sources",user1Sources);
         user1Details.put("details",user1Details);
         user1Data.put("details", user1Details);
@@ -558,4 +490,122 @@ public class AccountScreenController extends SynchronizationController {
             Log.error(TAG_LOG, "Unable to switch to login screen", ex);
         }
     }
+
+    private class SapiLoginThread extends Thread {
+
+        private String serverUri;
+        private String username;
+        private String password;
+
+        public SapiLoginThread(String serverUri, String username, String password) {
+            this.serverUri = serverUri;
+            this.username = username;
+            this.password = password;
+        }
+
+        public void run() {
+            // In this case we can simply check credentials invoking the
+            // login SAPI and fecthing the list of available sources and
+            // their status for the user
+            AppSyncSource configAppSource = appSyncSourceManager.getSource(AppSyncSourceManager.CONFIG_ID);
+            try {
+                checkStarted();
+                sourceStarted(configAppSource);
+
+                configuration.setTempLogLevel(Log.TRACE);
+                String baseUrl = StringUtil.extractAddressFromUrl(serverUri);
+                SapiSyncHandler sapiHandler = new SapiSyncHandler(baseUrl, username, password);
+
+                // TODO FIXME: use the real sapi instead of the mocked one
+                //JSONObject response = sapiHandler.loginAndGetServerInfo();
+
+                JSONObject response = mockLoginSapi(baseUrl, username, password);
+
+                JSONObject data = response.getJSONObject("data");
+                JSONObject details = data.getJSONObject("details");
+                if (details.has("expiretime")) {
+                    long expireDate = details.getLong("expiretime");
+                    configuration.setProfileExpireDate(expireDate);
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Found a new profile expire date set to " + expireDate);
+                    }
+                }
+                JSONArray remoteSources = details.getJSONArray("sources");
+
+                // Analyse the server response and check what's
+                // available/allowed on the server
+                Enumeration sources = appSyncSourceManager.getWorkingSources();
+                while(sources.hasMoreElements()) {
+                    AppSyncSource appSource = (AppSyncSource)sources.nextElement();
+                    AppSyncSourceConfig appSourceConfig = appSource.getConfig();
+
+                    // Search if this source is available on server
+                    boolean found = false;
+                    for(int i=0;i<remoteSources.length();++i) {
+                        JSONObject s = remoteSources.getJSONObject(i);
+                        String sourceName  = s.getString("name");
+                        String sourceValue = s.getString("value");
+
+                        if (appSource.getSyncSource().getConfig().getRemoteUri().equals(sourceName)) {
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "Found a source available locally and on server " + sourceName
+                                        + "," + sourceValue);
+                            }
+                            // Source is available on server
+                            if ("enabled".equals(sourceValue)) {
+                                appSourceConfig.setAllowed(true);
+                            } else {
+                                appSourceConfig.setAllowed(false);
+                            }
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Source " + appSource.getName() + " not available on server, will be disabled");
+                        }
+                        appSourceConfig.setAllowed(false);
+                    }
+
+                    appSourceConfig.save();
+                }
+
+                // Now grab the other properties
+                if (details.has("properties")) {
+                    JSONArray properties = details.getJSONArray("properties");
+                    for(int i=0;i<properties.length();++i) {
+                        JSONObject prop = properties.getJSONObject(i);
+                        String propName = prop.getString("name");
+                        String propValue = prop.getString("value");
+                        if ("auto-sync".equals(propName)) {
+                            configuration.setProfileManualOnly("disabled".equals(propValue));
+                        } else if ("network-warning".equals(propName)) {
+                            configuration.setProfileNetworkUsageWarning("enabled".equals(propValue));
+                        } else {
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "Unsupported property " + propName);
+                            }
+                        }
+                    }
+                }
+
+                configuration.save();
+
+                sourceEnded(configAppSource);
+
+                // TODO FIXME: handle errors properly
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Config sync failed ", e);
+                SyncException se = new SyncException(SyncException.CLIENT_ERROR, e.toString());
+                sourceFailed(configAppSource, se);
+            } finally {
+                syncEnded();
+                // Restore the original log level
+                configuration.restoreLogLevel();
+                controller.reapplyMiscConfiguration();
+            }
+        }
+    }
+
 }
