@@ -243,45 +243,6 @@ public class AccountScreenController extends SynchronizationController {
     }
 
 
-    private JSONObject mockLoginSapi(String baseUrl, String username, String password) throws JSONException {
-
-        JSONObject user1 = new JSONObject();
-        JSONObject user1Data = new JSONObject();
-        user1.put("data", user1Data);
-        JSONObject user1Details = new JSONObject();
-        JSONArray user1Sources = new JSONArray();
-        JSONObject user1Source1 = new JSONObject();
-        user1Source1.put("name","card");
-        user1Source1.put("value","enabled");
-        user1Sources.put(user1Source1);
-
-        JSONObject user1Source2 = new JSONObject();
-        user1Source2.put("name","event");
-        user1Source2.put("value","enabled");
-        user1Sources.put(user1Source2);
-
-        JSONObject user1Source3 = new JSONObject();
-        user1Source3.put("name","picture");
-        user1Source3.put("value","enabled");
-        user1Sources.put(user1Source3);
-
-        JSONObject user1Source4 = new JSONObject();
-        user1Source4.put("name","video");
-        user1Source4.put("value","enabled");
-        user1Sources.put(user1Source4);
-
-        JSONObject user1Source5 = new JSONObject();
-        user1Source5.put("name","file");
-        user1Source5.put("value","enabled");
-        user1Sources.put(user1Source5);
-
-        user1Details.put("sources",user1Sources);
-        user1Details.put("details",user1Details);
-        user1Data.put("details", user1Details);
-
-        return user1;
-    }
-
     protected boolean isSyncInProgress() {
         HomeScreenController homeScreenController = controller.getHomeScreenController();
         return homeScreenController.isSynchronizing();
@@ -519,8 +480,13 @@ public class AccountScreenController extends SynchronizationController {
                 // TODO FIXME: use the real sapi instead of the mocked one
                 //JSONObject response = sapiHandler.loginAndGetServerInfo();
 
-                JSONObject response = mockLoginSapi(baseUrl, username, password);
+                JSONObject response = SapiLoginMockData.getProfileInformation(baseUrl, username, password);
 
+                if (!response.has("data")) {
+                    // This server does not have the new login API. For backward
+                    // compatibility we condider all sources allowed
+                    return;
+                }
                 JSONObject data = response.getJSONObject("data");
                 JSONObject details = data.getJSONObject("details");
                 if (details.has("expiretime")) {
