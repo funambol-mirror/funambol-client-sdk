@@ -36,16 +36,10 @@
 package com.funambol.platform;
 
 import java.net.HttpURLConnection;
-import java.net.Socket;
-import java.net.InetSocketAddress;
-import java.net.InetAddress;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -56,29 +50,18 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.HttpEntity;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.conn.params.ConnRouteParams;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.SocketFactory;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.entity.InputStreamEntity;
 
 
 import com.funambol.platform.net.ProxyConfig;
-import com.funambol.platform.net.ProxyFactory;
 import com.funambol.util.Log;
 
 /**
@@ -213,7 +196,7 @@ public class HttpConnectionAdapter {
 
     /**
      * Open the input stream. The ownership of the stream is transferred to the
-     * caller which is responsbile to close and release the resource once it is
+     * caller which is responsible to close and release the resource once it is
      * no longer used. This method shall be called only once per connection.
      *
      * @throws IOException if the input stream cannot be opened or the output
@@ -237,7 +220,7 @@ public class HttpConnectionAdapter {
 
     /**
      * Open the output stream. The ownership of the stream is transferred to the
-     * caller which is responsbile to close and release the resource once it is
+     * caller which is responsible to close and release the resource once it is
      * no longer used. This method shall be called only once per connection.
      *
      * @throws IOException if the output stream cannot be opened.
