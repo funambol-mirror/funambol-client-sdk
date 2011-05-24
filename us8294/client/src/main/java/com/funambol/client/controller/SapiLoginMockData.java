@@ -84,7 +84,7 @@ class SapiLoginMockData {
     private static JSONObject getWeeklyPlan() throws JSONException {
         long now = System.currentTimeMillis();
         long expireTime = now + ONE_WEEK_MILLIS;
-        return getBasePlan(false, expireTime);
+        return getBasePlan(true, expireTime);
     }
 
     private static JSONObject getMonthlyPlan() throws JSONException {

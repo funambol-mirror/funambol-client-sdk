@@ -164,7 +164,7 @@ public class HomeScreenController extends SynchronizationController {
         if (isInForeground()) {
             if (!dontDisplayStorageLimitWarning) {         
                 String message = localization.getLanguage("message_storage_limit");
-                controller.getDialogController().showMessageAndWaitUserConfirmation(message);
+                controller.getDialogController().showOkDialog(homeScreen, message);
                 dontDisplayStorageLimitWarning = true; // Once is enough
             }
         } else {
@@ -189,7 +189,7 @@ public class HomeScreenController extends SynchronizationController {
                 }
                 String msg = localization.getLanguage("dialog_server_full");
                 msg = StringUtil.replaceAll(msg, "__source__", sourceNames.toString());
-                controller.getDialogController().showMessageAndWaitUserConfirmation(msg);
+                controller.getDialogController().showOkDialog(homeScreen, msg);
             }
         
         //error in sync when activity is in background 

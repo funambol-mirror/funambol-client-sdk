@@ -41,6 +41,7 @@ import com.funambol.client.customization.Customization;
 import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.AdvancedSettingsScreen;
 import com.funambol.client.ui.Screen;
+import com.funambol.client.ui.DisplayManager;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.util.Log;
@@ -121,10 +122,11 @@ public abstract class AdvancedSettingsScreenController {
      * and it is common to every high level AdvancedSettingsScreen controllers.
      */
     public void reset() {
-        DialogController dc = controller.getDialogController();
-        if (controller.getHomeScreenController().isSynchronizing()){
-            dc.showMessage(screen, localization.getLanguage("sync_in_progress_dialog"));
+        if (controller.getHomeScreenController().isSynchronizing()) {
+            DisplayManager dm = controller.getDisplayManager();
+            dm.showMessage(screen, localization.getLanguage("sync_in_progress_dialog"));
         } else {
+            DialogController dc = controller.getDialogController();
             dc.showRefreshDirectionDialog(screen);
         }
     }

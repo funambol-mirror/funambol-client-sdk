@@ -327,24 +327,8 @@ public class SynchronizationController extends BasicSynchronizationController
 
         // We cannot ask the question if there is no app visible 
         if (screen == null && sourcesWithQuestion.size() > 0) {
-            // Remember this so that on the next home screen startup, we will be
-            // able to show the dialog. We don't continue the sync here because
-            // we need a feedback from the user
             AppSyncSource[] dialogDependentSources = new AppSyncSource[sourcesWithQuestion.size()];
             sourcesWithQuestion.copyInto(dialogDependentSources);
-            // TODO FIXME: use the proper question!!!
-            /*
-            pendingFirstSyncQuestion = new FirstSyncRequest();
-            pendingFirstSyncQuestion.dialogDependentSources = dialogDependentSources;
-            pendingFirstSyncQuestion.syncType = syncType;
-            pendingFirstSyncQuestion.filteredSources = filteredSources;
-            pendingFirstSyncQuestion.refresh = refresh;
-            pendingFirstSyncQuestion.direction = direction;
-            pendingFirstSyncQuestion.delay = delay;
-            pendingFirstSyncQuestion.fromOutside = fromOutside;
-            pendingFirstSyncQuestion.numSources = dialogDependentSources.length;
-            pendingFirstSyncQuestion.sourceIndex = 0;
-            */
         } else {
             if (sourcesWithQuestion.isEmpty()) {
                 if (Log.isLoggable(Log.DEBUG)) {
@@ -517,32 +501,6 @@ public class SynchronizationController extends BasicSynchronizationController
         }
     }
 
-    public boolean confirmDeletes(Enumeration sourceNameList) {
-
-        String sourceNames = getListOfSourceNames(sourceNameList).toLowerCase();
-
-        if (Log.isLoggable(Log.INFO)) {
-            Log.info(TAG_LOG, "Prompting user for delete confirmation");
-        }
-
-        String message = localization.getLanguage("dialog_delete1") + " " + sourceNames
-                + localization.getLanguage("dialog_delete2");
-
-        boolean result = controller.getDialogController().askYesNoQuestion(message, false);
-
-        if (result) {
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "Continuing with sync");
-            }
-        } else {
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "User opted to cancel sync - " + sourceNames);
-            }
-        }
-
-        return result;
-    }
-
     private String getListOfSourceNames(Enumeration sourceNameList) {
         StringBuffer sourceNames = new StringBuffer();
 
@@ -568,35 +526,35 @@ public class SynchronizationController extends BasicSynchronizationController
     }
 
     protected void showMessage(String msg) {
-        controller.getDialogController().showMessage(screen, msg);
+        controller.getDisplayManager().showMessage(screen, msg);
     }
 
     // ConnectionListener implementation
     
     public boolean isConnectionConfigurationAllowed(final String apn) { 
+        // TODO FIXME
+        /*
         String message = localization.getLanguage("message_APN_question_1") + " " + apn + " "
                 + localization.getLanguage("message_APN_question_2");
         return controller.getDialogController().askAcceptDenyQuestion(message, true);
+        */
+        return true;
     }
 
     public void noCredentials() {
         showMessage(localization.getLanguage("message_login_required"));
-
     }
 
     public void noSources() {
         showMessage(localization.getLanguage("message_nothing_to_sync"));
-
     }
 
     public void noConnection() {
         showMessage(localization.getLanguage("message_radio_off"));
-
     }
 
     public void noSignal() {
         showMessage(localization.getLanguage("message_no_signal"));
-
     }
 
     public void setCancel(boolean value) {
@@ -692,7 +650,7 @@ public class SynchronizationController extends BasicSynchronizationController
             sourceController.setSelected(true, false);
         }
         
-        if (currentSource.getSyncSource().getConfig().getSyncMode()==SyncML.ALERT_CODE_REFRESH_FROM_SERVER) {
+        if (currentSource.getSyncSource().getConfig().getSyncMode() == SyncML.ALERT_CODE_REFRESH_FROM_SERVER) {
             refreshClientData(appSource, sourceController);
         }
         if (Log.isLoggable(Log.TRACE)) {
@@ -748,8 +706,6 @@ public class SynchronizationController extends BasicSynchronizationController
     }
 
     public void clearErrors() {
-        // TODO FIXME MARCO
-        //controller.clearErrors();
         showTCPAlert = false;
         logConnectivityError = false;
     }

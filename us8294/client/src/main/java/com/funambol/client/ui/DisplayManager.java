@@ -35,6 +35,7 @@
 
 package com.funambol.client.ui;
 
+import com.funambol.client.controller.NotificationData;
 import com.funambol.client.controller.DialogOption;
 
 /**
@@ -42,7 +43,13 @@ import com.funambol.client.controller.DialogOption;
  * To be implemented on client side. The calls to this class instance are usually
  * made by the DialogController Class.
  */
-public interface DisplayManager extends BasicDisplayManager {
+public interface DisplayManager {
+
+    /**
+     * int value related to the infinitive time to wait before dismissing a
+     * screen or a dialog
+     */
+    public static final long NO_LIMIT = -1;
 
     /** Generic dialog id*/
     public static final int GENERIC_DIALOG_ID = 0;
@@ -149,4 +156,34 @@ public interface DisplayManager extends BasicDisplayManager {
             DialogOption[] options,
             int defaultValue,
             int dialogId);
+
+    /**
+     * Hide a screen pulling it to the background
+     * @param screen The screen to be hidden
+     */
+    public void hideScreen(Screen screen) throws Exception;
+
+    /**
+     * Put the application in foreground (Active satus)
+     */
+    public void toForeground();
+
+    /**
+     * Put the application in background (unactive state)
+     */
+    public void toBackground();
+
+    /**
+     * Load the browser to the given url
+     * To be implemented.
+     * @param url the url to be set on the browser
+     */
+    public void loadBrowser(String url);
+
+    /**
+     * Display a notification
+     * @param notificationData the notification data
+     */
+    public void showNotification(NotificationData notificationData);
+
 }

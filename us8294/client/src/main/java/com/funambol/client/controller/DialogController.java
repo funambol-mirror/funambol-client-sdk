@@ -43,7 +43,6 @@ import com.funambol.client.ui.DisplayManager;
 import com.funambol.client.ui.Screen;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
-import com.funambol.client.ui.BasicDisplayManager;
 
 import com.funambol.util.Log;
 
@@ -52,31 +51,16 @@ import com.funambol.util.Log;
  * DisplayManager. This class is just a controller. Refer to DisplayManager
  * implementation in order to manage the alert diplaying logic.
  */
-public class DialogController extends BasicDialogController {
+public class DialogController {
 
     /** TAG to be displayed into log messages*/
-    public static final String TAG_LOG = "DialogController";
+    private static final String TAG_LOG = "DialogController";
 
     //--- Local instance fields fed by the constructor
     private AppSyncSourceManager appSyncSourceManager;
     private Controller controller;
     private DisplayManager displayManager;
-
-    //--- Current Alert Status related fields
-
-    //Last selected direction to be used in case of resume of the reset type
-    //alert dialog. The
-    private int lastSelectedDirection;
-
-    //Last first sync alert status use this field in order to resume itself
-    //The field is built in the constructor and is updated whenever a first
-    //sync dialog alert is prompted
-    FirstSyncDialogState lastFirstSyncDialogState = new FirstSyncDialogState();
-
-    //Last WI-Fi not available alert status use this field in order to resume itself
-    //The field is built in the constructor and is updated whenever a first
-    //sync dialog alert is prompted
-    WifiNotAvailableDialogState lastWifiNotAvailableDialogState = new WifiNotAvailableDialogState();
+    protected Localization localization;
 
     /**
      * Public constructor
@@ -88,117 +72,19 @@ public class DialogController extends BasicDialogController {
         this.controller = controller;
         this.localization = controller.getLocalization();
         this.appSyncSourceManager = controller.getAppSyncSourceManager();
-        this.lastFirstSyncDialogState = new FirstSyncDialogState();
-        this.lastWifiNotAvailableDialogState = new WifiNotAvailableDialogState();
-        this.lastSelectedDirection = -1;
     }
 
-    /**
-     * This creates a 2-button generic dialog box and waits for the user to
-     * select either option.
-     *
-     * @param message The message for the dialog box
-     * @param confirmMessage The label for the confirmation button
-     * @param cancelMessage The label for the cancel button
-     * @return true if the confirmation button has been chosen
-     */
-    public boolean askConfirmCancelQuestion(String message, String confirmMessage, String cancelMessage) {
-
-        return (0 == askGenericQuestion(cancelMessage, new String[] { confirmMessage, cancelMessage} ));
-    }
-
-    /**
-     * This creates an N-button generic dialog box and waits for the user to
-     * select one option.
-     *
-     * @param message The message for the dialog box
-     * @param labels The labels for the buttons
-     * @return the index of the chosen option or -1 if something goes wrong
-     */
-    public int askGenericQuestion(String message, String[] labels) {
-
-        if (labels.length == 0) {
-            return -1;
-        }
-
-        Screen homeScreen = controller.getHomeScreenController().getHomeScreen();
-        GenericDialogOption firstOption = new GenericDialogOption(homeScreen, labels[0], 0);
-        GenericDialogOption lastOption = firstOption;
-        for (int i = 1; i < labels.length; i++) {
-            lastOption = new GenericDialogOption(lastOption, labels[i], i);
-        }
-        GenericDialogOption[] allOptions = lastOption.getChain();
+    public void showOkDialog(Screen screen, String message) {
+        GenericDialogOption options[] = new GenericDialogOption[1];
+        options[0] = new GenericDialogOption(screen, message, 0);
 
         displayManager.promptSelection(
-                homeScreen,
+                screen,
                 message,
-                allOptions,
+                options,
                 0,
                 DisplayManager.GENERIC_DIALOG_ID);
-        synchronized (firstOption) {
-            try {
-                firstOption.wait();
-            } catch (InterruptedException e) {
-                return -1;
-            }
-        }
-        for (int i = 0; i < allOptions.length; i++) {
-            if (allOptions[i].isChosen()) {
-                return i;
-            }
-        }
-        return -1;
-    }
-    
-    /**
-     * Prompt a message alert on the screen
-     * @param message is the String to be displayed on the screen
-     * @return boolean true if the alert was displayed.
-     */
-    public boolean promptNext(String message) {
-        return displayManager.promptNext(message);
-    }
-
-    /**
-     * Not implemented.
-     * @param message the message to be displayed
-     * @param defaultyes the default parameter in the selection
-     * @return boolean true is the user answered yes, false otherwise
-     */
-    public boolean askYesNoQuestion(String message, boolean defaultyes) {
-        // TODO FIXME: to be implemented
-        return false;
-    }
-
-    /**
-     * Not implemented.
-     * @param message the message to be displayed
-     * @param defaultyes the default parameter in the selection
-     * @param timeToWait the time to wait before dismiss the alert
-     * @return boolean true is the user answered yes, false otherwise
-     */
-    public boolean askYesNoQuestion(String message, boolean defaultyes, int timeToWait) {
-        // TODO FIXME: to be implemented
-        return false;
-    }
-
-    /**
-     * Show an alert message on the screen
-     * @param screen the dialog alert owner Screen
-     * @param language the message to be dispalyed
-     */
-    public void showMessage(Screen screen, String language) {
-        displayManager.showMessage(screen, language);
-    }
-
-    /**
-     * Show an alert message on the screen for a given amount of time
-     * @param screen the dialog alert owner Screen
-     * @param language the message to be dispalyed
-     * @param delay the duration of the message in milliseconds
-     */
-    public void showMessage(Screen screen, String language, int delay){
-        displayManager.showMessage(screen, language, delay);
+ 
     }
 
     /**
@@ -210,20 +96,17 @@ public class DialogController extends BasicDialogController {
     public void showRefreshDirectionDialog(Screen screen) {
        DialogOption[] opt = new DialogOption[3];
 
-        opt[0] = new ResetDirectionDialogOption(
-                screen,
-                localization.getLanguage("dialog_refresh_from"),
-                SynchronizationController.REFRESH_FROM_SERVER);
+        opt[0] = createResetDirectionDialogOption(screen, 
+                                                  localization.getLanguage("dialog_refresh_from"),
+                                                  SynchronizationController.REFRESH_FROM_SERVER);
+        
+        opt[1] = createResetDirectionDialogOption(screen,
+                                                  localization.getLanguage("dialog_refresh_to"),
+                                                  SynchronizationController.REFRESH_TO_SERVER);
 
-        opt[1] = new ResetDirectionDialogOption(
-                screen,
-                localization.getLanguage("dialog_refresh_to"),
-                SynchronizationController.REFRESH_TO_SERVER);
-
-        opt[2] = new ResetDirectionDialogOption(
-                screen, 
-                localization.getLanguage("dialog_cancel"),
-                -1);
+        opt[2] = createResetDirectionDialogOption(screen, 
+                                                  localization.getLanguage("dialog_cancel"),
+                                                  -1);
 
         displayManager.promptSelection(screen, localization.getLanguage("dialog_refresh_which") + "\n" 
                                        + localization.getLanguage("dialog_refresh_warn2"), opt, -1,
@@ -268,9 +151,6 @@ public class DialogController extends BasicDialogController {
                 delay,
                 fromOutside);
 
-        lastWifiNotAvailableDialogState.update(syncType, filteredSources,
-                                        refresh, direction, delay, fromOutside);
-        
         displayManager.promptSelection(screen, localization.getLanguage("dialog_no_wifi_availabale"),
                 opt, 0, displayManager.NO_WIFI_AVAILABLE_ID);
     }
@@ -392,6 +272,10 @@ public class DialogController extends BasicDialogController {
                         displayManager.REFRESH_TYPE_DIALOG_ID);
     }
 
+    protected ResetDirectionDialogOption createResetDirectionDialogOption(Screen screen, String label, int value) {
+        return new ResetDirectionDialogOption(screen, label, value);
+    }
+
     /**
      * Dialog option related to the refresh direction to be used.
      */
@@ -407,156 +291,12 @@ public class DialogController extends BasicDialogController {
         public void run() {
             //Dismiss the currect dialog
             displayManager.dismissSelectionDialog(displayManager.REFRESH_DIRECTION_DIALOG_ID);
-            lastSelectedDirection = value;
             //if the user selected a direction the refresh type dialog is shown
             //with the message related to that sync direction
             if (!this.getDescription().equals(localization.getLanguage("dialog_cancel"))) {
                 showRefreshTypeDialog(screen, value);
             }
         }
-    }
-
-    /**
-     * Resumes the last refresh type alert dialog if it was paused before the
-     * user answered. This could be due to any pausing event on the client side
-     * (screen rotation, incoming calls ...).
-     * This method works if and only if a previous call to the
-     * method was performed because it needs the last saved state of the field
-     * lastSelectedDirection that is updated by the RefreshDirectionDialog class
-     * when the user chose the reset direction
-     * @param screen the dialog alert owner Screen
-     */
-    public void resumeLastRefreshTypeDialog(Screen screen) {
-        showRefreshTypeDialog(screen, lastSelectedDirection);
-    }
-
-    /**
-     * Contains the state of the last first sync alert dialog request.
-     */
-    class FirstSyncDialogState {
-        protected AppSyncSource[] appSourceList;
-        protected String syncType;
-        protected Vector filteredSources;
-        protected int delay;
-        protected boolean refresh;
-        protected int direction;
-        protected boolean fromOutside;
-        protected int questionCounter;
-        protected int sourceIndex;
-
-        /**
-         * Update this class fields with the current FirstSyncDialogOption state
-         * @param appSourceList the list of appSyncSources
-         * @param syncType the String representation for the sync type
-         * (manual...)
-         * @param filteredSources the sources Vector to be updated in case the
-         * user select to sync now
-         * @param delay request the sync scheduler to be initiate the sync after
-         * the given amount of milliseconds
-         * @param fromOutside used by the sync scheduler to manage the incoming
-         * sync request from outside if true
-         * @param questionCounter the number of question to be displayed to the
-         * user. This number depends by the number of sources that have a
-         * warning messgae to be displayed at the first sync
-         * @param sourceIndex the sync source index source which this dialog
-         * alert is related.
-         */
-        protected void update(AppSyncSource[] appSourceList, String syncType,
-                              Vector filteredSources, boolean refresh,
-                              int direction, int delay, boolean fromOutside,
-                              int questionCounter, int sourceIndex) {
-            this.appSourceList = appSourceList;
-            this.syncType = syncType;
-            this.filteredSources = filteredSources;
-            this.refresh = refresh;
-            this.direction = direction;
-            this.delay = delay;
-            this.fromOutside = fromOutside;
-            this.questionCounter = questionCounter;
-            this.sourceIndex = sourceIndex;
-        }
-    }
-
-    /**
-     * Resumes the last fisrt sync alert dialog if it was paused before the
-     * user answered. This could be due to any pausing event on the client side
-     * (screen rotation, incoming calls ...).
-     * This method works if and only if a previous call to the showFirstSyncDialog
-     * method was performed because it needs the last saved state of the field
-     * lastFirstSyncDialogState that is updated by the showFirstSyncDialog method
-     * when called.
-     * @param screen the dialog alert owner Screen
-     */
-    public void resumeLastFirstSyncDialog(Screen screen) {
-        showFirstSyncDialog(screen, lastFirstSyncDialogState.appSourceList,
-                            lastFirstSyncDialogState.syncType,
-                            lastFirstSyncDialogState.filteredSources,
-                            lastFirstSyncDialogState.refresh,
-                            lastFirstSyncDialogState.direction,
-                            lastFirstSyncDialogState.delay,
-                            lastFirstSyncDialogState.fromOutside,
-                            lastFirstSyncDialogState.questionCounter,
-                            lastFirstSyncDialogState.sourceIndex);
-    }
-
-     /**
-     * Contains the state of the last WI-Fi not available alert dialog request.
-     */
-    class WifiNotAvailableDialogState {
-        protected String syncType;
-        protected Vector filteredSources;
-        protected int delay;
-        protected boolean refresh;
-        protected int direction;
-        protected boolean fromOutside;
-
-        /**
-         * Update this class fields with the current WIFINotAvailableDialogOption state
-         * @param appSourceList the list of appSyncSources
-         * @param syncType the String representation for the sync type
-         * (manual...)
-         * @param filteredSources the sources Vector to be updated in case the
-         * user select to sync now
-         * @param delay request the sync scheduler to be initiate the sync after
-         * the given amount of milliseconds
-         * @param fromOutside used by the sync scheduler to manage the incoming
-         * sync request from outside if true
-         * @param questionCounter the number of question to be displayed to the
-         * user. This number depends by the number of sources that have a
-         * warning messgae to be displayed at the first sync
-         * @param sourceIndex the sync source index source which this dialog
-         * alert is related.
-         */
-        protected void update(String syncType,
-                              Vector filteredSources, boolean refresh,
-                              int direction, int delay, boolean fromOutside) {
-            this.syncType = syncType;
-            this.filteredSources = filteredSources;
-            this.refresh = refresh;
-            this.direction = direction;
-            this.delay = delay;
-            this.fromOutside = fromOutside;
-        }
-    }
-
-     /**
-     * Resumes the last WI-FI not available alert dialog if it was paused before the
-     * user answered. This could be due to any pausing event on the client side
-     * (screen rotation, incoming calls ...).
-     * This method works if and only if a previous call to the showNoWIFIAvailableDialog
-     * method was performed because it needs the last saved state of the field
-     * lastWifiNotAvailableDialogState that is updated by the showNoWIFIAvailableDialog method
-     * when called.
-     * @param screen the dialog alert owner Screen
-     */
-    public void resumeWifiNotAvailableDialog(Screen screen) {
-        showNoWIFIAvailableDialog(screen,
-                                    lastWifiNotAvailableDialogState.syncType,
-                                    lastWifiNotAvailableDialogState.filteredSources,
-                                    lastWifiNotAvailableDialogState.refresh,
-                                    lastWifiNotAvailableDialogState.direction,
-                                    lastWifiNotAvailableDialogState.delay,
-                                    lastWifiNotAvailableDialogState.fromOutside);
     }
 
     /**
@@ -604,14 +344,7 @@ public class DialogController extends BasicDialogController {
                                                appSourceList, syncType, filteredSources, refresh,
                                                direction, delay, fromOutside,
                                                questionCounter, sourceIndex);
-        lastFirstSyncDialogState.update(appSourceList, syncType, filteredSources,
-                                        refresh, direction, delay, fromOutside,
-                                        questionCounter, sourceIndex);
         displayManager.promptSelection(screen, warning, options, 0, displayManager.FIRST_SYNC_DIALOG_ID);
-    }
-
-    protected BasicDisplayManager getBasicDisplayManager() {
-        return displayManager;
     }
 
     /**

@@ -69,7 +69,7 @@ public class Controller extends BasicController {
     private SignupScreenController           signupScreenController;
     private AdvancedSettingsScreenController advancedSettingsScreenController;
     private AboutScreenController            aboutScreenController;
-    private DialogController                 dialogController;
+    protected DialogController               dialogController;
 
     protected Customization customization = null;
 

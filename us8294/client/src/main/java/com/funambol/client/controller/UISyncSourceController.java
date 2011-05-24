@@ -517,20 +517,6 @@ public class UISyncSourceController implements SyncListener {
      * @see com.funambol.util.SyncListener#startSyncing(int, Object)
      */
     public boolean startSyncing(int mode, Object devInf) {
-        if (mode == com.funambol.syncml.protocol.SyncML.ALERT_CODE_SLOW) {
-            if (customization.confirmSlowSync()) {
-                String text = localization.getLanguage("status_confirm_slow");
-                if (uiSource != null) {
-                    uiSource.setStatusString(text);
-                    uiSource.redraw();
-                }
-                if (!confirmSlowSync()) {
-                    abortSlow();
-                    return false;
-                }
-            }
-        }
-
         // If the server sends its capabilities, we must decode them and update
         // the configuration accordingly
         if (devInf != null) {
@@ -719,18 +705,6 @@ public class UISyncSourceController implements SyncListener {
     }
 
     private void abortSlow() {
-    }
-
-    private boolean confirmSlowSync() {
-
-        Enumeration sources = appSyncSourceManager.getEnabledAndWorkingSources();
-        String sourceNames = getListOfSourceNames(sources).toLowerCase();
-
-        StringBuffer question = new StringBuffer();
-        question.append(localization.getLanguage("dialog_slow_text1")).append(" ").append(
-                sourceNames).append(localization.getLanguage("dialog_slow_text2"));
-
-        return controller.getDialogController().askYesNoQuestion(question.toString(), true, 20000);
     }
 
     private String getListOfSourceNames(Enumeration sourceNameList) {

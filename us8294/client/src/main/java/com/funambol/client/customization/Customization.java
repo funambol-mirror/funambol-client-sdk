@@ -131,8 +131,6 @@ public interface Customization {
     // Home screen customization properties
     public boolean  syncAllOnMainScreenRequired();
     public boolean  syncAllActsAsCancelSync();
-    public boolean  confirmSlowSync();
-    public boolean  warnOnDeletes();
     public boolean  showSyncIconOnSelection();
     public Bitmap   getSyncAllIcon();
     public Bitmap   getSyncAllBackground();

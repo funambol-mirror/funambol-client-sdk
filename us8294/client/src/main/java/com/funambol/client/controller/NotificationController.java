@@ -37,7 +37,6 @@ package com.funambol.client.controller;
 
 import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.DisplayManager;
-import com.funambol.client.ui.BasicDisplayManager;
 
 /**
  * A controller for a "background" notification, i.e. a notification not
@@ -58,14 +57,14 @@ public class NotificationController {
     
     //--- Local instance fields fed by the constructor
     private Localization localization;
-    private BasicDisplayManager displayManager;
+    private DisplayManager displayManager;
 
     /**
      * Public constructor
      * @param displayManager
      * @param controller
      */
-    public NotificationController(BasicDisplayManager displayManager, Controller controller) {
+    public NotificationController(DisplayManager displayManager, Controller controller) {
         this.displayManager = displayManager;
         this.localization = controller.getLocalization();
     }
@@ -75,7 +74,7 @@ public class NotificationController {
      * @param displayManager
      * @param localization
      */
-    public NotificationController(BasicDisplayManager displayManager, Localization localization) {
+    public NotificationController(DisplayManager displayManager, Localization localization) {
         this.displayManager = displayManager;
         this.localization = localization;
     }

@@ -80,15 +80,6 @@ public interface SyncEngineListener {
     public void noSignal();
 
     /**
-     * Invoked if there are many items to delete. "Many" means more than 1/3 of
-     * the total number of items. If the method returns true the sync proceeds,
-     * otherwise it is aborted (for this source).
-     *
-     * @return true if the sync shall proceed
-     */
-    public boolean confirmDeletes(Enumeration sources);
-
-    /**
      * A sync for the given sources is about to begin. 
      */
     public boolean syncStarted(Vector appSources);
