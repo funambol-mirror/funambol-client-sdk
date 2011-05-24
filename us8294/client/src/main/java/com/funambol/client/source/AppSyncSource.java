@@ -100,7 +100,6 @@ public class AppSyncSource {
     protected boolean              refreshToServerSupported   = true;     
     private Object                 nativeListener   = null;
     private boolean                visible          = true;
-    protected String               warningOnFirstSync = null;
     protected boolean              useBandwidthSaver  = false;
     protected AppSyncSourceConfig  config;
     private boolean                syncedInSession  = false;
@@ -351,18 +350,6 @@ public class AppSyncSource {
 
     public void setIsVisible(boolean value) {
         visible = value;
-    }
-
-    /**
-     * Returns the message to show at the very first sync for this source.
-     * The method returns null if there are no messages to show
-     */
-    public String getWarningOnFirstSync() {
-        return warningOnFirstSync;
-    }
-
-    public void setWarningOnFirstSync(String message) {
-        warningOnFirstSync = message;
     }
 
     /**

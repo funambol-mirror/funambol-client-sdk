@@ -354,23 +354,6 @@ public class SynchronizationController extends BasicSynchronizationController
         }
     }
 
-    public void showPendingFirstSyncQuestion() {
-        if (pendingFirstSyncQuestion != null) {
-            DialogController dialControll = controller.getDialogController();
-            dialControll.showFirstSyncDialog(screen,
-                                             pendingFirstSyncQuestion.dialogDependentSources,
-                                             pendingFirstSyncQuestion.syncType,
-                                             pendingFirstSyncQuestion.filteredSources,
-                                             pendingFirstSyncQuestion.refresh,
-                                             pendingFirstSyncQuestion.direction,
-                                             pendingFirstSyncQuestion.delay,
-                                             pendingFirstSyncQuestion.fromOutside,
-                                             pendingFirstSyncQuestion.numSources,
-                                             pendingFirstSyncQuestion.sourceIndex);
-            pendingFirstSyncQuestion = null;
-        }
-    }
-
     public synchronized void
     continueSynchronizationAfterBandwithSaverDialog(String syncType,
                                                     Vector syncSources,
@@ -380,80 +363,9 @@ public class SynchronizationController extends BasicSynchronizationController
                                                     boolean fromOutside,
                                                     boolean continueSyncFromDialog)
     {
-        Vector filteredSources = new Vector();
-        Vector sourcesWithQuestion = new Vector();
-        //Select the sources to be synchronized without displaying
-        //fisrt sync question to the user and count the other ones
-        for(int i=0;i<syncSources.size();++i) {
-            AppSyncSource appSource = (AppSyncSource)syncSources.elementAt(i);
-            String warning = appSource.getWarningOnFirstSync();
-            boolean synced = appSource.getConfig().getSynced();
-            if (synced || warning == null) {
-                //Sources that don't need the first sync question
-                filteredSources.addElement(appSource);
-                appSource.getConfig().commit();
-                appSource.setSyncedInSession(true);
-            } else if (!synced && warning != null) {
-                //Sources that need the first sync question
-                sourcesWithQuestion.addElement(appSource);
-            }
-        }
-
-        // We cannot ask the question if there is no app visible
-        if (screen == null && sourcesWithQuestion.size() > 0) {
-            // Remember this so that on the next home screen startup, we will be
-            // able to show the dialog. We don't continue the sync here because
-            // we need a feedback from the user
-            AppSyncSource[] dialogDependentSources = new AppSyncSource[sourcesWithQuestion.size()];
-            sourcesWithQuestion.copyInto(dialogDependentSources);
-            pendingFirstSyncQuestion = new FirstSyncRequest();
-            pendingFirstSyncQuestion.dialogDependentSources = dialogDependentSources;
-            pendingFirstSyncQuestion.syncType = syncType;
-            pendingFirstSyncQuestion.filteredSources = filteredSources;
-            pendingFirstSyncQuestion.refresh = refresh;
-            pendingFirstSyncQuestion.direction = direction;
-            pendingFirstSyncQuestion.delay = delay;
-            pendingFirstSyncQuestion.fromOutside = fromOutside;
-            pendingFirstSyncQuestion.numSources = dialogDependentSources.length;
-            pendingFirstSyncQuestion.sourceIndex = 0;
-        } else {
-            if (sourcesWithQuestion.isEmpty()) {
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Continue sync without alerts");
-                }
-                //No dialog is prompted for any sources: the sync can begin
-                continueSynchronizationAfterFirstSyncDialog(syncType, filteredSources, 
-                        refresh, direction, delay, fromOutside, false);
-            } else {
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Continue sync displaying alerts");
-                }
-                AppSyncSource[] dialogDependentSources = new AppSyncSource[sourcesWithQuestion.size()];
-                sourcesWithQuestion.copyInto(dialogDependentSources);
-                DialogController dialControll = controller.getDialogController();
-                dialControll.showFirstSyncDialog(screen, dialogDependentSources, syncType, filteredSources,
-                        refresh, direction, delay, fromOutside, dialogDependentSources.length, 0);
-                //The sync request is started when the user has finished to reply
-                //all the first sync request dialogs (the last sync request dialog)
-                //(calling the continueSynchronizationAfterDialogCheck method)
-            }
-        }
-
-    }
- 
-
-    public synchronized void
-    continueSynchronizationAfterFirstSyncDialog(String syncType,
-                                                Vector filteredSources,
-                                                boolean refresh,
-                                                int direction,
-                                                int delay,
-                                                boolean fromOutside,
-                                                boolean continueSyncFromDialog)
-    {
         // If no sources left, we simply return and do not update/change
         // anything
-        if (filteredSources.isEmpty()) {
+        if (syncSources.isEmpty()) {
             syncEnded();
             return;
         }
@@ -463,7 +375,7 @@ public class SynchronizationController extends BasicSynchronizationController
 
         int sourceSyncType = 0;
         AppSyncRequest appSyncRequest = new AppSyncRequest(null, delay);
-        Enumeration sources = filteredSources.elements();
+        Enumeration sources = syncSources.elements();
         while(sources.hasMoreElements()) {
             AppSyncSource appSource = (AppSyncSource) sources.nextElement();
             SyncSource source = appSource.getSyncSource();

@@ -65,7 +65,7 @@ public interface DisplayManager {
 
     /**
      * Shows a screen putting it in foreground
-     * @param screen the Screen to be shown
+     * @param screen the Screen from which the new screen shall be requested
      * @param screenId the screen id related to the Screen to be shown
      * @throws Exception if an error occurred
      */
