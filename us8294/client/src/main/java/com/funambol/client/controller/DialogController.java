@@ -59,7 +59,7 @@ public class DialogController {
     //--- Local instance fields fed by the constructor
     private AppSyncSourceManager appSyncSourceManager;
     private Controller controller;
-    private DisplayManager displayManager;
+    protected DisplayManager displayManager;
     protected Localization localization;
 
     /**
@@ -74,9 +74,12 @@ public class DialogController {
         this.appSyncSourceManager = controller.getAppSyncSourceManager();
     }
 
+    /**
+     * Show and OK Dialog with a message and a single button to quit.
+     */
     public void showOkDialog(Screen screen, String message) {
-        GenericDialogOption options[] = new GenericDialogOption[1];
-        options[0] = new GenericDialogOption(screen, message, 0);
+        DialogOption options[] = new DialogOption[1];
+        options[0] = new DialogOption(displayManager, screen, message, 0);
 
         displayManager.promptSelection(
                 screen,
@@ -130,6 +133,7 @@ public class DialogController {
         DialogOption[] opt = new DialogOption[2];
 
         opt[0] = new WIFINotAvailableDialogOption(
+                displayManager,
                 screen,
                 localization.getLanguage("dialog_continue"),
                 0,
@@ -141,6 +145,7 @@ public class DialogController {
                 fromOutside);
 
         opt[1] = new WIFINotAvailableDialogOption(
+                displayManager,
                 screen,
                 localization.getLanguage("dialog_cancel"),
                 -1,
@@ -167,14 +172,15 @@ public class DialogController {
         private  boolean fromOutside;
 
 
-        public WIFINotAvailableDialogOption(Screen screen, String description, int value,
+        public WIFINotAvailableDialogOption(DisplayManager displayManager, Screen screen,
+                                            String description, int value,
                                             String syncType,
                                             Vector filteredSources,
                                             boolean refresh,
                                             int direction,
                                             int delay,
                                             boolean fromOutside) {
-            super(screen, description, value);
+            super(displayManager, screen, description, value);
             this.filteredSources = filteredSources;
             this.refresh = refresh;
             this.direction = direction;
@@ -240,7 +246,8 @@ public class DialogController {
                     Log.debug(TAG_LOG, "Source: " + source.getName() + " direction " + direction +
                                        " supported " + source.isRefreshSupported(direction));
                 }
-                opts.addElement(new ResetTypeDialogOption(screen, source.getName(), source.getId(), direction));
+                opts.addElement(new ResetTypeDialogOption(displayManager, screen, source.getName(),
+                                                          source.getId(), direction));
                 numEnabledSources++;
                 allId |= source.getId();
             }
@@ -248,6 +255,7 @@ public class DialogController {
 
         if ((numEnabledSources + 1) > 1) {
             opts.addElement(new ResetTypeDialogOption(
+                    displayManager,
                     screen,
                     localization.getLanguage("type_all_enabled"),
                     allId,
@@ -255,6 +263,7 @@ public class DialogController {
         }
 
         opts.addElement(new ResetTypeDialogOption(
+                    displayManager,
                     screen,
                     localization.getLanguage("dialog_cancel"),
                     0,
@@ -273,7 +282,7 @@ public class DialogController {
     }
 
     protected ResetDirectionDialogOption createResetDirectionDialogOption(Screen screen, String label, int value) {
-        return new ResetDirectionDialogOption(screen, label, value);
+        return new ResetDirectionDialogOption(displayManager, screen, label, value);
     }
 
     /**
@@ -281,8 +290,8 @@ public class DialogController {
      */
     protected class ResetDirectionDialogOption extends DialogOption {
 
-        public ResetDirectionDialogOption(Screen screen, String description, int value) {
-            super(screen, description, value);
+        public ResetDirectionDialogOption(DisplayManager dm, Screen screen, String description, int value) {
+            super(dm, screen, description, value);
         }
 
         /**
@@ -304,16 +313,9 @@ public class DialogController {
      */
     protected class ResetTypeDialogOption extends DialogOption {
         int direction;
-        /**
-         * Public copy-constructor
-         * @param screen the dialog alert owner Screen
-         * @param description the dialog option description (describe the
-         * current option to the user)
-         * @param value the current option returned value
-         * @param direction the related sync direction value
-         */
-        public ResetTypeDialogOption(Screen screen, String description, int value, int direction) {
-            super(screen, description, value);
+        public ResetTypeDialogOption(DisplayManager displayManager, Screen screen, String description,
+                                     int value, int direction) {
+            super(displayManager, screen, description, value);
             this.direction = direction;
         }
 
@@ -350,48 +352,6 @@ public class DialogController {
                 //User selected the cancel option
                 controller.getHomeScreenController().redraw();
             }
-        }
-    }
-
-    /**
-     * NB: Check askGenericQuestion and askConfirmCancelQuestion to find out how
-     * to use this class.
-     */
-    protected class GenericDialogOption extends DialogOption {
-
-        protected boolean chosen = false;
-        protected GenericDialogOption[] chain = new GenericDialogOption[1];
-
-        public GenericDialogOption(Screen screen, String description, int value) {
-            super(screen, description, value);
-            chain[0] = this;
-        }
-
-        public GenericDialogOption(GenericDialogOption link, String description, int value) {
-            this(link.screen, description, value);
-            chain = new GenericDialogOption[link.chain.length + 1];
-            for (int i = 0; i < link.chain.length; i++) {
-                chain[i] = link.chain[i];
-            }
-            chain[link.chain.length] = this;
-        }
-
-        public void run() {
-            displayManager.dismissSelectionDialog(DisplayManager.GENERIC_DIALOG_ID);
-            this.chosen = true;
-            for (int i = 0; i < chain.length; i++) {
-                synchronized (chain[i]) {
-                    chain[i].notify(); // includes this.notify()
-                }
-            }
-        }
-        
-        public GenericDialogOption[] getChain() {
-            return chain;
-        }
-
-        public boolean isChosen() {
-            return chosen;
         }
     }
 }

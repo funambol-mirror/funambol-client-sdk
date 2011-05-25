@@ -35,17 +35,28 @@
 
 package com.funambol.client.controller;
 
-import com.funambol.client.ui.Screen;
+import java.util.Vector;
 
-public abstract class DialogOption implements Runnable {
-    int dialogId;
+import com.funambol.client.ui.Screen;
+import com.funambol.client.ui.DisplayManager;
+
+public class DialogOption implements Runnable {
     protected Screen screen;
     protected String description;
     protected int value = 0;
-    public DialogOption (Screen screen, String description, int value) {
+    protected DisplayManager displayManager;
+    protected boolean chosen = false;
+    protected int dialogId = DisplayManager.GENERIC_DIALOG_ID;
+
+    protected Vector chain = new Vector();
+
+
+    public DialogOption (DisplayManager displayManager, Screen screen, String description, int value) {
+        this.displayManager = displayManager;
         this.description = description;
         this.value = value;
         this.screen = screen;
+        chain.addElement(this);
     }
 
     public String getDescription() {
@@ -63,4 +74,18 @@ public abstract class DialogOption implements Runnable {
     public void setDialogId(int dialogId) {
         this.dialogId = dialogId;
     }
+
+    public void run() {
+        displayManager.dismissSelectionDialog(dialogId);
+        chosen = true;
+        onClick();
+    }
+
+    public boolean isChosen() {
+        return chosen;
+    }
+
+    public void onClick() {
+    }
+
 }
