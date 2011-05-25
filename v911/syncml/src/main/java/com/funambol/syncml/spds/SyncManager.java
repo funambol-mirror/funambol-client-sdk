@@ -228,7 +228,7 @@ public class SyncManager {
 
     private boolean forceCapsInXml = true;
 
-    private boolean sendSuspendOnCancel = false;
+    private boolean sendSuspendOnCancel = true;
 
     private boolean suspendAlertSent = false;
 
@@ -372,7 +372,9 @@ public class SyncManager {
 
                 int interruptedSyncMode = syncStatus.getAlertedSyncMode();
 
-                if (exchangePhase && interruptedSyncMode == SyncML.ALERT_CODE_SLOW) {
+                if (exchangePhase && (interruptedSyncMode == SyncML.ALERT_CODE_SLOW ||
+                                      interruptedSyncMode == SyncML.ALERT_CODE_FAST))
+                {
                     syncMode = SyncML.ALERT_CODE_RESUME;
                     resume = true;
                     if (Log.isLoggable(Log.INFO)) {
