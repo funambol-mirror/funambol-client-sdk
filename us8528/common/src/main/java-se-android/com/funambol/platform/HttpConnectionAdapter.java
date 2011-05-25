@@ -55,6 +55,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpEntity;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.conn.params.ConnRouteParams;
@@ -351,16 +352,15 @@ public class HttpConnectionAdapter {
     public String getHeaderField(String key) throws IOException {
         if (request != null) {
 
-
-            //////////////////////////////////////////////////////////////
-            Header headers[] = httpResponse.getHeaders(key);
-            if (headers != null) {
-                for(int i=0;i<headers.length;++i) {
-                    Header h = headers[i];
-                    Log.error("MARCO", "Header " + key + " has value " + h.getValue());
+            if (Log.isLoggable(Log.TRACE)) {
+                Header headers[] = httpResponse.getHeaders(key);
+                if (headers != null) {
+                    for(int i=0;i<headers.length;++i) {
+                        Header h = headers[i];
+                        Log.trace(TAG_LOG, "Header " + key + " has value " + h.getValue());
+                    }
                 }
             }
-            //////////////////////////////////////////////////////////////
 
             Header header = httpResponse.getFirstHeader(key);
             if (header != null) {
@@ -448,7 +448,7 @@ public class HttpConnectionAdapter {
         if (requestHeaders != null) {
             for(String key : requestHeaders.keySet()) {
                 String value = requestHeaders.get(key);
-                // The content length is set by httpclient and it is feteched
+                // The content length is set by httpclient and it is fetched
                 // from the request stream
                 if (!"Content-Length".equals(key)) {
                     Log.trace(TAG_LOG, "Setting header: " + key + "=" + value);
@@ -457,12 +457,19 @@ public class HttpConnectionAdapter {
             }
         }
 
+        HttpParams params = new BasicHttpParams();
+
         // Set the proxy if necessary
         if (proxyConfig != null) {
-            HttpParams params = new BasicHttpParams();
+//            HttpParams params = new BasicHttpParams();
             ConnRouteParams.setDefaultProxy(params, new HttpHost(proxyConfig.getAddress(), proxyConfig.getPort()));
-            httpClient.setParams(params);
+//            httpClient.setParams(params);
         }
+
+        //FIXME
+//        Log.debug(TAG_LOG, "Setting socket buffer size");
+//        HttpConnectionParams.setSocketBufferSize(params, 900);
+        httpClient.setParams(params);
 
         try {
             Log.trace(TAG_LOG, "Executing request");

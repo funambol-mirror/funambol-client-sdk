@@ -36,11 +36,9 @@
 package com.funambol.platform;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
 
 import com.funambol.util.StringUtil;
-import com.funambol.util.Log;
 
 public class TestableHttpConnectionAdapter extends HttpConnectionAdapter {
 

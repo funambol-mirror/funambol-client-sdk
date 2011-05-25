@@ -516,7 +516,9 @@ public class SapiHandler {
                 }
                 length = length.substring(minusIdx+1).trim();
 
-                Log.trace("MARCO", "Partial content length is: " + length);
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "Partial content length is: " + length);
+                }
 
                 try {
                     long res = Long.parseLong(length);

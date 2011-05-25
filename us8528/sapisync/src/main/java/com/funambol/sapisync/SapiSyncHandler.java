@@ -152,9 +152,6 @@ public class SapiSyncHandler {
             return new ResumeResult(remoteUri, crc);
         }
 
-        Hashtable headers = new Hashtable();
-        headers.put("Content-Range","bytes */" + json.getSize());
-
         long length = -1;
         try {
             length = sapiHandler.getMediaPartialUploadLength(remoteUri, guid, json.getSize());
@@ -266,10 +263,12 @@ public class SapiSyncHandler {
     public String uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener, long fromByte)
     throws SapiException
     {
+        //FIXME
+        //attempt, what is its use? Does it really need?
         int attempt = 0;
         do {
             try {
-                // Get ready to perform twice if the we an authorization failure
+                // Get ready to perform twice if we have an authorization failure first time
                 return uploadItemHelper(item, remoteUri, listener, fromByte);
             } catch (NotAuthorizedCallException nae) {
                 if (attempt < 2) {
