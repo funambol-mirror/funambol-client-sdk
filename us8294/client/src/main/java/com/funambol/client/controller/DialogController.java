@@ -187,18 +187,12 @@ public class DialogController {
             this.delay = delay;
             this.fromOutside = fromOutside;
             this.syncType = syncType;
-
-            // The default action is to cancel
-            if (value == -1) {
-                displayManager.addPostDismissSelectionDialogAction(displayManager.NO_WIFI_AVAILABLE_ID, this);
-            }
         }
 
         /**
          * Triggered in threaded like logic when the user selects an option.
          */
         public void run() {
-            displayManager.removePostDismissSelectionDialogAction(displayManager.NO_WIFI_AVAILABLE_ID);
             displayManager.dismissSelectionDialog(displayManager.NO_WIFI_AVAILABLE_ID);
             HomeScreenController hsCont = controller.getHomeScreenController();
 

@@ -113,21 +113,6 @@ public interface DisplayManager {
     public void dismissSelectionDialog(int id);
 
     /**
-     * Record the action to be executed after dismissing the alert
-     * @param id the int id of the dialog to be dismissed
-     * @param dismissAction the Runnable that represents what to do after the
-     * alert is dismissed
-     */
-    public void addPostDismissSelectionDialogAction(int id, Runnable dismissAction);
-
-    /**
-     * Remove the action to be executed after dismissing a given alert
-     * @param id the int id of the dialog for wich the action is pending
-     */
-    public void removePostDismissSelectionDialogAction(int id);
-
-
-    /**
      * Prompt a message to the user
      * @param screen the screen where to prompt the message
      * @param message the String formatted message to display
