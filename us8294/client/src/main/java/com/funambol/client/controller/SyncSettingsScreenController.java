@@ -173,7 +173,7 @@ public class SyncSettingsScreenController {
 
                     // The user can change this option if the source is
                     // working and active
-                    if (!appSource.getConfig().getActive() || !appSource.isWorking()) {
+                    if (!appSource.getConfig().getActive() || !appSource.isWorking() || !appSource.getConfig().getAllowed()) {
                         item.setEnabled(false);
                     }
                     item.layout();
