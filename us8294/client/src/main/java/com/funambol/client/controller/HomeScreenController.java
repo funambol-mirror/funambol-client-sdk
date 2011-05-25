@@ -273,8 +273,8 @@ public class HomeScreenController extends SynchronizationController {
         }
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
-        if (source.isWorking() && source.getConfig().getEnabled()) {
-            syncSource(MANUAL, source);
+        if (source.isWorking() && source.getConfig().getEnabled() && source.getConfig().getAllowed()) {
+    		syncSource(MANUAL, source);
         } else {
             Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
         }
@@ -343,6 +343,11 @@ public class HomeScreenController extends SynchronizationController {
 
         for(int j=0;j<items.size();++j) {
             AppSyncSource appSource = (AppSyncSource) items.elementAt(j);
+            
+            // Source is not allowed and must be skipped
+            if (!appSource.getConfig().getAllowed())
+            	continue;
+            
             // If this source is in sources then we shall enable it,
             // otherwise we must disable it
             boolean enable = false;
@@ -381,7 +386,7 @@ public class HomeScreenController extends SynchronizationController {
 
             if (sourceController != null) {
                 if (appSource.getConfig().getActive()) {
-                    if (!appSource.isEnabled() || !appSource.isWorking()) {
+                    if (!appSource.isEnabled() || !appSource.isWorking() || !appSource.getConfig().getAllowed()) {
                         sourceController.disable();
                         UISyncSource uiSource = appSource.getUISyncSource();
                         // If this is the selected source, then we shall move the
@@ -629,10 +634,11 @@ public class HomeScreenController extends SynchronizationController {
 
         for(int j=0;j<items.size();++j) {
             AppSyncSource appSource = (AppSyncSource) items.elementAt(j);
+                       
             // If this source is in sources then we shall enable it,
             // otherwise we must disable it
             UISyncSourceController uiSourceController = appSource.getUISyncSourceController();
-            if (appSource.isWorking() && appSource.isEnabled()) {
+            if (appSource.isWorking() && appSource.isEnabled() && appSource.getConfig().getAllowed()) {
                 uiSourceController.enable();
             } else {
                 uiSourceController.disable();

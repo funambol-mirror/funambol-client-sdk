@@ -128,8 +128,12 @@ public class SyncSettingsScreenController {
                 if (item != null) {
                     miscSettingsUIItems.addElement(item);
                 }
-            }
-
+                
+                if (configuration.getProfileManualOnly()) {
+                	ssScreen.enableSyncModeList(false);
+                }
+            }          
+            
             // Add C2S push setting if required (this is not the case if the
             // gloabl push sync mode is available for example)
             boolean pushModeEnabled = customization.isS2CSmsPushEnabled();

@@ -126,7 +126,7 @@ public class UISyncSourceController implements SyncListener {
             if (!appSource.isWorking()) {
                 lastStatus = localization.getLanguage("home_not_available");
                 uiSource.setEnabled(false);
-            } else if (!appSource.getConfig().getEnabled()) {
+            } else if (!appSource.getConfig().getEnabled() || !appSource.getConfig().getAllowed()) {
                 lastStatus = localization.getLanguage("home_disabled");
                 uiSource.setEnabled(false);
             } else {

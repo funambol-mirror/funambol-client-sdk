@@ -105,11 +105,13 @@ class SapiLoginMockData {
 
     private static JSONObject getBasePlan(boolean premium, long expireDate) throws JSONException {
 
-        JSONObject user1 = new JSONObject();
-        JSONObject user1Data = new JSONObject();
+        JSONObject user1 = new JSONObject();        
+        JSONObject user1Data = new JSONObject();        
         user1.put("data", user1Data);
+        
         JSONObject user1Details = new JSONObject();
         JSONArray user1Sources = new JSONArray();
+
         JSONObject user1Source1 = new JSONObject();
         user1Source1.put("name","card");
         user1Source1.put("value","enabled");
@@ -142,13 +144,21 @@ class SapiLoginMockData {
         JSONObject autoSyncProp = new JSONObject();
         autoSyncProp.put("name","auto-sync");
         autoSyncProp.put("value", premium ? "enabled" : "disabled");
+        properties.put(autoSyncProp);
+        
+        // Set network warning
+        JSONObject networkWarningProp = new JSONObject();
+        networkWarningProp.put("name","network-warning");
+        networkWarningProp.put("value","enabled");
+        properties.put(networkWarningProp);
+        
         user1Details.put("properties",properties);
 
         // Set the expire date
         user1Details.put("expiretime", expireDate);
 
         user1Details.put("sources",user1Sources);
-        user1Details.put("details",user1Details);
+        //user1Details.put("details",user1Details);
         user1Data.put("details", user1Details);
 
         return user1;

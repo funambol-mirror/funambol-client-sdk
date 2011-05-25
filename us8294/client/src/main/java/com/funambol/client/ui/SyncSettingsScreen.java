@@ -75,4 +75,10 @@ public interface SyncSettingsScreen extends Screen {
      * before recomputing the list of visible items.
      */
     public void removeAllItems();
+    
+    /**
+     * Enable/disable the dropdown list of sync modes
+     * @param enable
+     */
+    public void enableSyncModeList(boolean enable);
 }
