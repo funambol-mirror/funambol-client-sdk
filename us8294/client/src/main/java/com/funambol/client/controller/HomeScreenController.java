@@ -94,11 +94,15 @@ public class HomeScreenController extends SynchronizationController {
     private boolean homeScreenRegisteredAndInForeground = false;
 
 
-     public HomeScreenController(Controller controller, HomeScreen homeScreen,NetworkStatus networkStatus) {
+    public HomeScreenController(Controller controller, HomeScreen homeScreen,NetworkStatus networkStatus) {
         super(controller, homeScreen,networkStatus);
         this.controller = controller;
         this.homeScreen = homeScreen;
         forceUpdateAvailableSources();
+    }
+
+    // TODO FIXME This is here until we need the ProxyHomeScreenController only
+    public HomeScreenController() {
     }
 
     public HomeScreen getHomeScreen() {

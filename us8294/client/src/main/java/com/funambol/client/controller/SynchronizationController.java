@@ -112,7 +112,6 @@ public class SynchronizationController extends BasicSynchronizationController
     private FirstSyncRequest pendingFirstSyncQuestion = null;
 
     SynchronizationController() {
-        throw new IllegalArgumentException("Invalid");
     }
 
     SynchronizationController(Controller controller, Screen screen, NetworkStatus networkStatus) {

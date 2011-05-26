@@ -251,7 +251,7 @@ public class DialogController {
             opts.addElement(new ResetTypeDialogOption(
                     displayManager,
                     screen,
-                    localization.getLanguage("type_all_enabled"),
+                    localization.getLanguage("type_all-enabled"),
                     allId,
                     direction));
         }
@@ -296,7 +296,7 @@ public class DialogController {
             displayManager.dismissSelectionDialog(displayManager.REFRESH_DIRECTION_DIALOG_ID);
             //if the user selected a direction the refresh type dialog is shown
             //with the message related to that sync direction
-            if (!this.getDescription().equals(localization.getLanguage("dialog_cancel"))) {
+            if (getValue() != -1) {
                 showRefreshTypeDialog(screen, value);
             }
         }
@@ -335,7 +335,9 @@ public class DialogController {
             if (!this.getDescription().equals(localization.getLanguage("dialog_cancel"))) {
                 //User selected the sync sources to be refreshed
                 try {
-                    displayManager.hideScreen(screen);
+                    if (screen != null) {
+                        displayManager.hideScreen(screen);
+                    }
                     //starts the sync
                     controller.getHomeScreenController().refresh(value, direction);
                     controller.getHomeScreenController().redraw();
