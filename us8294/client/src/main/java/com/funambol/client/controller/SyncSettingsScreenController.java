@@ -130,7 +130,7 @@ public class SyncSettingsScreenController {
                 }
                 
                 if (configuration.getProfileManualOnly()) {
-                	ssScreen.enableSyncModeList(false);
+                    ssScreen.enableSyncModeList(false);
                 }
             }          
             
