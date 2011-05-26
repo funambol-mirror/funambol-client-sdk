@@ -348,4 +348,47 @@ public class DialogController {
             }
         }
     }
+
+    /**
+     * Helper function to prompt the user for a yes/no answer
+     */
+    public void askYesNoQuestion(Screen screen, String question, boolean defaultYes, Runnable yesAction,
+                                 Runnable noAction) {
+
+        DialogOption options[] = new DialogOption[2];
+        options[0] = new RunnableDialogOption(displayManager,screen,localization.getLanguage("dialog_yes"),1,yesAction);
+        options[1] = new RunnableDialogOption(displayManager,screen,localization.getLanguage("dialog_no"),0,noAction);
+        displayManager.promptSelection(screen,question,options,(defaultYes ? 1 : 0),DisplayManager.GENERIC_DIALOG_ID);
+    }
+
+    /**
+     * Helper function to prompt the user for an accept/deny answer
+     */
+    public void askAcceptDenyQuestion(Screen screen, String question, boolean defaultYes, Runnable yesAction,
+                                      Runnable noAction) {
+
+        DialogOption options[] = new DialogOption[2];
+        options[0] = new RunnableDialogOption(displayManager,screen,localization.getLanguage("dialog_accept"),
+                                              1,yesAction);
+        options[1] = new RunnableDialogOption(displayManager,screen,localization.getLanguage("dialog_deny"),0,noAction);
+        displayManager.promptSelection(screen,question,options,(defaultYes ? 1 : 0),DisplayManager.GENERIC_DIALOG_ID);
+    }
+
+    public void promptSelection(Screen screen, String question, DialogOption options[], int defaultOption) {
+        displayManager.promptSelection(screen, question, options, defaultOption, DisplayManager.GENERIC_DIALOG_ID);
+    }
+
+    private class RunnableDialogOption extends DialogOption {
+        private Runnable runnable;
+        public RunnableDialogOption(DisplayManager dm, Screen screen, String label, int value, Runnable runnable) {
+            super(dm, screen, label, value);
+            this.runnable = runnable;
+        }
+
+        public void onClick() {
+            if (runnable != null) {
+                runnable.run();
+            }
+        }
+    }
 }

@@ -37,9 +37,9 @@ package com.funambol.client.controller;
 
 import com.funambol.client.ui.AboutScreen;
 import com.funambol.client.ui.ConfigurationScreen;
-import com.funambol.client.ui.DisplayManager;
 import com.funambol.client.ui.HomeScreen;
 import com.funambol.client.ui.AccountScreen;
+import com.funambol.client.ui.DisplayManager;
 
 abstract public class ControllerDataFactory {
 

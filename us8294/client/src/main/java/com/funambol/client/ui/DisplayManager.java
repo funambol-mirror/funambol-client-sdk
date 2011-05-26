@@ -49,7 +49,7 @@ public interface DisplayManager {
      * int value related to the infinitive time to wait before dismissing a
      * screen or a dialog
      */
-    public static final long NO_LIMIT = -1;
+    public static final int NO_LIMIT = -1;
 
     /** Generic dialog id*/
     public static final int GENERIC_DIALOG_ID = 0;

@@ -38,6 +38,7 @@ package com.funambol.client.controller;
 import java.util.Vector;
 import java.util.Enumeration;
 
+import com.funambol.client.controller.DialogController;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.engine.SyncEngine;
 import com.funambol.client.engine.Poller;

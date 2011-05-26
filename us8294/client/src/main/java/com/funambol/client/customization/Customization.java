@@ -184,5 +184,12 @@ public interface Customization {
      * @return max number of items to receive from server upon first sync
      */
     public int getFirstSyncMediaDownloadLimit(int sourceId, DeviceInfoInterface.DeviceRole deviceRole);
+
+    /**
+     * Specifies if the user shall be warned before accessing the network at the
+     * beginning of each sync
+     */
+    public boolean getShowNetworkUsageWarningForProfiles();
+
 }
 

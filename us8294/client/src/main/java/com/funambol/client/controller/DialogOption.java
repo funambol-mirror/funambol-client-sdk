@@ -39,8 +39,12 @@ import java.util.Vector;
 
 import com.funambol.client.ui.Screen;
 import com.funambol.client.ui.DisplayManager;
+import com.funambol.util.Log;
 
 public class DialogOption implements Runnable {
+
+    private static final String DialogOption = "DialogOption";
+
     protected Screen screen;
     protected String description;
     protected int value = 0;
@@ -51,8 +55,8 @@ public class DialogOption implements Runnable {
     protected Vector chain = new Vector();
 
 
-    public DialogOption (DisplayManager displayManager, Screen screen, String description, int value) {
-        this.displayManager = displayManager;
+    public DialogOption (DisplayManager dm, Screen screen, String description, int value) {
+        this.displayManager = dm;
         this.description = description;
         this.value = value;
         this.screen = screen;
