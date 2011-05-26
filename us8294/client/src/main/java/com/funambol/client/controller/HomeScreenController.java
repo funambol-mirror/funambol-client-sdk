@@ -274,7 +274,7 @@ public class HomeScreenController extends SynchronizationController {
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
         if (source.isWorking() && source.getConfig().getEnabled() && source.getConfig().getAllowed()) {
-    		syncSource(MANUAL, source);
+            syncSource(MANUAL, source);
         } else {
             Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
         }
@@ -346,7 +346,7 @@ public class HomeScreenController extends SynchronizationController {
             
             // Source is not allowed and must be skipped
             if (!appSource.getConfig().getAllowed())
-            	continue;
+                continue;
             
             // If this source is in sources then we shall enable it,
             // otherwise we must disable it
