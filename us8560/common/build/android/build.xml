@@ -106,8 +106,7 @@ Build file for Funambol Java Common API.
         <!-- Now compile everything -->
         <mkdir dir="${dir.classes}"/>
         <javac srcdir="${dir.src}" destdir="${dir.classes}"
-               target="1.1" source="1.2" debug="${debug}"
-               listfiles="yes" 
+               debug="${debug}" listfiles="yes" 
                bootclasspath="${android-jar}">
                <classpath>
                    <pathelement location="${lib.gzip}"/>

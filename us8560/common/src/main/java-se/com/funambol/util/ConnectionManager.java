@@ -134,7 +134,7 @@ public class ConnectionManager {
             if (breakOnPhase.equals(phase) && (breakOnItemIdx == breakOnItemCounter || key.equals(breakOnKey))) {
                 // Create a testable connection
                 if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Creating a test connection set to break " + breakOnPhase + "," + breakOnPos);
+                    Log.debug(TAG_LOG, "Creating a test connection set to break " + breakOnPhase + ", " + breakOnPos);
                 }
                 TestableHttpConnectionAdapter res = new TestableHttpConnectionAdapter();
                 res.setBreakInfo(breakOnPhase, breakOnPos);
