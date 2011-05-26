@@ -546,6 +546,8 @@ public class AccountScreenController extends SynchronizationController {
                         String propValue = prop.getString("value");
                         if ("auto-sync".equals(propName)) {
                             configuration.setProfileManualOnly("disabled".equals(propValue));
+                            if ("disabled".equals(propValue))
+                                configuration.setSyncMode(Configuration.SYNC_MODE_MANUAL);
                         } else if ("network-warning".equals(propName)) {
                             configuration.setProfileNetworkUsageWarning("enabled".equals(propValue));
                         } else {
