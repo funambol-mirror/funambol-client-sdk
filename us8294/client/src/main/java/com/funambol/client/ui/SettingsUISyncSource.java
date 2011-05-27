@@ -79,6 +79,11 @@ public interface SettingsUISyncSource extends SettingsUIItem {
     public void setEnabled(boolean flag);
 
     /**
+     * Allow/disallow this item
+     */
+    public void setAllowed(boolean flag);
+
+    /**
      * Returns the AppSyncSource this item represents
      */
     public AppSyncSource getSource();

@@ -173,9 +173,10 @@ public class SyncSettingsScreenController {
 
                     // The user can change this option if the source is
                     // working and active
-                    if (!appSource.getConfig().getActive() || !appSource.isWorking() || !appSource.getConfig().getAllowed()) {
+                    if (!appSource.getConfig().getActive() || !appSource.isWorking()) {
                         item.setEnabled(false);
                     }
+                    item.setAllowed(appSource.getConfig().getAllowed());
                     item.layout();
 
                     tempItems.addElement(item);
