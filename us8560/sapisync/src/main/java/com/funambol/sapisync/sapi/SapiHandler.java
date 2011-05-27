@@ -241,7 +241,7 @@ public class SapiHandler {
                     total += fromByte;
                 }
 
-                SapiInputStream sapiIs = new SapiInputStream(requestIs, total, listener);
+                SapiInputStream sapiIs = new SapiInputStream(requestIs, total, listener, (int)contentLength);
                 conn.execute(sapiIs, uploadContentLength);
 
                 if(isQueryCancelled()) {
@@ -654,11 +654,19 @@ public class SapiHandler {
         private InputStream is;
         private SapiQueryListener listener;
         private int offset;
+        private int current;
+        private int contentLength;
 
-        public SapiInputStream(InputStream is, int offset, SapiQueryListener listener) {
+        public SapiInputStream(InputStream is, int offset, SapiQueryListener listener, int contentLength) {
             this.is = is;
             this.offset = offset;
             this.listener = listener;
+            this.contentLength = contentLength;
+            if (contentLength != 0) {
+                current = (offset * 100) / contentLength;
+            } else {
+                current = 0;
+            }
         }
 
         public int read() throws IOException {
@@ -668,7 +676,18 @@ public class SapiHandler {
             }
             int res = is.read();
             if (listener != null) {
-                listener.queryProgress(offset++);
+                offset++;
+                int newCurrent;
+                if (contentLength != 0) {
+                    newCurrent = (offset * 100) / contentLength;
+                } else {
+                    newCurrent = 0;
+                }
+
+                if (newCurrent != current) {
+                    listener.queryProgress(offset++);
+                    current = newCurrent;
+                }
             }
             return res;
         }
