@@ -251,7 +251,14 @@ public abstract class TrackableSyncSource implements SyncSource {
                 // delete all the items in the database
                 // (possibly asking the user before that)
 
-                deleteAllItems();
+                // delete all items only if the syncsource allow this
+                // (generally, for PIM syncsources is yes, for media syncsources is no)
+                if (isDeleteAllItemsAllowed()) {
+                    deleteAllItems();
+                } else {
+                    Log.debug(TAG_LOG, "Skipping deletion of local items");
+                }
+                
                 // No modifications to send.
                 newItems = null;
                 updItems = null;
@@ -703,6 +710,17 @@ public abstract class TrackableSyncSource implements SyncSource {
 
     protected boolean isCancelled() throws SyncException {
         return cancel;
+    }
+
+    /**
+     * Returns true if, during a {@link SyncSource#FULL_DOWNLOAD},
+     * items on client can be deleted. Otherwise false.
+     * For example, PIM items can be deleted, media items no.
+     *   
+     * @return true if local items can be deleted, otherwise false 
+     */
+    protected boolean isDeleteAllItemsAllowed() {
+        return true;
     }
 }
 
