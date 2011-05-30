@@ -45,6 +45,40 @@ import java.util.HashMap;
 
 //import android.net.http.AndroidHttpClient;
 
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpResponse;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.RequestWrapper;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.BasicHttpProcessor;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.protocol.HTTP;
+
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpGet;
@@ -59,8 +93,13 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.conn.params.ConnRouteParams;
-import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.HttpVersion;
 
+import android.net.SSLCertificateSocketFactory;
+//import android.net.SSLSessionCache;
 
 import com.funambol.platform.net.ProxyConfig;
 import com.funambol.util.Log;
@@ -155,7 +194,7 @@ public class HttpConnectionAdapter {
     private String requestMethod = GET;
 
     private HttpRequestBase request;
-    private DefaultHttpClient httpClient = new DefaultHttpClient();
+    private DefaultHttpClient httpClient;
     private int responseCode;
     private OutputStream outputStream;
     private String url;
@@ -164,13 +203,29 @@ public class HttpConnectionAdapter {
     private ProxyConfig proxyConfig;
     private int chunkLength = -1;
 
+    // Default connection and socket timeout of 3 * 60 seconds.  Tweak to taste.
+    private static final int SOCKET_OPERATION_TIMEOUT = 3 * 60 * 1000;
+
     public HttpConnectionAdapter() {
+
+        // These default values are mostly grabbed from the AndroidDefaultClient
+        // implementation that was introduced in Android 2.2
         HttpParams params = new BasicHttpParams();
-        //params.(SOCKET_BUFFER_SIZE, 8192);
-        //SchemeRegistry registry = new SchemeRegistry();
-        //registry.register(new Scheme("http", new KeepAliveSocketFactory(), 80));
-        //httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(params, registry), params);
-        httpClient = new DefaultHttpClient(params);
+        params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+        params.setParameter(CoreProtocolPNames.HTTP_CONTENT_CHARSET, HTTP.UTF_8);
+        params.setParameter(CoreProtocolPNames.USER_AGENT, "Apache-HttpClient/Android");
+        HttpConnectionParams.setConnectionTimeout(params, SOCKET_OPERATION_TIMEOUT);
+        HttpConnectionParams.setSoTimeout(params, SOCKET_OPERATION_TIMEOUT);
+        // Turn off stale checking.  Our connections break all the time anyway,
+        // and it's not worth it to pay the penalty of checking every time.
+        params.setParameter(CoreConnectionPNames.STALE_CONNECTION_CHECK, false);
+        //HttpConnectionParams.setSocketBufferSize(params, 8192);
+
+        SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+        ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
+        httpClient = new DefaultHttpClient(cm, params);
     }
 
     /**
@@ -457,19 +512,19 @@ public class HttpConnectionAdapter {
             }
         }
 
-        HttpParams params = new BasicHttpParams();
+        HttpParams params = httpClient.getParams();
 
         // Set the proxy if necessary
         if (proxyConfig != null) {
-//            HttpParams params = new BasicHttpParams();
             ConnRouteParams.setDefaultProxy(params, new HttpHost(proxyConfig.getAddress(), proxyConfig.getPort()));
-//            httpClient.setParams(params);
+            httpClient.setParams(params);
+        } else {
+            // TODO FIXME: remove the proxy
         }
 
         //FIXME
 //        Log.debug(TAG_LOG, "Setting socket buffer size");
 //        HttpConnectionParams.setSocketBufferSize(params, 900);
-        httpClient.setParams(params);
 
         try {
             Log.trace(TAG_LOG, "Executing request");
