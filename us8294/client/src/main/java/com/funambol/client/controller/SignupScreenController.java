@@ -77,6 +77,15 @@ public abstract class SignupScreenController extends AccountScreenController {
     private SignupHandler signupHandler;
     private String        jsessionId;
 
+    private class ContinueSignUpAction implements Runnable {       
+        public ContinueSignUpAction() {
+        }
+        
+        public void run() {
+            requestLogin();
+        }
+    }
+
     /**
      * TODO: Remove once the com.funambol.client.controller package integration is finished
      */
@@ -169,8 +178,12 @@ public abstract class SignupScreenController extends AccountScreenController {
         // Before requesting the CAPTCHA we try to do a login in order to check
         // if the provided credentials are valid. This prevents the user to
         // enter the CAPTCHA token even thought the login can be performed
-        // immediately.
-        requestLogin();
+        // immediately.  
+        
+        //requestLogin();
+        ContinueSignUpAction csa = new ContinueSignUpAction(); 
+        NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
+        nuwc.askUserNetworkUsageConfirmation();
     }
 
     protected void requestLogin() {

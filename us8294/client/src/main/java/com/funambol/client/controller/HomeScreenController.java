@@ -93,6 +93,24 @@ public class HomeScreenController extends SynchronizationController {
     protected boolean dontDisplayServerQuotaWarning = false;
     private boolean homeScreenRegisteredAndInForeground = false;
 
+    private class ContinueSyncAction implements Runnable {
+        private AppSyncSource appSource;
+        
+        public ContinueSyncAction() {
+            this.appSource = null;
+        }
+
+        public ContinueSyncAction(AppSyncSource appSource) {
+            this.appSource = appSource;
+        }
+        
+        public void run() {
+            if (appSource == null)
+                syncAllSources(MANUAL);
+            else
+                syncSource(MANUAL, appSource);
+        }
+    }
 
     public HomeScreenController(Controller controller, HomeScreen homeScreen,NetworkStatus networkStatus) {
         super(controller, homeScreen,networkStatus);
@@ -278,7 +296,17 @@ public class HomeScreenController extends SynchronizationController {
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
         if (source.isWorking() && source.getConfig().getEnabled() && source.getConfig().getAllowed()) {
-            syncSource(MANUAL, source);
+            long profileExpireDate = configuration.getProfileExpireDate();
+            if (profileExpireDate != -1 
+                && profileExpireDate < System.currentTimeMillis() 
+                || configuration.getProfileNetworkUsageWarning())
+            {
+                ContinueSyncAction csa = new ContinueSyncAction(source); 
+                NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
+                nuwc.askUserNetworkUsageConfirmation();
+            } else {
+                syncSource(MANUAL, source);
+            }
         } else {
             Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
         }
@@ -419,22 +447,31 @@ public class HomeScreenController extends SynchronizationController {
         redraw();
     }
 
-    protected void syncSource(String syncType, AppSyncSource appSource) {
-        
+    protected void syncSource(String syncType, AppSyncSource appSource) {        
         Vector sources = new Vector();
         sources.addElement(appSource);
-        synchronize(syncType, sources);
-        
+        synchronize(syncType, sources);        
     }
     
     public void syncMenuSelected() {
         if (selectedIndex != -1) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(selectedIndex);
-            syncSource(MANUAL, appSource);
+            
+            long profileExpireDate = configuration.getProfileExpireDate();
+            if (profileExpireDate != -1 
+                && profileExpireDate < System.currentTimeMillis() 
+                || configuration.getProfileNetworkUsageWarning())
+            {
+                ContinueSyncAction csa = new ContinueSyncAction(appSource); 
+                NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
+                nuwc.askUserNetworkUsageConfirmation();
+            } else {
+                syncSource(MANUAL, appSource);
+            }
         }
     }
 
-    public void syncAllPressed() {
+    public void syncAllPressed() {       
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Sync All Button pressed");
         }
@@ -449,7 +486,18 @@ public class HomeScreenController extends SynchronizationController {
                 }
             }
         } else {
-            syncAllSources(MANUAL);
+            long profileExpireDate = configuration.getProfileExpireDate();
+            if (profileExpireDate != -1 
+                && profileExpireDate < System.currentTimeMillis() 
+                || configuration.getProfileNetworkUsageWarning())
+            {
+                ContinueSyncAction csa = new ContinueSyncAction(); 
+                NetworkUsageWarningController nuwc = 
+                    new NetworkUsageWarningController(screen, controller, csa);
+                nuwc.askUserNetworkUsageConfirmation();
+            } else {
+                syncAllSources(MANUAL);
+            }
         }
     }
 
@@ -469,7 +517,19 @@ public class HomeScreenController extends SynchronizationController {
             }
         } else {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(0);
-            syncSource(MANUAL, appSource);
+            if (appSource.isWorking() && appSource.getConfig().getEnabled() && appSource.getConfig().getAllowed()) {
+                long profileExpireDate = configuration.getProfileExpireDate();
+                if (profileExpireDate != -1 
+                    && profileExpireDate < System.currentTimeMillis() 
+                    || configuration.getProfileNetworkUsageWarning())
+                {
+                    ContinueSyncAction csa = new ContinueSyncAction(appSource); 
+                    NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
+                    nuwc.askUserNetworkUsageConfirmation();
+                } else {
+                    syncSource(MANUAL, appSource);
+                }
+            }
         }
     }
 
@@ -840,5 +900,4 @@ public class HomeScreenController extends SynchronizationController {
             }
         }
     }
-    
 }

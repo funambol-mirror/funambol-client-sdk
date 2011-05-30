@@ -173,7 +173,7 @@ public class MediaItemsSorter implements FileSyncSource.AllItemsSorter {
             if(v2 != null) {
                 swapSingle(v2, i, j);
             }
-	}
+    }
 
         private void swapSingle(Vector v, int i, int j) {
             Object tmp = v.elementAt(i);

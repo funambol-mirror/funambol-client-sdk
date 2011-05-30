@@ -47,6 +47,7 @@ class SapiLoginMockData {
     private static final long ONE_DAY_MILLIS = 1000 * 60 * 60 * 24;
     private static final long ONE_WEEK_MILLIS = ONE_DAY_MILLIS * 7;
     private static final long ONE_MONTH_MILLIS = ONE_DAY_MILLIS * 30;
+    private static final long X_MINUTES_MILLIS = 1000 * 60 * 2;
 
     private static Hashtable data = null;
 
@@ -89,14 +90,14 @@ class SapiLoginMockData {
 
     private static JSONObject getMonthlyPlan() throws JSONException {
         long now = System.currentTimeMillis();
-        long expireTime = now + ONE_MONTH_MILLIS;
+        long expireTime = now + X_MINUTES_MILLIS; //ONE_MONTH_MILLIS;
         return getBasePlan(true, expireTime);
     }
 
     private static JSONObject getDailyPlan() throws JSONException {
         long now = System.currentTimeMillis();
         long expireTime = now + ONE_DAY_MILLIS;
-        return getBasePlan(false, expireTime);
+        return getBasePlan(true, expireTime);
     }
 
     private static JSONObject getDefaultProfileInformation() throws JSONException {
@@ -149,7 +150,7 @@ class SapiLoginMockData {
         // Set network warning
         JSONObject networkWarningProp = new JSONObject();
         networkWarningProp.put("name","network-warning");
-        networkWarningProp.put("value","enabled");
+        networkWarningProp.put("value", premium ? "disabled" : "enabled");
         properties.put(networkWarningProp);
         
         user1Details.put("properties",properties);

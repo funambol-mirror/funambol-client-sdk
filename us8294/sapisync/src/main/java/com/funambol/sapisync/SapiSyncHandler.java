@@ -730,6 +730,7 @@ public class SapiSyncHandler {
 
             Vector params = new Vector();
             params.addElement("responsetime=true");
+            params.addElement("details=true");
             if (deviceId != null) {
                 params.addElement("syncdeviceid=" + deviceId);
             }

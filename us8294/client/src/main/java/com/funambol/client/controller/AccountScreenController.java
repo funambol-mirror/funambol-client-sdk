@@ -73,6 +73,22 @@ public class AccountScreenController extends SynchronizationController {
     protected String               originalUser     = null;
     protected String               originalPassword = null;
 
+    private class ContinueSyncAction implements Runnable {
+        private String serverUri;
+        private String username;
+        private String password;
+        
+        public ContinueSyncAction(String serverUri, String username, String password) {
+            this.serverUri = serverUri;
+            this.username = username;
+            this.password = password;
+        }
+        
+        public void run() {
+            loginViaSapi(serverUri, username, password);
+        }
+    }
+
     public AccountScreenController(Controller controller, AccountScreen accountScreen) {
         super(controller, accountScreen, null);
 
@@ -223,8 +239,18 @@ public class AccountScreenController extends SynchronizationController {
                         controller.reapplyMiscConfiguration();
                     }
                 }
-            } else {
-                loginViaSapi(serverUri, username, password);
+            } else {                
+                long profileExpireDate = configuration.getProfileExpireDate();
+                if (profileExpireDate != -1 
+                    && profileExpireDate < System.currentTimeMillis() 
+                    || configuration.getProfileNetworkUsageWarning())
+                {
+                    ContinueSyncAction csa = new ContinueSyncAction(serverUri, username, password); 
+                    NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
+                    nuwc.askUserNetworkUsageConfirmation();
+                } else {
+                    loginViaSapi(serverUri, username, password);
+                }
             }
         } else {
             // There was no need to authenticate
@@ -478,9 +504,9 @@ public class AccountScreenController extends SynchronizationController {
                 SapiSyncHandler sapiHandler = new SapiSyncHandler(baseUrl, username, password);
 
                 // TODO FIXME: use the real sapi instead of the mocked one
-                //JSONObject response = sapiHandler.loginAndGetServerInfo();
+                JSONObject response = sapiHandler.loginAndGetServerInfo();
 
-                JSONObject response = SapiLoginMockData.getProfileInformation(baseUrl, username, password);
+                //JSONObject response = SapiLoginMockData.getProfileInformation(baseUrl, username, password);
 
                 if (!response.has("data")) {
                     // This server does not have the new login API. For backward
