@@ -204,16 +204,9 @@ public class HttpConnectionAdapter {
         return conn.getInputStream();
     }
 
-    /*
-    public void execute(InputStream is) throws IOException {
-        execute(is, -1);
-    }
-    */
-
     /**
-     * Open the output stream. The ownership of the stream is transferred to the
-     * caller which is responsbile to close and release the resource once it is
-     * no longer used. This method shall be called only once per connection.
+     * Execute the http post operation with the given input stream to be read to
+     * fetch body content.
      *
      * @throws IOException if the output stream cannot be opened.
      */

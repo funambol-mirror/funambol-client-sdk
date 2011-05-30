@@ -142,6 +142,8 @@ public class HttpConnectionAdapter {
     private static final String HTTP_DEFAULT_PORT  = "80";
     private static final String HTTPS_DEFAULT_PORT = "443";
 
+    private static final int DEFAULT_CHUNK_SIZE = 4096;
+
     private Hashtable requestHeaders;
     private Hashtable responseHeaders;
     private Hashtable responseHeadersId;
@@ -236,19 +238,41 @@ public class HttpConnectionAdapter {
     }
 
     /**
-     * Open the output stream. The ownership of the stream is transferred to the
-     * caller which is responsbile to close and release the resource once it is
-     * no longer used. This method shall be called only once per connection.
+     * Execute the http post operation with the given input stream to be read to
+     * fetch body content.
      *
      * @throws IOException if the output stream cannot be opened.
      */
-    public OutputStream openOutputStream() throws IOException {
+    public void execute(InputStream is, long length) throws IOException {
         if (conn == null) {
             throw new IOException("Cannot open output stream on non opened connection");
         }
-        socketOs = conn.openOutputStream();
-        return new ConnectionOutputStream();
+        OutputStream os = null;
+        try {
+            os = openOutputStream();
+            byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
+            int read;
+            do {
+                read = is.read(chunk);
+                if (read > 0) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "Writing chunk size: " + read);
+                    }
+                    os.write(chunk, 0, read);
+                }
+            } while(read != -1);
+            os.flush();
+        } finally {
+            // Release all resources
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {}
+                os = null;
+            }
+        }
     }
+
 
     /**
      * Returns the HTTP response status code. It parses responses like:
@@ -463,6 +487,21 @@ public class HttpConnectionAdapter {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Found port number: " + port);
         }
+    }
+
+    /**
+     * Open the output stream. The ownership of the stream is transferred to the
+     * caller which is responsbile to close and release the resource once it is
+     * no longer used. This method shall be called only once per connection.
+     *
+     * @throws IOException if the output stream cannot be opened.
+     */
+    private OutputStream openOutputStream() throws IOException {
+        if (conn == null) {
+            throw new IOException("Cannot open output stream on non opened connection");
+        }
+        socketOs = conn.openOutputStream();
+        return new ConnectionOutputStream();
     }
 
     private class ConnectionOutputStream extends OutputStream {
