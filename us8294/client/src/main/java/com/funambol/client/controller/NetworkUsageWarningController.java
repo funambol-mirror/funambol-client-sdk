@@ -81,7 +81,7 @@ public class NetworkUsageWarningController {
 
         if (showNetworkUsageWarning) {
             DialogController dialControll = controller.getDialogController();
-            String msg = localization.getLanguage("network_usage_warning_question");
+            String msg = localization.getLanguage("dialog_network_usage_warning_question");
             dialControll.askYesNoQuestion(screen, msg, false, useAction, null);
         }
     }
