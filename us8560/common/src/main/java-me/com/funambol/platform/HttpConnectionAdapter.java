@@ -249,15 +249,17 @@ public class HttpConnectionAdapter {
             os = openOutputStream();
             byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
             int read;
-            do {
-                read = is.read(chunk);
-                if (read > 0) {
-                    if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "Writing chunk size: " + read);
+            if(is != null) {
+                do {
+                    read = is.read(chunk);
+                    if (read > 0) {
+                        if (Log.isLoggable(Log.TRACE)) {
+                            Log.trace(TAG_LOG, "Writing chunk size: " + read);
+                        }
+                        os.write(chunk, 0, read);
                     }
-                    os.write(chunk, 0, read);
-                }
-            } while(read != -1);
+                } while(read != -1);
+            }
             os.flush();
         } finally {
             // Release all resources
