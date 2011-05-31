@@ -408,6 +408,9 @@ public class SapiSyncHandler {
         params.addElement("from=" + from.getTime());
         params.addElement("type=" + dataType);
         params.addElement("responsetime=true");
+        //FIXME: future implementation of SAPI, not supported now
+        params.addElement("sortby=creationdate");
+        params.addElement("sortorder=ascending");
 
         JSONObject response = null;
         try {
