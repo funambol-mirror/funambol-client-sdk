@@ -124,7 +124,7 @@ public abstract class Configuration {
 
     protected static final String CONF_KEY_CURRENT_SYNC_RETRY_COUNT = "CURRENT_SYNC_RETRY_COUNT";
 
-    protected static final String CONFIG_VERSION = "10";
+    protected static final String CONFIG_VERSION = "11";
 
     protected String       version;
     
@@ -925,6 +925,15 @@ public abstract class Configuration {
                 }
                 version = "10";
             }
+
+            /////////////////////////////////////////////////////////////////
+            /////////////////////  Migrate from 10 to 11 //////////////////////
+            /////////////////////////////////////////////////////////////////
+            // Nothing to migrate in the general config
+            if ("10".equals(version)) {
+                version = "11";
+            }
+
             // Migration completed
             version = CONFIG_VERSION;
         } catch (Exception e) {
