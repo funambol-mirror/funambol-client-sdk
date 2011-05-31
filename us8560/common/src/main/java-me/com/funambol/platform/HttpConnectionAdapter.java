@@ -496,7 +496,7 @@ public class HttpConnectionAdapter {
      *
      * @throws IOException if the output stream cannot be opened.
      */
-    private OutputStream openOutputStream() throws IOException {
+    protected OutputStream openOutputStream() throws IOException {
         if (conn == null) {
             throw new IOException("Cannot open output stream on non opened connection");
         }

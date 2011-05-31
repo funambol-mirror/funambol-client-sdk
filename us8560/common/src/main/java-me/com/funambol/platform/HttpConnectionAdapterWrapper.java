@@ -157,20 +157,6 @@ public class HttpConnectionAdapterWrapper extends HttpConnectionAdapter {
     }
 
     /**
-     * Open the output stream. The ownership of the stream is transferred to the
-     * caller which is responsbile to close and release the resource once it is
-     * no longer used. This method shall be called only once per connection.
-     *
-     * @throws IOException if the output stream cannot be opened.
-     */
-    public OutputStream openOutputStream() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
-        }
-        return conn.openOutputStream();
-    }
-
-    /**
      * Returns the HTTP response status code. It parses responses like:
      *
      * HTTP/1.0 200 OK
@@ -301,6 +287,20 @@ public class HttpConnectionAdapterWrapper extends HttpConnectionAdapter {
             throw new IOException("Cannot get length on non opened connection");
         }
         return (int)conn.getLength();
+    }
+
+    /**
+     * Open the output stream. The ownership of the stream is transferred to the
+     * caller which is responsbile to close and release the resource once it is
+     * no longer used. This method shall be called only once per connection.
+     *
+     * @throws IOException if the output stream cannot be opened.
+     */
+    protected OutputStream openOutputStream() throws IOException {
+        if (conn == null) {
+            throw new IOException("Cannot open output stream on non opened connection");
+        }
+        return conn.openOutputStream();
     }
 }
 
