@@ -66,7 +66,7 @@ public class FileSyncSource extends JSONSyncSource implements
 
     private int totalItemsCount = -1;
 
-    private AllItemsSorter itemsSorter = null;
+    private ItemsSorter itemsSorter = null;
 
     private long maxItemSize;
     private long oldestItemTimestamp;
@@ -119,7 +119,7 @@ public class FileSyncSource extends JSONSyncSource implements
      * to sort the returned items.
      * @param sorter
      */
-    public void setAllItemsSorter(AllItemsSorter sorter) {
+    public void setAllItemsSorter(ItemsSorter sorter) {
         itemsSorter = sorter;
     }
 
@@ -225,13 +225,15 @@ public class FileSyncSource extends JSONSyncSource implements
                     }
                 }
             }
-
             Enumeration result = keys.elements();
             if(itemsSorter != null) {
-                if(Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Sorting all items keys");
+                if(syncMode == SyncSource.FULL_UPLOAD &&
+                   syncMode == SyncSource.FULL_SYNC) {
+                    if(Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Sorting all items keys");
+                    }
+                    result = itemsSorter.sort(result, totalItemsCount);
                 }
-                result = itemsSorter.sort(result, totalItemsCount, syncMode);
             }
             return result;
         } catch (Exception e) {
@@ -802,9 +804,9 @@ public class FileSyncSource extends JSONSyncSource implements
     /**
      * Can be used to define a sorter to be used in the getAllItemsKeys method
      */
-    public interface AllItemsSorter {
+    public interface ItemsSorter {
 
-        public Enumeration sort(Enumeration items, int totalItemsCount, int syncMode);
+        public Enumeration sort(Enumeration items, int totalItemsCount);
 
         public void setItemsMetadata(Hashtable itemsMetadata);
     }

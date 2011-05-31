@@ -38,7 +38,6 @@ package com.funambol.sapisync.source.util;
 import com.funambol.platform.FileAdapter;
 import com.funambol.sapisync.source.FileItemMetadata;
 import com.funambol.sapisync.source.FileSyncSource;
-import com.funambol.sync.SyncSource;
 import com.funambol.util.Log;
 
 import java.util.Enumeration;
@@ -49,7 +48,7 @@ import java.util.Vector;
  * Implements the AllItemsSorter interface by sorting media items through the
  * Quick Sort algorithm.
  */
-public class MediaItemsSorter implements FileSyncSource.AllItemsSorter {
+public class MediaItemsSorter implements FileSyncSource.ItemsSorter {
 
     private static final String TAG_LOG = "MediaItemsSorter";
 
@@ -64,16 +63,12 @@ public class MediaItemsSorter implements FileSyncSource.AllItemsSorter {
         this.itemsMetadata = itemsMetadata;
     }
     
-    public Enumeration sort(Enumeration items, int totalItemsCount, int syncMode) {
-        if(syncMode != SyncSource.FULL_DOWNLOAD &&
-           syncMode != SyncSource.FULL_UPLOAD &&
-           syncMode != SyncSource.FULL_SYNC) {
-            if(Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "No need to sort items");
-            }
-            return items;
-        }
+    public Enumeration sort(Enumeration items, int totalItemsCount) {
         try {
+            // Sorting requires at least 2 elements
+            if(totalItemsCount < 2) {
+                return items;
+            }
             // Prepare items to sort
             if(Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Preparing items to sort");
