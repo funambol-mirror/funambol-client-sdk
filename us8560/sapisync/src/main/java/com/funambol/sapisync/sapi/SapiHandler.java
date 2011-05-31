@@ -219,7 +219,6 @@ public class SapiHandler {
         // Set chunked streaming mode in order to avoid buffering
         conn.setChunkedStreamingMode(DEFAULT_CHUNK_SIZE);
 
-        OutputStream os = null;
         InputStream  is = null;
 
         if(listener != null) {
@@ -232,7 +231,6 @@ public class SapiHandler {
             // headers if it is required.
             if (requestIs != null) {
                 int total = 0;
-                int read  = 0;
                 if(fromByte > 0) {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "Skip " + fromByte + " bytes from request InputStream");
