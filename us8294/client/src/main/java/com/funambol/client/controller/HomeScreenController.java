@@ -225,7 +225,7 @@ public class HomeScreenController extends SynchronizationController {
             Log.trace(TAG_LOG, "sync ended");
         }
         super.syncEnded();
-
+        
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
         
@@ -247,7 +247,7 @@ public class HomeScreenController extends SynchronizationController {
         changeSyncLabelsOnSyncEnded();
         unlockHomeScreen();
         setSelected(getFirstActiveItemIndex(), false);
-
+        
         // If there are pending syncs, we start serving them
         synchronized(pushRequestQueue) {
             if (pushRequestQueue.size() > 0) {
@@ -449,8 +449,8 @@ public class HomeScreenController extends SynchronizationController {
 
     protected void syncSource(String syncType, AppSyncSource appSource) {        
         Vector sources = new Vector();
-        sources.addElement(appSource);
-        synchronize(syncType, sources);        
+        sources.addElement(appSource);        
+        synchronize(syncType, sources);
     }
     
     public void syncMenuSelected() {
@@ -542,7 +542,7 @@ public class HomeScreenController extends SynchronizationController {
         Vector sources = new Vector();        
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
-            if (appSource.getConfig().getEnabled() && appSource.isWorking()) {
+            if (appSource.getConfig().getEnabled() && appSource.isWorking() && appSource.getConfig().getAllowed()) {
                 sources.addElement(appSource);
             }
         }
@@ -560,7 +560,6 @@ public class HomeScreenController extends SynchronizationController {
      *
      */
     public synchronized void synchronize(String syncType, Vector syncSources) {
-        
         // For manual sync, always show alert message for storage/server
         // quota limit. For other sync modes, doesn't display message if
         // the previous sync ended with the same error.
@@ -585,6 +584,7 @@ public class HomeScreenController extends SynchronizationController {
                 }
             }
         }
+        
         super.synchronize(syncType, syncSources);
     }
 
