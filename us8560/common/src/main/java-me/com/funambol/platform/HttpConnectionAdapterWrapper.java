@@ -38,17 +38,12 @@ package com.funambol.platform;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import javax.microedition.io.HttpConnection;
 import javax.microedition.io.Connector;
 
 import com.funambol.platform.net.ProxyConfig;
-import com.funambol.util.ConnectionManager;
 import com.funambol.util.Log;
-import com.funambol.util.StringUtil;
 
 /**
  * This class is a simple HttpConnection class that wraps the underlying 
@@ -89,10 +84,6 @@ public class HttpConnectionAdapterWrapper extends HttpConnectionAdapter {
 
     /** This is the underlying connection */
     private HttpConnection conn;
-
-    private String hostname;
-    private String port;
-    private String resourceName;
 
     public HttpConnectionAdapterWrapper() {
     }
@@ -272,7 +263,7 @@ public class HttpConnectionAdapterWrapper extends HttpConnectionAdapter {
      */
     public String getHeaderFieldKey(int num) throws IOException {
         if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
+            throw new IOException("Cannot read header field on non opened connection");
         }
         return conn.getHeaderFieldKey(num);
     }
