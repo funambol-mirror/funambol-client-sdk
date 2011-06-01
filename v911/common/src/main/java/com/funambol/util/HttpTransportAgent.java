@@ -662,6 +662,15 @@ public final class HttpTransportAgent implements TransportAgent {
                                 Log.debug(TAG_LOG, "Data length: " + data.length);
                             }
 
+                            // Dump content if its type is text/*
+                            String responseContentType = c.getHeaderField(PROP_CONTENT_TYPE);
+                            if (responseContentType != null && responseContentType.startsWith("text/")) {
+                                if (Log.isLoggable(Log.DEBUG)) {
+                                    Log.debug(TAG_LOG, "Received response has type text");
+                                    Log.debug(TAG_LOG, new String(data, "UTF-8"));
+                                }
+                            }
+
                             if ((uncompressedLength != -1) && (data.length != uncompressedLength)) {
                                 // try again but use uncompressed mode
                                 //enableCompression = false;
