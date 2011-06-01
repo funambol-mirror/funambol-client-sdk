@@ -45,6 +45,7 @@ public class SyncMLStatus {
     
     //----------------------------------------------------------------- Constants
     public static final int SUCCESS                     = 200 ;
+    public static final int ITEM_NOT_DELETED            = 211 ;
     public static final int AUTHENTICATION_ACCEPTED     = 212 ;
     public static final int CHUNKED_ITEM_ACCEPTED       = 213 ;
     public static final int INVALID_CREDENTIALS         = 401 ;
