@@ -84,7 +84,6 @@ public class DeviceInfo implements DeviceInfoInterface {
         }
     }
 
-
     /**
      * Returns the main email adddress or null if not available.
      */
