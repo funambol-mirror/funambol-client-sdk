@@ -506,6 +506,7 @@ public class HttpConnectionAdapter {
     private class ConnectionOutputStream extends OutputStream {
 
         private boolean hdrSent = false;
+        private boolean hdrRead = false;
 
         private ByteArrayOutputStream bufferOs = new ByteArrayOutputStream();
 
@@ -576,10 +577,13 @@ public class HttpConnectionAdapter {
         }
 
         private void initSocketInputStream() throws IOException {
-            // Open the input stream to get the response header (so that
-            // the response code is available)
-            socketIs = conn.openInputStream();
-            readResponseHdr();
+            if(!hdrRead) {
+                // Open the input stream to get the response header (so that
+                // the response code is available)
+                socketIs = conn.openInputStream();
+                readResponseHdr();
+                hdrRead = true;
+            }
         }
 
         /**
@@ -630,7 +634,6 @@ public class HttpConnectionAdapter {
                 }
                 lastCh = ch;
             } while(true);
-
             if (statusLine != null) {
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Status received from server: " + statusLine);
