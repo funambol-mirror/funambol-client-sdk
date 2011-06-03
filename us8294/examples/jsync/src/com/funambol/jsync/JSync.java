@@ -129,7 +129,7 @@ public class JSync {
         SyncManagerI manager;
         
         if (mediaEngine) {
-            manager = new SapiSyncManager(config);
+            manager = new SapiSyncManager(config, dc);
         } else {
             manager = new SyncManager(config, dc);
         }
