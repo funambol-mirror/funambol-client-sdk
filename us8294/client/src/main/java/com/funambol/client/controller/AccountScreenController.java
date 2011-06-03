@@ -73,22 +73,6 @@ public class AccountScreenController extends SynchronizationController {
     protected String               originalUser     = null;
     protected String               originalPassword = null;
 
-    private class ContinueSyncAction implements Runnable {
-        private String serverUri;
-        private String username;
-        private String password;
-        
-        public ContinueSyncAction(String serverUri, String username, String password) {
-            this.serverUri = serverUri;
-            this.username = username;
-            this.password = password;
-        }
-        
-        public void run() {
-            loginViaSapi(serverUri, username, password);
-        }
-    }
-
     public AccountScreenController(Controller controller, AccountScreen accountScreen) {
         super(controller, accountScreen, null);
 
@@ -601,5 +585,23 @@ public class AccountScreenController extends SynchronizationController {
             }
         }
     }
+
+    private class ContinueSyncAction implements Runnable {
+        private String serverUri;
+        private String username;
+        private String password;
+        
+        public ContinueSyncAction(String serverUri, String username, String password) {
+            this.serverUri = serverUri;
+            this.username = username;
+            this.password = password;
+        }
+        
+        public void run() {
+            loginViaSapi(serverUri, username, password);
+        }
+    }
+
+
 
 }
