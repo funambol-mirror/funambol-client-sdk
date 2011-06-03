@@ -104,8 +104,8 @@ public class ConnectionManager {
     private static BlackberryConfiguration[] configurations = null;
     /**The unique instance of this clas*/
     private static ConnectionManager instance = null;
-    /**ConnectionListener*/
-    private ConnectionListener connectionListener = new BasicConnectionListener();
+
+    private ApnUsageListener apnUsageListener;
 
     private String connectionParameters = null;
 
@@ -126,9 +126,12 @@ public class ConnectionManager {
         if (instance == null) {
             Log.trace(TAG_LOG, "Creating new connection manager");
             instance = new ConnectionManager();
-            instance.setConnectionListener(new BasicConnectionListener());
         }
         return instance;
+    }
+
+    public void setApnUsageListener(ApnUsageListener apnUsageListener) {
+        this.apnUsageListener = apnUsageListener;
     }
 
     /**
@@ -284,8 +287,6 @@ public class ConnectionManager {
                 ret = Connector.open(requestUrl, accessMode, enableTimeoutException);
                 //If the open call is succesfull it could be useful to notify
                 //the current working configuration changes to the listener
-                connectionListener.connectionConfigurationChanged();
-                Log.debug(TAG_LOG, "Listener notified");
 
                 // If we connected with a BIS configuration, then the user is
                 // not on BES and we can safely disable the BES configuration.
@@ -368,7 +369,7 @@ public class ConnectionManager {
         //Connection listener logic implemented for undefined permission when network is covered
         if (configurations[configNumber].getPermission()==ConnectionConfig.PERMISSION_UNDEFINED){
             Log.debug(TAG_LOG, "Permission not defined for: " + apn);
-            boolean isConfigurationAllowed = connectionListener.isConnectionConfigurationAllowed(apn);
+            boolean isConfigurationAllowed = apnUsageListener.isAPNAllowed(apn);
             if (isConfigurationAllowed) {
                 Log.debug(TAG_LOG, "Permission set to GRANTED");
                 configurations[configNumber].setPermission(ConnectionConfig.PERMISSION_GRANTED);
@@ -381,22 +382,6 @@ public class ConnectionManager {
         Log.debug(TAG_LOG, "No suitable condition "
                   + "to allow the configuration (" + (configNumber+1) + ") was found");
         return false;
-    }
-
-    /**
-     * Accessor method to set the connection listener
-     * @param cl the connection listener to be set
-     */
-    public void setConnectionListener(ConnectionListener cl) {
-        this.connectionListener = cl;
-    }
-
-    /**
-     * Accessor method to get the current connection listener
-     * @return ConnectionListener related to this ConnectionManager instance
-     */
-    public ConnectionListener getConnectionListener() {
-        return connectionListener;
     }
 
     /**
@@ -601,8 +586,6 @@ public class ConnectionManager {
                 ret.open(requestUrl, proxyConfig);
                 //If the open call is succesfull it could be useful to notify
                 //the current working configuration changes to the listener
-                connectionListener.connectionConfigurationChanged();
-                Log.debug(TAG_LOG, "Listener notified");
 
                 // If we connected with a BIS configuration, then the user is
                 // not on BES and we can safely disable the BES configuration.

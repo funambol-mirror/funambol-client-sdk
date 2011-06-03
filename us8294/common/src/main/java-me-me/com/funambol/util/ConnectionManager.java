@@ -61,11 +61,6 @@ public class ConnectionManager {
     private static ConnectionManager instance =  null;
 
     /**
-     * The listsener associated to this ConnectionManager
-     */
-    private ConnectionListener cl = null;
-    
-    /**
      * Private constructor - Use getInstance() method
      */
     protected ConnectionManager() {
@@ -80,7 +75,6 @@ public class ConnectionManager {
         if (instance == null) {
             Log.debug("[ConnectionManager.getInstance]Creating new connection manager");
             instance = new ConnectionManager();
-            instance.setConnectionListener(new BasicConnectionListener());
             return instance;
         } else {
             Log.debug("[ConnectionManager.getInstance]Returning the existing connection manager insatnce");
@@ -110,23 +104,6 @@ public class ConnectionManager {
         return Connector.open(url, mode, b);
     }
     
-    /**
-     * Accessor method to set the connection listener 
-     * @param cl the connection listener to be set
-     */
-    public void setConnectionListener(ConnectionListener cl) {
-        this.cl = cl;
-    }
-
-
-    /**
-     * Accessor method to get the current connection listener 
-     * @return ConnectionListener related to this ConnectionManager instance
-     */
-    public ConnectionListener getConnectionListener() {
-        return cl;
-    }
-
     /**
      * Open an http connection to the given URL
      * @param url is the url (in the form of "http://..." or "https://...")

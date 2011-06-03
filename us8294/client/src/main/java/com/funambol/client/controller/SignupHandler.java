@@ -126,6 +126,9 @@ public class SignupHandler extends Thread {
         String password    = signupScreen.getPassword();
         String token       = signupScreen.getCaptchaToken();
 
+        // The phone number may need some adjustment
+        phoneNumber = signupScreenController.getSignupPhoneNumber(phoneNumber);
+
         String signupUrl = StringUtil.extractAddressFromUrl(serverUrl);
 
         SapiHandler sapiHandler = new SapiHandler(signupUrl);

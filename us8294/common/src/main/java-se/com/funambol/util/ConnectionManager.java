@@ -55,12 +55,6 @@ public class ConnectionManager {
      */
     private static ConnectionManager instance =  null;
 
-    /**
-     * The listsener associated to this ConnectionManager
-     */
-    private ConnectionListener cl = null;
-
-
     private String breakOnPhase = null;
     private String breakOnKey   = null;
     private int breakOnPos      = -1;
@@ -86,10 +80,6 @@ public class ConnectionManager {
         } else {
             return instance;
         }
-    }
-
-    public ConnectionListener getConnectionListener() {
-        return cl;
     }
 
     /**

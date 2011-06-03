@@ -43,7 +43,6 @@ import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceConfig;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.sync.SyncListener;
-import com.funambol.util.ConnectionListener;
 import com.funambol.util.Log;
 
 /**
@@ -51,8 +50,7 @@ import com.funambol.util.Log;
  * implementation that are currently shared between Android and BlackBerry
  * versions of SynchronizationController.
  */
-public abstract class BasicSynchronizationController
-        implements ConnectionListener, SyncEngineListener {
+public abstract class BasicSynchronizationController implements SyncEngineListener {
 
     private static final String TAG_LOG = "BasicSynchronizationController";
 

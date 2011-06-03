@@ -56,7 +56,6 @@ import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncListener;
-import com.funambol.util.ConnectionListener;
 import com.funambol.util.Log;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.sapisync.source.JSONSyncSource;
@@ -69,7 +68,7 @@ import com.funambol.sapisync.source.JSONSyncSource;
  * HomeScreenController and AccountScreenController).
  */
 public class SynchronizationController extends BasicSynchronizationController
-        implements ConnectionListener, SyncEngineListener {
+        implements SyncEngineListener {
 
     private static final String TAG_LOG = "SynchronizationController";
 
@@ -106,8 +105,6 @@ public class SynchronizationController extends BasicSynchronizationController
     private RequestHandler reqHandler;
 
     private int            RETRY_POLL_TIME = 1;
-
-    private boolean isUserConfirmationNeeded = false;
 
     private FirstSyncRequest pendingFirstSyncQuestion = null;
 
@@ -441,18 +438,6 @@ public class SynchronizationController extends BasicSynchronizationController
         controller.getDisplayManager().showMessage(screen, msg);
     }
 
-    // ConnectionListener implementation
-    
-    public boolean isConnectionConfigurationAllowed(final String apn) { 
-        // TODO FIXME
-        /*
-        String message = localization.getLanguage("message_APN_question_1") + " " + apn + " "
-                + localization.getLanguage("message_APN_question_2");
-        return controller.getDialogController().askAcceptDenyQuestion(message, true);
-        */
-        return true;
-    }
-
     public void noCredentials() {
         showMessage(localization.getLanguage("message_login_required"));
     }
@@ -482,24 +467,8 @@ public class SynchronizationController extends BasicSynchronizationController
         return doCancel;
     }
 
-    // TODO FIXME MARCO: call this method
-    public void setIsUserConfirmationNeeded(boolean value) {
-        isUserConfirmationNeeded = value;
-    }
-
     public void beginSync() {
         clearErrors();
-        if (isUserConfirmationNeeded) {
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Setting connection listener for this application");
-            }
-            // TODO FIXME MARCO
-            //ConnectionManager.getInstance().setConnectionListener(this);
-        } else {
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Using Default BasicConnectionListener");
-            }
-        }
         setCancel(false);
     }
 
@@ -620,36 +589,6 @@ public class SynchronizationController extends BasicSynchronizationController
     public void clearErrors() {
         showTCPAlert = false;
         logConnectivityError = false;
-    }
-
-    public void connectionOpened() {
-        if (Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "Connection opened");
-        }
-    }
-
-    public void requestWritten() {
-        if (Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "Request written");
-        }
-    }
-
-    public void responseReceived() {
-        if (Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "Response received");
-        }
-    }
-
-    public void connectionClosed() {
-        if (Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "Connection closed");
-        }
-    }
-
-    public void connectionConfigurationChanged() {
-        if (Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "Configuration changed");
-        }
     }
 
     protected void setScreen(Screen screen) {

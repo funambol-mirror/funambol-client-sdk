@@ -77,15 +77,6 @@ public abstract class SignupScreenController extends AccountScreenController {
     private SignupHandler signupHandler;
     private String        jsessionId;
 
-    private class ContinueSignUpAction implements Runnable {       
-        public ContinueSignUpAction() {
-        }
-        
-        public void run() {
-            requestLogin();
-        }
-    }
-
     /**
      * TODO: Remove once the com.funambol.client.controller package integration is finished
      */
@@ -122,9 +113,12 @@ public abstract class SignupScreenController extends AccountScreenController {
 
     public void initScreen(String url, String usr, String pwd) {
         if(screen != null) {
-            screen.setSyncUrl(url);  originalUrl = url;
-            screen.setUsername(usr); originalUser = usr;
-            screen.setPassword(pwd); originalPassword = pwd;
+            screen.setSyncUrl(url);
+            originalUrl = url;
+            screen.setUsername(usr);
+            originalUser = usr;
+            screen.setPassword(pwd);
+            originalPassword = pwd;
             if(customization.getAddShowPasswordField()) {
                 screen.addShowPasswordField(true);
             }
@@ -175,12 +169,12 @@ public abstract class SignupScreenController extends AccountScreenController {
             return;
         }
 
+        phoneNumber = getSignupPhoneNumber(phoneNumber);
+
         // Before requesting the CAPTCHA we try to do a login in order to check
         // if the provided credentials are valid. This prevents the user to
         // enter the CAPTCHA token even thought the login can be performed
         // immediately.  
-        
-        //requestLogin();
         ContinueSignUpAction csa = new ContinueSignUpAction(); 
         NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
         nuwc.askUserNetworkUsageConfirmation();
@@ -383,6 +377,22 @@ public abstract class SignupScreenController extends AccountScreenController {
         return msg;
     }
 
+    // This is a utility method that translate the UI number into the one to be
+    // used for signup. If the customization specifies a default country code,
+    // this is added unless the uiNumber is already international.
+    String getSignupPhoneNumber(String uiNumber) {
+        if (!uiNumber.startsWith("+")) {
+            if (customization.getDefaultCountryCode() != null) {
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Adding default country code ");
+                }
+                String prefix = customization.getDefaultCountryCode();
+                uiNumber = prefix + uiNumber;
+            }
+        }
+        return uiNumber;
+    }
+
     /**
      * @return the jsessionid of the latest CAPTCHA request session
      */
@@ -392,6 +402,15 @@ public abstract class SignupScreenController extends AccountScreenController {
 
     public void setCurrentJSessionId(String id) {
         jsessionId = id;
+    }
+
+    private class ContinueSignUpAction implements Runnable {       
+        public ContinueSignUpAction() {
+        }
+        
+        public void run() {
+            requestLogin();
+        }
     }
 
     /**

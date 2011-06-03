@@ -117,7 +117,6 @@ public final class HttpTransportAgent implements TransportAgent {
     private static OutputStream os = null;
     private long CONNECTION_SLEEP_TIME = 10000;
     private ConnectionManager connectionManager = null;
-    private ConnectionListener connectionListener = null;
     private HttpAuthentication auth = null;
     
     /** Timer used to monitor connection timeouts */
@@ -264,9 +263,6 @@ public final class HttpTransportAgent implements TransportAgent {
         //Use the ConnectionManager singleton instance to get a working data 
         //connection.
         connectionManager = ConnectionManager.getInstance();
-        //Use the ConnectionManager's connectionListener in order to notify the 
-        //connection status
-        connectionListener = connectionManager.getConnectionListener();
     }
 
     // ---------------------------------------------------------- Public methods
@@ -526,11 +522,6 @@ public final class HttpTransportAgent implements TransportAgent {
             try {
                 //Open up a connection: int i is the numbre of attempt 
                 openConnection(request, i);
-                //notify the listener that the connection has been succesfully 
-                //opened
-                if (connectionListener != null) {
-                    connectionListener.connectionOpened();
-                }
 
                 if (request != null && request.length > 0) {
 
@@ -542,12 +533,6 @@ public final class HttpTransportAgent implements TransportAgent {
                     os.write(request);
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Message sent at attempt " + (i + 1) + ", waiting for response.");
-                    }
-                    //notify the listener that the request body was written on the 
-                    //output stream
-
-                    if (connectionListener != null) {
-                        connectionListener.requestWritten();
                     }
                 }
                 break;
@@ -689,9 +674,6 @@ public final class HttpTransportAgent implements TransportAgent {
                             }
                             */
                             status = RESPONSE_CORRECTLY_PROCESSED;
-                            if (connectionListener != null) {
-                                connectionListener.responseReceived();
-                            }
                         }
                     }
                 }else{
@@ -902,9 +884,6 @@ public final class HttpTransportAgent implements TransportAgent {
             try {
                 c.close();
                 c = null;
-                if (connectionListener != null) {
-                    connectionListener.connectionClosed();
-                }
             } catch (IOException ioe) {
                 Log.error(TAG_LOG, "Can't close connection.", ioe);
             }
