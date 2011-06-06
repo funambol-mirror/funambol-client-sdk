@@ -223,16 +223,25 @@ public class AccountScreenController extends SynchronizationController {
                         controller.reapplyMiscConfiguration();
                     }
                 }
-            } else {                
-                long profileExpireDate = configuration.getProfileExpireDate();
-                if (profileExpireDate != -1 
-                    && profileExpireDate < System.currentTimeMillis() 
-                    || configuration.getProfileNetworkUsageWarning())
-                {
-                    ContinueSyncAction csa = new ContinueSyncAction(serverUri, username, password); 
-                    NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
-                    nuwc.askUserNetworkUsageConfirmation();
-                } else {
+            } else {
+                boolean prompt = false;
+                if (customization.getShowNetworkUsageWarningForProfiles()) {
+                    long profileExpireDate = configuration.getProfileExpireDate();
+                    // If this is the very first time, or the expire time has
+                    // expired, or the profile requires the warning, then we
+                    // show it
+                    if (   profileExpireDate == -1 
+                        || profileExpireDate > System.currentTimeMillis()
+                        || configuration.getProfileNetworkUsageWarning())
+                    {
+                        ContinueSyncAction csa = new ContinueSyncAction(serverUri, username, password); 
+                        NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
+                        nuwc.askUserNetworkUsageConfirmation();
+                        prompt = true;
+                    }
+                }
+
+                if (!prompt) {
                     loginViaSapi(serverUri, username, password);
                 }
             }
