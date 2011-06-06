@@ -169,8 +169,6 @@ public abstract class SignupScreenController extends AccountScreenController {
             return;
         }
 
-        phoneNumber = getSignupPhoneNumber(phoneNumber);
-
         // Before requesting the CAPTCHA we try to do a login in order to check
         // if the provided credentials are valid. This prevents the user to
         // enter the CAPTCHA token even thought the login can be performed
@@ -178,6 +176,23 @@ public abstract class SignupScreenController extends AccountScreenController {
         ContinueSignUpAction csa = new ContinueSignUpAction(); 
         NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
         nuwc.askUserNetworkUsageConfirmation();
+    }
+
+    /**
+     * This method takes the phone number typed into the UI and adjust it with
+     * the proper default country code if the customization specifies one
+     */
+    public String getSignupPhoneNumber(String uiNumber) {
+        if (!uiNumber.startsWith("+")) {
+            if (customization.getDefaultMSUCountryCode() != null) {
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Adding default country code ");
+                }
+                String prefix = customization.getDefaultMSUCountryCode();
+                uiNumber = prefix + uiNumber;
+            }
+        }
+        return uiNumber;
     }
 
     protected void requestLogin() {
@@ -377,22 +392,6 @@ public abstract class SignupScreenController extends AccountScreenController {
         return msg;
     }
 
-    // This is a utility method that translate the UI number into the one to be
-    // used for signup. If the customization specifies a default country code,
-    // this is added unless the uiNumber is already international.
-    String getSignupPhoneNumber(String uiNumber) {
-        if (!uiNumber.startsWith("+")) {
-            if (customization.getDefaultCountryCode() != null) {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Adding default country code ");
-                }
-                String prefix = customization.getDefaultCountryCode();
-                uiNumber = prefix + uiNumber;
-            }
-        }
-        return uiNumber;
-    }
-
     /**
      * @return the jsessionid of the latest CAPTCHA request session
      */
@@ -427,7 +426,7 @@ public abstract class SignupScreenController extends AccountScreenController {
         public void run() {
 
             loginRequestStarted();
-            
+
             SapiHandler sapiHandler = new SapiHandler(
                 StringUtil.extractAddressFromUrl(screen.getSyncUrl()),
                 screen.getUsername(), screen.getPassword());

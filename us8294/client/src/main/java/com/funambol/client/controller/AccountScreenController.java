@@ -430,9 +430,12 @@ public class AccountScreenController extends SynchronizationController {
 
     public void initScreen(String url, String usr, String pwd) {
         if(screen != null) {
-            screen.setSyncUrl(url);  originalUrl = url;
-            screen.setUsername(usr); originalUser = usr;
-            screen.setPassword(pwd); originalPassword = pwd;
+            screen.setSyncUrl(url);
+            originalUrl = url;
+            screen.setUsername(usr);
+            originalUser = usr;
+            screen.setPassword(pwd);
+            originalPassword = pwd;
         }
     }
 
