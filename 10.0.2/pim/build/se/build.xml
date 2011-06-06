@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<!--
+================================================================================
+Build file for Funambol J2ME SYNCML API.
+================================================================================
+-->
+
+<project name="Funambol Java PIM" default="build" basedir="../..">
+    <!-- Define the tasks. -->
+    <!--
+    ========================================================================
+     Setting variable
+    ========================================================================
+    -->
+    <target name="init">
+        <tstamp>
+            <format property="timestamp.MM" pattern="MM" />
+            <format property="timestamp.dd" pattern="dd" />
+            <format property="timestamp.HH" pattern="HH" />
+        </tstamp>
+        <property file="${user.home}/funambol/build/se/build.properties"/>
+        <property file="build/common.properties"/>
+        <property file="build/se/build.properties"/>
+ 
+        <property name="dir.output"           value="${basedir}/output/se"/>
+        <property name="dir.classes"          value="${dir.output}/classes"/>
+        <property name="dir.src.java"         value="${basedir}/src/main/java"/>
+        <property name="dir.src.java.se"      value="${basedir}/src/main/java-se"/>
+        <property name="dir.src.generated"    value="${dir.output}/src/main/java/generated"/>
+        <property name="dir.pim-parsers"      value="externals/pim-parsers"/>
+        <property name="dir.src"              value="${dir.src.java}:${dir.src.java.se}:${dir.src.generated}"/>
+
+        <property name="dir.test.src.java"    value="${basedir}/src/test/java"    />
+        <property name="dir.test.src.java.se" value="${basedir}/src/test/java-se" />
+        <property name="dir.test.src"         value="${dir.test.src.java}:${dir.test.src.java.se}"        />
+        <property name="dir.test.classes"     value="${dir.test}/classes" />
+        <property name="dir.res"              value="${basedir}/src/test/res"        />
+        <property name="dir.docs"             value="${basedir}/docs"            />
+        <property name="dir.html"             value="${dir.output}/html"         />
+
+        <property name="dir.tools"            value="${basedir}/../tools"        />
+
+        <!-- External dependencies -->
+        <property name="lib.junit"           value="${dir.tools}/junit-3.8.1.jar"/>
+        <property name="lib.funambol.common" value="${basedir}/../common/output/se/funambol-se-common.jar"/>
+        <property name="lib.funambol.syncml" value="${basedir}/../syncml/output/se/funambol-se-syncml.jar"/>
+        <property name="lib.joda.time"       value="${basedir}/lib/joda-time-1.6.jar"/>
+    </target>
+
+    <!-- =============================================== -->
+    <!-- USAGE                                           -->
+    <!-- =============================================== -->
+    <target name="usage" depends="init">
+        
+        <echo message=""/>
+        <echo message="Funambol Java PIM API build file"/>
+        <echo message="------------------------------------------------------"/>
+        <echo message=""/>
+        <echo message=" Available targets are :"/>
+        <echo message=""/>
+        <echo message=" usage      --> help on usage"/>
+        <echo message=" build      --> builds the project"/>
+        <echo message=" rebuild    --> cleans and builds the project"/>
+        <echo message=" test       --> builds the test project"/>
+        <echo message=" docs       --> builds java-doc"/>
+        <echo message=" run        --> builds and runs the test project"/>
+        <echo message=" debug      --> builds and runs the test with debug active"/>
+        <echo message=" release    --> build release packages"/>
+        <echo message=" clean      --> clean up the build directory"/>
+        <echo message=""/>
+        
+    </target>
+    
+    <!-- =============================================== -->
+    <!-- CLEAN                                           -->
+    <!-- =============================================== -->
+    <target name="clean" depends="init">
+        <echo message="Clean output tree ${dir.output}"/>
+        <delete dir="${dir.output}"/>
+        <delete>
+            <fileset dir="." includes="**/*.bak"/>
+        </delete>
+    </target>
+
+    <!-- =============================================== -->
+    <!-- REBUILD                                         -->
+    <!-- =============================================== -->
+    <target name="rebuild" depends="clean,build"/>
+
+    <!-- =============================================== -->
+    <!-- BUILD                                           -->
+    <!-- =============================================== -->
+    <target name="build" depends="compile">
+        <!--======= Jar up everything ========-->
+        <echo message="Packaging library"/>
+        <jar destfile="${dir.output}/${jar.name}.jar">
+            <fileset dir="${dir.classes}" includes="**/*.class"/>
+        </jar>
+    </target>
+
+    <target name="compile" depends="init, generate_parsers">
+        <mkdir dir="${dir.classes}"/>
+        <javac srcdir="${dir.src}" destdir="${dir.classes}"
+               debug="${debug}" listfiles="yes">
+            <classpath>
+                <pathelement location="${lib.funambol.common}"/>
+                <pathelement location="${lib.funambol.syncml}"/>
+                <pathelement location="${lib.joda.time}"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="compile_test" depends="init, compile">
+        <taskdef name="generatetestsuite" classname="com.funambol.testsuitegenerator.TestSuiteGenerator"
+                 classpath="${dir.tools}/TestSuiteGenerator.jar" />
+
+        <generatetestsuite srcdir="${dir.test.src}"
+                           destdir="${dir.test.src.java.se}">
+        </generatetestsuite>
+
+        <javac srcdir="${dir.test.src}" destdir="${dir.classes}"
+               debug="${debug}" listfiles="yes">
+
+               <classpath>
+                   <pathelement location="${lib.funambol.common}"/>
+                   <pathelement location="${lib.funambol.syncml}"/>
+                   <pathelement location="${lib.joda.time}"/>
+                   <pathelement location="${lib.junit}"/>
+               </classpath>
+        </javac>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- generate_parsers                                                    -->
+    <!-- ====================================================================-->
+    <target name="generate_parsers" depends="init">
+        <echo message="Importing parsers"/>
+
+        <delete dir="${dir.src.generated}"/>
+        <mkdir  dir="${dir.src.generated}/vcard"/>
+        <mkdir  dir="${dir.src.generated}/icalendar"/>
+        <mkdir  dir="${dir.src.generated}/xvcalendar"/>
+        <mkdir  dir="${dir.src.generated}/xvcalendar/rrule"/>
+
+        <!-- Now copy the files imported from the pim-parsers -->
+        <copy todir="${dir.src.generated}">
+            <fileset dir="${dir.pim-parsers}" includes="**/*"/>
+        </copy>
+        <copy todir="${dir.src.generated}/src/main/javacc/"
+              file="temp/RRule10SyntaxParser.jj"/>
+        <copy todir="${dir.src.generated}/xvcalendar/rrule"
+              file="temp/RRule10SyntaxParserListener.java"/>
+
+        <javacc target="${dir.src.generated}/src/main/javacc/VCardSyntaxParser.jj"
+                outputdirectory="${dir.src.generated}/vcard"
+                javacchome="${javacchome}" />
+
+        <javacc target="${dir.src.generated}/src/main/javacc/ICalendarSyntaxParser.jj"
+                outputdirectory="${dir.src.generated}/icalendar"
+                javacchome="${javacchome}" />
+                
+        <javacc target="${dir.src.generated}/src/main/javacc/XVCalendarSyntaxParser.jj"
+                outputdirectory="${dir.src.generated}/xvcalendar"
+                javacchome="${javacchome}" />
+
+        <javacc target="${dir.src.generated}/src/main/javacc/RRule10SyntaxParser.jj"
+                outputdirectory="${dir.src.generated}/xvcalendar/rrule"
+                javacchome="${javacchome}" />
+
+        <antcall target="postprocessjj"/>
+
+        <!-- Remove generated files which we rewrite -->
+        <delete>
+            <fileset dir="${dir.src.generated}/vcard">
+                <include name="ParseException.java"/>
+                <include name="ParserParam.java"/>
+                <include name="ParserProperty.java"/>
+            </fileset>
+        </delete>
+        <delete>
+            <fileset dir="${dir.src.generated}/icalendar">
+                <include name="ParseException.java"/>
+                <include name="ParserParam.java"/>
+                <include name="ParserProperty.java"/>
+            </fileset>
+        </delete>
+        <delete>
+            <fileset dir="${dir.src.generated}/xvcalendar">
+                <include name="ParseException.java"/>
+                <include name="ParserParam.java"/>
+                <include name="ParserProperty.java"/>
+            </fileset>
+        </delete>
+        <delete>
+            <fileset dir="${dir.src.generated}/xvcalendar/rrule">
+                <include name="ParseException.java"/>
+                <include name="ParserParam.java"/>
+                <include name="ParserProperty.java"/>
+            </fileset>
+        </delete>
+    </target>
+
+    <target name="postprocessjj" depends="init">
+        <echo message="Postprocessing JavaCC generated files" />
+        <taskdef name="postprocessjj" classname="javaccpostprocessor.JavaccPostProcessor"
+                 classpath="${dir.tools}/JavaccPostProcessor.jar" />
+
+        <postprocessjj jjsrcfile="${dir.src.generated}/vcard/VCardSyntaxParser.java">
+        </postprocessjj>
+
+        <move   file   = "${dir.src.generated}/vcard/VCardSyntaxParser.java.pp"
+                tofile = "${dir.src.generated}/vcard/VCardSyntaxParser.java" />
+
+
+        <postprocessjj jjsrcfile="${dir.src.generated}/icalendar/ICalendarSyntaxParser.java">
+        </postprocessjj>
+
+        <move   file   = "${dir.src.generated}/icalendar/ICalendarSyntaxParser.java.pp"
+                tofile = "${dir.src.generated}/icalendar/ICalendarSyntaxParser.java" />
+                
+        <postprocessjj jjsrcfile="${dir.src.generated}/xvcalendar/XVCalendarSyntaxParser.java">
+        </postprocessjj>
+
+        <move   file   = "${dir.src.generated}/xvcalendar/XVCalendarSyntaxParser.java.pp"
+                tofile = "${dir.src.generated}/xvcalendar/XVCalendarSyntaxParser.java" />
+
+    </target>
+
+    <target name="test" depends="init, clean, compile, compile_test">
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <pathelement location="${lib.junit}"/>
+                <pathelement path="${dir.classes}"/>
+                <pathelement location="${lib.funambol.common}"/>
+                <pathelement location="${lib.funambol.syncml}"/>
+                <pathelement location="${lib.joda.time}"/>
+            </classpath>
+
+            <formatter type="plain"/>
+
+            <test name="FunTestSuite" haltonfailure="no"
+                  outfile="result">
+                <formatter type="xml"/>
+            </test>
+        </junit>
+    </target>
+
+    <!-- =============================================== -->
+    <!-- DOCS                                            -->
+    <!-- =============================================== -->
+    <target name="docs" depends="init">
+        <ant antfile="${basedir}/build/build.xml" target="docs">
+            <property name="dir.html"            value="${dir.html}"/>
+            <property name="dir.src"             value="${dir.src}"/>
+            <property name="lib.funambol.common" value="${lib.funambol.common}"/>
+            <property name="lib.funambol.syncml" value="${lib.funambol.syncml}"/>
+            <property name="classpath"           value="${classpath}"/>
+            <property name="platform"            value="Android"/>
+        </ant>
+     </target>
+
+</project>
