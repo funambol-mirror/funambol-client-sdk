@@ -36,19 +36,12 @@
 package com.funambol.sync.client;
 
 import java.util.Enumeration;
-import java.util.Vector;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncException;
-import com.funambol.sync.SyncFilter;
 import com.funambol.sync.SyncSource;
-
 import com.funambol.storage.StringKeyValueStore;
-
 import com.funambol.util.Log;
 
 
@@ -88,6 +81,8 @@ public class ConfigSyncSource extends TrackableSyncSource {
                 throw new SyncException(SyncException.CLIENT_ERROR, "Cannot load config store " + e.toString());
             }
         }
+        // Shall be catched in order to end the sync successfully
+        throw new SyncException(SyncException.CONTROLLED_INTERRUPTION, "Controlled interruption");
     }
 
     public void endSync() throws SyncException {

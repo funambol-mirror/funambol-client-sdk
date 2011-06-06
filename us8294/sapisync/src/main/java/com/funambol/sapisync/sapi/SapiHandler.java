@@ -159,6 +159,8 @@ public class SapiHandler {
         String url = createUrl(name, action, params);
         HttpConnectionAdapter conn;
         
+        long uploadContentLength = contentLength - fromByte;
+
         try {
             // Open the connection with a given size to prevent the output
             // stream from buffering all data
@@ -178,7 +180,6 @@ public class SapiHandler {
                 conn.setRequestProperty(CONTENT_TYPE_HEADER, contentType);
             }
 
-            long uploadContentLength = contentLength - fromByte;
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Setting content length to " + uploadContentLength);
             }
@@ -218,21 +219,18 @@ public class SapiHandler {
         // Set chunked streaming mode in order to avoid buffering
         conn.setChunkedStreamingMode(DEFAULT_CHUNK_SIZE);
 
-        OutputStream os = null;
         InputStream  is = null;
 
         if(listener != null) {
             listener.queryStarted((int)contentLength);
         }
         try {
-            os = conn.openOutputStream();
             // In case of SAPI that require a body, this must be written here
             // Note that the length is not handled here because we don't know
             // the length of the stream. Callers shall put it in the custom
             // headers if it is required.
             if (requestIs != null) {
                 int total = 0;
-                int read  = 0;
                 if(fromByte > 0) {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "Skip " + fromByte + " bytes from request InputStream");
@@ -240,27 +238,17 @@ public class SapiHandler {
                     requestIs.skip(fromByte);
                     total += fromByte;
                 }
-                byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
-                do {
-                    read = requestIs.read(chunk);
-                    if (read > 0) {
-                        if (Log.isLoggable(Log.TRACE)) {
-                            Log.trace(TAG_LOG, "Writing chunk size: " + read);
-                        }
-                        total += read;
-                        os.write(chunk, 0, read);
-                        if(listener != null) {
-                            listener.queryProgress(total);
-                        }
-                    }
-                } while(read != -1 && !isQueryCancelled());
-                
+
+                SapiInputStream sapiIs = new SapiInputStream(requestIs, total, listener, (int)contentLength);
+                conn.execute(sapiIs, uploadContentLength);
+
                 if(isQueryCancelled()) {
                     Log.debug(TAG_LOG, "Query cancelled");
                     throw new IOException("Query cancelled");
                 }
+            } else {
+                conn.execute(null, -1);
             }
-            os.flush();
 
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "Response code is: " + conn.getResponseCode());
@@ -279,7 +267,6 @@ public class SapiHandler {
                         String headerValue = conn.getHeaderField(headerKey);
                         Log.trace(TAG_LOG, "Header key: " + headerKey + "=" + headerValue);
                         headerKey = conn.getHeaderFieldKey(h++);
-
                     }
                 }
 
@@ -406,13 +393,6 @@ public class SapiHandler {
             }
             throw ioe;
         } finally {
-            // Release all resources
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {}
-                os = null;
-            }
             if (is != null) {
                 try {
                     is.close();
@@ -475,8 +455,7 @@ public class SapiHandler {
             // Ask for the current length
             conn.setRequestProperty("Content-Range", "bytes */" + size);
 
-            os = conn.openOutputStream();
-            os.flush();
+            conn.execute(null, -1);
 
             if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
                 // We have uploaded the item completely or the SAPI returned an
@@ -521,6 +500,7 @@ public class SapiHandler {
                     return size;
                 }
             } else if (conn.getResponseCode() == 308) {
+
                 String length = conn.getHeaderField("Range");
                 if (length == null) {
                     Log.error(TAG_LOG, "Server did not return a valid range");
@@ -533,6 +513,11 @@ public class SapiHandler {
                     return 0;
                 }
                 length = length.substring(minusIdx+1).trim();
+
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "Partial content length is: " + length);
+                }
+
                 try {
                     long res = Long.parseLong(length);
                     return res;
@@ -554,12 +539,6 @@ public class SapiHandler {
             Log.error(TAG_LOG, "Cannot open http connection", ioe);
             throw ioe;
         } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {}
-                os = null;
-            }
             if (conn != null) {
                 try {
                     conn.close();
@@ -666,6 +645,74 @@ public class SapiHandler {
          */
         public void queryEnded();
         
+    }
+
+    private class SapiInputStream extends InputStream {
+
+        private InputStream is;
+        private SapiQueryListener listener;
+        private int offset;
+        private int current;
+        private int contentLength;
+
+        public SapiInputStream(InputStream is, int offset, SapiQueryListener listener, int contentLength) {
+            this.is = is;
+            this.offset = offset;
+            this.listener = listener;
+            this.contentLength = contentLength;
+            if (contentLength != 0) {
+                current = (offset * 100) / contentLength;
+            } else {
+                current = 0;
+            }
+        }
+
+        public int read() throws IOException {
+            if(isQueryCancelled()) {
+                Log.debug(TAG_LOG, "Query cancelled");
+                throw new IOException("Query cancelled");
+            }
+            int res = is.read();
+            if (listener != null) {
+                offset++;
+                int newCurrent;
+                if (contentLength != 0) {
+                    newCurrent = (offset * 100) / contentLength;
+                } else {
+                    newCurrent = 0;
+                }
+
+                if (newCurrent != current) {
+                    listener.queryProgress(offset++);
+                    current = newCurrent;
+                }
+            }
+            return res;
+        }
+
+        public void close() throws IOException {
+            is.close();
+        }
+
+        public int available() throws IOException {
+            return is.available();
+        }
+
+        public void mark(int readlimit) {
+            is.mark(readlimit);
+        }
+
+        public boolean markSupported() {
+            return is.markSupported();
+        }
+
+        public void reset() throws IOException {
+            is.reset();
+        }
+
+        public long skip(long n) throws IOException {
+            return is.skip(n);
+        }
     }
 
 }

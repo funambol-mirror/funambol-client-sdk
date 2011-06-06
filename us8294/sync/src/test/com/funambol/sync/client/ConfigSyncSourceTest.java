@@ -43,6 +43,7 @@ import java.util.Hashtable;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncSource;
+import com.funambol.sync.SyncException;
 
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValuePair;
@@ -218,6 +219,28 @@ public class ConfigSyncSourceTest extends TestCase {
     public void setUp() {
     }
 
+    public void testBeginSync() throws Throwable {
+        TestStore store = new TestStore();
+        TestTracker tracker = new TestTracker();
+
+        String key0 = "./Email/Address";
+        String key1 = "./Email/Display Name";
+        String content0 = "test@test.com";
+        String content1 = "Test";
+        store.put(key0, content0);
+        store.put(key1, content1);
+
+        SourceConfig config = new SourceConfig("config", "application/*", "config");
+        source = new ConfigSyncSource(config, tracker, store);
+
+        try {
+            source.beginSync(SyncSource.FULL_SYNC, false);
+            assertTrue(false);
+        } catch(SyncException ex) { 
+            assertTrue(ex.getCode() == SyncException.CONTROLLED_INTERRUPTION);
+        }
+    }
+    
     public void testSlowSyncSimple() throws Throwable {
 
         TestStore store = new TestStore();
@@ -233,8 +256,10 @@ public class ConfigSyncSourceTest extends TestCase {
         SourceConfig config = new SourceConfig("config", "application/*", "config");
         source = new ConfigSyncSource(config, tracker, store);
 
-        source.beginSync(SyncSource.FULL_SYNC, false);
-
+        try {
+            source.beginSync(SyncSource.FULL_SYNC, false);
+        } catch(SyncException ex) { }
+        
         SyncItem item = source.getNextItem();
         assertTrue(item != null);
         byte itemContent[] = item.getContent();
@@ -285,7 +310,9 @@ public class ConfigSyncSourceTest extends TestCase {
         SourceConfig config = new SourceConfig("config", "application/*", "config");
         source = new ConfigSyncSource(config, tracker, store);
 
-        source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
+        try {
+            source.beginSync(SyncSource.INCREMENTAL_SYNC, false);
+        } catch(SyncException ex) { }
 
         SyncItem item = source.getNextNewItem();
         assertTrue(item != null);

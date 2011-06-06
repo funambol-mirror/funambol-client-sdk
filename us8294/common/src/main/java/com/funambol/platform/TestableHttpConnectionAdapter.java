@@ -36,11 +36,9 @@
 package com.funambol.platform;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
 
 import com.funambol.util.StringUtil;
-import com.funambol.util.Log;
 
 public class TestableHttpConnectionAdapter extends HttpConnectionAdapter {
 
@@ -62,14 +60,13 @@ public class TestableHttpConnectionAdapter extends HttpConnectionAdapter {
         return is;
     }
 
-    public OutputStream openOutputStream() throws IOException {
-        OutputStream os = super.openOutputStream();
+    public void execute(InputStream is, long length) throws IOException {
         if (StringUtil.equalsIgnoreCase("sending", breakOnPhase)) {
-            TestableOutputStream tos = new TestableOutputStream(os);
-            tos.breakOnByte(breakOnPos);
-            os = tos;
+            TestableInputStream tis = new TestableInputStream(is);
+            tis.breakOnByte(breakOnPos);
+            is = tis;
         }
-        return os;
+        super.execute(is, length);
     }
 
     public void setBreakInfo(String phase, int breakOnPos) {
@@ -123,37 +120,4 @@ public class TestableHttpConnectionAdapter extends HttpConnectionAdapter {
             return is.skip(n);
         }
     }
-
-    private class TestableOutputStream extends OutputStream {
-
-        private OutputStream os;
-        private int pos = 0;
-        private int breakPos = -1;
-
-        public TestableOutputStream(OutputStream os) {
-            this.os = os;
-        }
-
-        public void close() throws IOException {
-            os.close();
-        }
-
-        public void flush() throws IOException {
-            os.flush();
-        }
-
-        public void write(int b) throws IOException {
-            if (breakPos >= 0 && pos >= breakPos) {
-                throw new IOException("Simulated IO Exception");
-            }
-            pos++;
-            os.write(b);
-        }
-
-        public void breakOnByte(int breakPos) {
-            this.breakPos = breakPos;
-        }
-    }
-
-
 }

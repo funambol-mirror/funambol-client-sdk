@@ -90,9 +90,19 @@ public class HttpConnectionAdapterMock extends HttpConnectionAdapter {
         }
     }
 
-    public OutputStream openOutputStream() throws IOException {
+    public void execute(InputStream is, long length) throws IOException {
+        // Simulate reading the input stream
+        int read = -1;
+        byte buf[] = new byte[4096];
         os = new ByteArrayOutputStream();
-        return os;
+        if (is != null) {
+            do {
+                read = is.read(buf);
+                if (read > 0) {
+                    os.write(buf, 0, read);
+                }
+            } while(read >= 0);
+        }
     }
 
     public int getResponseCode() throws IOException {

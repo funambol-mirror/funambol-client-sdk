@@ -35,7 +35,6 @@
 
 package com.funambol.sapisync.source;
 
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -46,8 +45,6 @@ import com.funambol.sync.SyncSource;
 import com.funambol.sync.client.TrackerException;
 import com.funambol.util.Log;
 
-
-
 /**
  * Represents a CacheTracker which is able to detect rename operation within the
  * retrieved changes.
@@ -57,20 +54,11 @@ public class CacheTrackerWithRenames extends CacheTracker {
     private static final String TAG_LOG = "CacheTrackerWithRenames";
 
     private Hashtable renamesMap;
-    private String sourceName;
 
     public CacheTrackerWithRenames(String sourceName, StringKeyValueStore statusStore) {
         super(statusStore);
-        this.sourceName = sourceName;
         this.renamesMap = new Hashtable();
     }
-
-    /*
-    public CacheTrackerWithRenames(StringKeyValueStore renamesStore, StringKeyValueStore statusStore) {
-        super(statusStore);
-        this.renamesStore = renamesStore;
-    }
-    */
 
     public void begin(int syncMode, boolean reset) throws TrackerException {
         super.begin(syncMode, reset);
@@ -79,7 +67,7 @@ public class CacheTrackerWithRenames extends CacheTracker {
                 Log.debug(TAG_LOG, "Checking renames");
             }
 
-            if (newItems.size() == 0 || deletedItems.size() == 0) {
+            if (newItems.isEmpty() || deletedItems.isEmpty()) {
                 return;
             }
 

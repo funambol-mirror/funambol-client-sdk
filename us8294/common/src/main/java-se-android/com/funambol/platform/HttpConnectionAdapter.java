@@ -35,28 +35,77 @@
 
 package com.funambol.platform;
 
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.UnknownHostException;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
+
+//import android.net.http.AndroidHttpClient;
+
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpResponse;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.RequestWrapper;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.BasicHttpProcessor;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.protocol.HTTP;
+
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.StatusLine;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpEntity;
+import org.apache.http.Header;
+import org.apache.http.HttpHost;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.conn.params.ConnRouteParams;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.HttpVersion;
+
+import android.net.SSLCertificateSocketFactory;
+//import android.net.SSLSessionCache;
 
 import com.funambol.platform.net.ProxyConfig;
-import com.funambol.platform.net.ProxyFactory;
 import com.funambol.util.Log;
 
 /**
- * This class is a simple HttpConnection class that wraps the underlying 
- * standard edition HttpURLConnection. Requests/responses can be written/read accessing
- * the corresponding input and output streams.
+ * This class is a simple HttpConnection class that wraps
  *
  * A portable code must use this class only to perform http connections, and must take care
  * of closing the connection when not used anymore.
@@ -88,7 +137,7 @@ import com.funambol.util.Log;
  */
 public class HttpConnectionAdapter {
 
-    private static final String TAG_LOG = "HttpConnectionAdapter";
+    private static final String TAG_LOG         = "HttpConnectionAdapter";
 
     public static int HTTP_ACCEPTED             = HttpURLConnection.HTTP_ACCEPTED;
     public static int HTTP_BAD_GATEWAY          = HttpURLConnection.HTTP_BAD_GATEWAY;
@@ -133,50 +182,61 @@ public class HttpConnectionAdapter {
     // These are the constants that can be specified in the setRequestMethod
     public static final String GET              = "GET";
     public static final String POST             = "POST";
+    public static final String PUT              = "PUT";
     public static final String HEAD             = "HEAD";
 
+    private static final String HTTP_DEFAULT_PORT  = "80";
+    private static final String HTTPS_DEFAULT_PORT = "443";
 
-    /** This is the underlying connection */
-    private HttpURLConnection conn;
+    private Map<String,String> requestHeaders;
+    private Header responseHeaders[];
+    
+    private String requestMethod = GET;
+
+    private HttpRequestBase request;
+    private DefaultHttpClient httpClient;
+    private int responseCode;
+    private OutputStream outputStream;
+    private String url;
+    private HttpResponse httpResponse = null;
+    private InputStream respInputStream;
+    private ProxyConfig proxyConfig;
+    private int chunkLength = -1;
+
+    // Default connection and socket timeout of 3 * 60 seconds.  Tweak to taste.
+    private static final int SOCKET_OPERATION_TIMEOUT = 3 * 60 * 1000;
 
     public HttpConnectionAdapter() {
-    }
 
-    /**
-     * Open the connection to the given url, using a proxy.
-     */
-    public void open(String url, ProxyConfig proxyConfig) throws IOException {
-        URL u;
-        try {
-            Proxy proxy = ProxyFactory.createProxyInstance(proxyConfig);
-            // On Android there are networks errors if the keep Alive is left
-            // enabled. Especially in https. For this reason we turn the flag
-            // off, as it seems a platform bug.
-            System.setProperty("http.keepAlive", "false");
-            u = new URL(url);
-            if (proxy != null) {
-                conn = (HttpURLConnection)u.openConnection(proxy);
-            } else {
-                conn = (HttpURLConnection)u.openConnection();
-            }
-            conn.setDoOutput(true);
-        } catch (MalformedURLException e) {
-            Log.error(TAG_LOG, "Invalid url: " + url, e);
-            throw new IllegalArgumentException(e.toString());
-        } catch (UnknownHostException e) {
-            Log.error(TAG_LOG, "Unknown host exception", e);
-            throw new ConnectionNotFoundException(e.toString());
-        }
+        // These default values are mostly grabbed from the AndroidDefaultClient
+        // implementation that was introduced in Android 2.2
+        HttpParams params = new BasicHttpParams();
+        params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+        params.setParameter(CoreProtocolPNames.HTTP_CONTENT_CHARSET, HTTP.UTF_8);
+        params.setParameter(CoreProtocolPNames.USER_AGENT, "Apache-HttpClient/Android");
+        HttpConnectionParams.setConnectionTimeout(params, SOCKET_OPERATION_TIMEOUT);
+        HttpConnectionParams.setSoTimeout(params, SOCKET_OPERATION_TIMEOUT);
+        // Turn off stale checking.  Our connections break all the time anyway,
+        // and it's not worth it to pay the penalty of checking every time.
+        params.setParameter(CoreConnectionPNames.STALE_CONNECTION_CHECK, false);
+        //HttpConnectionParams.setSocketBufferSize(params, 8192);
+
+        SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+        ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
+        httpClient = new DefaultHttpClient(cm, params);
     }
 
     /**
      * Open the connection to the given url.
      */
-    public void open(String url) throws IOException {
-        open(url, null);
+    public void open(String url, ProxyConfig proxyConfig) throws IOException {
+        this.url = url;
+        this.proxyConfig = proxyConfig;
     }
 
-        
+
     /**
      * This method closes this connection. It does not close the corresponding
      * input and output stream which need to be closed separately (if they were
@@ -185,40 +245,73 @@ public class HttpConnectionAdapter {
      * @throws IOException if the connection cannot be closed
      */
     public void close() throws IOException {
-        conn.disconnect();
+        if (requestHeaders != null) {
+            requestHeaders.clear();
+        }
     }
 
     /**
      * Open the input stream. The ownership of the stream is transferred to the
-     * caller which is responsbile to close and release the resource once it is
+     * caller which is responsible to close and release the resource once it is
      * no longer used. This method shall be called only once per connection.
      *
-     * @throws IOException if the input stream cannot be opened.
+     * @throws IOException if the input stream cannot be opened or the output
+     * stream has not been closed yet.
      */
     public InputStream openInputStream() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open input stream on non opened connection");
+
+        if (request == null) {
+            // This is a GET request
+            HttpGet req = new HttpGet(url);
+            performRequest(req);
         }
-        return conn.getInputStream();
+        return respInputStream;
     }
 
     /**
-     * Open the output stream. The ownership of the stream is transferred to the
-     * caller which is responsbile to close and release the resource once it is
-     * no longer used. This method shall be called only once per connection.
+     * Execute the http post operation with the given input stream to be read to
+     * fetch body content.
      *
      * @throws IOException if the output stream cannot be opened.
      */
-    public OutputStream openOutputStream() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
+    public void execute(InputStream is, long length) throws IOException {
+
+        Log.debug(TAG_LOG, "Opening url: " + url);
+        Log.debug(TAG_LOG, "Opening with method " + requestMethod);
+
+        String contentType = null;
+        if (requestHeaders != null) {
+            contentType = requestHeaders.get("Content-Type");
         }
-        try {
-            return conn.getOutputStream();
-        } catch (UnknownHostException ue) {
-            // Translate this exception into a platform independent one
-            throw new ConnectionNotFoundException(ue.getMessage());
+        if (contentType == null) {
+            contentType = "binary/octet-stream";
         }
+
+        if (POST.equals(requestMethod)) {
+            request = new HttpPost(url);
+            if (is != null) {
+                InputStreamEntity reqEntity = new InputStreamEntity(is, length); 
+                reqEntity.setContentType(contentType); 
+                if (chunkLength > 0) {
+                    reqEntity.setChunked(true); 
+                }
+                ((HttpPost)request).setEntity(reqEntity);
+            }
+        } else if (PUT.equals(requestMethod)) {
+            request = new HttpPut(url);
+            if (is != null) {
+                InputStreamEntity reqEntity = new InputStreamEntity(is, length); 
+                reqEntity.setContentType(contentType); 
+                if (chunkLength > 0) {
+                    reqEntity.setChunked(true); 
+                }
+                ((HttpPost)request).setEntity(reqEntity);
+            }
+        } else {
+            request = new HttpGet(url);
+        }
+
+        performRequest(request);
     }
 
     /**
@@ -235,10 +328,7 @@ public class HttpConnectionAdapter {
      *   IOException - if an error occurred connecting to the server.
      */
     public int getResponseCode() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
-        }
-        return conn.getResponseCode();
+        return responseCode;
     }
 
     /**
@@ -247,20 +337,17 @@ public class HttpConnectionAdapter {
      * HTTP/1.0 200 OK
      * HTTP/1.0 401 Unauthorized
      * 
-     * and extracts the strings OK and Unauthorized respectively. from the response
-     * (i.e., the response is not valid HTTP).
+     * and extracts the strings OK and Unauthorized respectively. from the response (i.e., the response is not valid HTTP).
      *
      * Returns:
-     *   the HTTP Status-Response or null if no status code can be discerned. 
+     *   the HTTP Response-Code or null if no status message can be discerned. 
      * Throws:
      *   IOException - if an error occurred connecting to the server.
      */
     public String getResponseMessage() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
-        }
-        return conn.getResponseMessage();
+        return null;
     }
+
 
     /**
      * Set the method for the URL request, one of:
@@ -270,40 +357,21 @@ public class HttpConnectionAdapter {
      * are legal, subject to protocol restrictions. The default method is GET. 
      */
     public void setRequestMethod(String method) throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
-        }
-        conn.setRequestMethod(method);
+        requestMethod = method;
     }
 
     /**
-     * Set chunked encoding for the file to be uploaded. This avoid the output
+     * Set chunked encoding for the content to be uploaded. This avoid the output
      * stream to buffer all data before transmitting it.
+     * This is currently not supported by this implementation and the method has
+     * no effect because httpclient performs chunking by default.
      *
      * @param chunkLength the length of the single chunk
      */
     public void setChunkedStreamingMode(int chunkLength) throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
-        }
-        conn.setChunkedStreamingMode(chunkLength);
+        this.chunkLength = chunkLength;
     }
-
-    /**
-     * If the length of a HTTP request body is known ahead, sets fixed length to
-     * enable streaming without buffering. Sets after connection will cause an
-     * exception.
-     *
-     * @param chunkLength the length of the single chunk
-     */
-    public void setFixedLengthStreamingMode(int contentLength) throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
-        }
-        conn.setFixedLengthStreamingMode(contentLength);
-    }
-
-
+    
     /**
      * Sets the general request property. If a property with the key already exists,
      * overwrite its value with the new value.
@@ -316,24 +384,38 @@ public class HttpConnectionAdapter {
      * @param value the value associated with it.
      */
     public void setRequestProperty(String key, String value) throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
+        if (requestHeaders == null) {
+            requestHeaders = new HashMap<String, String>();
         }
-        conn.setRequestProperty(key, value);
+        requestHeaders.put(key, value);
     }
 
     /**
      * Returns the value of the named header field.
      *
-     * @param key name of a header field. 
-     * @return the value of the named header field, or null if there is no such field in the header. 
+     * @param key name of a header field.
+     * @return the value of the named header field, or null if there is no such field in the header.
      * @throws IOException if an error occurred connecting to the server.
      */
     public String getHeaderField(String key) throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
+        if (request != null) {
+
+            if (Log.isLoggable(Log.TRACE)) {
+                Header headers[] = httpResponse.getHeaders(key);
+                if (headers != null) {
+                    for(int i=0;i<headers.length;++i) {
+                        Header h = headers[i];
+                        Log.trace(TAG_LOG, "Header " + key + " has value " + h.getValue());
+                    }
+                }
+            }
+
+            Header header = httpResponse.getFirstHeader(key);
+            if (header != null) {
+                return header.getValue();
+            }
         }
-        return conn.getHeaderField(key);
+        return null;
     }
 
     /**
@@ -342,44 +424,35 @@ public class HttpConnectionAdapter {
      * In this case, getHeaderField(0)  returns the status line, but getHeaderFieldKey(0) returns null.
      */
     public String getHeaderFieldKey(int num) throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
+        if (num < responseHeaders.length) {
+            Header header = responseHeaders[num];
+            return header.getName();
+        } else {
+            return null;
         }
-        return conn.getHeaderFieldKey(num);
     }
+
 
     /**
      * Returns the answer length (excluding headers. This is the content-length
      * field length)
      */
     public int getLength() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot get length on non opened connection");
+        String len = getHeaderField("content-length");
+        if (len == null) {
+            len = getHeaderField("Content-Length");
         }
-        return conn.getContentLength();
-    }
-    
-    /**
-     * Returns the error input stream pointer
-     */
-    public InputStream getErrorStream() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open error stream on non opened connection");
+        if (len != null) {
+            try {
+                return Integer.parseInt(len);
+            } catch (Exception e) {
+                return -1;
+            }
+        } else {
+            return -1;
         }
-        return conn.getErrorStream();
     }
 
-    /**
-     * Establishes the connection to the earlier configured resource.
-     * The connection can only be set up before this method has been called.
-     */
-    public void connect() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot connect on non opened connection");
-        }
-        conn.connect();
-    }
-    
     /**
      * Sets the timeout value in milliseconds for establishing the connection
      * to the pointed resource. A {@link SocketTimeoutException} is thrown if
@@ -390,7 +463,6 @@ public class HttpConnectionAdapter {
      * @throws IllegalArgumentException if the parameter <code>timeout</code> is less than zero. 
      */
     public void setConnectTimeout(int timeout) throws IllegalArgumentException {
-        conn.setConnectTimeout(timeout);
     }
     
     /**
@@ -403,7 +475,66 @@ public class HttpConnectionAdapter {
      * @throws IllegalArgumentException if the parameter <code>timeout</code> is less than zero. 
      */
     public void setReadTimeout(int timeout) throws IllegalArgumentException {
-        conn.setConnectTimeout(timeout);
+    }
+
+    /**
+     * Returns the error input stream pointer
+     */
+    public InputStream getErrorStream() throws IOException {
+        return new ByteArrayInputStream("".getBytes());
+    }
+
+    /**
+     * Establishes the connection to the earlier configured resource.
+     * The connection can only be set up before this method has been called.
+     */
+    public void connect() throws IOException {
+    }
+
+    private void performRequest(HttpRequestBase req) throws IOException {
+        // Set all the headers
+        if (requestHeaders != null) {
+            for(String key : requestHeaders.keySet()) {
+                String value = requestHeaders.get(key);
+                // The content length is set by httpclient and it is fetched
+                // from the request stream
+                if (!"Content-Length".equals(key)) {
+                    Log.trace(TAG_LOG, "Setting header: " + key + "=" + value);
+                    req.addHeader(key, value);
+                }
+            }
+        }
+
+        HttpParams params = httpClient.getParams();
+
+        // Set the proxy if necessary
+        if (proxyConfig != null) {
+            ConnRouteParams.setDefaultProxy(params, new HttpHost(proxyConfig.getAddress(), proxyConfig.getPort()));
+            httpClient.setParams(params);
+        } else {
+            // TODO FIXME: remove the proxy
+        }
+
+        //FIXME
+//        Log.debug(TAG_LOG, "Setting socket buffer size");
+//        HttpConnectionParams.setSocketBufferSize(params, 900);
+
+        try {
+            Log.trace(TAG_LOG, "Executing request");
+            httpResponse = httpClient.execute(req);
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Exception while executing request", e);
+            throw new IOException(e.toString());
+        }
+        // Set the response
+        StatusLine statusLine = httpResponse.getStatusLine();
+        responseCode = statusLine.getStatusCode();
+
+        HttpEntity respEntity = httpResponse.getEntity();
+        if (respEntity != null) {
+            respInputStream = respEntity.getContent();
+        }
+        responseHeaders = httpResponse.getAllHeaders();
     }
 
 }

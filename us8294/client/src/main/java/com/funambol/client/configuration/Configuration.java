@@ -103,6 +103,8 @@ public abstract class Configuration {
     protected static final String CONF_KEY_POLL_TIMESTAMP      = "POLL_PIM_TIMESTAMP";
     protected static final String CONF_KEY_SYNC_MODE           = "SYNC_MODE";
     protected static final String CONF_KEY_S2C_PUSH_MODE       = "S2C_PUSH_MODE";
+    protected static final String CONF_KEY_C2S_PUSH            = "C2S_PUSH";
+    
     protected static final String CONF_KEY_FIRST_RUN_TIMESTAMP = "FIRST_RUN_TIMESTAMP";
     protected static final String CONF_KEY_SERVER_FIRST_RUN_TIMESTAMP = "CONF_KEY_SERVER_FIRST_RUN_TIMESTAMP";
 
@@ -122,12 +124,11 @@ public abstract class Configuration {
 
     protected static final String CONF_KEY_CURRENT_SYNC_RETRY_COUNT = "CURRENT_SYNC_RETRY_COUNT";
 
-
     protected static final String CONF_KEY_PROFILE_EXPIRE_DATE = "PROFILE_EXPIRE_DATE";
     protected static final String CONF_KEY_PROFILE_MANUAL_ONLY = "PROFILE_MANUAL_ONLY";
     protected static final String CONF_KEY_PROFILE_NETWORK_USAGE_WARNING = "PROFILE_NETWORK_USAGE_WARNING";
 
-    protected static final String CONFIG_VERSION = "10";
+    protected static final String CONFIG_VERSION = "11";
 
     protected String       version;
     
@@ -142,6 +143,8 @@ public abstract class Configuration {
     
     protected int          syncMode;
     protected String       clientNonce;
+
+    protected boolean      c2sPushEnabled            = false;
 
     protected boolean      bandwidthSaverChecked     = false;
     
@@ -243,6 +246,8 @@ public abstract class Configuration {
 
         bandwidthSaverChecked = false;
 
+        c2sPushEnabled = false;
+
         // Compute "now"
         Date now = new Date();
         firstRunTimestamp = now.getTime();
@@ -305,6 +310,7 @@ public abstract class Configuration {
             pollingTimestamp = loadLongKey(CONF_KEY_POLL_TIMESTAMP, 0);
 
             bandwidthSaverChecked = loadBooleanKey(CONF_KEY_BANDWIDTH_SAVER, false);
+            c2sPushEnabled = loadBooleanKey(CONF_KEY_C2S_PUSH, false);
             forceServerCapsRequest = loadBooleanKey(CONF_KEY_FORCE_SERVER_CAPS_REQ, false);
 
             pimSourceSyncTypeChanged = loadBooleanKey(CONF_KEY_SOURCE_SYNC_TYPE_CHANGED, false);
@@ -464,6 +470,7 @@ public abstract class Configuration {
         saveIntKey(CONF_KEY_CURRENT_SYNC_RETRY_COUNT, currentSyncRetryCount);
 
         saveBooleanKey(CONF_KEY_BANDWIDTH_SAVER, bandwidthSaverChecked);
+        saveBooleanKey(CONF_KEY_C2S_PUSH, c2sPushEnabled);
 
         saveStringKey(CONF_KEY_UPDATE_URL, downloadUrl);
         saveStringKey(CONF_KEY_UPDATE_TYPE, updateType);
@@ -568,6 +575,14 @@ public abstract class Configuration {
             dirtyMisc = true;
             this.bandwidthSaverChecked = bandwidthSaverChecked;
         }
+    }
+
+    public boolean isC2SPushEnabled() {
+        return c2sPushEnabled;
+    }
+
+    public void setC2SPushEnabled(boolean c2sPushEnabled) {
+        this.c2sPushEnabled = c2sPushEnabled;
     }
 
     public String getUsername() {
@@ -958,6 +973,15 @@ public abstract class Configuration {
                 }
                 version = "10";
             }
+
+            /////////////////////////////////////////////////////////////////
+            /////////////////////  Migrate from 10 to 11 //////////////////////
+            /////////////////////////////////////////////////////////////////
+            // Nothing to migrate in the general config
+            if ("10".equals(version)) {
+                version = "11";
+            }
+
             // Migration completed
             version = CONFIG_VERSION;
         } catch (Exception e) {

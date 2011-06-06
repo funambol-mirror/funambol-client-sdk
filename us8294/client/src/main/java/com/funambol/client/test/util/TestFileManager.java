@@ -158,12 +158,10 @@ public class TestFileManager {
     protected String getFileViaHttp(String url, OutputStream output) throws Exception {
         HttpConnectionAdapter conn = null;
         InputStream is = null;
-        OutputStream os = null;
         try {
             conn = ConnectionManager.getInstance().openHttpConnection(url, null);
             conn.setRequestMethod(HttpConnectionAdapter.GET);
-            os = conn.openOutputStream();
-            os.flush();
+            conn.execute(null, -1);
             if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
                 is = conn.openInputStream();
                 int b;
@@ -178,12 +176,6 @@ public class TestFileManager {
             }
             return conn.getHeaderField("Content-Type");
         } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {}
-                os = null;
-            }
             if (is != null) {
                 try {
                     is.close();

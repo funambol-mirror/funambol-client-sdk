@@ -99,6 +99,9 @@ public class SyncException extends CodedException {
     /** The local sd card is not available */
     public static final int SD_CARD_UNAVAILABLE = 7;
 
+    /** Represents a controlled excpetion that will be catched by the user */
+    public static final int CONTROLLED_INTERRUPTION = 8;
+
     /**
      * Constructs an instance of <code>SyncException</code>
      * with the specified detail message.

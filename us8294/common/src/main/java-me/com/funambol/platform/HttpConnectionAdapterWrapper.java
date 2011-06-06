@@ -38,17 +38,12 @@ package com.funambol.platform;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import javax.microedition.io.HttpConnection;
 import javax.microedition.io.Connector;
 
 import com.funambol.platform.net.ProxyConfig;
-import com.funambol.util.ConnectionManager;
 import com.funambol.util.Log;
-import com.funambol.util.StringUtil;
 
 /**
  * This class is a simple HttpConnection class that wraps the underlying 
@@ -89,10 +84,6 @@ public class HttpConnectionAdapterWrapper extends HttpConnectionAdapter {
 
     /** This is the underlying connection */
     private HttpConnection conn;
-
-    private String hostname;
-    private String port;
-    private String resourceName;
 
     public HttpConnectionAdapterWrapper() {
     }
@@ -154,20 +145,6 @@ public class HttpConnectionAdapterWrapper extends HttpConnectionAdapter {
             throw new IOException("Cannot open input stream on non opened connection");
         }
         return conn.openInputStream();
-    }
-
-    /**
-     * Open the output stream. The ownership of the stream is transferred to the
-     * caller which is responsbile to close and release the resource once it is
-     * no longer used. This method shall be called only once per connection.
-     *
-     * @throws IOException if the output stream cannot be opened.
-     */
-    public OutputStream openOutputStream() throws IOException {
-        if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
-        }
-        return conn.openOutputStream();
     }
 
     /**
@@ -286,7 +263,7 @@ public class HttpConnectionAdapterWrapper extends HttpConnectionAdapter {
      */
     public String getHeaderFieldKey(int num) throws IOException {
         if (conn == null) {
-            throw new IOException("Cannot open output stream on non opened connection");
+            throw new IOException("Cannot read header field on non opened connection");
         }
         return conn.getHeaderFieldKey(num);
     }
@@ -301,6 +278,20 @@ public class HttpConnectionAdapterWrapper extends HttpConnectionAdapter {
             throw new IOException("Cannot get length on non opened connection");
         }
         return (int)conn.getLength();
+    }
+
+    /**
+     * Open the output stream. The ownership of the stream is transferred to the
+     * caller which is responsbile to close and release the resource once it is
+     * no longer used. This method shall be called only once per connection.
+     *
+     * @throws IOException if the output stream cannot be opened.
+     */
+    protected OutputStream openOutputStream() throws IOException {
+        if (conn == null) {
+            throw new IOException("Cannot open output stream on non opened connection");
+        }
+        return conn.openOutputStream();
     }
 }
 
