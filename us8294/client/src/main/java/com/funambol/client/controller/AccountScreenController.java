@@ -497,14 +497,18 @@ public class AccountScreenController extends SynchronizationController {
                 // TODO FIXME: use the real sapi instead of the mocked one
                 JSONObject response = sapiHandler.loginAndGetServerInfo();
 
-                //JSONObject response = SapiLoginMockData.getProfileInformation(baseUrl, username, password);
-
                 if (!response.has("data")) {
                     // This server does not have the new login API. For backward
                     // compatibility we condider all sources allowed
                     return;
                 }
                 JSONObject data = response.getJSONObject("data");
+                if (!response.has("details")) {
+                    // This server does not have the new login API. For backward
+                    // compatibility we condider all sources allowed
+                    return;
+                }
+
                 JSONObject details = data.getJSONObject("details");
                 if (details.has("expiretime")) {
                     long expireDate = details.getLong("expiretime");
