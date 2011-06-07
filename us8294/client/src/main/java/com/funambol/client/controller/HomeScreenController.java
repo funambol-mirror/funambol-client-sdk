@@ -260,7 +260,6 @@ public class HomeScreenController extends SynchronizationController {
                 synchronize(com.funambol.client.controller.SynchronizationController.PUSH, sources);
             }
         }
-        
     }
 
     public void redraw() {
@@ -560,6 +559,27 @@ public class HomeScreenController extends SynchronizationController {
      *
      */
     public synchronized void synchronize(String syncType, Vector syncSources) {
+      
+        //updateSynchronizeInfo(); //da scrivere in SynchronizationController
+        //e chiamarlo dal syncAll
+               
+        try {
+            new ProfileUpdateHelper(controller).updateProfile();                        
+            Vector newSyncSources = getAllowedSources();
+            
+            if (syncSources.size() > 1) {
+                syncSources = newSyncSources;
+            }
+
+            syncEnded();
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Config sync failed ", e);            
+            syncEnded();            
+            SyncException se = new SyncException(SyncException.CLIENT_ERROR, e.toString());
+            sourceFailed((AppSyncSource)syncSources.elementAt(0), se);            
+            return;
+        }
+        
         // For manual sync, always show alert message for storage/server
         // quota limit. For other sync modes, doesn't display message if
         // the previous sync ended with the same error.
@@ -586,6 +606,20 @@ public class HomeScreenController extends SynchronizationController {
         }
         
         super.synchronize(syncType, syncSources);
+    }
+    
+    private Vector getAllowedSources() {
+        Enumeration sources = appSyncSourceManager.getRegisteredSources();
+        Vector allowedSources = new Vector();
+        while (sources.hasMoreElements()) {
+            AppSyncSource appSource = (AppSyncSource)sources.nextElement();
+            
+            if (appSource.getConfig().getAllowed()) {
+                allowedSources.add(appSource);
+            }
+        }
+        
+        return allowedSources;
     }
 
     public void cancelMenuSelected() {
