@@ -505,8 +505,6 @@ public class AccountScreenController extends SynchronizationController {
                 configuration.setTempLogLevel(Log.TRACE);
                 String baseUrl = StringUtil.extractAddressFromUrl(serverUri);
                 SapiSyncHandler sapiHandler = new SapiSyncHandler(baseUrl, username, password);
-
-                // TODO FIXME: use the real sapi instead of the mocked one
                 JSONObject response = sapiHandler.loginAndGetServerInfo();
 
                 if (!response.has("data")) {
@@ -515,7 +513,7 @@ public class AccountScreenController extends SynchronizationController {
                     return;
                 }
                 JSONObject data = response.getJSONObject("data");
-                if (!response.has("details")) {
+                if (!data.has("details")) {
                     // This server does not have the new login API. For backward
                     // compatibility we condider all sources allowed
                     return;
