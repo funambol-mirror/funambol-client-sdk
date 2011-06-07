@@ -77,6 +77,7 @@ public class SignupHandler extends Thread {
     private static final String JSON_OBJECT_USER_FIELD_ACTIVE       = "active";
     private static final String JSON_OBJECT_USER_FIELD_PHONE_NUMBER = "phonenumber";
     private static final String JSON_OBJECT_USER_FIELD_PASSWORD     = "password";
+    private static final String JSON_OBJECT_USER_FIELD_USERNAME     = "username";
     private static final String JSON_OBJECT_USER_FIELD_PLATFORM     = "platform";
     private static final String JSON_OBJECT_USER_FIELD_COUNTRY      = "countrya2";
     private static final String JSON_OBJECT_USER_FIELD_EMAIL        = "useremail";
@@ -189,7 +190,19 @@ public class SignupHandler extends Thread {
 
         DeviceInfoInterface devInfo = signupScreenController.getDeviceInfo();
 
+        String username = null;
+        String defaultCountryCode = customization.getDefaultMSUCountryCode();
+        if (defaultCountryCode != null) {
+            if (phoneNumber.startsWith(defaultCountryCode)) {
+                username = phoneNumber.substring(defaultCountryCode.length());
+            }
+        }
+
         deviceInfo.put(JSON_OBJECT_USER_FIELD_PHONE_NUMBER, phoneNumber);
+        if (username != null) {
+            deviceInfo.put(JSON_OBJECT_USER_FIELD_USERNAME, username);
+        }
+        deviceInfo.put(JSON_OBJECT_USER_FIELD_PASSWORD,     password);
         deviceInfo.put(JSON_OBJECT_USER_FIELD_PASSWORD,     password);
         deviceInfo.put(JSON_OBJECT_USER_FIELD_PLATFORM,     devInfo.getFunambolPlatform());
         deviceInfo.put(JSON_OBJECT_USER_FIELD_COUNTRY,      devInfo.getCountryCode());
@@ -201,6 +214,10 @@ public class SignupHandler extends Thread {
 
         data.put(JSON_OBJECT_USER, deviceInfo);
         request.put(JSON_OBJECT_DATA, data);
+
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "Mobile signup request is: " + request.toString());
+        }
 
         return request;
     }
