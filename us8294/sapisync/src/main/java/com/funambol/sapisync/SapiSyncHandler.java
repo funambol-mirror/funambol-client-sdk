@@ -779,6 +779,9 @@ public class SapiSyncHandler {
                 throw SapiException.SAPI_EXCEPTION_UNKNOWN;
             }
             return response;
+        } catch (NotAuthorizedCallException nae) {
+            Log.error(TAG_LOG, "User not authenticated", nae);
+            throw SapiException.SAPI_INVALID_CREDENTIALS;
         } catch (NotSupportedCallException e) {
             Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
             throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;

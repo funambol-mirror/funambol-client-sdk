@@ -69,6 +69,8 @@ public class SapiException extends RuntimeException {
     public static final String SEC_1004 = "SEC-1004";
     /** */
     public static final String HTTP_400 = "HTTP-400";
+    /** Not authenticated */
+    public static final String HTTP_401 = "HTTP-401";
     /** The size declared in the header does not match the one declared in the metadata. */
     public static final String MED_1001 = "MED-1001";
     /** The size of the uploading media does not match the one declared */
@@ -95,6 +97,9 @@ public class SapiException extends RuntimeException {
     /** SAPI is not supported by the server */
     public final static SapiException SAPI_EXCEPTION_CALL_NOT_SUPPORTED =
         new SapiException(CUS_0003, "SAPI call is not supported by the server");
+    /** Invalid credentials */
+    public final static SapiException SAPI_INVALID_CREDENTIALS =
+        new SapiException(HTTP_401, "Invalid credentials");
 
     
     /** The code of the exception */

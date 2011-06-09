@@ -43,6 +43,7 @@ import com.funambol.org.json.me.JSONArray;
 import com.funambol.org.json.me.JSONException;
 
 import com.funambol.sapisync.SapiSyncHandler;
+import com.funambol.sapisync.SapiException;
 import com.funambol.client.customization.Customization;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.source.AppSyncSource;
@@ -509,6 +510,15 @@ public class AccountScreenController extends SynchronizationController {
                 sourceEnded(configAppSource);
 
                 // TODO FIXME: handle errors properly
+            } catch (SapiException se) {
+                Log.error(TAG_LOG, "SapiException during login", se);
+                if (SapiException.HTTP_401.equals(se.getCode())) {
+                    SyncException syncExc = new SyncException(SyncException.AUTH_ERROR, se.toString());
+                    sourceFailed(configAppSource, syncExc);
+                } else {
+                    SyncException syncExc = new SyncException(SyncException.CLIENT_ERROR, se.toString());
+                    sourceFailed(configAppSource, syncExc);
+                }
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Config sync failed ", e);
                 SyncException se = new SyncException(SyncException.CLIENT_ERROR, e.toString());
