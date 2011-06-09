@@ -558,19 +558,15 @@ public class HomeScreenController extends SynchronizationController {
      * @param syncSources is a vector of AppSyncSource to be synchronized
      *
      */
-    public synchronized void synchronize(String syncType, Vector syncSources) {
-      
-        //updateSynchronizeInfo(); //da scrivere in SynchronizationController
-        //e chiamarlo dal syncAll
-               
+    public synchronized void synchronize(String syncType, Vector syncSources) {              
         try {
-            new ProfileUpdateHelper(controller).updateProfile();                        
-            Vector newSyncSources = getAllowedSources();
+            new ProfileUpdateHelper(controller).updateProfile();  
             
+            Vector newSyncSources = getAllowedSources();            
             if (syncSources.size() > 1) {
                 syncSources = newSyncSources;
             }
-
+            
             syncEnded();
         } catch (Exception e) {
             Log.error(TAG_LOG, "Config sync failed ", e);            
