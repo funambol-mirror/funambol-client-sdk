@@ -40,8 +40,8 @@ public class ProfileUpdateHelper {
         SapiSyncHandler sapiHandler = new SapiSyncHandler(baseUrl, username, password);
 
         // TODO FIXME: use the real sapi instead of the mocked one
-        //JSONObject response = sapiHandler.loginAndGetServerInfo();
-        JSONObject response = SapiLoginMockData.getProfileInformation(baseUrl, username, password);
+        JSONObject response = sapiHandler.loginAndGetServerInfo();
+        //JSONObject response = SapiLoginMockData.getProfileInformation(baseUrl, username, password);
 
         if (!response.has("data")) {
             // This server does not have the new login API. For backward
