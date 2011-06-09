@@ -178,23 +178,6 @@ public abstract class SignupScreenController extends AccountScreenController {
         nuwc.askUserNetworkUsageConfirmation();
     }
 
-    /**
-     * This method takes the phone number typed into the UI and adjust it with
-     * the proper default country code if the customization specifies one
-     */
-    public String getSignupPhoneNumber(String uiNumber) {
-        if (!uiNumber.startsWith("+")) {
-            if (customization.getDefaultMSUCountryCode() != null) {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Adding default country code ");
-                }
-                String prefix = customization.getDefaultMSUCountryCode();
-                uiNumber = prefix + uiNumber;
-            }
-        }
-        return uiNumber;
-    }
-
     protected void requestLogin() {
         new LoginRequest().start();
     }

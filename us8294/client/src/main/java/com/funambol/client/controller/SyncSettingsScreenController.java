@@ -107,6 +107,16 @@ public class SyncSettingsScreenController {
         return ssScreen;
     }
 
+    public void updateSourceSettings(AppSyncSource appSource) {
+        SettingsUISyncSource item = appSource.getSettingsUISyncSource();
+        if (item != null) {
+            if (!appSource.getConfig().getActive() || !appSource.isWorking()) { 
+                item.setEnabled(false);
+            }
+            item.setAllowed(appSource.getConfig().getAllowed());
+        }
+    }
+
     private void computeVisibleItems() {
 
         if (Log.isLoggable(Log.TRACE)) {
@@ -155,6 +165,7 @@ public class SyncSettingsScreenController {
                 AppSyncSource appSource = (AppSyncSource)sources.nextElement();
 
                 if (controller.isVisible(appSource) && appSource.hasSettings()) {
+
                     // Get the settings item for this source
                     SettingsUISyncSource item = appSource.createSettingsUISyncSource(ssScreen);
 
