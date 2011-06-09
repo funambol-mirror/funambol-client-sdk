@@ -540,6 +540,8 @@ public class AccountScreenController extends SynchronizationController {
                 // Restore the original log level
                 configuration.restoreLogLevel();
                 controller.reapplyMiscConfiguration();
+                
+                failed = false;
             }
         }
     }
