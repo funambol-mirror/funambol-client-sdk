@@ -672,6 +672,14 @@ public class SapiSyncHandler {
         }
     }
 
+
+    private JSONObject sapiQueryWithRetries(String name, String action, Vector params,
+                                            Hashtable headers, JSONObject request)
+    throws NotSupportedCallException, JSONException, IOException
+    {
+        return sapiQueryWithRetries(name, action, params, headers, request, true);
+    }
+
     /**
      * Send a SAPI query with a retry mechanism.
      * @param name
@@ -679,11 +687,13 @@ public class SapiSyncHandler {
      * @param params
      * @param headers
      * @param request
+     * @param loginOnExpired perform a login if the invoked SAPI fails with an
+     * authentication error (most likely a session has expired)
      * @return
      * @throws JSONException
      */
     private JSONObject sapiQueryWithRetries(String name, String action, Vector params,
-                                            Hashtable headers, JSONObject request)
+                                            Hashtable headers, JSONObject request, boolean loginOnExpired)
     throws NotSupportedCallException, JSONException, IOException
     {
         JSONObject resp = null;
@@ -697,7 +707,7 @@ public class SapiSyncHandler {
             } catch (NotSupportedCallException e) {
                 throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
             } catch (NotAuthorizedCallException nae) {
-                if (attempt >= MAX_RETRIES) {
+                if (attempt >= MAX_RETRIES || !loginOnExpired) {
                     throw nae;
                 }
                 Log.error(TAG_LOG, "Not authorized error, login again");
@@ -737,7 +747,7 @@ public class SapiSyncHandler {
                 params.addElement("syncdeviceid=" + deviceId);
             }
 
-            JSONObject response = sapiQueryWithRetries("login", "login", params, null, null);
+            JSONObject response = sapiQueryWithRetries("login", "login", params, null, null, false);
 
             if (SapiResultError.hasError(response)) {
                 if (Log.isLoggable(Log.INFO)) {

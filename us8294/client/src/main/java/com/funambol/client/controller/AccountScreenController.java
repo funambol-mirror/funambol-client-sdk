@@ -254,7 +254,8 @@ public class AccountScreenController extends SynchronizationController {
         }
     }
 
-    protected void checkStarted() {
+    protected boolean checkStarted() {
+        return true;
     }
 
     private void loginViaSapi(String serverUri, String username, String password) {
@@ -500,7 +501,12 @@ public class AccountScreenController extends SynchronizationController {
             // their status for the user
             AppSyncSource configAppSource = appSyncSourceManager.getSource(AppSyncSourceManager.CONFIG_ID);
             try {
-                checkStarted();
+                boolean goAhead = checkStarted();
+
+                if (!goAhead) {
+                    return;
+                }
+
                 sourceStarted(configAppSource);
 
                 configuration.setTempLogLevel(Log.TRACE);
@@ -512,13 +518,19 @@ public class AccountScreenController extends SynchronizationController {
                 // TODO FIXME: handle errors properly
             } catch (SapiException se) {
                 Log.error(TAG_LOG, "SapiException during login", se);
+                SyncException syncExc;
                 if (SapiException.HTTP_401.equals(se.getCode())) {
-                    SyncException syncExc = new SyncException(SyncException.AUTH_ERROR, se.toString());
-                    sourceFailed(configAppSource, syncExc);
+                    syncExc = new SyncException(SyncException.AUTH_ERROR, se.toString());
+                } else if (SapiException.CUS_0003.equals(se.getCode())) {
+                    syncExc = new SyncException(SyncException.CONN_NOT_FOUND, se.toString());
+                } else if (SapiException.NO_CONNECTION.equals(se.getCode()) ||
+                           SapiException.HTTP_400.equals(se.getCode()))
+                {
+                    syncExc = new SyncException(SyncException.SERVER_CONNECTION_REQUEST_ERROR, se.toString());
                 } else {
-                    SyncException syncExc = new SyncException(SyncException.CLIENT_ERROR, se.toString());
-                    sourceFailed(configAppSource, syncExc);
+                    syncExc = new SyncException(SyncException.CLIENT_ERROR, se.toString());
                 }
+                sourceFailed(configAppSource, syncExc);
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Config sync failed ", e);
                 SyncException se = new SyncException(SyncException.CLIENT_ERROR, e.toString());
