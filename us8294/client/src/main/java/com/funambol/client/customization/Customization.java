@@ -151,7 +151,6 @@ public interface Customization {
     public String   getTermsAndConditionsUrl();
     public String   getPrivacyPolicyUrl();
     public boolean  getPrefillPhoneNumber();
-    public String   getDefaultMSUCountryCode();
 
     // Misc customization properties
     public boolean  getUseWbxml();
