@@ -611,7 +611,7 @@ public class HomeScreenController extends SynchronizationController {
             AppSyncSource appSource = (AppSyncSource)sources.nextElement();
             
             if (appSource.getConfig().getAllowed()) {
-                allowedSources.add(appSource);
+                allowedSources.addElement(appSource);
             }
         }
         
