@@ -405,6 +405,16 @@ public class SyncEngine implements SyncSchedulerListener {
                 }
 
                 AppSyncSource appSource = (AppSyncSource)appSources.elementAt(x);
+
+                // Sync source may get not allowed during the sync itself,
+                // because for example the user finishes his credit. For this
+                // reason we shall skip here not allowed sources
+                if (!appSource.getConfig().getAllowed()) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Skipping not allowed source " + appSource.getName());
+                    }
+                }
+
                 SyncSource source = appSource.getSyncSource();
 
                 if (Log.isLoggable(Log.INFO)) {
