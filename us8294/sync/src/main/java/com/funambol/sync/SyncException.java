@@ -50,6 +50,8 @@ public class SyncException extends CodedException {
     public static final int CLIENT_ERROR      = 400;
     /** Authentication error from remote server */
     public static final int AUTH_ERROR        = 401;
+    /** Payment required from remote server */
+    public static final int PAYMENT_REQUIRED  = 402;
     /** Error accessing a remote resource */
     public static final int ACCESS_ERROR      = 404;
     /** Can not open connection error */

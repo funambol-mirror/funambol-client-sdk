@@ -1400,6 +1400,10 @@ public class SyncManager implements SyncManagerI {
                         nextNonce);
                 throw authExc;
             }
+            case SyncMLStatus.PAYMENT_REQUIRED:             // 402
+                throw new SyncException(
+                        SyncException.PAYMENT_REQUIRED,
+                        "Payment required for source: " + source.getSourceUri());
             case SyncMLStatus.FORBIDDEN:                    // 403
                 throw new SyncException(
                         //SyncException.AUTH_ERROR,

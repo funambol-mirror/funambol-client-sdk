@@ -48,6 +48,7 @@ public class SyncMLStatus {
     public static final int AUTHENTICATION_ACCEPTED     = 212 ;
     public static final int CHUNKED_ITEM_ACCEPTED       = 213 ;
     public static final int INVALID_CREDENTIALS         = 401 ;
+    public static final int PAYMENT_REQUIRED            = 402 ;
     public static final int FORBIDDEN                   = 403 ;
     public static final int NOT_FOUND                   = 404 ;
     public static final int ALREADY_EXISTS              = 418 ;
