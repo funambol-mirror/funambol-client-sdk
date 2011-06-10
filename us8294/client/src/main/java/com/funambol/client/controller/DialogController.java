@@ -234,8 +234,9 @@ public class DialogController {
         while(enabledSources.hasMoreElements()) {
             AppSyncSource source = (AppSyncSource)enabledSources.nextElement();
             if (source.isRefreshSupported(direction) && source.isVisible() &&
-                source.getConfig().getActive() && source.isWorking()) {
-
+                source.getConfig().getActive() && source.isWorking() &&
+                source.getConfig().getAllowed())
+            {
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Source: " + source.getName() + " direction " + direction +
                                        " supported " + source.isRefreshSupported(direction));
