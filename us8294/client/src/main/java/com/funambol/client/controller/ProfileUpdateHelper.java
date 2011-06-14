@@ -24,18 +24,18 @@ public class ProfileUpdateHelper {
     private Configuration configuration;
     private AppSyncSourceManager appSyncSourceManager; 
     
-    public ProfileUpdateHelper(Controller controller) {
+    public ProfileUpdateHelper(AppSyncSourceManager appSyncSourceManager, Configuration configuration) {
         profile = null;
         
-        appSyncSourceManager = controller.getAppSyncSourceManager();
-        configuration = controller.getConfiguration();
+        this.appSyncSourceManager = appSyncSourceManager;
+        this.configuration = configuration;
         
         serverUri = configuration.getSyncUrl();
         username = configuration.getUsername();
         password = configuration.getPassword();
     }
         
-    public void updateProfile() throws JSONException{        
+    public void updateProfile() throws JSONException {        
         String baseUrl = StringUtil.extractAddressFromUrl(serverUri);
         SapiSyncHandler sapiHandler = new SapiSyncHandler(baseUrl, username, password);
 

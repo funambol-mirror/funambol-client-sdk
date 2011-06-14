@@ -43,6 +43,7 @@ import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.customization.Customization;
+import com.funambol.client.controller.ProfileUpdateHelper;
 import com.funambol.client.push.SyncSchedulerListener;
 
 import com.funambol.syncml.protocol.SyncML;
@@ -55,6 +56,7 @@ import com.funambol.sync.SyncConfig;
 import com.funambol.sync.SyncManagerI;
 import com.funambol.syncml.protocol.DevInf;
 import com.funambol.sapisync.SapiSyncManager;
+import com.funambol.sapisync.SapiException;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.util.TransportAgent;
 import com.funambol.util.StringUtil;
@@ -413,6 +415,7 @@ public class SyncEngine implements SyncSchedulerListener {
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Skipping not allowed source " + appSource.getName());
                     }
+                    continue;
                 }
 
                 SyncSource source = appSource.getSyncSource();
@@ -430,6 +433,26 @@ public class SyncEngine implements SyncSchedulerListener {
                 }
 
                 try {
+
+                    // Before synchronizing, we may need to update the user profile
+                    // we do it only once per sync session
+                    if (x == 0 && customization.getUserProfileSupported()) {
+                        updateProfile(appSources);
+                    }
+
+                    // The call to updateProfile may have change the allow status
+                    // for the current source.
+                    if (!appSource.getConfig().getAllowed()) {
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Skipping not allowed source " + appSource.getName());
+                        }
+                        if (listener != null) {
+                            SyncException se = new SyncException(SyncException.FORBIDDEN_ERROR, "Source not allowed");
+                            listener.sourceFailed(appSource, se);
+                        }
+                        continue;
+                    }
+
                     // Set this source as the one currently synchronized
                     currentSource = appSource;
                     
@@ -552,4 +575,42 @@ public class SyncEngine implements SyncSchedulerListener {
             }
         }
     }
+
+    private void updateProfile(Vector syncSources) throws SyncException {
+        try {
+            ProfileUpdateHelper puh = new ProfileUpdateHelper(appSyncSourceManager, configuration);
+            puh.updateProfile();  
+            syncSources = filterNonAllowedSources(syncSources);
+        } catch (SapiException se) {
+            Log.error(TAG_LOG, "Cannot update profile", se);
+            SyncException syncExc;
+            if (SapiException.NO_CONNECTION.equals(se.getCode()) ||
+                SapiException.HTTP_400.equals(se.getCode()))
+            {
+                // Network error
+                syncExc = new SyncException(SyncException.CONN_NOT_FOUND, se.toString());
+            } else {
+                syncExc = new SyncException(SyncException.CLIENT_ERROR, se.toString());
+            }
+            throw syncExc;
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Config sync failed ", e);            
+            SyncException se = new SyncException(SyncException.CLIENT_ERROR, e.toString());
+            throw se;
+        }
+    }
+
+    private Vector filterNonAllowedSources(Vector sources) {
+        for(int i=sources.size() - 1;i>=0;--i) {
+            AppSyncSource appSource = (AppSyncSource)sources.elementAt(i);
+            if (!appSource.getConfig().getAllowed()) {
+                sources.removeElementAt(i);
+            }
+        }
+        return sources;
+    }
+
+
+
+
 }

@@ -189,7 +189,8 @@ public class AccountScreenController extends SynchronizationController {
                 return;
             }
 
-            if (customization.getCheckCredentialsViaConfigSync()) {
+            // If user profiles are not supported, then we login via config sync
+            if (!customization.getUserProfileSupported()) {
                 // Now we must perform a sync of the configuration to authenticate and
                 // verify the credentials
                 configAppSource = appSyncSourceManager.getSource(
@@ -510,11 +511,8 @@ public class AccountScreenController extends SynchronizationController {
                 sourceStarted(configAppSource);
 
                 configuration.setTempLogLevel(Log.TRACE);
-
-                new ProfileUpdateHelper(controller).updateProfile();
-
+                new ProfileUpdateHelper(appSyncSourceManager, configuration).updateProfile();
                 sourceEnded(configAppSource);
-
                 // TODO FIXME: handle errors properly
             } catch (SapiException se) {
                 Log.error(TAG_LOG, "SapiException during login", se);
