@@ -509,11 +509,9 @@ public class AccountScreenController extends SynchronizationController {
                 }
 
                 sourceStarted(configAppSource);
-
                 configuration.setTempLogLevel(Log.TRACE);
                 new ProfileUpdateHelper(appSyncSourceManager, configuration).updateProfile();
                 sourceEnded(configAppSource);
-                // TODO FIXME: handle errors properly
             } catch (SapiException se) {
                 Log.error(TAG_LOG, "SapiException during login", se);
                 SyncException syncExc;
