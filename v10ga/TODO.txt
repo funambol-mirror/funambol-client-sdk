@@ -1,0 +1,24 @@
+API TODO LIST
+-------------
+
+1) Features SyncML:
+    1 Handle status of items (if an item was sent successful don't send it again)
+    2 Suspend/resume 
+
+2) Interoperability/portability:
+    1 64 bits support
+    1 char / wchar use.
+        2 remove wchar (70% done...)
+
+3) API interface:
+    2 VOCL support for vCard 3.0 and iCal 2.1... 
+
+4) Improvement
+    1 Handle dirty flag for config (speedup devices)
+    1 Memory handling:
+        memory leaks
+        reduce buffer copies (to reduce footprint for small devices)
+    2 Make the SyncSourceReport owned by the SyncSource and copied to the
+      SyncReport at the end.
+
+
