@@ -500,6 +500,7 @@ public abstract class SignupScreenController extends AccountScreenController {
                 conn = ConnectionManager.getInstance().openHttpConnection(
                         captchaUrl, "wrapper");
                 conn.setRequestMethod(HttpConnectionAdapter.GET);
+                conn.execute(null, -1);
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Response is: " + conn.getResponseCode());
                 }
