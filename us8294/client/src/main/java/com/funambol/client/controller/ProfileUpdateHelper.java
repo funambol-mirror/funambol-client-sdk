@@ -35,29 +35,39 @@ public class ProfileUpdateHelper {
         password = configuration.getPassword();
     }
         
-    public void updateProfile() throws JSONException {        
+    public void updateProfile() throws JSONException {
         String baseUrl = StringUtil.extractAddressFromUrl(serverUri);
         SapiSyncHandler sapiHandler = new SapiSyncHandler(baseUrl, username, password);
 
-        // TODO FIXME: use the real sapi instead of the mocked one
+        long now = System.currentTimeMillis();
         JSONObject response = sapiHandler.loginAndGetServerInfo();
-        //JSONObject response = SapiLoginMockData.getProfileInformation(baseUrl, username, password);
-
         if (!response.has("data")) {
             // This server does not have the new login API. For backward
             // compatibility we condider all sources allowed
             return;
+        }
+
+        // If the expire date has already expired, then this info is no longer
+        // valid, and we must fall to the default profile
+        long deltaTime = 0;
+        if (response.has("responsetime")) {
+            long responseTime = response.getLong("responsetime");
+            // Compute the delta time between server and client
+            deltaTime = responseTime - now;
         }
         
         JSONObject data = response.getJSONObject("data");
         JSONObject details = data.getJSONObject("details");
         if (details.has("expiretime")) {
             long expireDate = details.getLong("expiretime");
+            // Adjust the expireDate
+            expireDate -= deltaTime;
             configuration.setProfileExpireDate(expireDate);
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Found a new profile expire date set to " + expireDate);
             }
         }
+
         JSONArray remoteSources = details.getJSONArray("sources");
 
         // Analyse the server response and check what's

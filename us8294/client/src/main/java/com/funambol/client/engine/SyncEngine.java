@@ -394,6 +394,7 @@ public class SyncEngine implements SyncSchedulerListener {
             }
 
             Vector failedSources = new Vector();
+            boolean firstSource = true;
 
             for (int x = 0; x < appSources.size(); x++) {
 
@@ -436,7 +437,7 @@ public class SyncEngine implements SyncSchedulerListener {
 
                     // Before synchronizing, we may need to update the user profile
                     // we do it only once per sync session
-                    if (x == 0 && customization.getUserProfileSupported()) {
+                    if (firstSource && customization.getUserProfileSupported()) {
                         updateProfile(appSources);
                     }
 
@@ -520,13 +521,15 @@ public class SyncEngine implements SyncSchedulerListener {
                     // credentials)
                     if (se.getCode() == SyncException.AUTH_ERROR ||
                         se.getCode() == SyncException.FORBIDDEN_ERROR ||
-                        se.getCode() == SyncException.CANCELLED) {
+                        se.getCode() == SyncException.CANCELLED ||
+                        se.getCode() == SyncException.PAYMENT_REQUIRED) {
 
                         break;
                     }
                 } finally {
                     source = null;
                     currentSource = null;
+                    firstSource = false;
                 }
             }
 

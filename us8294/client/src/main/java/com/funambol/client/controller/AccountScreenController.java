@@ -189,63 +189,27 @@ public class AccountScreenController extends SynchronizationController {
                 return;
             }
 
-            // If user profiles are not supported, then we login via config sync
-            if (!customization.getUserProfileSupported()) {
-                // Now we must perform a sync of the configuration to authenticate and
-                // verify the credentials
-                configAppSource = appSyncSourceManager.getSource(
-                        AppSyncSourceManager.CONFIG_ID);
-                if (configAppSource == null) {
-                    Log.error(TAG_LOG, "No suitable ConfigSyncSource, cannot verify credentials");
-                } else {
-                    // Disable the save command
-                    failed = false;
-                    sourceStarted = false;
-                    exp = null;
-                    screen.disableSave();
-
-                    Vector sources = new Vector();
-                    sources.addElement(configAppSource);
-
-                    // We want to perform this sync at log level debug because if
-                    // this is the first sync the user has no means to set a log
-                    // level and we may need to check what's going on in case of
-                    // errors
-                    try {
-                        configuration.setTempLogLevel(Log.TRACE);
-                        controller.reapplyMiscConfiguration();
-                        synchronize(SynchronizationController.MANUAL, sources);
-                    } catch (Exception e) {
-                        Log.error(TAG_LOG, "Config sync failed ", e);
-                        failed = true;
-                        syncEnded();
-                    } finally {
-                        // Restore the original log level
-                        configuration.restoreLogLevel();
-                        controller.reapplyMiscConfiguration();
-                    }
+            // We always authenticate via SAPI. If the server does not support
+            // SAPI, we let the user login directly
+            boolean prompt = false;
+            if (customization.getShowNetworkUsageWarningForProfiles()) {
+                long profileExpireDate = configuration.getProfileExpireDate();
+                // If this is the very first time, or the expire time has
+                // expired, or the profile requires the warning, then we
+                // show it
+                if (   profileExpireDate == -1 
+                    || profileExpireDate > System.currentTimeMillis()
+                    || configuration.getProfileNetworkUsageWarning())
+                {
+                    ContinueSyncAction csa = new ContinueSyncAction(serverUri, username, password); 
+                    NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
+                    nuwc.askUserNetworkUsageConfirmation();
+                    prompt = true;
                 }
-            } else {
-                boolean prompt = false;
-                if (customization.getShowNetworkUsageWarningForProfiles()) {
-                    long profileExpireDate = configuration.getProfileExpireDate();
-                    // If this is the very first time, or the expire time has
-                    // expired, or the profile requires the warning, then we
-                    // show it
-                    if (   profileExpireDate == -1 
-                        || profileExpireDate > System.currentTimeMillis()
-                        || configuration.getProfileNetworkUsageWarning())
-                    {
-                        ContinueSyncAction csa = new ContinueSyncAction(serverUri, username, password); 
-                        NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
-                        nuwc.askUserNetworkUsageConfirmation();
-                        prompt = true;
-                    }
-                }
+            }
 
-                if (!prompt) {
-                    loginViaSapi(serverUri, username, password);
-                }
+            if (!prompt) {
+                loginViaSapi(serverUri, username, password);
             }
         } else {
             // There was no need to authenticate
@@ -523,6 +487,8 @@ public class AccountScreenController extends SynchronizationController {
                            SapiException.HTTP_400.equals(se.getCode()))
                 {
                     syncExc = new SyncException(SyncException.SERVER_CONNECTION_REQUEST_ERROR, se.toString());
+                } else if (SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED.equals(se.getCode())) {
+                    syncExc = new SyncException(SyncException.NOT_FOUND_URI_ERROR, se.toString());
                 } else {
                     syncExc = new SyncException(SyncException.CLIENT_ERROR, se.toString());
                 }
