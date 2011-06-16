@@ -392,26 +392,6 @@ public class Controller extends BasicController {
         //}
     }
 
-    public boolean checkForUpdate() {
-
-        if (customization.checkForUpdates()) {
-            // TODO FIXME: MARCO
-            /*
-            if (client.getUpdater().checkUpdate()) {
-                getDialogController().showMessage(
-                        Localization.getLanguage("message_update_required"));
-                toForeground();
-                return true;
-            } else if (client.getUpdater().isUpdate()) {
-                getDialogController().showMessage(
-                        Localization.getLanguage("message_update_available"));
-                toForeground();
-            }
-            */
-        }
-        return false;
-    }
-
     /**
      * This method checks if a source must be displayed or not.
      */

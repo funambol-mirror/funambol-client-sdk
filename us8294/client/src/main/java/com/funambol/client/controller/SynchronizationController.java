@@ -373,15 +373,7 @@ public class SynchronizationController extends BasicSynchronizationController
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "syncStarted");
         }
-        if (customization.checkForUpdates()) {
-            boolean isRequired = controller.checkForUpdate();
-            if (isRequired) {
-                return false;
-            }
-        }
-
         return true;
-
     }
 
     public void endSync(Vector sources, boolean hadErrors) {

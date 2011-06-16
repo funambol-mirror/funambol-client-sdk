@@ -156,7 +156,6 @@ public interface Customization {
     public boolean  getUseWbxml();
     public boolean  getContactsImportEnabled();
     public int      getDefaultAuthType();
-    public boolean  checkForUpdates();
     public boolean  enableUpdaterManager();
     public long     getCheckUpdtIntervalDefault();
     public long     getReminderUpdtIntervalDefault();
