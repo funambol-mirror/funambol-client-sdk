@@ -45,6 +45,7 @@ import com.funambol.client.ui.HomeScreen;
 import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.Bitmap;
 import com.funambol.client.ui.DisplayManager;
+import com.funambol.syncml.protocol.SyncType;
 import com.funambol.syncml.spds.SyncStatus;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncListener;
@@ -61,7 +62,7 @@ import com.funambol.platform.NetworkStatus;
  */
 public class HomeScreenController extends SynchronizationController {
 
-    private static final String TAG_LOG = "HomeScreenController";
+    private static final String  TAG_LOG= "HomeScreenController";
 
     protected HomeScreen         homeScreen;
 
@@ -92,25 +93,6 @@ public class HomeScreenController extends SynchronizationController {
      */
     protected boolean dontDisplayServerQuotaWarning = false;
     private boolean homeScreenRegisteredAndInForeground = false;
-
-    private class ContinueSyncAction implements Runnable {
-        private AppSyncSource appSource;
-        
-        public ContinueSyncAction() {
-            this.appSource = null;
-        }
-
-        public ContinueSyncAction(AppSyncSource appSource) {
-            this.appSource = appSource;
-        }
-        
-        public void run() {
-            if (appSource == null)
-                syncAllSources(MANUAL);
-            else
-                syncSource(MANUAL, appSource);
-        }
-    }
 
     public HomeScreenController(Controller controller, HomeScreen homeScreen,NetworkStatus networkStatus) {
         super(controller, homeScreen,networkStatus);
@@ -295,17 +277,7 @@ public class HomeScreenController extends SynchronizationController {
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
         if (source.isWorking() && source.getConfig().getEnabled() && source.getConfig().getAllowed()) {
-            long profileExpireDate = configuration.getProfileExpireDate();
-            if (profileExpireDate != -1 
-                && profileExpireDate < System.currentTimeMillis() 
-                || configuration.getProfileNetworkUsageWarning())
-            {
-                ContinueSyncAction csa = new ContinueSyncAction(source); 
-                NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
-                nuwc.askUserNetworkUsageConfirmation();
-            } else {
-                syncSource(MANUAL, source);
-            }
+            syncSource(MANUAL, source);
         } else {
             Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
         }
@@ -456,17 +428,7 @@ public class HomeScreenController extends SynchronizationController {
         if (selectedIndex != -1) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(selectedIndex);
             
-            long profileExpireDate = configuration.getProfileExpireDate();
-            if (profileExpireDate != -1 
-                && profileExpireDate < System.currentTimeMillis() 
-                || configuration.getProfileNetworkUsageWarning())
-            {
-                ContinueSyncAction csa = new ContinueSyncAction(appSource); 
-                NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
-                nuwc.askUserNetworkUsageConfirmation();
-            } else {
-                syncSource(MANUAL, appSource);
-            }
+            syncSource(MANUAL, appSource);
         }
     }
 
@@ -485,18 +447,7 @@ public class HomeScreenController extends SynchronizationController {
                 }
             }
         } else {
-            long profileExpireDate = configuration.getProfileExpireDate();
-            if (profileExpireDate != -1 
-                && profileExpireDate < System.currentTimeMillis() 
-                || configuration.getProfileNetworkUsageWarning())
-            {
-                ContinueSyncAction csa = new ContinueSyncAction(); 
-                NetworkUsageWarningController nuwc = 
-                    new NetworkUsageWarningController(screen, controller, csa);
-                nuwc.askUserNetworkUsageConfirmation();
-            } else {
-                syncAllSources(MANUAL);
-            }
+            syncAllSources(MANUAL);
         }
     }
 
@@ -517,17 +468,7 @@ public class HomeScreenController extends SynchronizationController {
         } else {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(0);
             if (appSource.isWorking() && appSource.getConfig().getEnabled() && appSource.getConfig().getAllowed()) {
-                long profileExpireDate = configuration.getProfileExpireDate();
-                if (profileExpireDate != -1 
-                    && profileExpireDate < System.currentTimeMillis() 
-                    || configuration.getProfileNetworkUsageWarning())
-                {
-                    ContinueSyncAction csa = new ContinueSyncAction(appSource); 
-                    NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, csa);
-                    nuwc.askUserNetworkUsageConfirmation();
-                } else {
-                    syncSource(MANUAL, appSource);
-                }
+                syncSource(MANUAL, appSource);
             }
         }
     }
@@ -558,7 +499,7 @@ public class HomeScreenController extends SynchronizationController {
      * @param syncSources is a vector of AppSyncSource to be synchronized
      *
      */
-    public synchronized void synchronize(String syncType, Vector syncSources) {              
+    public synchronized void synchronize(String syncType, Vector syncSources) {
         // For manual sync, always show alert message for storage/server
         // quota limit. For other sync modes, doesn't display message if
         // the previous sync ended with the same error.
@@ -585,20 +526,6 @@ public class HomeScreenController extends SynchronizationController {
         }
         
         super.synchronize(syncType, syncSources);
-    }
-    
-    private Vector getAllowedSources() {
-        Enumeration sources = appSyncSourceManager.getRegisteredSources();
-        Vector allowedSources = new Vector();
-        while (sources.hasMoreElements()) {
-            AppSyncSource appSource = (AppSyncSource)sources.nextElement();
-            
-            if (appSource.getConfig().getAllowed()) {
-                allowedSources.addElement(appSource);
-            }
-        }
-        
-        return allowedSources;
     }
 
     public void cancelMenuSelected() {

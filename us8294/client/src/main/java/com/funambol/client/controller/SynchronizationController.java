@@ -53,7 +53,6 @@ import com.funambol.syncml.protocol.SyncML;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SourceConfig;
-import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.platform.NetworkStatus;
 
@@ -458,6 +457,8 @@ public class SynchronizationController extends BasicSynchronizationController
             logConnectivityError = true;
         } else if (code == SyncException.CONNECTION_BLOCKED_BY_USER) {
             showTCPAlert = true;
+        } else { //code == SyncException.PAYMENT_REQUIRED
+            super.sourceFailed(appSource, e);
         }
     }
 
