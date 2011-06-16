@@ -99,31 +99,26 @@ public class SynchronizationController extends BasicSynchronizationController
 
     private Poller         retryPoller = null;
 
-    protected Screen       screen;
-
     private final AppSyncRequest appSyncRequestArr[] = new AppSyncRequest[1];
     private RequestHandler reqHandler;
 
     private int            RETRY_POLL_TIME = 1;
 
-    private FirstSyncRequest pendingFirstSyncQuestion = null;
-
     SynchronizationController() {
+        super(null,null,null,null);
     }
 
     SynchronizationController(Controller controller, Screen screen, NetworkStatus networkStatus) {
+
+        super(controller, controller.getConfiguration(), controller.getAppSyncSourceManager(), screen);
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Initializing synchronization controller");
         }
 
-        this.controller = controller;
-        this.screen = screen;
         this.networkStatus = networkStatus;
         
         localization = controller.getLocalization();
-        appSyncSourceManager = controller.getAppSyncSourceManager();
         customization = controller.getCustomization();
-        configuration = controller.getConfiguration();
 
         initSyncScheduler();
     }
@@ -136,18 +131,16 @@ public class SynchronizationController extends BasicSynchronizationController
             AppSyncSourceManager appSyncSourceManager, Screen screen,
             NetworkStatus networkStatus) {
         
+        super(controller, configuration, appSyncSourceManager, screen);
+
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Initializing synchronization controller");
         }
 
-        this.controller = controller;
-        this.screen = screen;
         this.networkStatus = networkStatus;
 
         this.localization = localization;
-        this.appSyncSourceManager = appSyncSourceManager;
         this.customization = customization;
-        this.configuration = configuration;
 
         initSyncScheduler();
     }
@@ -351,7 +344,14 @@ public class SynchronizationController extends BasicSynchronizationController
         }
     }
 
-    public synchronized void
+
+    protected void continueSyncAfterNetworkUsage(String syncType, Vector syncSources,
+                                       int delay, boolean fromOutside)
+    {
+        // TODO FIXME: this method is currently not used
+    }
+
+    protected synchronized void
     continueSynchronizationAfterBandwithSaverDialog(String syncType,
                                                     Vector syncSources,
                                                     boolean refresh,
@@ -657,19 +657,6 @@ public class SynchronizationController extends BasicSynchronizationController
             }
         }
     }
-
-    private class FirstSyncRequest {
-        public AppSyncSource dialogDependentSources[];
-        public String syncType;
-        public Vector filteredSources;
-        public boolean refresh;
-        public int direction;
-        public int delay;
-        public boolean fromOutside;
-        public int numSources;
-        public int sourceIndex;
-    }
-
 
     private void refreshClientData(AppSyncSource appSource, UISyncSourceController controller) {
         // TODO FIXME: MARCO (delete items and notify the UI)

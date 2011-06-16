@@ -36,13 +36,22 @@
 package com.funambol.client.controller;
 
 import java.util.Vector;
+import java.util.Enumeration;
 
 import com.funambol.client.configuration.Configuration;
+import com.funambol.client.controller.Controller;
 import com.funambol.client.engine.SyncEngineListener;
 import com.funambol.client.source.AppSyncSource;
+import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.AppSyncSourceConfig;
+import com.funambol.client.ui.Screen;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncException;
+import com.funambol.sapisync.sapi.SapiHandler;
+import com.funambol.org.json.me.JSONObject;
+import com.funambol.org.json.me.JSONArray;
+import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
 /**
@@ -59,11 +68,22 @@ public abstract class BasicSynchronizationController implements SyncEngineListen
     public static final String PUSH      = "push";
 
     protected Configuration configuration;
+    protected Screen        screen;
+    protected AppSyncSourceManager appSyncSourceManager;
+    private   Controller    controller;
 
     protected NetworkStatus networkStatus;
     
     private Vector localStorageFullSources = new Vector();
     private Vector serverQuotaFullSources = new Vector();
+
+    public BasicSynchronizationController(Controller controller, Configuration configuration, 
+                                          AppSyncSourceManager appSyncSourceManager, Screen screen) {
+        this.controller    = controller;
+        this.configuration = configuration;
+        this.appSyncSourceManager = appSyncSourceManager;
+        this.screen        = screen;
+    }
 
     /**
      * Displays warnings in the proper form if the outcome of the latest sync requires so.
@@ -198,4 +218,99 @@ public abstract class BasicSynchronizationController implements SyncEngineListen
         }
         return syncSources;
     }
+
+    public void sourceFailed(AppSyncSource appSource, SyncException se) {
+
+        int code = se.getCode();
+
+        if (code == SyncException.PAYMENT_REQUIRED) {
+            // In order to sync the user shall accept a payment
+            // TODO FIXME: we need the list of sources to be initially
+            // synchronized
+            Vector nextSources = new Vector();
+            nextSources.addElement(appSource);
+            askForPayment(nextSources);
+        }
+    }
+
+    protected void askForPayment(Vector nextSources) {
+
+        // On BB dialogs are blocking, here we really need to create a thread so
+        // that the current sync terminates and a new one is restarted afterward
+        // (otherwise events get messed up)
+        // Creating the thread on all platforms is a safe solution.
+        PaymentThread pt = new PaymentThread(nextSources);
+        pt.start();
+    }
+
+    protected class PaymentYesAction implements Runnable {
+        private Vector syncSources;
+        private String syncType;
+
+        public PaymentYesAction(Vector syncSources, String syncType) {
+            this.syncSources = syncSources;
+            this.syncType = syncType;
+        }
+
+        public void run() {
+            String sapiUrl = StringUtil.extractAddressFromUrl(configuration.getSyncUrl());
+            SapiHandler sapiHandler = new SapiHandler(sapiUrl, configuration.getUsername(),
+                                                      configuration.getPassword());
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "User accepted payment request, continue sync");
+            }
+ 
+            try {
+                JSONObject req = new JSONObject();
+                JSONArray  sources = new JSONArray();
+                Enumeration workingSources = appSyncSourceManager.getWorkingSources();
+                while(workingSources.hasMoreElements()) {
+                    AppSyncSource appSource = (AppSyncSource)workingSources.nextElement();
+                    JSONObject restoreSource = new JSONObject();
+                    restoreSource.put("service","restore");
+                    restoreSource.put("resource",appSource.getSyncSource().getConfig().getRemoteUri());
+                    sources.put(restoreSource);
+                }
+                req.put("data", sources);
+
+                sapiHandler.query("system/payment","buy",null,null,req);
+
+                // Restart the sync for the given sources
+                continueSyncAfterNetworkUsage(syncType, syncSources, 0, false);
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot perform payment", e);
+                // TODO FIXME: show an error to the user
+            }
+        }
+    }
+
+    protected class PaymentNoAction implements Runnable {
+        public void run() {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "User did not accept payment request, stop sync");
+            }
+        }
+    }
+
+    protected class PaymentThread extends Thread {
+        private Vector sources;
+
+        public PaymentThread(Vector sources) {
+            this.sources = sources;
+        }
+
+        public void run() {
+            DialogController dc = controller.getDialogController();
+            String syncType = com.funambol.client.controller.SynchronizationController.MANUAL;
+            PaymentYesAction yesAction = new PaymentYesAction(sources, syncType);
+            PaymentNoAction  noAction  = new PaymentNoAction();
+            // TODO FIXME: use a localized message
+            dc.askYesNoQuestion(screen, "A payment is required", false, yesAction, noAction);
+        }
+    }
+
+    protected abstract void continueSyncAfterNetworkUsage(String syncType, Vector syncSources,
+                                                          int delay, boolean fromOutside);
+
+
 }
