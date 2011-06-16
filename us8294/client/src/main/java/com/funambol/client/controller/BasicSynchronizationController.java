@@ -39,11 +39,16 @@ import java.util.Vector;
 import java.util.Enumeration;
 
 import com.funambol.client.configuration.Configuration;
+import com.funambol.client.localization.Localization;
+import com.funambol.client.customization.Customization;
 import com.funambol.client.controller.Controller;
+import com.funambol.client.engine.SyncEngine;
 import com.funambol.client.engine.SyncEngineListener;
+import com.funambol.client.engine.AppSyncRequest;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.AppSyncSourceConfig;
+import com.funambol.client.push.SyncScheduler;
 import com.funambol.client.ui.Screen;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.sync.SyncListener;
@@ -70,20 +75,78 @@ public abstract class BasicSynchronizationController implements SyncEngineListen
     protected Configuration configuration;
     protected Screen        screen;
     protected AppSyncSourceManager appSyncSourceManager;
-    private   Controller    controller;
+    protected Controller    controller;
+    protected Customization customization;
+    protected Localization  localization;
+    protected SyncEngine    engine;
+    protected RequestHandler reqHandler;
+    protected final AppSyncRequest appSyncRequestArr[] = new AppSyncRequest[1];
+    protected SyncScheduler  syncScheduler;
+
+    protected int   RETRY_POLL_TIME = 1;
 
     protected NetworkStatus networkStatus;
     
     private Vector localStorageFullSources = new Vector();
     private Vector serverQuotaFullSources = new Vector();
 
-    public BasicSynchronizationController(Controller controller, Configuration configuration, 
-                                          AppSyncSourceManager appSyncSourceManager, Screen screen) {
+    public BasicSynchronizationController(Controller controller, Screen screen, NetworkStatus networkStatus) {
+        this.controller = controller;
+        this.screen     = screen;
+        this.networkStatus = networkStatus;
+
+        configuration = controller.getConfiguration();
+        appSyncSourceManager = controller.getAppSyncSourceManager();
+        localization = controller.getLocalization();
+        customization = controller.getCustomization();
+
+        initSyncScheduler();
+    }
+
+    public BasicSynchronizationController(Controller controller, Customization customization,
+                                          Configuration configuration, Localization localization,
+                                          AppSyncSourceManager appSyncSourceManager, Screen screen,
+                                          NetworkStatus networkStatus) {
         this.controller    = controller;
+        this.customization = customization;
         this.configuration = configuration;
+        this.localization  = localization;
         this.appSyncSourceManager = appSyncSourceManager;
         this.screen        = screen;
+        this.networkStatus = networkStatus;
+
+        initSyncScheduler();
     }
+
+    /**
+     * Triggers a synchronization for the given syncSources. The caller can
+     * specify its type (manual, scheduled, push) to change the error handling
+     * behavior
+     *
+     * @param syncType the caller type (SYNC_TYPE_MANUAL, SYNC_TYPE_SCHEDULED)
+     * @param syncSources is a vector of AppSyncSource to be synchronized
+     *
+     */
+    public synchronized void synchronize(String syncType, Vector syncSources) {
+        synchronize(syncType, syncSources, 0);
+    }
+
+    /**
+     * Schedules a synchronization for the given syncSources. The sync is
+     * scheduled in "delay" milliseconds from now. The caller can
+     * specify its type (manual, scheduled, push) to change the error handling
+     * behavior
+     *
+     * @param syncType the caller type (SYNC_TYPE_MANUAL, SYNC_TYPE_SCHEDULED)
+     * @param syncSources is a vector of AppSyncSource to be synced
+     * @param delay the interval at which the sync shall be performed (relative
+     *              to now)
+     *
+     */
+    public synchronized void synchronize(String syncType, Vector syncSources, int delay) {
+        synchronize(syncType, syncSources, delay, false);
+    }
+
 
     /**
      * Displays warnings in the proper form if the outcome of the latest sync requires so.
@@ -144,7 +207,10 @@ public abstract class BasicSynchronizationController implements SyncEngineListen
         serverQuotaFullSources.removeAllElements();
     }
 
-    protected abstract BasicController getBasicController();
+    protected SyncEngine createSyncEngine() {
+        return new SyncEngine(customization, configuration, appSyncSourceManager, null);
+    }
+
     
     /**
      * Applies the Bandwidth Saver by filtering out some sources or by populating
@@ -233,6 +299,42 @@ public abstract class BasicSynchronizationController implements SyncEngineListen
         }
     }
 
+    protected void initSyncScheduler() {
+        engine = createSyncEngine();
+        syncScheduler = new SyncScheduler(engine);
+        // The request handler is a daemon serving external requests
+        reqHandler = new RequestHandler();
+        reqHandler.start();
+    }
+
+
+    /**
+     * Returns true iff a synchronization is in progress
+     */
+    public boolean isSynchronizing() {
+        return engine.isSynchronizing();
+    }
+
+    /**
+     * Returns the sync source currently being synchronized. If a sync is not
+     * in progress, then null is returned. Please note that this method is not
+     * completely equivalent to isSynchronizing. At the beginning of a sync,
+     * isSynchronizing returns true, but getCurrentSource may return null until
+     * the source is prepared for the synchronization.
+     */
+    public AppSyncSource getCurrentSource() {
+        return engine.getCurrentSource();
+    }
+
+    /**
+     * @return the current <code>SyncEngine</code> instance
+     */
+    public SyncEngine getSyncEngine() {
+        return engine;
+    }
+
+
+
     protected void askForPayment(Vector nextSources) {
 
         // On BB dialogs are blocking, here we really need to create a thread so
@@ -309,8 +411,38 @@ public abstract class BasicSynchronizationController implements SyncEngineListen
         }
     }
 
+    private class RequestHandler extends Thread {
+
+        private boolean stop = false;
+
+        public RequestHandler() {
+        }
+
+        public void run() {
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Starting request handler");
+            }
+            while (!stop) {
+                try {
+                    synchronized (appSyncRequestArr) {
+                        appSyncRequestArr.wait();
+                        syncScheduler.addRequest(appSyncRequestArr[0]);
+                    }
+                } catch (Exception e) {
+                    // All handled exceptions are trapped below, this is just a
+                    // safety net for runtime exception because we don't want
+                    // this thread to die.
+                    Log.error(TAG_LOG, "Exception while performing a programmed sync " + e.toString());
+                }
+            }
+        }
+    }
+
+
     protected abstract void continueSyncAfterNetworkUsage(String syncType, Vector syncSources,
                                                           int delay, boolean fromOutside);
 
+    protected abstract BasicController getBasicController();
 
+    public abstract void synchronize(String syncType, Vector sources, int dealy, boolean fromOutside) throws SyncException;
 }

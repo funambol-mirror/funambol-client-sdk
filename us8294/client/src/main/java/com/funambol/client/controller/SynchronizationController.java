@@ -40,7 +40,6 @@ import java.util.Enumeration;
 
 import com.funambol.client.controller.DialogController;
 import com.funambol.client.configuration.Configuration;
-import com.funambol.client.engine.SyncEngine;
 import com.funambol.client.engine.Poller;
 import com.funambol.client.engine.SyncEngineListener;
 import com.funambol.client.engine.AppSyncRequest;
@@ -50,7 +49,6 @@ import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.customization.Customization;
 import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.Screen;
-import com.funambol.client.push.SyncScheduler;
 import com.funambol.syncml.protocol.SyncML;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
@@ -58,7 +56,6 @@ import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.platform.NetworkStatus;
-import com.funambol.sapisync.source.JSONSyncSource;
 
 /**
  * This class provides a basic controller that can be used by any other
@@ -75,14 +72,6 @@ public class SynchronizationController extends BasicSynchronizationController
     public static final int REFRESH_FROM_SERVER = 0;
     public static final int REFRESH_TO_SERVER   = 1;
 
-    protected Controller controller;
-    
-    protected Customization customization;
-
-    protected Localization localization;
-
-    protected SyncEngine engine;
-
     protected boolean    doCancel        = false;
 
     protected AppSyncSource currentSource = null;
@@ -91,34 +80,16 @@ public class SynchronizationController extends BasicSynchronizationController
 
     protected boolean    logConnectivityError;
 
-    private SyncScheduler  syncScheduler;
-
     private int            scheduledAttempt = 0;
 
     private Poller         retryPoller = null;
 
-    private final AppSyncRequest appSyncRequestArr[] = new AppSyncRequest[1];
-    private RequestHandler reqHandler;
-
-    private int            RETRY_POLL_TIME = 1;
-
     SynchronizationController() {
-        super(null,null,null,null);
+        super(null,null,null,null,null,null,null);
     }
 
     SynchronizationController(Controller controller, Screen screen, NetworkStatus networkStatus) {
-
-        super(controller, controller.getConfiguration(), controller.getAppSyncSourceManager(), screen);
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Initializing synchronization controller");
-        }
-
-        this.networkStatus = networkStatus;
-        
-        localization = controller.getLocalization();
-        customization = controller.getCustomization();
-
-        initSyncScheduler();
+        super(controller, screen, networkStatus);
     }
 
     /**
@@ -129,54 +100,9 @@ public class SynchronizationController extends BasicSynchronizationController
             AppSyncSourceManager appSyncSourceManager, Screen screen,
             NetworkStatus networkStatus) {
         
-        super(controller, configuration, appSyncSourceManager, screen);
-
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Initializing synchronization controller");
-        }
-
-        this.networkStatus = networkStatus;
-
-        this.localization = localization;
-        this.customization = customization;
-
-        initSyncScheduler();
+        super(controller, customization, configuration, localization, appSyncSourceManager, screen, networkStatus);
     }
     
-    protected void initSyncScheduler() {
-        engine = createSyncEngine();
-        syncScheduler = new SyncScheduler(engine);
-        // The request handler is a daemon serving external requests
-        reqHandler = new RequestHandler();
-        reqHandler.start();
-    }
-
-
-    /**
-     * Returns true iff a synchronization is in progress
-     */
-    public boolean isSynchronizing() {
-        return engine.isSynchronizing();
-    }
-
-    /**
-     * Returns the sync source currently being synchronized. If a sync is not
-     * in progress, then null is returned. Please note that this method is not
-     * completely equivalent to isSynchronizing. At the beginning of a sync,
-     * isSynchronizing returns true, but getCurrentSource may return null until
-     * the source is prepared for the synchronization.
-     */
-    public AppSyncSource getCurrentSource() {
-        return engine.getCurrentSource();
-    }
-
-    /**
-     * @return the current <code>SyncEngine</code> instance
-     */
-    public SyncEngine getSyncEngine() {
-        return engine;
-    }
-
     /**
      * Try to cancel the current sync. This works for cooperative sources that
      * check the synchronizationController status.
@@ -240,34 +166,6 @@ public class SynchronizationController extends BasicSynchronizationController
         
     }
 
-    /**
-     * Triggers a synchronization for the given syncSources. The caller can
-     * specify its type (manual, scheduled, push) to change the error handling
-     * behavior
-     *
-     * @param syncType the caller type (SYNC_TYPE_MANUAL, SYNC_TYPE_SCHEDULED)
-     * @param syncSources is a vector of AppSyncSource to be synchronized
-     *
-     */
-    public synchronized void synchronize(String syncType, Vector syncSources) {
-        synchronize(syncType, syncSources, 0);
-    }
-
-    /**
-     * Schedules a synchronization for the given syncSources. The sync is
-     * scheduled in "delay" milliseconds from now. The caller can
-     * specify its type (manual, scheduled, push) to change the error handling
-     * behavior
-     *
-     * @param syncType the caller type (SYNC_TYPE_MANUAL, SYNC_TYPE_SCHEDULED)
-     * @param syncSources is a vector of AppSyncSource to be synced
-     * @param delay the interval at which the sync shall be performed (relative
-     *              to now)
-     *
-     */
-    public synchronized void synchronize(String syncType, Vector syncSources, int delay) {
-        synchronize(syncType, syncSources, delay, false);
-    }
 
     /**
      * Schedules a synchronization for the given syncSources. The sync is
@@ -593,10 +491,6 @@ public class SynchronizationController extends BasicSynchronizationController
         this.screen = screen;
     }
 
-    protected SyncEngine createSyncEngine() {
-        return new SyncEngine(customization, configuration, appSyncSourceManager, null);
-    }
-
     private void saveSourceConfig(AppSyncSource appSource) {
         appSource.getConfig().saveSourceSyncConfig();
         appSource.getConfig().commit();
@@ -629,32 +523,6 @@ public class SynchronizationController extends BasicSynchronizationController
         return getController();
     }
 
-    private class RequestHandler extends Thread {
-
-        private boolean stop = false;
-
-        public RequestHandler() {
-        }
-
-        public void run() {
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "Starting request handler");
-            }
-            while (!stop) {
-                try {
-                    synchronized (appSyncRequestArr) {
-                        appSyncRequestArr.wait();
-                        syncScheduler.addRequest(appSyncRequestArr[0]);
-                    }
-                } catch (Exception e) {
-                    // All handled exceptions are trapped below, this is just a
-                    // safety net for runtime exception because we don't want
-                    // this thread to die.
-                    Log.error(TAG_LOG, "Exception while performing a programmed sync " + e.toString());
-                }
-            }
-        }
-    }
 
     private void refreshClientData(AppSyncSource appSource, UISyncSourceController controller) {
         // TODO FIXME: MARCO (delete items and notify the UI)
@@ -712,6 +580,7 @@ public class SynchronizationController extends BasicSynchronizationController
         */
     }
 
+    /*
     private String getDataTag(SyncSource src) {
         String dataTag = null;
         if (src instanceof JSONSyncSource) {
@@ -724,4 +593,5 @@ public class SynchronizationController extends BasicSynchronizationController
         }
         return dataTag;
     }
+    */
 }

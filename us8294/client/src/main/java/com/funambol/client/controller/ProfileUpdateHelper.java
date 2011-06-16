@@ -57,6 +57,11 @@ public class ProfileUpdateHelper {
         }
         
         JSONObject data = response.getJSONObject("data");
+        if (!data.has("details")) {
+            // This is an old version of the server. No profile support
+            // available, nothing to do in this case
+            return;
+        }
         JSONObject details = data.getJSONObject("details");
         if (details.has("expiretime")) {
             long expireDate = details.getLong("expiretime");
