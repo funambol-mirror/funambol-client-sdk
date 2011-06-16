@@ -79,8 +79,6 @@ public class SynchronizationController extends BasicSynchronizationController
     
     protected Customization customization;
 
-    protected AppSyncSourceManager appSyncSourceManager;
-
     protected Localization localization;
 
     protected SyncEngine engine;
