@@ -368,9 +368,10 @@ public class Controller extends BasicController {
                 config.setActive(false);
             }
         } */
+
         // Update the home screen
         if(homeScreenController != null) {
-            homeScreenController.updateAvailableSources();
+            homeScreenController.computeVisibleItems();
         }
         
         // Update the configuration screen

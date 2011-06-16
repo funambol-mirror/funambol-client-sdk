@@ -45,21 +45,7 @@ public interface HomeScreen extends Screen {
 
     public void initialize(HomeScreenController controller);
 
-    public void setSelectedIndex(int index);
-
-    public void deselectIndex(int index);
-
     public void redraw();
-
-    public void addSyncAllButton(String text, Bitmap icon, Bitmap bg, Bitmap bgSel);
-
-    public void setSyncAllText(String text);
-
-    public void setSyncAllEnabled(boolean enabled);
-
-    public void setSyncAllSelected(boolean selected);
-
-    public void setSyncMenuText(String text);
 
     public void updateVisibleItems();
 
