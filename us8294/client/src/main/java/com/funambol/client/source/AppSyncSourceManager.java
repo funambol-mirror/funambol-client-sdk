@@ -200,7 +200,7 @@ public class AppSyncSourceManager {
         Vector result = new Vector();
         for(int i=0;i<sourcesList.size();++i) {
             AppSyncSource appSource = (AppSyncSource)sourcesList.elementAt(i);
-            if (appSource.isEnabled() && appSource.isWorking()) {
+            if (appSource.isEnabled() && appSource.isWorking() && appSource.getConfig().getAllowed()) {
                 result.addElement(appSource);
             }
         }
