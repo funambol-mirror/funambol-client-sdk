@@ -60,16 +60,16 @@ public class Controller extends BasicController {
     public static final int ADVANCED_SETTINGS_SCREEN_ID = 6;
     public static final int DEV_SETTINGS_SCREEN_ID = 7;
 
-    private DisplayManager displayManager = null;
+    protected DisplayManager displayManager = null;
 
-    private HomeScreenController             homeScreenController;
-    private SyncSettingsScreenController     syncSettingsScreenController;
-    private DevSettingsScreenController      devSettingsScreenController;
-    private AccountScreenController          loginScreenController;
-    private SignupScreenController           signupScreenController;
-    private AdvancedSettingsScreenController advancedSettingsScreenController;
-    private AboutScreenController            aboutScreenController;
-    protected DialogController               dialogController;
+    protected HomeScreenController             homeScreenController;
+    protected SyncSettingsScreenController     syncSettingsScreenController;
+    protected DevSettingsScreenController      devSettingsScreenController;
+    protected AccountScreenController          loginScreenController;
+    protected SignupScreenController           signupScreenController;
+    protected AdvancedSettingsScreenController advancedSettingsScreenController;
+    protected AboutScreenController            aboutScreenController;
+    protected DialogController                 dialogController;
 
     protected Customization customization = null;
 
