@@ -691,20 +691,6 @@ public class SynchronizationController implements SyncEngineListener {
         return willRetry;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     protected void askForPayment(Vector nextSources) {
 
         // On BB dialogs are blocking, here we really need to create a thread so
@@ -772,6 +758,7 @@ public class SynchronizationController implements SyncEngineListener {
 
         public PaymentThread(Vector sources, SyncRequest syncRequest) {
             this.sources = sources;
+            this.syncRequest = syncRequest;
         }
 
         public void run() {
