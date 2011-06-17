@@ -94,7 +94,7 @@ public class HomeScreenController extends SynchronizationController {
     protected boolean dontDisplayServerQuotaWarning = false;
     private boolean homeScreenRegisteredAndInForeground = false;
 
-    public HomeScreenController(Controller controller, HomeScreen homeScreen,NetworkStatus networkStatus) {
+    public HomeScreenController(Controller controller, HomeScreen homeScreen, NetworkStatus networkStatus) {
         super(controller, homeScreen,networkStatus);
         this.controller = controller;
         this.homeScreen = homeScreen;
@@ -208,24 +208,6 @@ public class HomeScreenController extends SynchronizationController {
         }
         super.syncEnded();
         
-        for(int i=0;i<items.size();++i) {
-            AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
-        
-            // To make sure the UI is properly updated, we force a sync
-            // termination for each source
-            SyncSource    source    = appSource.getSyncSource();
-            if (source != null) {
-                SyncListener  listener  = source.getListener();
-                SyncStatus report = new SyncStatus(source.getName());
-                report.setStatusCode(SyncListener.CANCELLED);
-                SyncException se = new SyncException(SyncException.CANCELLED, "Sync cancelled");
-                report.setSyncException(se);
-                if (listener != null) {
-                    listener.endSession(report);
-                }
-            }
-        }
-
         changeSyncLabelsOnSyncEnded();
         unlockHomeScreen();
         setSelected(getFirstActiveItemIndex(), false);
