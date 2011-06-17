@@ -482,13 +482,6 @@ public class SynchronizationController implements SyncEngineListener {
 
         displayEndOfSyncWarnings();
       
-        /* TODO FIXME!!!!!!!
-        if(customization.enableUpdaterManager()){
-            UpdaterManager upm = UpdaterManager.getInstance();
-            upm.setController(controller);
-            upm.check();
-        }
-        */
     }
 
     protected void showMessage(String msg) {
