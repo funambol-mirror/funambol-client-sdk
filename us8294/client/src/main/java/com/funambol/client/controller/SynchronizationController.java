@@ -195,10 +195,7 @@ public class SynchronizationController implements SyncEngineListener {
             }
         }
 
-        // Ask user network usage confirmation if needed
-        ContinueRefreshAction cra = new ContinueRefreshAction(syncSources, direction);
-        NetworkUsageWarningController nuwc = new NetworkUsageWarningController(screen, controller, cra);
-        nuwc.askUserNetworkUsageConfirmation();
+        continueRefresh(syncSources, direction);
     }
 
     public synchronized void continueRefresh(Vector syncSources, int direction) {
