@@ -39,6 +39,8 @@ import com.funambol.client.ui.AboutScreen;
 import com.funambol.client.ui.ConfigurationScreen;
 import com.funambol.client.ui.HomeScreen;
 import com.funambol.client.ui.AccountScreen;
+import com.funambol.client.ui.LoginScreen;
+import com.funambol.client.ui.SignupScreen;
 import com.funambol.client.ui.DisplayManager;
 
 abstract public class ControllerDataFactory {
@@ -55,7 +57,9 @@ abstract public class ControllerDataFactory {
 
     abstract public ConfigurationScreen getConfigurationScreen();
 
-    abstract public AccountScreen getAccountScreen();
+    abstract public LoginScreen getLoginScreen();
+
+    abstract public SignupScreen getSignupScreen();
 
     abstract public DisplayManager getDisplayManager();
 
