@@ -50,6 +50,7 @@ import com.funambol.syncml.protocol.SyncML;
 import com.funambol.syncml.spds.CompressedSyncException;
 import com.funambol.syncml.spds.DeviceConfig;
 import com.funambol.syncml.spds.SyncManager;
+import com.funambol.syncml.spds.SyncMLAnchor;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncConfig;
@@ -467,7 +468,19 @@ public class SyncEngine implements SyncSchedulerListener {
                         if (Log.isLoggable(Log.DEBUG)) {
                             Log.debug(TAG_LOG, "Asking for server caps: " + askServerCaps);
                         }
-                        fireSync(manager, source, source.getConfig().getSyncMode(), askServerCaps);
+
+                        int syncMode = source.getConfig().getSyncMode();
+                        if (!appSource.getIsMedia()) {
+                            SyncMLAnchor anchor = (SyncMLAnchor)source.getConfig().getSyncAnchor();
+                            if (anchor.getLast() == 0) {
+                                if (Log.isLoggable(Log.INFO)) {
+                                    Log.info(TAG_LOG, "Forcing a full sync because the anchor is zero");
+                                }
+                                syncMode = SyncSource.FULL_SYNC;
+                            }
+                        }
+
+                        fireSync(manager, source, syncMode, askServerCaps);
                     }
 
                     currentSource = null;
