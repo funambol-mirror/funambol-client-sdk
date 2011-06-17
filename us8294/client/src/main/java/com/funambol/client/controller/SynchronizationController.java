@@ -763,8 +763,7 @@ public class SynchronizationController implements SyncEngineListener {
             String syncType = com.funambol.client.controller.SynchronizationController.MANUAL;
             PaymentYesAction yesAction = new PaymentYesAction(sources, syncRequest);
             PaymentNoAction  noAction  = new PaymentNoAction();
-            // TODO FIXME: use a localized message
-            dc.askYesNoQuestion(screen, "A payment is required", false, yesAction, noAction);
+            dc.askYesNoQuestion(screen, localization.getLanguage("dialog_payment_required"), false, yesAction, noAction);
         }
     }
 
