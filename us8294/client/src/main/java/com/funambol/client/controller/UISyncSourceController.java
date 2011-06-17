@@ -786,6 +786,9 @@ public class UISyncSourceController implements SyncListener {
             case SyncListener.SD_CARD_UNAVAILABLE:
                 res = localization.getLanguage("status_sd_card_unavailable");
                 break;
+            case SyncListener.PAYMENT_REQUIRED:
+                res = localization.getLanguage("status_payment_required");
+                break;
             default:
                 if (report != null && (report.getReceivedItemsCount() > 0 || report.getSentItemsCount() > 0)) {
                     res = localization.getLanguage("status_partial_failure");
