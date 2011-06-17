@@ -101,6 +101,7 @@ public interface SyncListener {
     public static final int LOCAL_CLIENT_FULL_ERROR         = 154;
     public static final int NOT_SUPPORTED                   = 155;
     public static final int SD_CARD_UNAVAILABLE             = 156;
+    public static final int PAYMENT_REQUIRED                = 157;
 
     /**
      * Used when the messages to send or received is not know to

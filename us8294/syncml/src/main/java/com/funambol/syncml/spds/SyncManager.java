@@ -2965,6 +2965,9 @@ public class SyncManager implements SyncManagerI {
             case SyncException.LOCAL_DEVICE_FULL:
                 syncStatus = SyncListener.LOCAL_CLIENT_FULL_ERROR;
                 break;
+            case SyncException.PAYMENT_REQUIRED:
+                syncStatus = SyncListener.PAYMENT_REQUIRED;
+                break;
             default:
                 syncStatus = SyncListener.GENERIC_ERROR;
                 break;
