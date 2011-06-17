@@ -116,102 +116,6 @@ public class DialogController {
                                        displayManager.REFRESH_DIRECTION_DIALOG_ID);
     }
 
-     /**
-     * Use the localization field to build the wifi not available alert dialog.
-     * This dialog builds WIFINotAvailableDialogOption objects to refer to the
-     * dialog choices.
-     * @param screen the dialog alert owner Screen
-     */
-    public void showNoWIFIAvailableDialog(Screen screen,
-                                          String syncType,
-                                          Vector filteredSources,
-                                          boolean refresh,
-                                          int direction,
-                                          int delay,
-                                          boolean fromOutside)
-    {
-        DialogOption[] opt = new DialogOption[2];
-
-        opt[0] = new WIFINotAvailableDialogOption(
-                displayManager,
-                screen,
-                localization.getLanguage("dialog_continue"),
-                0,
-                syncType,
-                filteredSources,
-                refresh,
-                direction,
-                delay,
-                fromOutside);
-
-        opt[1] = new WIFINotAvailableDialogOption(
-                displayManager,
-                screen,
-                localization.getLanguage("dialog_cancel"),
-                -1,
-                syncType,
-                filteredSources,
-                refresh,
-                direction,
-                delay,
-                fromOutside);
-
-        displayManager.promptSelection(screen, localization.getLanguage("dialog_no_wifi_availabale"),
-                opt, 0, displayManager.NO_WIFI_AVAILABLE_ID);
-    }
-
-    /**
-     * Dialog option related to the wifi not available.
-     */
-    protected class WIFINotAvailableDialogOption extends DialogOption {
-        private String syncType;
-        private Vector filteredSources;
-        private boolean refresh;
-        private int direction;
-        private int delay;
-        private  boolean fromOutside;
-
-
-        public WIFINotAvailableDialogOption(DisplayManager displayManager, Screen screen,
-                                            String description, int value,
-                                            String syncType,
-                                            Vector filteredSources,
-                                            boolean refresh,
-                                            int direction,
-                                            int delay,
-                                            boolean fromOutside) {
-            super(displayManager, screen, description, value);
-            this.filteredSources = filteredSources;
-            this.refresh = refresh;
-            this.direction = direction;
-            this.delay = delay;
-            this.fromOutside = fromOutside;
-            this.syncType = syncType;
-        }
-
-        /**
-         * Triggered in threaded like logic when the user selects an option.
-         */
-        public void run() {
-            displayManager.dismissSelectionDialog(displayManager.NO_WIFI_AVAILABLE_ID);
-            HomeScreenController hsCont = controller.getHomeScreenController();
-
-            if (getValue() == 0) {
-                if(!hsCont.isSynchronizing()) {
-                    hsCont.changeSyncLabelsOnSyncEnded();
-                }
-
-                hsCont.continueSynchronizationAfterBandwithSaverDialog(syncType, filteredSources,
-                                                                       refresh, direction,
-                                                                       delay, fromOutside, true);
-            } else {
-                hsCont.continueSynchronizationAfterBandwithSaverDialog(syncType, new Vector(),
-                                                                       refresh, direction,
-                                                                       delay, fromOutside, false);
-            }
-        }
-    }
-
     /**
      * Use the localization field to build the reset type alert dialog that use
      * the DisplayManager client implementation to ask the user whose sources
@@ -252,7 +156,7 @@ public class DialogController {
             opts.addElement(new ResetTypeDialogOption(
                     displayManager,
                     screen,
-                    localization.getLanguage("type_all-enabled"),
+                    localization.getLanguage("type_all_enabled"),
                     allId,
                     direction));
         }
@@ -375,6 +279,16 @@ public class DialogController {
                                               1,yesAction);
         options[1] = new RunnableDialogOption(displayManager,screen,localization.getLanguage("dialog_deny"),0,noAction);
         displayManager.promptSelection(screen,question,options,(defaultYes ? 1 : 0),DisplayManager.GENERIC_DIALOG_ID);
+    }
+
+    public void askContinueCancelQuestion(Screen screen, String question, boolean defaultContinue, Runnable continueAction,
+                                          Runnable cancelAction) {
+
+        DialogOption options[] = new DialogOption[2];
+        options[0] = new RunnableDialogOption(displayManager,screen,localization.getLanguage("dialog_continue"),
+                                              1,continueAction);
+        options[1] = new RunnableDialogOption(displayManager,screen,localization.getLanguage("dialog_cancel"),0,cancelAction);
+        displayManager.promptSelection(screen,question,options,(defaultContinue ? 1 : 0),DisplayManager.GENERIC_DIALOG_ID);
     }
 
     public void promptSelection(Screen screen, String question, DialogOption options[], int defaultOption) {
