@@ -68,11 +68,11 @@ public class HomeScreenController extends SynchronizationController {
 
     protected Vector             items = null;
 
-    private Hashtable            pushRequestQueue = new Hashtable();
+    protected Hashtable          pushRequestQueue = new Hashtable();
 
     private int                  selectedIndex = -1;
 
-    private boolean              updateAvailableSources = false;
+    protected boolean            updateAvailableSources = false;
 
     private boolean              syncAllButtonAdded = false;
     
@@ -92,7 +92,7 @@ public class HomeScreenController extends SynchronizationController {
      *  See US7499.
      */
     protected boolean dontDisplayServerQuotaWarning = false;
-    private boolean homeScreenRegisteredAndInForeground = false;
+    protected boolean homeScreenRegisteredAndInForeground = false;
 
     public HomeScreenController(Controller controller, HomeScreen homeScreen, NetworkStatus networkStatus) {
         super(controller, homeScreen,networkStatus);
@@ -328,11 +328,6 @@ public class HomeScreenController extends SynchronizationController {
 
         for(int j=0;j<items.size();++j) {
             AppSyncSource appSource = (AppSyncSource) items.elementAt(j);
-            
-            // Source is not allowed and must be skipped
-            if (!appSource.getConfig().getAllowed())
-                continue;
-            
             // If this source is in sources then we shall enable it,
             // otherwise we must disable it
             boolean enable = false;
@@ -749,7 +744,7 @@ public class HomeScreenController extends SynchronizationController {
         if (sourceController != null) {
             sourceController.setSelected(true, fromUi);
         } else {
-            Log.error(TAG_LOG, "Found a source without controller associated");
+            Log.error(TAG_LOG, "Found a source without controller associated " + appSource.getName());
         }
     }
 
@@ -791,7 +786,7 @@ public class HomeScreenController extends SynchronizationController {
         homeScreen.setSyncMenuText(localization.getLanguage("menu_sync"));
     }
 
-    private void forceUpdateAvailableSources() {
+    protected void forceUpdateAvailableSources() {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "forceUpdateAvailableSources");
         }
