@@ -51,6 +51,7 @@ import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.AppSyncSourceConfig;
 import com.funambol.client.push.SyncScheduler;
 import com.funambol.client.ui.Screen;
+import com.funambol.client.ui.DisplayManager;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
@@ -479,9 +480,7 @@ public class SynchronizationController implements SyncEngineListener {
     }
 
     public void syncEnded() {
-
         displayEndOfSyncWarnings();
-      
     }
 
     protected void showMessage(String msg) {
@@ -701,14 +700,37 @@ public class SynchronizationController implements SyncEngineListener {
         }
 
         public void run() {
-            String sapiUrl = StringUtil.extractAddressFromUrl(configuration.getSyncUrl());
-            SapiHandler sapiHandler = new SapiHandler(sapiUrl, configuration.getUsername(),
-                                                      configuration.getPassword());
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "User accepted payment request, continue sync");
             }
- 
+
+            // Show a progress dialog while the payment is being performed
+            DisplayManager dm = controller.getDisplayManager();
+            int progressDialogId = dm.showProgressDialog(screen, "Payment in progress");
+
+            SapiPaymentThread spt = new SapiPaymentThread(progressDialogId, remainingSources, originalRequest);
+            spt.start();
+        }
+    }
+
+    protected class SapiPaymentThread extends Thread {
+
+        private int progressDialogId;
+        private SyncRequest originalRequest;
+        private Vector remainingSources;
+
+        public SapiPaymentThread(int progressDialogId, Vector remainingSources, SyncRequest originalRequest) {
+            this.progressDialogId = progressDialogId;
+            this.remainingSources = remainingSources;
+            this.originalRequest  = originalRequest;
+        }
+
+        public void run() {
             try {
+                String sapiUrl = StringUtil.extractAddressFromUrl(configuration.getSyncUrl());
+                SapiHandler sapiHandler = new SapiHandler(sapiUrl, configuration.getUsername(),
+                                                          configuration.getPassword());
+
                 JSONObject req = new JSONObject();
                 JSONArray  sources = new JSONArray();
                 Enumeration workingSources = appSyncSourceManager.getWorkingSources();
@@ -730,6 +752,10 @@ public class SynchronizationController implements SyncEngineListener {
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Cannot perform payment", e);
                 // TODO FIXME: show an error to the user
+            } finally {
+                // Dismiss the progress dialog
+                DisplayManager dm = controller.getDisplayManager();
+                dm.dismissProgressDialog(screen, progressDialogId);
             }
         }
     }
