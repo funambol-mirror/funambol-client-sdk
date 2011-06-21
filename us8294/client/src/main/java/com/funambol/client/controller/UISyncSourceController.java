@@ -40,6 +40,7 @@ import java.util.Date;
 
 import com.funambol.client.customization.Customization;
 import com.funambol.client.source.AppSyncSource;
+import com.funambol.client.source.AppSyncSourceConfig;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.Bitmap;
@@ -169,6 +170,16 @@ public class UISyncSourceController implements SyncListener {
      */
     public void endConnecting(int action) {
     }
+
+    public void refreshStatus() {
+        AppSyncSourceConfig appConfig = appSource.getConfig();
+        int status = appConfig.getLastSyncStatus();
+        if(uiSource != null) {
+            String lastStatus = getLastSyncStatus(status, lastSyncReport);
+            uiSource.setStatusString(lastStatus);
+        }
+    }
+
 
     /*
      * (non-Javadoc)
@@ -314,10 +325,12 @@ public class UISyncSourceController implements SyncListener {
         int status = appSource.getConfig().getLastSyncStatus();
         String lastStatus = getLastSyncStatus(status, null);
         statusIcon = getLastSyncIcon(status);
-        uiSource.setStatusIcon(statusIcon);
-        uiSource.setStatusString(lastStatus);
-        uiSource.syncEnded();
-        uiSource.redraw();
+        if (uiSource != null) {
+            uiSource.setStatusIcon(statusIcon);
+            uiSource.setStatusString(lastStatus);
+            uiSource.syncEnded();
+            uiSource.redraw();
+        }
 
         cancelling = false;
         syncing = false;
