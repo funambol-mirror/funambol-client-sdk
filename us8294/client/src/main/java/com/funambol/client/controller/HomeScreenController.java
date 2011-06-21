@@ -75,6 +75,8 @@ public class HomeScreenController extends SynchronizationController {
     protected boolean            updateAvailableSources = false;
 
     private boolean              syncAllButtonAdded = false;
+
+    private int                  selectedSourceAtSyncStart = -1;
     
     /**
      *  This flag is to switch off the storage limit warning after
@@ -210,7 +212,21 @@ public class HomeScreenController extends SynchronizationController {
         
         changeSyncLabelsOnSyncEnded();
         unlockHomeScreen();
-        setSelected(getFirstActiveItemIndex(), false);
+
+        // If the source which was originally selected is still selectable, then
+        // we select it again. Otherwise we move to the first one available
+        boolean selectFirstAvailable = true;
+        if (selectedSourceAtSyncStart != -1 && selectedSourceAtSyncStart < items.size()) {
+            AppSyncSource appSource = (AppSyncSource)items.elementAt(selectedSourceAtSyncStart);
+            if (appSource.getConfig().getEnabled() && appSource.getConfig().getAllowed()) {
+                setSelected(selectedSourceAtSyncStart, false);
+                selectFirstAvailable = false;
+            }
+        }
+
+        if (selectFirstAvailable) {
+            setSelected(getFirstActiveItemIndex(), false);
+        }
         
         // If there are pending syncs, we start serving them
         synchronized(pushRequestQueue) {
@@ -256,6 +272,10 @@ public class HomeScreenController extends SynchronizationController {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Button pressed " + index);
         }
+
+        // Keep track of the source which is selected at the beginning of the
+        // sync
+        selectedSourceAtSyncStart = homeScreen.getSelectedIndex();
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
         if (source.isWorking() && source.getConfig().getEnabled() && source.getConfig().getAllowed()) {
@@ -424,6 +444,9 @@ public class HomeScreenController extends SynchronizationController {
                 }
             }
         } else {
+            // Keep track of the source which is selected at the beginning of the
+            // sync
+            selectedSourceAtSyncStart = homeScreen.getSelectedIndex();
             syncAllSources(MANUAL);
         }
     }
