@@ -49,6 +49,8 @@ public interface HomeScreen extends Screen {
 
     public void deselectIndex(int index);
 
+    public int getSelectedIndex();
+
     public void redraw();
 
     public void addSyncAllButton(String text, Bitmap icon, Bitmap bg, Bitmap bgSel);
