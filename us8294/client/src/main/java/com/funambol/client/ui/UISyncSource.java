@@ -127,7 +127,7 @@ public interface UISyncSource {
     /**
      * Set the item font used for the title and the status
      */
-    public void setFont(Font font);
+    //public void setFont(Font font);
 
     /**
      * This method is invoked when a sync for this source is started
