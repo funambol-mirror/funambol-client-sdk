@@ -64,7 +64,11 @@ public class NetworkUsageWarningController {
 
     public void askUserNetworkUsageConfirmation() {
 
-        if (!customization.getShowNetworkUsageWarningForProfiles()) {
+        // If the server is not cared or the network warning is disabled, we
+        // just continue
+        if (configuration.getServerType() != Configuration.SERVER_TYPE_FUNAMBOL_CARED ||
+            !customization.getShowNetworkUsageWarningForProfiles())
+        {
             useAction.run();
             return;
         }

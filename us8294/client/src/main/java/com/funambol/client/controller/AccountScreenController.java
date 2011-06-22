@@ -237,16 +237,10 @@ public class AccountScreenController extends SynchronizationController {
     public void sourceFailed(AppSyncSource appSource, SyncException e) {
         super.sourceFailed(appSource, e);
 
-        // If the source failed due to a controlled interruption, we consider it
-        // as successfull
-        if (e.getCode() == SyncException.CONTROLLED_INTERRUPTION) {
-            exp = null;
-            failed = false;
-        }
         // In order to guarantee compatibility with servers without a
         // ConfigSyncSource, we must allow users to access the home screen even
         // if the server sends a 404 status for this sync
-        else if (e.getCode() != SyncException.NOT_FOUND_URI_ERROR) {
+        if (e.getCode() != SyncException.NOT_FOUND_URI_ERROR) {
             exp = e;
             failed = true;
         } else {
@@ -263,6 +257,12 @@ public class AccountScreenController extends SynchronizationController {
     public void sourceStarted(AppSyncSource appSource) {
         super.sourceStarted(appSource);
         sourceStarted = true;
+        configuration.setServerType(Configuration.SERVER_TYPE_OTHER);
+    }
+
+    public void sourceEnded(AppSyncSource appSource) {
+        super.sourceEnded(appSource);
+        configuration.setServerType(Configuration.SERVER_TYPE_FUNAMBOL_CARED);
     }
 
     public void syncEnded() {

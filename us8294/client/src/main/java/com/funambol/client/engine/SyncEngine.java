@@ -438,7 +438,9 @@ public class SyncEngine implements SyncSchedulerListener {
 
                     // Before synchronizing, we may need to update the user profile
                     // we do it only once per sync session
-                    if (firstSource && customization.getUserProfileSupported()) {
+                    if (firstSource && customization.getUserProfileSupported() &&
+                        configuration.getServerType() == Configuration.SERVER_TYPE_FUNAMBOL_CARED)
+                    {
                         updateProfile(appSources);
                     }
 

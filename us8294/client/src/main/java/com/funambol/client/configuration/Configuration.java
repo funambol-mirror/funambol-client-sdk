@@ -85,6 +85,11 @@ public abstract class Configuration {
     public static final int CONF_NOTSET  = -1;
     public static final int CONF_INVALID = -2;
 
+    public static final int SERVER_TYPE_UNKNOWN        = -1;
+    public static final int SERVER_TYPE_FUNAMBOL_COMED = 0;
+    public static final int SERVER_TYPE_FUNAMBOL_CARED = 1;
+    public static final int SERVER_TYPE_OTHER          = 2;
+
     protected static final String CONF_KEY_VERSION   = "VERSION";
     protected static final String CONF_KEY_LOG_LEVEL = "LOG_LEVEL";
     protected static final String CONF_KEY_SYNC_URL  = "SYNC_URL";
@@ -121,6 +126,7 @@ public abstract class Configuration {
     protected static final String CONF_KEY_FORCE_SERVER_CAPS_REQ    = "FORCE_SERVER_CAPS_REQ";
     protected static final String CONF_KEY_SOURCE_SYNC_TYPE_CHANGED = "SOURCE_SYNC_TYPE_CHANGED";
     protected static final String CONF_KEY_SERVER_DEV_INF    = "SERVER_DEV_INF";
+    protected static final String CONF_KEY_SERVER_TYPE       = "SERVER_TYPE";
 
     protected static final String CONF_KEY_CURRENT_SYNC_RETRY_COUNT = "CURRENT_SYNC_RETRY_COUNT";
 
@@ -170,6 +176,8 @@ public abstract class Configuration {
     protected boolean      pimSourceSyncTypeChanged  = false;
 
     protected int          currentSyncRetryCount     = -1; // -1 means no retry
+
+    protected int          serverType                = SERVER_TYPE_UNKNOWN;
 
     /**
      * This is the proxy configuration. Note that at the moment this value is
@@ -261,6 +269,8 @@ public abstract class Configuration {
 
         logLevel = Log.ERROR;
 
+        serverType = SERVER_TYPE_UNKNOWN;
+
         version = CONFIG_VERSION;
     }
 
@@ -347,6 +357,9 @@ public abstract class Configuration {
                     serverDevInf = null;
                 }
             }
+
+            // Server type
+            serverType = loadIntKey(CONF_KEY_SERVER_TYPE, SERVER_TYPE_UNKNOWN);
 
             // Hook to migrate config (and upgrade the current version id if
             // possible)
@@ -499,6 +512,8 @@ public abstract class Configuration {
         } else {
             saveStringKey(CONF_KEY_SERVER_DEV_INF, "");
         }
+
+        saveIntKey(CONF_KEY_SERVER_TYPE, serverType);
 
         // Save each source configuration parameters
         Enumeration workingSources = appSyncSourceManager.getWorkingSources();
@@ -846,6 +861,13 @@ public abstract class Configuration {
         this.profileNetworkUsageWarning = value;
     }
 
+    public int getServerType() {
+        return serverType;
+    }
+
+    public void setServerType(int serverType) {
+        this.serverType = serverType;
+    }
 
     public SyncConfig getSyncConfig() {
         SyncConfig syncConfig = new SyncConfig();

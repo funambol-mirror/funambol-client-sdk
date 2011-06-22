@@ -626,7 +626,11 @@ public class SynchronizationController implements SyncEngineListener {
                     nextSources.addElement(ss);
                 }
             }
-            askForPayment(nextSources);
+            // We ask for payment only if the server is a Funambol cared, as
+            // this is not a standard SyncML mechanism
+            if (configuration.getServerType() == Configuration.SERVER_TYPE_FUNAMBOL_CARED) {
+                askForPayment(nextSources);
+            }
         }
     }
 
