@@ -37,6 +37,7 @@ package com.funambol.client.controller;
 
 import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.BasicDisplayManager;
+import com.funambol.util.StringUtil;
 
 /**
  * A controller for a "background" notification, i.e. a notification not
@@ -86,13 +87,16 @@ public class NotificationController {
         //creates notification data
         //TODO find a way to put android class to call
         String appName = localization.getLanguage("app_name");
+        String ticker = StringUtil.replaceAll(localization.getLanguage("notification_online_quota_full_server_ticker"),
+                                              "__APP_NAME__", appName);
+        String title = StringUtil.replaceAll(localization.getLanguage("notification_online_quota_full_server_title"),
+                                             "__APP_NAME__", appName);
+
         NotificationData notificationData = NotificationData.Factory.create(
                 NOTIFICATION_ID_SERVER_FULL,
                 NotificationData.SEVERITY_WARNING,
-                localization.getLanguage("notification_online_quota_full_server_ticker")
-                        .replace("__APP_NAME__", appName),
-                localization.getLanguage("notification_online_quota_full_server_title")
-                        .replace("__APP_NAME__", appName),
+                ticker,
+                title,
                 localization.getLanguage("notification_online_quota_full_server_message"),
                 null);
         showNotification(notificationData);
@@ -105,13 +109,16 @@ public class NotificationController {
         //creates notification data
         //TODO find a way to put android class to call
         String appName = localization.getLanguage("app_name");
+        String ticker = StringUtil.replaceAll(localization.getLanguage("notification_storage_full_device_ticker"),
+                                              "__APP_NAME__", appName);
+        String title  = StringUtil.replaceAll(localization.getLanguage("notification_storage_full_device_title"),
+                                              "__APP_NAME__", appName);
+
         NotificationData notificationData = NotificationData.Factory.create(
                 NOTIFICATION_ID_CLIENT_FULL,
                 NotificationData.SEVERITY_WARNING,
-                localization.getLanguage("notification_storage_full_device_ticker")
-                        .replace("__APP_NAME__", appName),
-                localization.getLanguage("notification_storage_full_device_title")
-                        .replace("__APP_NAME__", appName),
+                ticker,
+                title,
                 localization.getLanguage("notification_storage_full_device_message"),
                 null);
         showNotification(notificationData);

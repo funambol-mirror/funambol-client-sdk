@@ -378,26 +378,31 @@ public class SyncManager implements SyncManagerI {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Last sync was interrupted = " + syncStatus.getInterrupted());
                 Log.info(TAG_LOG, "Source resume support is = " + supportsResume);
-                readyToResume = ((ResumableSource)src).readyToResume();
             }
-            if (supportsResume && readyToResume && syncStatus.getInterrupted()) {
-                // The last sync was a slow sync and it was interrupted, we can try
-                // to resume it
-                boolean exchangePhase = syncStatus.getSentItemsCount() > 0 ||
-                                        syncStatus.getReceivedItemsCount() > 0;
+            if (supportsResume) {
+                // Even if the source is resumable, it may be in a state that
+                // does not allow resume to be performed. Ask the source if it
+                // is ready
+                readyToResume = ((ResumableSource)src).readyToResume();
+                if (readyToResume && syncStatus.getInterrupted()) {
+                    // The last sync was a slow sync and it was interrupted, we can try
+                    // to resume it
+                    boolean exchangePhase = syncStatus.getSentItemsCount() > 0 ||
+                        syncStatus.getReceivedItemsCount() > 0;
 
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Number of sent items = " + syncStatus.getSentItemsCount());
-                    Log.debug(TAG_LOG, "Number of received items = " + syncStatus.getReceivedItemsCount());
-                }
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "Number of sent items = " + syncStatus.getSentItemsCount());
+                        Log.debug(TAG_LOG, "Number of received items = " + syncStatus.getReceivedItemsCount());
+                    }
 
-                int interruptedSyncMode = syncStatus.getAlertedSyncMode();
+                    int interruptedSyncMode = syncStatus.getAlertedSyncMode();
 
-                if (exchangePhase && interruptedSyncMode == SyncML.ALERT_CODE_SLOW) {
-                    syncMode = SyncML.ALERT_CODE_RESUME;
-                    resume = true;
-                    if (Log.isLoggable(Log.INFO)) {
-                        Log.info(TAG_LOG, "Resuming interrupted session: " + syncStatus.getSessionId());
+                    if (exchangePhase && interruptedSyncMode == SyncML.ALERT_CODE_SLOW) {
+                        syncMode = SyncML.ALERT_CODE_RESUME;
+                        resume = true;
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Resuming interrupted session: " + syncStatus.getSessionId());
+                        }
                     }
                 }
             }
@@ -406,8 +411,13 @@ public class SyncManager implements SyncManagerI {
                 syncStatus.reset();
             }
         } catch (Exception e) {
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "No sync status found for source: " + src.getName());
+            Log.error(TAG_LOG, "(This maybe an error or not) No sync status found or not readable for source " + src.getName(), e);
+            try {
+                // The status is not reliable, we shall clear it and avoid resuming
+                syncStatus.reset();
+                resume = false;
+            } catch (Exception e2) {
+                Log.error(TAG_LOG, "Cannot reset sync status", e2);
             }
         }
         // We set the sync got interrupted so that if the application dies or
