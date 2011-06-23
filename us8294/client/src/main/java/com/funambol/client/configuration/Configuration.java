@@ -997,11 +997,26 @@ public abstract class Configuration {
             }
 
             /////////////////////////////////////////////////////////////////
-            /////////////////////  Migrate from 10 to 11 //////////////////////
+            /////////////////////  Migrate from 10 to 11 ////////////////////
             /////////////////////////////////////////////////////////////////
             // Nothing to migrate in the general config
             if ("10".equals(version)) {
                 version = "11";
+            }
+
+            /////////////////////////////////////////////////////////////////
+            /////////////////////  Migrate from 11 to 12 ////////////////////
+            /////////////////////////////////////////////////////////////////
+            // Scheduling interval 5 and 10 mins got removed
+            if ("11".equals(version)) {
+                int minPollInterval = customization.getPollingPimIntervalChoices()[0];
+                if (getPollingInterval() < minPollInterval) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Changing polling interval to new min value " + minPollInterval);
+                    }
+                    setPollingInterval(minPollInterval);
+                }
+                version = "12";
             }
 
             // Migration completed

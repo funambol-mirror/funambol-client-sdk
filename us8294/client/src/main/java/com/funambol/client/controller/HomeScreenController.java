@@ -218,7 +218,7 @@ public class HomeScreenController extends SynchronizationController {
         boolean selectFirstAvailable = true;
         if (selectedSourceAtSyncStart != -1 && selectedSourceAtSyncStart < items.size()) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(selectedSourceAtSyncStart);
-            if (appSource.getConfig().getEnabled() && appSource.getConfig().getAllowed()) {
+            if (appSource.getConfig().getEnabled()) {
                 setSelected(selectedSourceAtSyncStart, false);
                 selectFirstAvailable = false;
             }
@@ -278,8 +278,18 @@ public class HomeScreenController extends SynchronizationController {
         selectedSourceAtSyncStart = homeScreen.getSelectedIndex();
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
-        if (source.isWorking() && source.getConfig().getEnabled() && source.getConfig().getAllowed()) {
-            syncSource(MANUAL, source);
+        if (source.isWorking() && source.getConfig().getEnabled()) {
+            if (source.getConfig().getAllowed()) {
+                syncSource(MANUAL, source);
+            } else {
+                // The source is not allowed, server does not permit its
+                // synchronization because the user ha not enough rights to sync
+                DisplayManager dm = controller.getDisplayManager();
+                String msg = localization.getLanguage("dialog_sync_not_allowed");
+                msg = StringUtil.replaceAll(msg, "__SOURCE__", source.getName());
+                OpenDataPlanPageAction yesAction = new OpenDataPlanPageAction();
+                dm.askYesNoQuestion(screen, msg, yesAction, null, DisplayManager.NO_LIMIT);
+            }
         } else {
             Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
         }
@@ -386,7 +396,7 @@ public class HomeScreenController extends SynchronizationController {
 
             if (sourceController != null) {
                 if (appSource.getConfig().getActive()) {
-                    if (!appSource.isEnabled() || !appSource.isWorking() || !appSource.getConfig().getAllowed()) {
+                    if (!appSource.isEnabled() || !appSource.isWorking()) {
                         sourceController.disable();
                         UISyncSource uiSource = appSource.getUISyncSource();
                         // If this is the selected source, then we shall move the
@@ -642,7 +652,7 @@ public class HomeScreenController extends SynchronizationController {
             // If this source is in sources then we shall enable it,
             // otherwise we must disable it
             UISyncSourceController uiSourceController = appSource.getUISyncSourceController();
-            if (appSource.isWorking() && appSource.isEnabled() && appSource.getConfig().getAllowed()) {
+            if (appSource.isWorking() && appSource.isEnabled()) {
                 uiSourceController.enable();
             } else {
                 uiSourceController.disable();
@@ -838,6 +848,19 @@ public class HomeScreenController extends SynchronizationController {
                 Log.error(TAG_LOG, "Server quota full for source " + appSource.getName());
                 break;
             }
+        }
+    }
+
+    private class OpenDataPlanPageAction implements Runnable {
+
+        public void run() {
+            // Open the browser on the data plan page
+            String url = customization.getDataPlanUrl();
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Open browser on data plan url " + url);
+            }
+            DisplayManager dm = controller.getDisplayManager();
+            dm.loadBrowser(url);
         }
     }
 }

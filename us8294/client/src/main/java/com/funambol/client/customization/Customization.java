@@ -161,7 +161,8 @@ public interface Customization {
     public long     getReminderUpdtIntervalDefault();
     public String   getHttpUploadPrefix();
     public StorageLimit getStorageLimit();
-    public boolean getUserProfileSupported();
+    public boolean  getUserProfileSupported();
+    public String   getDataPlanUrl();
 
     // Max allowed file size for media
     public long getMaxAllowedFileSizeForFiles();

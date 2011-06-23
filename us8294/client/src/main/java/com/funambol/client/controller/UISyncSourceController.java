@@ -127,9 +127,12 @@ public class UISyncSourceController implements SyncListener {
             if (!appSource.isWorking()) {
                 lastStatus = localization.getLanguage("home_not_available");
                 uiSource.setEnabled(false);
-            } else if (!appSource.getConfig().getEnabled() || !appSource.getConfig().getAllowed()) {
+            } else if (!appSource.getConfig().getEnabled()) {
                 lastStatus = localization.getLanguage("home_disabled");
                 uiSource.setEnabled(false);
+            } else if (!appSource.getConfig().getAllowed()) {
+                lastStatus = localization.getLanguage("home_not_allowed");
+                uiSource.setEnabled(true);
             } else {
                 int status = appSource.getConfig().getLastSyncStatus();
                 if (status == SyncListener.COMPRESSED_RESPONSE_ERROR) {
@@ -208,6 +211,9 @@ public class UISyncSourceController implements SyncListener {
     public void endSending() {
     }
 
+    /**
+     * Disable the source to receive input events
+     */
     public void disable() {
         if (uiSource != null) {
             String status;
@@ -223,10 +229,14 @@ public class UISyncSourceController implements SyncListener {
             }
             uiSource.setStatusIcon(null);
             uiSource.setEnabled(false);
+            uiSource.setAllowed(appSource.getConfig().getAllowed());
             uiSource.redraw();
         }
     }
 
+    /**
+     * Enable the source to receive input events
+     */
     public void enable() {
         if (uiSource != null) {
             AppSyncSource appSource = uiSource.getSource();
@@ -234,7 +244,14 @@ public class UISyncSourceController implements SyncListener {
             if (status==SyncListener.COMPRESSED_RESPONSE_ERROR) {
                 return;
             }
-            uiSource.setStatusString(getLastSyncStatus(status, null));
+
+            String statusMsg;
+            if (appSource.getConfig().getAllowed()) {
+                statusMsg = getLastSyncStatus(status, null);
+            } else {
+                statusMsg = localization.getLanguage("home_not_allowed");
+            }
+            uiSource.setStatusString(statusMsg);
             Bitmap sourceIcon = customization.getSourceIcon(appSource.getId());
             if (sourceIcon != null) {
                 uiSource.setIcon(sourceIcon);
@@ -244,6 +261,7 @@ public class UISyncSourceController implements SyncListener {
                 uiSource.setStatusIcon(statusIcon);
             }
             uiSource.setEnabled(true);
+            uiSource.setAllowed(appSource.getConfig().getAllowed());
             uiSource.redraw();
         }
     }
@@ -745,6 +763,10 @@ public class UISyncSourceController implements SyncListener {
     }
 
     private String getLastSyncStatus(int status, SyncReport report) {
+
+        if (!appSource.getConfig().getAllowed()) {
+            return localization.getLanguage("home_not_allowed");
+        }
 
         String res;
         switch (status) {

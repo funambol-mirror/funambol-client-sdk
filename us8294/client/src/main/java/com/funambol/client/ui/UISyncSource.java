@@ -67,9 +67,19 @@ public interface UISyncSource {
     public void setTitleDisabledColor(int color);
 
     /**
-     * Enable or disabled this item
+     * Enable or disabled this item. When an item is enabled, it can receive
+     * focus and input events.
      */
     public void setEnabled(boolean flag);
+
+    /**
+     * Allow this item. Altough an item may receive focus (enabled) it can still
+     * be in a not allowed status. In such a case the item usually paints itself
+     * in a way to remind the user that pressing it will not result in a real
+     * action (possibly and likely just a warning about the reason why the item
+     * is not allowed).
+     */
+    public void setAllowed(boolean flag);
 
     /**
      * Check if the item is enabled/disabled
