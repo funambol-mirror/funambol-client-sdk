@@ -860,7 +860,7 @@ public class HomeScreenController extends SynchronizationController {
                 Log.debug(TAG_LOG, "Open browser on data plan url " + url);
             }
             DisplayManager dm = controller.getDisplayManager();
-            dm.loadBrowser(url);
+            dm.loadBrowser(screen, url);
         }
     }
 }
