@@ -163,7 +163,7 @@ public interface DisplayManager {
      * To be implemented.
      * @param url the url to be set on the browser
      */
-    public void loadBrowser(String url);
+    public void loadBrowser(Screen screen, String url);
 
     /**
      * Display a notification
