@@ -133,6 +133,7 @@ public class UISyncSourceController implements SyncListener {
             } else if (!appSource.getConfig().getAllowed()) {
                 lastStatus = localization.getLanguage("home_not_allowed");
                 uiSource.setEnabled(true);
+                uiSource.setAllowed(false);
             } else {
                 int status = appSource.getConfig().getLastSyncStatus();
                 if (status == SyncListener.COMPRESSED_RESPONSE_ERROR) {
