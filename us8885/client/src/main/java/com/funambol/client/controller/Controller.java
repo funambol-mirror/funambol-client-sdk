@@ -245,10 +245,6 @@ public class Controller extends BasicController {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Reapplying configuration for source " + appSource.getName());
         }
-        // Update the list of enabled sources
-        if(homeScreenController != null) {
-            homeScreenController.updateEnabledSources();
-        }
         appSource.reapplyConfiguration();
     }
 

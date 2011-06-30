@@ -35,20 +35,13 @@
 
 package com.funambol.client.controller;
 
-import java.util.Enumeration;
 import java.util.Vector;
 import java.util.Hashtable;
 
 import com.funambol.client.source.AppSyncSource;
-import com.funambol.client.source.ExternalAppManager;
 import com.funambol.client.ui.HomeScreen;
-import com.funambol.client.ui.UISyncSource;
-import com.funambol.client.ui.Bitmap;
 import com.funambol.client.ui.DisplayManager;
-import com.funambol.syncml.spds.SyncStatus;
-import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncListener;
-import com.funambol.sync.SyncSource;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 import com.funambol.platform.NetworkStatus;
@@ -63,18 +56,10 @@ public class HomeScreenController extends SynchronizationController {
 
     private static final String TAG_LOG = "HomeScreenController";
 
-    protected HomeScreen         homeScreen;
+    protected HomeScreen         mHomeScreen;
 
-    protected Vector             items = null;
+    private Hashtable            mPushRequestQueue = new Hashtable();
 
-    private Hashtable            pushRequestQueue = new Hashtable();
-
-    private int                  selectedIndex = -1;
-
-    private boolean              updateAvailableSources = false;
-
-    private boolean              syncAllButtonAdded = false;
-    
     /**
      *  This flag is to switch off the storage limit warning after
      *  it is displayed once. The warning must be displayed also more
@@ -82,7 +67,8 @@ public class HomeScreenController extends SynchronizationController {
      *  multiple-source sync, scheduled sync and push sync.
      *  See US7498.
      */
-    protected boolean dontDisplayStorageLimitWarning = false;
+    protected boolean mDontDisplayStorageLimitWarning = false;
+
     /**
      *  This flag is to switch off the server quota warning after
      *  it is displayed once. The warning must be displayed also more
@@ -90,82 +76,56 @@ public class HomeScreenController extends SynchronizationController {
      *  multiple-source sync, scheduled sync and push sync.
      *  See US7499.
      */
-    protected boolean dontDisplayServerQuotaWarning = false;
-    private boolean homeScreenRegisteredAndInForeground = false;
+    protected boolean mDontDisplayServerQuotaWarning = false;
 
+    private boolean mHomeScreenInForeground = false;
 
-     public HomeScreenController(Controller controller, HomeScreen homeScreen,NetworkStatus networkStatus) {
-        super(controller, homeScreen,networkStatus);
-        this.controller = controller;
-        this.homeScreen = homeScreen;
-        forceUpdateAvailableSources();
+    public HomeScreenController(Controller controller, HomeScreen homeScreen,
+            NetworkStatus networkStatus) {
+        super(controller, homeScreen, networkStatus);
+        this.mHomeScreen = homeScreen;
     }
 
     public HomeScreen getHomeScreen() {
-        return homeScreen;
+        return mHomeScreen;
     }
 
     public void setHomeScreen(HomeScreen homeScreen) {
-        if (this.homeScreen != homeScreen) {
-            syncAllButtonAdded = false;
-        }
-        this.homeScreen = homeScreen;
-        // If required, we shall add the sync all button
-        addSyncAllButtonIfRequired();
+        this.mHomeScreen = homeScreen;
         super.setScreen(homeScreen);
     }
 
-    public void updateAvailableSources() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "updateAvailableSources");
-        }
-        updateAvailableSources = true;
+    public void initializeHomeScreen() {
+        // TODO: FIXME
     }
 
-    public boolean syncStarted(Vector sources) {
+    public void updateAvailableSources() {
+        // TODO: FIXME
+    }
+
+    public void syncStarted(Vector sources) {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "syncStarted");
         }
-        boolean res = super.syncStarted(sources);
+        super.syncStarted(sources);
         lockHomeScreen(sources);
-        AppSyncSource appSource = (AppSyncSource)sources.elementAt(0);
-        changeSyncLabelsOnSync(appSource);
-        attachToSource(appSource);
-        return res;
     }
 
-    public void attachToRunningSync(AppSyncSource appSource) {
-        if (Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "Attaching to running sync for " + appSource.getName());
+    public void syncEnded() {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "syncEnded");
         }
-        if(homeScreen.isLocked()) {
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Cannot attach to running sync, home screen is locked");
-            }
-            return;
-        }
-        // First of all select the source to attach
-        setSelected(appSource.getUiSourceIndex(), false);
-        
-        Vector sources = new Vector();
-        sources.addElement(appSource);
-        
-        lockHomeScreen(sources);
-        changeSyncLabelsOnSync(appSource);
-        attachToSource(appSource);
-    }
-
-    public void endSync(Vector sources, boolean hadErrors) {
-        super.endSync(sources, hadErrors);
+        super.syncEnded();
+        unlockHomeScreen();
     }
     
     protected void displayStorageLimitWarning(Vector localStorageFullSources) {
         logSyncSourceErrors(localStorageFullSources);
         if (isInForeground()) {
-            if (!dontDisplayStorageLimitWarning) {         
-                String message = localization.getLanguage("message_storage_limit");
-                controller.getDialogController().showMessageAndWaitUserConfirmation(message);
-                dontDisplayStorageLimitWarning = true; // Once is enough
+            if (!mDontDisplayStorageLimitWarning) {
+                String message = mLocalization.getLanguage("message_storage_limit");
+                mController.getDialogController().showMessageAndWaitUserConfirmation(message);
+                mDontDisplayStorageLimitWarning = true; // Once is enough
             }
         } else {
             super.displayStorageLimitWarning(localStorageFullSources);
@@ -178,7 +138,7 @@ public class HomeScreenController extends SynchronizationController {
         // if we had at least one device full error, we must choose how show
         // these errors to the user, according to US7498 and US7499
         if (isInForeground()) {
-            if (!dontDisplayServerQuotaWarning) {
+            if (!mDontDisplayServerQuotaWarning) {
                 StringBuffer sourceNames = new StringBuffer(""); 
                 for(int i=0; i<serverQuotaFullSources.size(); i++) {
                     AppSyncSource appSource = (AppSyncSource)serverQuotaFullSources.elementAt(i);
@@ -187,111 +147,13 @@ public class HomeScreenController extends SynchronizationController {
                     }
                     sourceNames.append(appSource.getName().toLowerCase());
                 }
-                String msg = localization.getLanguage("dialog_server_full");
+                String msg = mLocalization.getLanguage("dialog_server_full");
                 msg = StringUtil.replaceAll(msg, "__source__", sourceNames.toString());
-                controller.getDialogController().showMessageAndWaitUserConfirmation(msg);
+                mController.getDialogController().showMessageAndWaitUserConfirmation(msg);
             }
-        
-        //error in sync when activity is in background 
         } else {
             super.displayServerQuotaWarning(serverQuotaFullSources);
         }
-    }
-    
-    public void syncEnded() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "sync ended");
-        }
-        super.syncEnded();
-
-        for(int i=0;i<items.size();++i) {
-            AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
-        
-            // To make sure the UI is properly updated, we force a sync
-            // termination for each source
-            SyncSource    source    = appSource.getSyncSource();
-            if (source != null) {
-                SyncListener  listener  = source.getListener();
-                SyncStatus report = new SyncStatus(source.getName());
-                report.setStatusCode(SyncListener.CANCELLED);
-                SyncException se = new SyncException(SyncException.CANCELLED, "Sync cancelled");
-                report.setSyncException(se);
-                if (listener != null) {
-                    listener.endSession(report);
-                }
-            }
-        }
-
-        changeSyncLabelsOnSyncEnded();
-        unlockHomeScreen();
-        setSelected(getFirstActiveItemIndex(), false);
-
-        // If there are pending syncs, we start serving them
-        synchronized(pushRequestQueue) {
-            if (pushRequestQueue.size() > 0) {
-                Vector sources = new Vector(pushRequestQueue.size());
-                Enumeration keys = pushRequestQueue.keys();
-                while(keys.hasMoreElements()) {
-                    sources.addElement(keys.nextElement());
-                }
-                pushRequestQueue.clear();
-                synchronize(com.funambol.client.controller.SynchronizationController.PUSH, sources);
-            }
-        }
-        
-    }
-
-    public void redraw() {
-
-        // We may need to update the list of
-        // visible items as the server may have sent its capabilities
-        if (updateAvailableSources) {
-            forceUpdateAvailableSources();
-        }
-        if (homeScreen != null) {
-            homeScreen.redraw();
-        }
-    }
-
-    public Vector getVisibleItems() {
-        return items;
-    }
-
-    public void buttonSelected(int index) {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Button selected " + index);
-        }
-        AppSyncSource source = (AppSyncSource) items.elementAt(index);
-        if (source.getConfig().getEnabled()) {
-            setSelected(index, true);
-        }
-    }
-
-    public void buttonPressed(int index) {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Button pressed " + index);
-        }
-        
-        AppSyncSource source = (AppSyncSource) items.elementAt(index);
-        if (source.isWorking() && source.getConfig().getEnabled()) {
-            syncSource(MANUAL, source);
-        } else {
-            Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
-        }
-    }
-
-    public void selectFirstAvailable() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Select first source available");
-        }
-        setSelected(getFirstActiveItemIndex(), false);
-    }
-
-    public void sourceStarted(AppSyncSource appSource) {
-        super.sourceStarted(appSource);
-
-        // this selects the appSource and disable any previously selected one
-        setSelected(appSource.getUiSourceIndex(), false);
     }
 
     /**
@@ -303,10 +165,10 @@ public class HomeScreenController extends SynchronizationController {
      * @param sources the sources to be enqueued
      */
     public void enquePushSyncRequest(Vector sources) {
-        synchronized(pushRequestQueue) {
+        synchronized(mPushRequestQueue) {
             for(int i=0;i<sources.size();++i) {
                 AppSyncSource source = (AppSyncSource)sources.elementAt(i);
-                pushRequestQueue.put(source, source);
+                mPushRequestQueue.put(source, source);
             }
         }
     }
@@ -318,167 +180,49 @@ public class HomeScreenController extends SynchronizationController {
      * terminates.
      */
     public void enquePushSyncRequest() {
-        synchronized(pushRequestQueue) {
-            for(int i=0;i<items.size();++i) {
+        synchronized(mPushRequestQueue) {
+            // TODO FIXME
+            /*for(int i=0;i<items.size();++i) {
                 AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
                 if (appSource.getConfig().getEnabled() && appSource.isWorking()) {
-                    pushRequestQueue.put(appSource, appSource);
+                    mPushRequestQueue.put(appSource, appSource);
                 }
-            }
+            }*/
         }
     }
 
     protected void lockHomeScreen(Vector sources) {
-
-        if (homeScreen == null) {
+        if (mHomeScreen == null) {
             return;
         }
-        if (customization.syncAllOnMainScreenRequired()) {
-            // disable the sync all button (if it does not have the cancel sync
-            // role during a sync)
-            if (!customization.syncAllActsAsCancelSync()) {
-                homeScreen.setSyncAllEnabled(false);
-            }
-        }
-
-        for(int j=0;j<items.size();++j) {
-            AppSyncSource appSource = (AppSyncSource) items.elementAt(j);
-            // If this source is in sources then we shall enable it,
-            // otherwise we must disable it
-            boolean enable = false;
-            for(int i=0;i<sources.size();++i) {
-                AppSyncSource appSource2 = (AppSyncSource)sources.elementAt(i);
-                if (appSource2.getId() == appSource.getId()) {
-                    enable = true;
-                    break;
-                }
-            }
-            UISyncSource uiSource = appSource.getUISyncSource();
-            uiSource.setEnabled(enable);
-        }
-        redraw();
-        homeScreen.lock();
+        mHomeScreen.lock();
     }
 
-    public void updateEnabledSources() {
-
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "updateEnabledSources");
-        }
-
-        // If a sync is in progress, then we don't change the sources status,
-        // otherwise we would corrupt the UI. On sync termination, the home
-        // screen will get refreshed
-        if (isSynchronizing()  || (homeScreen != null && homeScreen.isLocked())) {
+    protected void unlockHomeScreen() {
+        if (mHomeScreen == null) {
             return;
         }
-
-        Enumeration sources = items.elements();
-        boolean atLeastOneEnabled = false;
-        while (sources.hasMoreElements()) {
-            AppSyncSource appSource = (AppSyncSource)sources.nextElement();
-            UISyncSourceController sourceController = appSource.getUISyncSourceController();
-
-            if (sourceController != null) {
-                if (appSource.getConfig().getActive()) {
-                    if (!appSource.isEnabled() || !appSource.isWorking()) {
-                        sourceController.disable();
-                        UISyncSource uiSource = appSource.getUISyncSource();
-                        // If this is the selected source, then we shall move the
-                        // selection to the first available
-                        if (uiSource != null && uiSource.isSelected()) {
-                            setSelected(getFirstActiveItemIndex(), false);
-                        }
-                    } else {
-                        sourceController.enable();
-                        atLeastOneEnabled = true;
-                    }
-                }
-            }
-        }
-        // If there are no sources enabled, then we disable the sync all button
-        if (homeScreen != null) {
-            homeScreen.setSyncAllEnabled(atLeastOneEnabled);
-        }
-        if (!atLeastOneEnabled) {
-            // We must "deselect" all items because all are disabled
-            for(int i=0;i<items.size();++i) {
-                setSelected(i, false);
-            }
-        }
-
-        redraw();
+        mHomeScreen.unlock();
     }
 
-    protected void syncSource(String syncType, AppSyncSource appSource) {
-        
-        Vector sources = new Vector();
-        sources.addElement(appSource);
-        synchronize(syncType, sources);
-        
+    public void syncAllSources(String syncType, int retryCount) {
+        // TODO: FIXME
+        syncAllSources(syncType);
     }
     
-    public void syncMenuSelected() {
-        if (selectedIndex != -1) {
-            AppSyncSource appSource = (AppSyncSource)items.elementAt(selectedIndex);
-            syncSource(MANUAL, appSource);
-        }
-    }
-
-    public void syncAllPressed() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Sync All Button pressed");
-        }
-
-        // If a sync is in progress, then this is a cancel sync request
-        if (isSynchronizing() && customization.syncAllActsAsCancelSync()) {
-            if (!doCancel) {
-                cancelSync();
-            } else {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Cancelling already in progress");
-                }
-            }
-        } else {
-            syncAllSources(MANUAL);
-        }
-    }
-
-    public void aloneSourcePressed() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Alone Source Button pressed");
-        }
-
-        // If a sync is in progress, then this is a cancel sync request
-        if (isSynchronizing()) {
-            if (!doCancel) {
-                cancelSync();
-            } else {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Cancelling already in progress");
-                }
-            }
-        } else {
-            AppSyncSource appSource = (AppSyncSource)items.elementAt(0);
-            syncSource(MANUAL, appSource);
-        }
-    }
-
-
     public void syncAllSources(String syncType) {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "syncAllSources");
         }
 
         Vector sources = new Vector();        
-        for(int i=0;i<items.size();++i) {
-            AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
-            if (appSource.getConfig().getEnabled() && appSource.isWorking()) {
-                sources.addElement(appSource);
-            }
-        }
-        
+
+        // TODO: FIXME
         synchronize(syncType, sources);
+    }
+
+    protected void syncSource(String syncType, AppSyncSource appSource) {
+        // TODO FIXME
     }
     
     /**
@@ -496,8 +240,8 @@ public class HomeScreenController extends SynchronizationController {
         // quota limit. For other sync modes, doesn't display message if
         // the previous sync ended with the same error.
         if (MANUAL.equals(syncType)) {
-            dontDisplayStorageLimitWarning = false;
-            dontDisplayServerQuotaWarning = false;
+            mDontDisplayStorageLimitWarning = false;
+            mDontDisplayServerQuotaWarning = false;
         } else {
             for(int i = 0 ; i < syncSources.size(); ++i) {
                 AppSyncSource appSource = (AppSyncSource)syncSources.elementAt(i);
@@ -506,12 +250,12 @@ public class HomeScreenController extends SynchronizationController {
                 case SyncListener.LOCAL_CLIENT_FULL_ERROR:
                     // If for at least one source the storage limit warning has
                     // already been shown, no warning should be displayed again
-                    dontDisplayStorageLimitWarning = true;
+                    mDontDisplayStorageLimitWarning = true;
                     break;
                 case SyncListener.SERVER_FULL_ERROR:
                     // If for at least one source the server full quota warning has
                     // already been shown, no warning should be displayed again
-                    dontDisplayServerQuotaWarning = true;
+                    mDontDisplayServerQuotaWarning = true;
                     break;
                 }
             }
@@ -519,39 +263,8 @@ public class HomeScreenController extends SynchronizationController {
         super.synchronize(syncType, syncSources);
     }
 
-    public void cancelMenuSelected() {
-        cancelSync();
-    }
-
     public void updateMenuSelected() {
-        controller.promptUpdate();
-    }
-
-    public void quitMenuSelected() {
-        controller.toBackground();
-    }
-
-    public boolean isUpdate() {
-        return controller.isUpdate();
-    }
-
-    public void exit() {
-        Controller globalController = getController();
-        DisplayManager dm = globalController.getDisplayManager();
-        dm.askYesNoQuestion(homeScreen, "Are you sure you want to exit?",
-                            new ExitAction(), null, 0);
-    }
-
-    private class ExitAction implements Runnable {
-
-        public ExitAction() {
-        }
-
-        public void run() {
-            if (Log.isLoggable(Log.TRACE)) {
-                Log.trace(TAG_LOG, "Exiting application");
-            }
-        }
+        mController.promptUpdate();
     }
 
     public void showConfigurationScreen() {
@@ -561,258 +274,49 @@ public class HomeScreenController extends SynchronizationController {
         if (isSynchronizing()) {
             showSyncInProgressMessage();
         } else {
-            globalController.showScreen(homeScreen, Controller.CONFIGURATION_SCREEN_ID);
+            globalController.showScreen(mHomeScreen, Controller.CONFIGURATION_SCREEN_ID);
         }
     }
 
     public void showAboutScreen() {
         Controller globalController = getController();
-        globalController.showScreen(homeScreen, Controller.ABOUT_SCREEN_ID);
+        globalController.showScreen(mHomeScreen, Controller.ABOUT_SCREEN_ID);
     }
 
     public void showAccountScreen() {
         Controller globalController = getController();
-        globalController.showScreen(homeScreen, Controller.ACCOUNT_SCREEN_ID);
+        globalController.showScreen(mHomeScreen, Controller.ACCOUNT_SCREEN_ID);
     }
 
-    public void gotoMenuSelected() {
-        if (selectedIndex != -1) {
-            AppSyncSource source = (AppSyncSource)items.elementAt(selectedIndex);
-
-            ExternalAppManager manager = source.getAppManager();
-            if (manager != null) {
-                try {
-                    manager.launch(source, null);
-                } catch (Exception e) {
-                    // TODO FIXME: show a toast?
-                    Log.error(TAG_LOG, "Cannot launch external app manager, because: " + e);
-                }
-            } else {
-                Log.error(TAG_LOG, "No external manager associated to source: " + source.getName());
-            }
-        }
-    }
-    
     /**
      * Returns true when the associated screen is in foreground (visible
      * to the user and with focus)
      */
     public boolean isInForeground() {
-        //first of all, if an HomeScreen is not associated with the controller
-        //it's impossible that the screen is in foreground
-        if (null == homeScreen) {
+        if (mHomeScreen == null) {
             return false;
         }
-        
-        //then, check for internal flag
-        return homeScreenRegisteredAndInForeground ;
+        return mHomeScreenInForeground ;
     }
     
     /**
      * Sets foreground status of the screen
      */
     public void setForegroundStatus(boolean newValue) {
-        homeScreenRegisteredAndInForeground = newValue;
-    }
-    
-
-    protected void unlockHomeScreen() {
-        if (homeScreen == null) {
-            return;
-        }
-        if (customization.syncAllOnMainScreenRequired()) {
-            // enable the sync all button
-            if (!customization.syncAllActsAsCancelSync()) {
-                homeScreen.setSyncAllEnabled(true);
-            }
-        }
-
-        for(int j=0;j<items.size();++j) {
-            AppSyncSource appSource = (AppSyncSource) items.elementAt(j);
-            // If this source is in sources then we shall enable it,
-            // otherwise we must disable it
-            UISyncSourceController uiSourceController = appSource.getUISyncSourceController();
-            if (appSource.isWorking() && appSource.isEnabled()) {
-                uiSourceController.enable();
-            } else {
-                uiSourceController.disable();
-            }
-            // If a UI Source is in the syncing state force it to stop
-            if(uiSourceController.isSyncing()) {
-                uiSourceController.resetStatus();
-            }
-        }
-        redraw();
-        homeScreen.unlock();
+        mHomeScreenInForeground = newValue;
     }
 
     protected void showSyncInProgressMessage() {
         // If the home screen is not displayed, we cannot show any warning and
         // just ignore this event
         Controller globalController = getController();
-        if (homeScreen != null) {
+        if (mHomeScreen != null) {
             DisplayManager dm = globalController.getDisplayManager();
-            String msg = localization.getLanguage("message_sync_running_wait");
-            dm.showMessage(homeScreen, msg);
+            String msg = mLocalization.getLanguage("message_sync_running_wait");
+            dm.showMessage(mHomeScreen, msg);
         }
     }
 
-    private int getFirstActiveItemIndex() {
-        int size = items.size();
-        
-        for (int i=0; i<size; i++) {
-            AppSyncSource source = (AppSyncSource) items.elementAt(i);
-            if (source.isEnabled() && source.isWorking()) {
-                return i;
-            }
-        }   
-        return 0;
-    }
-
-    private void addSyncAllButtonIfRequired() {
-        if (!syncAllButtonAdded && homeScreen != null) {
-            if (customization.syncAllOnMainScreenRequired()) {
-
-                Bitmap img = customization.getSyncAllIcon();
-                Bitmap bg = customization.getSyncAllBackground();
-                Bitmap bgSel = customization.getSyncAllHighlightedBackground();
-
-                homeScreen.addSyncAllButton(localization.getLanguage("home_sync_all"),
-                            img, bg, bgSel);
-            }
-            syncAllButtonAdded = true;
-        }
-    }
-
-    private void computeVisibleItems() {
-
-        items = new Vector();
-
-        //Set the SyncAll Item if required
-        addSyncAllButtonIfRequired();
-
-        int realSize = controller.computeNumberOfVisibleSources();
-        if (realSize == 0) {
-            // There are no available sources, nothing to do
-            return;
-        }
-        if (Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "Number of visible sources: " + realSize);
-        }
-        items.setSize(realSize);
-
-        // Now recompute the ui position for all available sources
-        int sourcesOrder[] = customization.getSourcesOrder();
-        int uiOrder = 0;
-        for (int i=0;i<sourcesOrder.length;++i) {
-            int sourceId = sourcesOrder[i];
-            // If this is a working source, then set its UI position
-            AppSyncSource source = appSyncSourceManager.getSource(sourceId);
-            if (controller.isVisible(source)) {
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Setting source " + source.getName() + " at position: " + uiOrder);
-                }
-                source.setUiSourceIndex(uiOrder++);
-            }
-        }
-
-        // Add an item for each registered source that has to fit into the home
-        // screen. So far the only one we shall discard is the ConfigSyncSource
-        Enumeration sources = appSyncSourceManager.getRegisteredSources();
-        while (sources.hasMoreElements()) {
-            AppSyncSource appSource = (AppSyncSource)sources.nextElement();
-            if (controller.isVisible(appSource)) {
-                // Set the sources in the appropriate order
-                int index = appSource.getUiSourceIndex();
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Setting source at index: " + index);
-                }
-                items.setElementAt(appSource, index);
-            }
-        }
-    }
-
-    private void setSelected(int index, boolean fromUi) {
-
-        // First of all remove selection from the current selected item
-        if ((selectedIndex != index) &&
-            (selectedIndex != -1) &&
-            (selectedIndex < items.size())) {
-            
-            AppSyncSource oldAppSource = (AppSyncSource)items.elementAt(selectedIndex);
-            UISyncSourceController sourceController = oldAppSource.getUISyncSourceController();
-            if (sourceController != null) {
-                sourceController.setSelected(false, fromUi);
-            }
-        }
-        
-        AppSyncSource appSource = (AppSyncSource)items.elementAt(index);
-        if (!appSource.isEnabled() || !appSource.isWorking()) {
-            // Invalid selection, the source cannot be selected
-            return;
-        }
-
-        selectedIndex = index;
-        UISyncSourceController sourceController = appSource.getUISyncSourceController();
-        if (sourceController != null) {
-            sourceController.setSelected(true, fromUi);
-        } else {
-            Log.error(TAG_LOG, "Found a source without controller associated");
-        }
-    }
-
-
-    protected void changeSyncLabelsOnSync(AppSyncSource appSource) {
-        if (homeScreen == null) {
-            return;
-        }
-
-        if (customization.syncAllOnMainScreenRequired()) {
-            if (customization.syncAllActsAsCancelSync()) {
-                homeScreen.setSyncAllText(localization.getLanguage("menu_cancel_sync"));
-            } else {
-                homeScreen.setSyncAllText(localization.getLanguage("status_sync"));
-            }
-        }
-        homeScreen.setSyncMenuText(localization.getLanguage("menu_cancel_sync"));
-    }
-
-    protected void attachToSource(AppSyncSource appSource) {
-        // Force the source to start syncing, even though we have not received
-        // any event from the SyncEngine. This has two nice effects:
-        // 1) the source is marked immediately as syncing
-        // 2) the buttons and the sync status are always aligned, even if the
-        // sync takes time to start
-        UISyncSourceController sourceController = appSource.getUISyncSourceController();
-        if (sourceController != null) {
-            sourceController.attachToSession();
-        }
-    }
-
-    protected void changeSyncLabelsOnSyncEnded() {
-        if (homeScreen == null) {
-            return;
-        }
-        if (customization.syncAllOnMainScreenRequired()) {
-            homeScreen.setSyncAllText(localization.getLanguage("home_sync_all"));
-        }
-        homeScreen.setSyncMenuText(localization.getLanguage("menu_sync"));
-    }
-
-    private void forceUpdateAvailableSources() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "forceUpdateAvailableSources");
-        }
-        // Compute the set of items to be displayed
-        computeVisibleItems();
- 
-        if (homeScreen != null) {
-            homeScreen.updateVisibleItems();
-        }
-        setSelected(getFirstActiveItemIndex(), false);
-        updateAvailableSources = false;
-    }
-    
     /**
      * Logs sync sources where server full quota or storage limit error happened 
      * @param storageLimitOrserverQuotaFullSources

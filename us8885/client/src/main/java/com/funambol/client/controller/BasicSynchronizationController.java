@@ -60,12 +60,15 @@ public abstract class BasicSynchronizationController
     public static final String SCHEDULED = "scheduled";
     public static final String PUSH      = "push";
 
-    protected Configuration configuration;
-
-    protected NetworkStatus networkStatus;
+    protected Configuration mConfiguration;
+    protected NetworkStatus mNetworkStatus;
     
-    private Vector localStorageFullSources = new Vector();
-    private Vector serverQuotaFullSources = new Vector();
+    private Vector mLocalStorageFullSources = new Vector();
+    private Vector mServerQuotaFullSources = new Vector();
+
+    public BasicSynchronizationController(Controller controller) {
+        mConfiguration = controller.getConfiguration();
+    }
 
     /**
      * Displays warnings in the proper form if the outcome of the latest sync requires so.
@@ -75,15 +78,15 @@ public abstract class BasicSynchronizationController
      */
     protected void displayEndOfSyncWarnings() {
 
-        if (localStorageFullSources != null && localStorageFullSources.size() > 0) {
+        if (mLocalStorageFullSources != null && mLocalStorageFullSources.size() > 0) {
             Log.debug(TAG_LOG, "Notifying storage limit warning");
-            displayStorageLimitWarning(localStorageFullSources);
-            localStorageFullSources.removeAllElements();
+            displayStorageLimitWarning(mLocalStorageFullSources);
+            mLocalStorageFullSources.removeAllElements();
         }
-        if (serverQuotaFullSources != null && serverQuotaFullSources.size() > 0) {
+        if (mServerQuotaFullSources != null && mServerQuotaFullSources.size() > 0) {
             Log.debug(TAG_LOG, "Notifying server quota warning");
-            displayServerQuotaWarning(serverQuotaFullSources);
-            serverQuotaFullSources.removeAllElements();
+            displayServerQuotaWarning(mServerQuotaFullSources);
+            mServerQuotaFullSources.removeAllElements();
         }
 
     }
@@ -96,10 +99,10 @@ public abstract class BasicSynchronizationController
                 case SyncListener.LOCAL_CLIENT_FULL_ERROR:
                     // If one of the sources has risked to break the storage limit,
                     // a warning message can have to be displayed
-                    localStorageFullSources.addElement(appSource);
+                    mLocalStorageFullSources.addElement(appSource);
                 break;
                 case SyncListener.SERVER_FULL_ERROR:
-                    serverQuotaFullSources.addElement(appSource);
+                    mServerQuotaFullSources.addElement(appSource);
                 break;
             }
         }
@@ -147,11 +150,11 @@ public abstract class BasicSynchronizationController
         // This class cannot guarantee that these two members are not null,
         // therefore we check for their validity and do not filter if any of
         // these two is undefined
-        if (configuration == null || networkStatus == null) {
+        if (mConfiguration == null || mNetworkStatus == null) {
             return syncSources;
         }
         
-        if (configuration.getBandwidthSaverActivated() && !networkStatus.isWiFiConnected()) {
+        if (mConfiguration.getBandwidthSaverActivated() && !mNetworkStatus.isWiFiConnected()) {
 
             if (Log.isLoggable(Log.TRACE)) {
                 Log.trace(TAG_LOG, "Bandwidth saver is enabled, wifi not connected and sync type " + syncType);
@@ -171,7 +174,7 @@ public abstract class BasicSynchronizationController
                         // Remember that we have a pending sync now
                         AppSyncSourceConfig sourceConfig = appSource.getConfig();
                         sourceConfig.setPendingSync(syncType, sourceConfig.getSyncMode());
-                        configuration.save();
+                        mConfiguration.save();
                         // The sync for this source is terminated
                         if (Log.isLoggable(Log.INFO)) {
                             Log.info(TAG_LOG, "Ignoring sync for source: " + appSource.getName());

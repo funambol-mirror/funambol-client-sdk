@@ -42,7 +42,7 @@ package com.funambol.client.controller;
  */
 public abstract class BasicController {
 
-    protected NotificationController           notificationController;
+    protected NotificationController notificationController;
 
     /**
      * @return the NotificationController;

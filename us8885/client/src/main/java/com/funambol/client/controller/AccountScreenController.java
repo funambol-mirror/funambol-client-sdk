@@ -37,11 +37,9 @@ package com.funambol.client.controller;
 
 import java.util.Vector;
 
-import com.funambol.client.customization.Customization;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
-import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.AccountScreen;
 import com.funambol.client.ui.DisplayManager;
 import com.funambol.util.Log;
@@ -72,27 +70,9 @@ public class AccountScreenController extends SynchronizationController {
         this.screen = accountScreen;
         
         // Save the original values so that we can revert changes at any time
-        originalUrl = configuration.getSyncUrl() != null ?  configuration.getSyncUrl() : ""; 
-        originalUser = configuration.getUsername() != null ?  configuration.getUsername() : "";
-        originalPassword = configuration.getPassword() != null ?  configuration.getPassword() : "";
-    }
-
-    /**
-     * TODO: Remove once the com.funambol.client.controller package integration is finished
-     */
-    public AccountScreenController(Controller controller, Customization customization, 
-            Configuration configuration, Localization localization,
-            AppSyncSourceManager appSyncSourceManager, AccountScreen accountScreen) {
-
-        super(controller, customization, configuration, localization,
-                appSyncSourceManager, accountScreen, null);
-
-        this.screen = accountScreen;
-
-        // Save the original values so that we can revert changes at any time
-        originalUrl = configuration.getSyncUrl() != null ?  configuration.getSyncUrl() : "";
-        originalUser = configuration.getUsername() != null ?  configuration.getUsername() : "";
-        originalPassword = configuration.getPassword() != null ?  configuration.getPassword() : "";
+        originalUrl = mConfiguration.getSyncUrl() != null ?  mConfiguration.getSyncUrl() : "";
+        originalUser = mConfiguration.getUsername() != null ?  mConfiguration.getUsername() : "";
+        originalPassword = mConfiguration.getPassword() != null ?  mConfiguration.getPassword() : "";
     }
 
     public AccountScreen getAccountScreen() {
@@ -102,10 +82,10 @@ public class AccountScreenController extends SynchronizationController {
     public void saveAndCheck() {
         if(screen != null) {
             String serverUri;
-            if (customization.syncUriEditable()) {
+            if (mCustomization.syncUriEditable()) {
                 serverUri = screen.getSyncUrl();
             } else {
-                serverUri = customization.getServerUriDefault();
+                serverUri = mCustomization.getServerUriDefault();
             }
             saveAndCheck(serverUri, screen.getUsername(), screen.getPassword());
         } else {
@@ -133,41 +113,41 @@ public class AccountScreenController extends SynchronizationController {
 
         // Load all the default settings and overwrite the parameters edited
         // here
-        configuration.load();
+        mConfiguration.load();
 
         // Preliminary check
         if (   StringUtil.isNullOrEmpty(username)
             || StringUtil.isNullOrEmpty(password)
             || StringUtil.isNullOrEmpty(serverUri))
         {
-            showMessage(localization.getLanguage("login_failed_empty_params"));
+            showMessage(mLocalization.getLanguage("login_failed_empty_params"));
             return;
         } else if (!StringUtil.isValidProtocol(serverUri)) {
-            showMessage(localization.getLanguage("status_invalid_url"));
+            showMessage(mLocalization.getLanguage("status_invalid_url"));
             return;
         }
 
-        if(    !originalUser.equals(serverUri)
-            || !originalUser.equals(username)
-            || !originalPassword.equals(password)
-            || configuration.getCredentialsCheckPending())
+        if(!originalUser.equals(serverUri) ||
+           !originalUser.equals(username) ||
+           !originalPassword.equals(password)  ||
+           mConfiguration.getCredentialsCheckPending())
         {
             // Okay, save the configuration
-            configuration.setSyncUrl(serverUri);
-            configuration.setUsername(username);
-            configuration.setPassword(password);
+            mConfiguration.setSyncUrl(serverUri);
+            mConfiguration.setUsername(username);
+            mConfiguration.setPassword(password);
             // Reset the server dev inf
-            configuration.setServerDevInf(null);
+            mConfiguration.setServerDevInf(null);
 
-            if (configuration.save() != Configuration.CONF_OK) {
-                showMessage(localization.getLanguage("message_config_error") + ": " +
-                        localization.getLanguage("message_config_error_save"));
+            if (mConfiguration.save() != Configuration.CONF_OK) {
+                showMessage(mLocalization.getLanguage("message_config_error") + ": " +
+                        mLocalization.getLanguage("message_config_error_save"));
                 return;
             }
 
             // If the credentials check is not needed we directly authenticate
             // the user
-            if(!customization.getCheckCredentialsInLoginScreen()) {
+            if(!mCustomization.getCheckCredentialsInLoginScreen()) {
                 new Thread() {
                     public void run() {
                         userAuthenticated();
@@ -178,8 +158,7 @@ public class AccountScreenController extends SynchronizationController {
 
             // Now we must perform a sync of the configuration to authenticate and
             // verify the credentials
-            configAppSource = appSyncSourceManager.getSource(
-                                                AppSyncSourceManager.CONFIG_ID);
+            configAppSource = mAppSyncSourceManager.getSource(AppSyncSourceManager.CONFIG_ID);
             if (configAppSource == null) {
                 Log.error(TAG_LOG, "No suitable ConfigSyncSource, cannot verify credentials");
             } else {
@@ -197,8 +176,8 @@ public class AccountScreenController extends SynchronizationController {
                 // level and we may need to check what's going on in case of
                 // errors
                 try {
-                    configuration.setTempLogLevel(Log.TRACE);
-                    controller.reapplyMiscConfiguration();
+                    mConfiguration.setTempLogLevel(Log.TRACE);
+                    mController.reapplyMiscConfiguration();
                     synchronize(SynchronizationController.MANUAL, sources);
                 } catch (Exception e) {
                     Log.error(TAG_LOG, "Config sync failed ", e);
@@ -206,8 +185,8 @@ public class AccountScreenController extends SynchronizationController {
                     syncEnded();
                 } finally {
                     // Restore the original log level
-                    configuration.restoreLogLevel();
-                    controller.reapplyMiscConfiguration();
+                    mConfiguration.restoreLogLevel();
+                    mController.reapplyMiscConfiguration();
                 }
             }
         } else {
@@ -219,7 +198,7 @@ public class AccountScreenController extends SynchronizationController {
     }
 
     protected boolean isSyncInProgress() {
-        HomeScreenController homeScreenController = controller.getHomeScreenController();
+        HomeScreenController homeScreenController = mController.getHomeScreenController();
         return homeScreenController.isSynchronizing();
     }
 
@@ -245,7 +224,7 @@ public class AccountScreenController extends SynchronizationController {
             // Apply the default server configuration as the server did not
             // provide its capabilities. This has the side effect of hiding the
             // picture source
-            controller.reapplyServerCaps(null);
+            mController.reapplyServerCaps(null);
         }
     }
 
@@ -264,8 +243,8 @@ public class AccountScreenController extends SynchronizationController {
             }
             screen.checkFailed();
             // Clear the configuration for no pending credentials check
-            configuration.setCredentialsCheckPending(true);
-            configuration.save();
+            mConfiguration.setCredentialsCheckPending(true);
+            mConfiguration.save();
             // Now we show an error to the user, depending on the error we got
             String msg;
             if (exp instanceof SyncException) {
@@ -274,12 +253,12 @@ public class AccountScreenController extends SynchronizationController {
                     return;
                 }
             } else {
-                msg = localization.getLanguage("status_generic_error");
+                msg = mLocalization.getLanguage("status_generic_error");
             }
             // We should never fall into this case, unless we miss some strings
             // in the language table
             if (msg == null) {
-                msg = localization.getLanguage("status_generic_error");
+                msg = mLocalization.getLanguage("status_generic_error");
             }
             // Show an error to the user
             showMessage(msg);
@@ -291,8 +270,8 @@ public class AccountScreenController extends SynchronizationController {
                 Log.info(TAG_LOG, "Cannot access home screen");
             }
             // Clear the configuration for no pending credentials check
-            configuration.setCredentialsCheckPending(true);
-            configuration.save();
+            mConfiguration.setCredentialsCheckPending(true);
+            mConfiguration.save();
             screen.checkFailed();
         } else {
             // The user is authenticated, hide the login and open the main view
@@ -309,36 +288,36 @@ public class AccountScreenController extends SynchronizationController {
         String msg;
         switch (ex.getCode()) {
             case SyncException.AUTH_ERROR:
-                msg = localization.getLanguage("status_invalid_credentials");
+                msg = mLocalization.getLanguage("status_invalid_credentials");
                 break;
             case SyncException.FORBIDDEN_ERROR:
-                msg = localization.getLanguage("status_forbidden_error");
+                msg = mLocalization.getLanguage("status_forbidden_error");
                 break;
             case SyncException.DATA_NULL:
             case SyncException.CONN_NOT_FOUND:
-                msg = localization.getLanguage("status_invalid_url");
+                msg = mLocalization.getLanguage("status_invalid_url");
                 break;
             case SyncException.READ_SERVER_RESPONSE_ERROR:
             case SyncException.WRITE_SERVER_REQUEST_ERROR:
             case SyncException.SERVER_CONNECTION_REQUEST_ERROR:
-                msg = localization.getLanguage("status_network_error");
+                msg = mLocalization.getLanguage("status_network_error");
                 break;
             case SyncException.CONNECTION_BLOCKED_BY_USER:
-                msg = localization.getLanguage("status_connection_blocked");
+                msg = mLocalization.getLanguage("status_connection_blocked");
                 break;
             case SyncException.CANCELLED:
                 // In this case we shall simply go back to the account
                 // screen, so we just return from this method
                 msg = null;
             default:
-                msg = localization.getLanguage("status_generic_error");
+                msg = mLocalization.getLanguage("status_generic_error");
                 break;
         }
         return msg;
     }
 
     public boolean hasChanges(String serverUri, String username, String password) {
-        if (customization.syncUriEditable()) {
+        if (mCustomization.syncUriEditable()) {
 
             // We are a bit flexible in the URL comparison as we allow users to
             // change for example from http to https and viceversa
@@ -357,15 +336,15 @@ public class AccountScreenController extends SynchronizationController {
     }
 
     public void resetValues() {
-        if (customization.syncUriEditable()) {
+        if (mCustomization.syncUriEditable()) {
             screen.setSyncUrl(originalUrl);
-            configuration.setSyncUrl(originalUrl);
+            mConfiguration.setSyncUrl(originalUrl);
         }
         screen.setUsername(originalUser);
         screen.setPassword(originalPassword);
-        configuration.setUsername(originalUser);
-        configuration.setPassword(originalPassword);
-        configuration.save();
+        mConfiguration.setUsername(originalUser);
+        mConfiguration.setPassword(originalPassword);
+        mConfiguration.save();
     }
 
     public void endSync(Vector sources, boolean hadErrors) {
@@ -374,11 +353,11 @@ public class AccountScreenController extends SynchronizationController {
     }
 
     public void hide() {
-        controller.toBackground();
+        mController.toBackground();
     }
 
     public void initScreen() {
-        Configuration config = controller.getConfiguration();
+        Configuration config = mController.getConfiguration();
         String url, usr, pwd;
         if (config.load() == Configuration.CONF_OK) {
             url = config.getSyncUrl();
@@ -386,9 +365,9 @@ public class AccountScreenController extends SynchronizationController {
             pwd = config.getPassword();
         } else {
             Log.error(TAG_LOG, "Error loading the configuration, using default values");
-            url = customization.getServerUriDefault();
-            usr = customization.getUserDefault();
-            pwd = customization.getPasswordDefault();
+            url = mCustomization.getServerUriDefault();
+            usr = mCustomization.getUserDefault();
+            pwd = mCustomization.getPasswordDefault();
         }
         initScreen(url, usr, pwd); 
     }
@@ -405,8 +384,8 @@ public class AccountScreenController extends SynchronizationController {
         // If the home screen is not displayed, we cannot show any warning and
         // just ignore this event
         if (screen != null) {
-            DisplayManager dm = controller.getDisplayManager();
-            String msg = localization.getLanguage("message_sync_running_wait");
+            DisplayManager dm = mController.getDisplayManager();
+            String msg = mLocalization.getLanguage("message_sync_running_wait");
             dm.showMessage(screen, msg);
         }
     }
@@ -418,17 +397,17 @@ public class AccountScreenController extends SynchronizationController {
 
         // An account has been created. So keep track of it in order to not 
         // display the signup screen again
-        configuration.setSignupAccountCreated(true);
-        configuration.setCredentialsCheckPending(false);
-        configuration.save();
+        mConfiguration.setSignupAccountCreated(true);
+        mConfiguration.setCredentialsCheckPending(false);
+        mConfiguration.save();
 
         screen.checkSucceeded();
     }
 
     public void switchToSignupScreen() {
         try {
-            controller.getDisplayManager().showScreen(screen, Controller.SIGNUP_SCREEN_ID);
-            controller.getDisplayManager().hideScreen(screen);
+            mController.getDisplayManager().showScreen(screen, Controller.SIGNUP_SCREEN_ID);
+            mController.getDisplayManager().hideScreen(screen);
         } catch(Exception ex) {
             Log.error(TAG_LOG, "Unable to switch to login screen", ex);
         }

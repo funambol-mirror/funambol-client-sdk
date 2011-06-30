@@ -300,7 +300,7 @@ public abstract class BasicRobot extends Robot {
 
     public void syncAll() {
        Log.debug(TAG_LOG, "simulating Sync All button pressed");
-       getController().getHomeScreenController().syncAllPressed();        
+       // TODO: FIXMEgetController().getHomeScreenController().syncAllSources();
     }
 
     public void saveSourceConfig(String sourceName) throws Exception {

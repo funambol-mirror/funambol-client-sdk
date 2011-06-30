@@ -108,8 +108,8 @@ public class SignupHandler extends Thread {
             SignupScreenController signupScreenController) {
         this.signupScreen = signupScreen;
         this.signupScreenController = signupScreenController;
-        this.localization = signupScreenController.localization;
-        this.customization = signupScreenController.customization;
+        this.localization = signupScreenController.mLocalization;
+        this.customization = signupScreenController.mCustomization;
     }
     
     public void run() {

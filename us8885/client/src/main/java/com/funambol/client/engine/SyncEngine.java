@@ -350,30 +350,21 @@ public class SyncEngine implements SyncSchedulerListener {
             if (listener != null) {
                 listener.syncStarted(appSources);
             }
-            Vector failedSources = new Vector();
-
             try {
-                failedSources = synchronize();
+                synchronize();
             } catch (CompressedSyncException e) {
-
                 if (!compressionRetry) {
                     // Only retry because of compression once
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Sync failed because compression failed - Retrying");
                     }
                     compressionRetry = true;
-
                     // Recurse
                     this.run();
                     return;
                 }
             } catch (Throwable e) {
                 // This is unexpected, but we don't want the app to die
-                // The finally block will take care of updating the status of
-                // the failed sources. Since this case is unexpected we do not
-                // rely on the failedSource returned value but we signal all the
-                // sources as failed
-                failedSources = appSources;
                 Log.error(TAG_LOG, "Exception caught during synchronization", e);
             } finally {
                 syncEnded();

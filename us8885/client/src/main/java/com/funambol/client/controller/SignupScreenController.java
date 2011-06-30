@@ -83,8 +83,7 @@ public abstract class SignupScreenController extends AccountScreenController {
     public SignupScreenController(Controller controller, Customization customization,
             Configuration configuration, Localization localization,
             AppSyncSourceManager appSyncSourceManager, SignupScreen signupScreen) {
-        super(controller, customization, configuration, localization,
-                appSyncSourceManager, signupScreen);
+        super(controller, signupScreen);
     }
 
     /**
@@ -98,16 +97,16 @@ public abstract class SignupScreenController extends AccountScreenController {
         DeviceInfoInterface devInfo = getDeviceInfo();
         String phoneNumber;
 
-        if (customization.getPrefillPhoneNumber()) {
+        if (mCustomization.getPrefillPhoneNumber()) {
             phoneNumber = devInfo.getPhoneNumber();
         } else {
             phoneNumber = null;
         }
 
         usr = StringUtil.isNullOrEmpty(phoneNumber) ?
-              customization.getUserDefault() : phoneNumber.trim();
-        pwd = customization.getPasswordDefault();
-        url = customization.getServerUriDefault();
+              mCustomization.getUserDefault() : phoneNumber.trim();
+        pwd = mCustomization.getPasswordDefault();
+        url = mCustomization.getServerUriDefault();
         initScreen(url, usr, pwd);
     }
 
@@ -116,7 +115,7 @@ public abstract class SignupScreenController extends AccountScreenController {
             screen.setSyncUrl(url);  originalUrl = url;
             screen.setUsername(usr); originalUser = usr;
             screen.setPassword(pwd); originalPassword = pwd;
-            if(customization.getAddShowPasswordField()) {
+            if(mCustomization.getAddShowPasswordField()) {
                 screen.addShowPasswordField(true);
             }
         }
@@ -138,8 +137,8 @@ public abstract class SignupScreenController extends AccountScreenController {
      */
     public void switchToLoginScreen() {
         try {
-            controller.showScreen(screen, Controller.LOGIN_SCREEN_ID);
-            controller.hideScreen(screen);
+            mController.showScreen(screen, Controller.LOGIN_SCREEN_ID);
+            mController.hideScreen(screen);
         } catch(Exception ex) {
             Log.error(TAG_LOG, "Unable to switch to login screen", ex);
         }
@@ -159,10 +158,10 @@ public abstract class SignupScreenController extends AccountScreenController {
         
         // First validity check of Phone # and Password
         if (StringUtil.isNullOrEmpty(phoneNumber)) {
-            signupFailed(localization.getLanguage("signup_failed_empty_fields_message"));
+            signupFailed(mLocalization.getLanguage("signup_failed_empty_fields_message"));
             return;
         } else if (StringUtil.isNullOrEmpty(password)) {
-            signupFailed(localization.getLanguage("signup_failed_empty_fields_message"));
+            signupFailed(mLocalization.getLanguage("signup_failed_empty_fields_message"));
             return;
         }
 
@@ -178,7 +177,7 @@ public abstract class SignupScreenController extends AccountScreenController {
     }
 
     protected void loginRequestStarted() {
-        showProgressDialog(localization.getLanguage("signup_please_wait"));
+        showProgressDialog(mLocalization.getLanguage("signup_please_wait"));
     }
 
     protected void loginRequestSucceeded() {
@@ -206,7 +205,7 @@ public abstract class SignupScreenController extends AccountScreenController {
 
     protected void captchaRequestStarted() {
         if(state == STATE_BEGIN) {
-            showProgressDialog(localization.getLanguage("signup_please_wait"));
+            showProgressDialog(mLocalization.getLanguage("signup_please_wait"));
         }
     }
 
@@ -254,7 +253,7 @@ public abstract class SignupScreenController extends AccountScreenController {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "signupStarted");
         }
-        showProgressDialog(localization.getLanguage("signup_signing_up"));
+        showProgressDialog(mLocalization.getLanguage("signup_signing_up"));
     }
 
     public void signupSucceeded() {
@@ -293,15 +292,15 @@ public abstract class SignupScreenController extends AccountScreenController {
     }
 
     public synchronized void synchronize(String syncType, Vector syncSources) {
-        if (networkStatus != null && !networkStatus.isConnected()) {
-            if (networkStatus.isRadioOff()) {
+        if (mNetworkStatus != null && !mNetworkStatus.isConnected()) {
+            if (mNetworkStatus.isRadioOff()) {
                 noConnection();
             } else {
                 noSignal();
             }
             return;
         }
-        showProgressDialog(localization.getLanguage("signup_logging_in"));
+        showProgressDialog(mLocalization.getLanguage("signup_logging_in"));
         super.synchronize(syncType, syncSources);
     }
 
@@ -318,7 +317,7 @@ public abstract class SignupScreenController extends AccountScreenController {
     protected void userAuthenticated() {
         ((SignupScreen)screen).enableSignup();
         // Show the congrats message only if the account has really been created
-        if(customization.getShowSignupSuccededMessage() && state == STATE_SIGNED_UP) {
+        if(mCustomization.getShowSignupSuccededMessage() && state == STATE_SIGNED_UP) {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Showing signup succeeded message");
             }
@@ -326,14 +325,14 @@ public abstract class SignupScreenController extends AccountScreenController {
             // in the signup succeeded message.
             String succeededMsg;
             if(((SignupScreen)screen).isPasswordShowed()) {
-                succeededMsg = localization.getLanguage("signup_succeeded");
+                succeededMsg = mLocalization.getLanguage("signup_succeeded");
                 succeededMsg = StringUtil.replaceAll(succeededMsg, "__PASSWORD__",
-                    configuration.getPassword());
+                    mConfiguration.getPassword());
             } else {
-                succeededMsg = localization.getLanguage("signup_succeeded_no_password");
+                succeededMsg = mLocalization.getLanguage("signup_succeeded_no_password");
             }
             succeededMsg = StringUtil.replaceAll(succeededMsg, "__USERNAME__",
-                    configuration.getUsername());
+                    mConfiguration.getUsername());
             showSignupSucceededMessage(succeededMsg);
         }
         super.userAuthenticated();
@@ -355,16 +354,16 @@ public abstract class SignupScreenController extends AccountScreenController {
         switch (ex.getCode()) {
             case SyncException.AUTH_ERROR:
                 // Should never happen since the account has been just created
-                 msg = localization.getLanguage("signup_failed_generic_message");
+                 msg = mLocalization.getLanguage("signup_failed_generic_message");
                 break;
             case SyncException.DATA_NULL:
             case SyncException.READ_SERVER_RESPONSE_ERROR:
             case SyncException.WRITE_SERVER_REQUEST_ERROR:
             case SyncException.SERVER_CONNECTION_REQUEST_ERROR:
-                msg = localization.getLanguage("signup_failed_network");
+                msg = mLocalization.getLanguage("signup_failed_network");
                 break;
             default:
-                msg = localization.getLanguage("signup_failed_generic_message");
+                msg = mLocalization.getLanguage("signup_failed_generic_message");
                 break;
         }
         return msg;
@@ -473,13 +472,13 @@ public abstract class SignupScreenController extends AccountScreenController {
             } catch(IOException ex) {
                 // This is a network failure
                 Log.error(TAG_LOG, "Unable to retrieve CAPTCHA url", ex);
-                captchaRequestFailed(localization.getLanguage(
+                captchaRequestFailed(mLocalization.getLanguage(
                         "signup_failed_network"));
                 return;
             } catch(Exception ex) {
                 // This is a generic failure
                 Log.error(TAG_LOG, "Unable to retrieve CAPTCHA url", ex);
-                captchaRequestFailed(localization.getLanguage(
+                captchaRequestFailed(mLocalization.getLanguage(
                             "signup_failed_generic_message"));
                 return;
             }
@@ -534,7 +533,7 @@ public abstract class SignupScreenController extends AccountScreenController {
                     Log.error(TAG_LOG, "Captcha request failed. Server " +
                             "replied: " + conn.getResponseCode() + ", message: " +
                             conn.getResponseMessage());
-                    captchaRequestFailed(localization.getLanguage(
+                    captchaRequestFailed(mLocalization.getLanguage(
                             "signup_failed_network"));
                     return;
                 }
@@ -563,7 +562,7 @@ public abstract class SignupScreenController extends AccountScreenController {
                 }
             } catch(IOException ex) {
                 Log.error(TAG_LOG, "Captcha request failed", ex);
-                captchaRequestFailed(localization.getLanguage(
+                captchaRequestFailed(mLocalization.getLanguage(
                         "signup_failed_network"));
                 return;
             } finally {
@@ -593,7 +592,7 @@ public abstract class SignupScreenController extends AccountScreenController {
 
             // If the last entered code didn't match, we show an alert message
             if(unmatched) {
-                showMessage(localization.getLanguage("signup_failed_invalid_captcha"));
+                showMessage(mLocalization.getLanguage("signup_failed_invalid_captcha"));
             }
         }
 

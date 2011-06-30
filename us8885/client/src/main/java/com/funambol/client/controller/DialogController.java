@@ -317,10 +317,6 @@ public class DialogController extends BasicDialogController {
             HomeScreenController hsCont = controller.getHomeScreenController();
 
             if (getValue() == 0) {
-                if(!hsCont.isSynchronizing()) {
-                    hsCont.changeSyncLabelsOnSyncEnded();
-                }
-
                 hsCont.continueSynchronizationAfterBandwithSaverDialog(syncType, filteredSources,
                                                                        refresh, direction,
                                                                        delay, fromOutside, true);
@@ -712,12 +708,7 @@ public class DialogController extends BasicDialogController {
                 //add the given app source to the next sync request vector
                 filteredSources.addElement(appSourceList[sourceIndex]);
             }
-            hsCont.redraw();
-
             if (sourceIndex >= questionCounter - 1) {
-                if(!hsCont.isSynchronizing()) {
-                    hsCont.changeSyncLabelsOnSyncEnded();
-                }
                 //Last sync question reached. Synchronization must start now. If
                 //the filteredSources param is empty, then the sync is
                 //terminated
@@ -777,13 +768,9 @@ public class DialogController extends BasicDialogController {
                     displayManager.hideScreen(screen);
                     //starts the sync
                     controller.getHomeScreenController().refresh(value, direction);
-                    controller.getHomeScreenController().redraw();
                 } catch (Exception ex) {
                     Log.error("Exception accessing home screen: " + ex);
                 }
-            } else {
-                //User selected the cancel option
-                controller.getHomeScreenController().redraw();
             }
         }
     }

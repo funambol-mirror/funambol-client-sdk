@@ -91,7 +91,7 @@ public interface SyncEngineListener {
     /**
      * A sync for the given sources is about to begin. 
      */
-    public boolean syncStarted(Vector appSources);
+    public void syncStarted(Vector appSources);
 
     /**
      * Invoked at the end of the synchronization (always invoked, regardless of

@@ -38,9 +38,7 @@ package com.funambol.client.controller;
 import java.util.Vector;
 import java.util.Enumeration;
 
-import com.funambol.client.configuration.Configuration;
 import com.funambol.client.engine.SyncEngine;
-import com.funambol.client.engine.Poller;
 import com.funambol.client.engine.SyncEngineListener;
 import com.funambol.client.engine.AppSyncRequest;
 import com.funambol.client.source.AppSyncSource;
@@ -50,15 +48,12 @@ import com.funambol.client.customization.Customization;
 import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.Screen;
 import com.funambol.client.push.SyncScheduler;
-import com.funambol.syncml.protocol.SyncML;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncSource;
 import com.funambol.sync.SourceConfig;
-import com.funambol.sync.SyncListener;
 import com.funambol.util.ConnectionListener;
 import com.funambol.util.Log;
 import com.funambol.platform.NetworkStatus;
-import com.funambol.sapisync.source.JSONSyncSource;
 
 /**
  * This class provides a basic controller that can be used by any other
@@ -75,100 +70,52 @@ public class SynchronizationController extends BasicSynchronizationController
     public static final int REFRESH_FROM_SERVER = 0;
     public static final int REFRESH_TO_SERVER   = 1;
 
-    protected Controller controller;
+    protected Controller mController;
+    protected Customization mCustomization;
+    protected Localization mLocalization;
+    protected AppSyncSourceManager mAppSyncSourceManager;
+
+    protected SyncEngine mSyncEngine;
+    protected SyncScheduler mSyncScheduler;
+    protected RequestHandler mRequestHandler;
+
+    protected boolean mDoCancel = false;
+    protected boolean mShowTCPAlert = false;
+    protected boolean mLogConnectivityError = false;
+
+    protected Screen mScreen;
+
+    private final AppSyncRequest mAppSyncRequests[] = new AppSyncRequest[1];
     
-    protected Customization customization;
-
-    protected AppSyncSourceManager appSyncSourceManager;
-
-    protected Localization localization;
-
-    protected SyncEngine engine;
-
-    protected boolean    doCancel        = false;
-
-    protected AppSyncSource currentSource = null;
-
-    protected boolean    showTCPAlert;
-
-    protected boolean    logConnectivityError;
-
-    private SyncScheduler  syncScheduler;
-
-    private int            scheduledAttempt = 0;
-
-    private Poller         retryPoller = null;
-
-    protected Screen       screen;
-
-    private final AppSyncRequest appSyncRequestArr[] = new AppSyncRequest[1];
-    private RequestHandler reqHandler;
-
-    private int            RETRY_POLL_TIME = 1;
-
-    private boolean isUserConfirmationNeeded = false;
+    private boolean mIsUserConfirmationNeeded = false;
 
     private FirstSyncRequest pendingFirstSyncQuestion = null;
 
-    SynchronizationController() {
-        throw new IllegalArgumentException("Invalid");
-    }
-
-    SynchronizationController(Controller controller, Screen screen, NetworkStatus networkStatus) {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Initializing synchronization controller");
-        }
-
-        this.controller = controller;
-        this.screen = screen;
-        this.networkStatus = networkStatus;
-        
-        localization = controller.getLocalization();
-        appSyncSourceManager = controller.getAppSyncSourceManager();
-        customization = controller.getCustomization();
-        configuration = controller.getConfiguration();
-
-        initSyncScheduler();
-    }
-
-    /**
-     * TODO: Remove once the com.funambol.client.controller package integration is finished
-     */
-    SynchronizationController(Controller controller, Customization customization,
-            Configuration configuration, Localization localization,
-            AppSyncSourceManager appSyncSourceManager, Screen screen,
+    public SynchronizationController(Controller controller, Screen screen,
             NetworkStatus networkStatus) {
+
+        super(controller);
         
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Initializing synchronization controller");
-        }
+        mController = controller;
+        mScreen = screen;
+        mNetworkStatus = networkStatus;
+        
+        mLocalization = controller.getLocalization();
+        mAppSyncSourceManager = controller.getAppSyncSourceManager();
+        mCustomization = controller.getCustomization();
 
-        this.controller = controller;
-        this.screen = screen;
-        this.networkStatus = networkStatus;
-
-        this.localization = localization;
-        this.appSyncSourceManager = appSyncSourceManager;
-        this.customization = customization;
-        this.configuration = configuration;
-
-        initSyncScheduler();
+        mSyncEngine = new SyncEngine(mCustomization, mConfiguration,
+                mAppSyncSourceManager, null);
+        mSyncScheduler = new SyncScheduler(mSyncEngine);
+        mRequestHandler = new RequestHandler();
+        mRequestHandler.start();
     }
-    
-    protected void initSyncScheduler() {
-        engine = createSyncEngine();
-        syncScheduler = new SyncScheduler(engine);
-        // The request handler is a daemon serving external requests
-        reqHandler = new RequestHandler();
-        reqHandler.start();
-    }
-
 
     /**
-     * Returns true iff a synchronization is in progress
+     * Returns true if a synchronization is in progress
      */
     public boolean isSynchronizing() {
-        return engine.isSynchronizing();
+        return mSyncEngine.isSynchronizing();
     }
 
     /**
@@ -179,14 +126,14 @@ public class SynchronizationController extends BasicSynchronizationController
      * the source is prepared for the synchronization.
      */
     public AppSyncSource getCurrentSource() {
-        return engine.getCurrentSource();
+        return mSyncEngine.getCurrentSource();
     }
 
     /**
      * @return the current <code>SyncEngine</code> instance
      */
     public SyncEngine getSyncEngine() {
-        return engine;
+        return mSyncEngine;
     }
 
     /**
@@ -195,16 +142,11 @@ public class SynchronizationController extends BasicSynchronizationController
      */
     public void cancelSync() {
         if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Cancelling sync " + isSynchronizing() + " currentSource=" + currentSource);
+            Log.trace(TAG_LOG, "Cancelling sync " + isSynchronizing());
         }
         setCancel(true);
-
-        if (isSynchronizing() && currentSource != null) {
-            UISyncSourceController uiSourceController = currentSource.getUISyncSourceController();
-            if (uiSourceController != null) {
-                uiSourceController.startCancelling();
-            }
-            engine.cancelSync();
+        if (isSynchronizing()) {
+            mSyncEngine.cancelSync();
         }
     }
 
@@ -216,8 +158,7 @@ public class SynchronizationController extends BasicSynchronizationController
      * @param direction the refresh direction
      */
     public void refresh(int mask, int direction) {
-
-        Enumeration sources = appSyncSourceManager.getEnabledAndWorkingSources();
+        Enumeration sources = mAppSyncSourceManager.getEnabledAndWorkingSources();
         Vector syncSources = new Vector();
         while(sources.hasMoreElements()) {
             AppSyncSource appSource = (AppSyncSource)sources.nextElement();
@@ -229,7 +170,6 @@ public class SynchronizationController extends BasicSynchronizationController
     }
 
     public synchronized void refreshSources(Vector syncSources, int direction) {
-
         if (isSynchronizing()) {
             return;
         }
@@ -326,25 +266,12 @@ public class SynchronizationController extends BasicSynchronizationController
         syncSources = applyBandwidthSaver(syncSources, sourcesWithQuestion, syncType);
 
         // We cannot ask the question if there is no app visible 
-        if (screen == null && sourcesWithQuestion.size() > 0) {
+        if (mScreen == null && sourcesWithQuestion.size() > 0) {
             // Remember this so that on the next home screen startup, we will be
             // able to show the dialog. We don't continue the sync here because
             // we need a feedback from the user
             AppSyncSource[] dialogDependentSources = new AppSyncSource[sourcesWithQuestion.size()];
             sourcesWithQuestion.copyInto(dialogDependentSources);
-            // TODO FIXME: use the proper question!!!
-            /*
-            pendingFirstSyncQuestion = new FirstSyncRequest();
-            pendingFirstSyncQuestion.dialogDependentSources = dialogDependentSources;
-            pendingFirstSyncQuestion.syncType = syncType;
-            pendingFirstSyncQuestion.filteredSources = filteredSources;
-            pendingFirstSyncQuestion.refresh = refresh;
-            pendingFirstSyncQuestion.direction = direction;
-            pendingFirstSyncQuestion.delay = delay;
-            pendingFirstSyncQuestion.fromOutside = fromOutside;
-            pendingFirstSyncQuestion.numSources = dialogDependentSources.length;
-            pendingFirstSyncQuestion.sourceIndex = 0;
-            */
         } else {
             if (sourcesWithQuestion.isEmpty()) {
                 if (Log.isLoggable(Log.DEBUG)) {
@@ -357,8 +284,8 @@ public class SynchronizationController extends BasicSynchronizationController
                 if (Log.isLoggable(Log.DEBUG)) {
                     Log.debug(TAG_LOG, "Continue sync displaying bandwith prompt");
                 }
-                DialogController dialControll = controller.getDialogController();
-                dialControll.showNoWIFIAvailableDialog(screen,syncType,
+                DialogController dialControll = mController.getDialogController();
+                dialControll.showNoWIFIAvailableDialog(mScreen,syncType,
                                                        sourcesWithQuestion, refresh,
                                                        direction, delay,
                                                        fromOutside);
@@ -372,8 +299,8 @@ public class SynchronizationController extends BasicSynchronizationController
 
     public void showPendingFirstSyncQuestion() {
         if (pendingFirstSyncQuestion != null) {
-            DialogController dialControll = controller.getDialogController();
-            dialControll.showFirstSyncDialog(screen,
+            DialogController dialControll = mController.getDialogController();
+            dialControll.showFirstSyncDialog(mScreen,
                                              pendingFirstSyncQuestion.dialogDependentSources,
                                              pendingFirstSyncQuestion.syncType,
                                              pendingFirstSyncQuestion.filteredSources,
@@ -416,7 +343,7 @@ public class SynchronizationController extends BasicSynchronizationController
         }
 
         // We cannot ask the question if there is no app visible
-        if (screen == null && sourcesWithQuestion.size() > 0) {
+        if (mScreen == null && sourcesWithQuestion.size() > 0) {
             // Remember this so that on the next home screen startup, we will be
             // able to show the dialog. We don't continue the sync here because
             // we need a feedback from the user
@@ -446,8 +373,8 @@ public class SynchronizationController extends BasicSynchronizationController
                 }
                 AppSyncSource[] dialogDependentSources = new AppSyncSource[sourcesWithQuestion.size()];
                 sourcesWithQuestion.copyInto(dialogDependentSources);
-                DialogController dialControll = controller.getDialogController();
-                dialControll.showFirstSyncDialog(screen, dialogDependentSources, syncType, filteredSources,
+                DialogController dialControll = mController.getDialogController();
+                dialControll.showFirstSyncDialog(mScreen, dialogDependentSources, syncType, filteredSources,
                         refresh, direction, delay, fromOutside, dialogDependentSources.length, 0);
                 //The sync request is started when the user has finished to reply
                 //all the first sync request dialogs (the last sync request dialog)
@@ -475,7 +402,7 @@ public class SynchronizationController extends BasicSynchronizationController
         }
 
         // We register as listeners for the sync
-        engine.setListener(this);
+        mSyncEngine.setListener(this);
 
         int sourceSyncType = 0;
         AppSyncRequest appSyncRequest = new AppSyncRequest(null, delay);
@@ -502,34 +429,29 @@ public class SynchronizationController extends BasicSynchronizationController
             // start a sync
             AppSyncSourceConfig sourceConfig = appSource.getConfig();
             sourceConfig.setPendingSync("", -1);
-            configuration.save();
+            mConfiguration.save();
             // Add the request for this synchronization
             appSyncRequest.addRequestContent(appSource);
         }
 
         if (fromOutside) {
-            synchronized(appSyncRequestArr) {
-                appSyncRequestArr[0] = appSyncRequest;
-                appSyncRequestArr.notify();
+            synchronized(mAppSyncRequests) {
+                mAppSyncRequests[0] = appSyncRequest;
+                mAppSyncRequests.notify();
             }
         } else {
-            syncScheduler.addRequest(appSyncRequest);
+            mSyncScheduler.addRequest(appSyncRequest);
         }
     }
 
     public boolean confirmDeletes(Enumeration sourceNameList) {
-
         String sourceNames = getListOfSourceNames(sourceNameList).toLowerCase();
-
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Prompting user for delete confirmation");
         }
-
-        String message = localization.getLanguage("dialog_delete1") + " " + sourceNames
-                + localization.getLanguage("dialog_delete2");
-
-        boolean result = controller.getDialogController().askYesNoQuestion(message, false);
-
+        String message = mLocalization.getLanguage("dialog_delete1") + " " + sourceNames
+                + mLocalization.getLanguage("dialog_delete2");
+        boolean result = mController.getDialogController().askYesNoQuestion(message, false);
         if (result) {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Continuing with sync");
@@ -539,87 +461,74 @@ public class SynchronizationController extends BasicSynchronizationController
                 Log.info(TAG_LOG, "User opted to cancel sync - " + sourceNames);
             }
         }
-
         return result;
     }
 
     private String getListOfSourceNames(Enumeration sourceNameList) {
         StringBuffer sourceNames = new StringBuffer();
-
         int x = 0;
         AppSyncSource appSource = (AppSyncSource)sourceNameList.nextElement();
-
         while(appSource != null) {
-
             String name = appSource.getName();
             appSource = (AppSyncSource)sourceNameList.nextElement();
-
             if (x > 0) {
                 sourceNames.append(", ");
                 if (appSource == null) {
-                    sourceNames.append(localization.getLanguage("dialog_and").toLowerCase());
+                    sourceNames.append(mLocalization.getLanguage("dialog_and").toLowerCase());
                 }
             }
-
             sourceNames.append(name);
         }
-
         return sourceNames.toString();
     }
 
     protected void showMessage(String msg) {
-        controller.getDialogController().showMessage(screen, msg);
+        mController.getDialogController().showMessage(mScreen, msg);
     }
 
     // ConnectionListener implementation
     
     public boolean isConnectionConfigurationAllowed(final String apn) { 
-        String message = localization.getLanguage("message_APN_question_1") + " " + apn + " "
-                + localization.getLanguage("message_APN_question_2");
-        return controller.getDialogController().askAcceptDenyQuestion(message, true);
+        String message = mLocalization.getLanguage("message_APN_question_1") + " " + apn + " "
+                + mLocalization.getLanguage("message_APN_question_2");
+        return mController.getDialogController().askAcceptDenyQuestion(message, true);
     }
 
     public void noCredentials() {
-        showMessage(localization.getLanguage("message_login_required"));
-
+        showMessage(mLocalization.getLanguage("message_login_required"));
     }
 
     public void noSources() {
-        showMessage(localization.getLanguage("message_nothing_to_sync"));
-
+        showMessage(mLocalization.getLanguage("message_nothing_to_sync"));
     }
 
     public void noConnection() {
-        showMessage(localization.getLanguage("message_radio_off"));
-
+        showMessage(mLocalization.getLanguage("message_radio_off"));
     }
 
     public void noSignal() {
-        showMessage(localization.getLanguage("message_no_signal"));
-
+        showMessage(mLocalization.getLanguage("message_no_signal"));
     }
 
     public void setCancel(boolean value) {
-        doCancel = value;
+        mDoCancel = value;
     }
 
     /**
-     * Check if the current sync should be cancelled
-     * 
-     * @return
+     * @return if the current sync should be cancelled
      */
     public boolean isCancelled() {
-        return doCancel;
+        return mDoCancel;
     }
 
     // TODO FIXME MARCO: call this method
     public void setIsUserConfirmationNeeded(boolean value) {
-        isUserConfirmationNeeded = value;
+        mIsUserConfirmationNeeded = value;
     }
 
     public void beginSync() {
         clearErrors();
-        if (isUserConfirmationNeeded) {
+        if (mIsUserConfirmationNeeded) {
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "Setting connection listener for this application");
             }
@@ -634,19 +543,8 @@ public class SynchronizationController extends BasicSynchronizationController
     }
 
 
-    public boolean syncStarted(Vector sources) {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "syncStarted");
-        }
-        if (customization.checkForUpdates()) {
-            boolean isRequired = controller.checkForUpdate();
-            if (isRequired) {
-                return false;
-            }
-        }
-
-        return true;
-
+    public void syncStarted(Vector sources) {
+        // Nothing to do
     }
 
     public void endSync(Vector sources, boolean hadErrors) {
@@ -656,21 +554,15 @@ public class SynchronizationController extends BasicSynchronizationController
         
         setCancel(false);
 
-        // Disable the retry poller if not null
-        if(retryPoller != null) {
-            retryPoller.disable();
-            retryPoller = null;
-        }
-
         // If we had a CONNECTION BLOCKED BY THE USER error (user does not allow
         // any network configuration) then we show an error because the user
         // had already interacted with the app for this sync
-        if (hadErrors && showTCPAlert) {
-            controller.toForeground();
+        if (hadErrors && mShowTCPAlert) {
+            mController.toForeground();
             if (Log.isLoggable(Log.DEBUG)) {
                 Log.debug(TAG_LOG, "showing tcp settings alert!");
             }
-            showMessage(localization.getLanguage("message_enter_TCP_settings"));
+            showMessage(mLocalization.getLanguage("message_enter_TCP_settings"));
         }
 
         // Re-checks
@@ -678,59 +570,29 @@ public class SynchronizationController extends BasicSynchronizationController
 
         // We reset these errors because this sync is over (if we are retrying,
         // we must consider the new one with no errors)
-        logConnectivityError = false;
-        showTCPAlert = false;
+        mLogConnectivityError = false;
+        mShowTCPAlert = false;
     }
 
     public void sourceStarted(AppSyncSource appSource) {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "sourceStarted " + appSource.getName());
-        }
-        currentSource = appSource;
-        UISyncSourceController sourceController = appSource.getUISyncSourceController();
-        if (sourceController != null) {
-            sourceController.setSelected(true, false);
-        }
-        
-        if (currentSource.getSyncSource().getConfig().getSyncMode()==SyncML.ALERT_CODE_REFRESH_FROM_SERVER) {
-            refreshClientData(appSource, sourceController);
-        }
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "sourceStarted " + currentSource);
-        }
+        // TODO FIXME
     }
 
     public void sourceEnded(AppSyncSource appSource) {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "sourceEnded " + appSource.getName());
-        }
-        currentSource = null;
-
-        // Set synced source
-        appSource.getConfig().setSynced(true);
-        
-        saveSourceConfig(appSource);
-        
-        UISyncSourceController sourceController = appSource.getUISyncSourceController();
-        if (sourceController != null) {
-            sourceController.setSelected(false, false);
-        }
+        // TODO FIXME
     }
 
     public void sourceFailed(AppSyncSource appSource, SyncException e) {
-
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "sourceFailed");
         }
-
         int code = e.getCode();
-        if (   code == SyncException.READ_SERVER_RESPONSE_ERROR
-            || code == SyncException.WRITE_SERVER_REQUEST_ERROR
-            || code == SyncException.CONN_NOT_FOUND) {
-
-            logConnectivityError = true;
+        if (code == SyncException.READ_SERVER_RESPONSE_ERROR ||
+            code == SyncException.WRITE_SERVER_REQUEST_ERROR ||
+            code == SyncException.CONN_NOT_FOUND) {
+            mLogConnectivityError = true;
         } else if (code == SyncException.CONNECTION_BLOCKED_BY_USER) {
-            showTCPAlert = true;
+            mShowTCPAlert = true;
         }
     }
 
@@ -740,18 +602,18 @@ public class SynchronizationController extends BasicSynchronizationController
     }
 
     public void serverOperationFailed() {
-        showMessage(localization.getLanguage("message_not_send_to_server"));
+        showMessage(mLocalization.getLanguage("message_not_send_to_server"));
     }
 
     public Controller getController() {
-        return controller;
+        return mController;
     }
 
     public void clearErrors() {
         // TODO FIXME MARCO
         //controller.clearErrors();
-        showTCPAlert = false;
-        logConnectivityError = false;
+        mShowTCPAlert = false;
+        mLogConnectivityError = false;
     }
 
     public void connectionOpened() {
@@ -785,39 +647,7 @@ public class SynchronizationController extends BasicSynchronizationController
     }
 
     protected void setScreen(Screen screen) {
-        this.screen = screen;
-    }
-
-    protected SyncEngine createSyncEngine() {
-        return new SyncEngine(customization, configuration, appSyncSourceManager, null);
-    }
-
-    private void saveSourceConfig(AppSyncSource appSource) {
-        appSource.getConfig().saveSourceSyncConfig();
-        appSource.getConfig().commit();
-    }
-
-    private boolean retry(Vector sources) {
-
-        boolean willRetry = false;
-
-        if (retryPoller != null) {
-            retryPoller.disable();
-        }
-
-        if (scheduledAttempt < 3) {
-            scheduledAttempt++;
-            Log.error(TAG_LOG, "Scheduled sync: Connection attempt failed. " + "Try again in "
-                    + RETRY_POLL_TIME + " minutes");
-
-            retryPoller = new Poller(this, RETRY_POLL_TIME, true, false);
-            retryPoller.start();
-            willRetry = true;
-        } else {
-            retryPoller = null;
-            scheduledAttempt = 0;
-        }
-        return willRetry;
+        this.mScreen = screen;
     }
 
     protected BasicController getBasicController() {
@@ -837,9 +667,9 @@ public class SynchronizationController extends BasicSynchronizationController
             }
             while (!stop) {
                 try {
-                    synchronized (appSyncRequestArr) {
-                        appSyncRequestArr.wait();
-                        syncScheduler.addRequest(appSyncRequestArr[0]);
+                    synchronized (mAppSyncRequests) {
+                        mAppSyncRequests.wait();
+                        mSyncScheduler.addRequest(mAppSyncRequests[0]);
                     }
                 } catch (Exception e) {
                     // All handled exceptions are trapped below, this is just a
@@ -863,73 +693,4 @@ public class SynchronizationController extends BasicSynchronizationController
         public int sourceIndex;
     }
 
-
-    private void refreshClientData(AppSyncSource appSource, UISyncSourceController controller) {
-        // TODO FIXME: MARCO (delete items and notify the UI)
-        /*
-        if (appSource.getSyncSource() instanceof BBPIMSyncSource) {
-            try {
-                BBPIMSyncSource bpss = (BBPIMSyncSource) appSource.getSyncSource();
-
-                PIMItemHelper pih = bpss.getHelper();
-
-                Enumeration items = pih.getItemsList();
-
-                //Notify the ui that items are being deleted from the client
-                controller.removingAllData();
-
-                //count the PIMList elements
-                int size = 0;
-                while (items.hasMoreElements()) {
-                    PIMItem item = (PIMItem) items.nextElement();
-                    size++;
-                }
-
-                //remove the PIMList elements
-                items = pih.getItemsList();
-                int i = 0;
-                while (items.hasMoreElements()) {
-                    if (doCancel) {
-                        // The sync has not started yet, so we must synthetize a
-                        // report here
-                        SyncReport report = new SyncReport(bpss);
-                        report.setSyncStatus(SyncListener.CANCELLED);
-                        controller.endSession(report);
-                        
-                        //Reset anchors if a cancel action was performed
-                        //after at least 1 item was cancelled
-                        if (i>0) {
-                            bpss.getConfig().setLastAnchor(0);
-                            bpss.getConfig().setLastAnchor(0);
-                            bpss.resetTrackingData();
-                        }
-
-                        return;
-                    }
-                    i++;
-                    PIMItem item = (PIMItem) items.nextElement();
-                    pih.deleteItem(item);
-
-                    //Notify the UI
-                    controller.itemRemoved(i, size);
-                }
-            } catch (PIMException ex) {
-                Log.error(TAG_LOG, "[refreshClientData]Cannot delete device item" + ex);
-            }
-        }
-        */
-    }
-
-    private String getDataTag(SyncSource src) {
-        String dataTag = null;
-        if (src instanceof JSONSyncSource) {
-            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
-            dataTag = jsonSyncSource.getDataTag();
-        }
-        if (dataTag == null) {
-            // This is the default value
-            dataTag = src.getConfig().getRemoteUri() + "s";
-        }
-        return dataTag;
-    }
 }
