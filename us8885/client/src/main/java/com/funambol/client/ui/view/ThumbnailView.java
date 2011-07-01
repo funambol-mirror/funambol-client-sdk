@@ -1,7 +1,7 @@
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
- * Copyright (C) 2008 Funambol, Inc.
- * 
+ * Copyright (C) 2011 Funambol, Inc.
+ *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
  * the Free Software Foundation with the addition of the following permission
@@ -18,7 +18,7 @@
  * along with this program; if not, see http://www.gnu.org/licenses or write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301 USA.
- * 
+ *
  * You can contact Funambol, Inc. headquarters at 643 Bair Island Road, Suite
  * 305, Redwood City, CA 94063, USA, or at email address info@funambol.com.
  *
@@ -33,27 +33,21 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.ui;
-
-import com.funambol.client.source.AppSyncSource;
-import com.funambol.client.ui.view.SourceThumbnailsView;
-import com.funambol.client.ui.view.ThumbnailView;
+package com.funambol.client.ui.view;
 
 /**
- * Represents the application home screen
+ * Represents a generic thumbnail view
  */
-public interface HomeScreen extends Screen {
+public interface ThumbnailView {
 
-    public SourceThumbnailsView createSourceThumbnailsView(AppSyncSource source);
+    /**
+     * Set the thumbnail file path
+     * @param thumbPath
+     */
+    public void setThumbnail(String thumbPath);
 
-    public ThumbnailView createThumbnailView();
-    
-    public void addSourceThumbnailsView(SourceThumbnailsView view);
-    
-    public void lock();
-
-    public void unlock();
-
-    public boolean isLocked();
-
+    /**
+     * @return the thumbnail view object related to the implementation
+     */
+    public Object getThumbnailView();
 }

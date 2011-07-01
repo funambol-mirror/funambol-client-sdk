@@ -1,6 +1,6 @@
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
- * Copyright (C) 2008 Funambol, Inc.
+ * Copyright (C) 2011 Funambol, Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
@@ -33,27 +33,13 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.ui;
-
-import com.funambol.client.source.AppSyncSource;
-import com.funambol.client.ui.view.SourceThumbnailsView;
-import com.funambol.client.ui.view.ThumbnailView;
+package com.funambol.client.ui.view;
 
 /**
- * Represents the application home screen
+ * Represents a generic source view
  */
-public interface HomeScreen extends Screen {
+public interface SourceThumbnailsView {
 
-    public SourceThumbnailsView createSourceThumbnailsView(AppSyncSource source);
-
-    public ThumbnailView createThumbnailView();
+    public void addThumbnail(ThumbnailView thumb);
     
-    public void addSourceThumbnailsView(SourceThumbnailsView view);
-    
-    public void lock();
-
-    public void unlock();
-
-    public boolean isLocked();
-
 }

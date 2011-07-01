@@ -41,10 +41,13 @@ import java.util.Hashtable;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.ui.HomeScreen;
 import com.funambol.client.ui.DisplayManager;
+import com.funambol.client.ui.view.SourceThumbnailsView;
+import com.funambol.client.ui.view.ThumbnailView;
 import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 import com.funambol.platform.NetworkStatus;
+import java.util.Enumeration;
 
 /**
  * This class represents the controller for the home screen. Since the
@@ -96,7 +99,22 @@ public class HomeScreenController extends SynchronizationController {
     }
 
     public void initializeHomeScreen() {
-        // TODO: FIXME
+        int[] order = mCustomization.getSourcesOrder();
+        for(int i=0; i<order.length; i++) {
+            AppSyncSource source = mAppSyncSourceManager.getSource(order[i]);
+            if(source.isVisible()) {
+                SourceThumbnailsView sourceView = mHomeScreen.createSourceThumbnailsView(source);
+                for(int t=0; t<20; t++) {
+                    ThumbnailView thumbView = mHomeScreen.createThumbnailView();
+                    
+                    // TODO: FIXME set correct thumbnail
+                    thumbView.setThumbnail(null);
+                    
+                    sourceView.addThumbnail(thumbView);
+                }
+                mHomeScreen.addSourceThumbnailsView(sourceView);
+            }
+        }
     }
 
     public void updateAvailableSources() {
