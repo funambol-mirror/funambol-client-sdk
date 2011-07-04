@@ -1,0 +1,5 @@
+Funambol Java SDK Common API Changes Log
+----------------------------------------
+
+2010-04-21
+  - Added updates propagation support
