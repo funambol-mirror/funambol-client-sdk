@@ -39,6 +39,7 @@ import java.util.Vector;
 import java.util.Hashtable;
 
 import com.funambol.client.source.AppSyncSource;
+import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.ui.HomeScreen;
 import com.funambol.client.ui.DisplayManager;
 import com.funambol.client.ui.view.SourceThumbnailsView;
@@ -47,7 +48,6 @@ import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 import com.funambol.platform.NetworkStatus;
-import java.util.Enumeration;
 
 /**
  * This class represents the controller for the home screen. Since the
@@ -104,7 +104,16 @@ public class HomeScreenController extends SynchronizationController {
             AppSyncSource source = mAppSyncSourceManager.getSource(order[i]);
             if(source.isVisible()) {
                 SourceThumbnailsView sourceView = mHomeScreen.createSourceThumbnailsView(source);
-                for(int t=0; t<20; t++) {
+
+                int count = 25;
+                if(source.getId() == AppSyncSourceManager.CONTACTS_ID) {
+                    count = 3;
+                } else if(source.getId() == AppSyncSourceManager.VIDEOS_ID) {
+                    count = 0;
+                } else if(source.getId() == AppSyncSourceManager.FILES_ID) {
+                    count = 5;
+                }
+                for(int t=0; t<count; t++) {
                     ThumbnailView thumbView = mHomeScreen.createThumbnailView();
                     
                     // TODO: FIXME set correct thumbnail

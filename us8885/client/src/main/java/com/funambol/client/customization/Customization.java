@@ -98,8 +98,7 @@ public interface Customization {
      * @param one of the predefined values of {@link DeviceInfoInterface.DeviceRole}
      */
     public int      getDefaultSourceSyncMode(int id, DeviceInfoInterface.DeviceRole deviceRole);
-    public Bitmap   getSourceIcon(int id);
-    public Bitmap   getSourceDisabledIcon(int id);
+    public Bitmap   getSourcePlaceHolderIcon(int id);
     public Enumeration getAvailableSources();
     public int[]    getSourcesOrder();
     public boolean  showNonWorkingSources();

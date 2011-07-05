@@ -206,10 +206,6 @@ public class UISyncSourceController implements SyncListener {
                 status = localization.getLanguage("home_disabled");
             }
             uiSource.setStatusString(status);
-            Bitmap sourceIcon = customization.getSourceDisabledIcon(appSource.getId());
-            if (sourceIcon != null) {
-                uiSource.setIcon(sourceIcon);
-            }
             uiSource.setStatusIcon(null);
             uiSource.setEnabled(false);
             uiSource.redraw();
@@ -224,10 +220,6 @@ public class UISyncSourceController implements SyncListener {
                 return;
             }
             uiSource.setStatusString(getLastSyncStatus(status, null));
-            Bitmap sourceIcon = customization.getSourceIcon(appSource.getId());
-            if (sourceIcon != null) {
-                uiSource.setIcon(sourceIcon);
-            }
             statusIcon = getLastSyncIcon(status);
             if (statusIcon != null) {
                 uiSource.setStatusIcon(statusIcon);

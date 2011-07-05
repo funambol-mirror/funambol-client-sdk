@@ -159,11 +159,6 @@ public class SyncSettingsScreenController {
                     // Set the title
                     item.setTitle(appSource.getName());
 
-                    // Set the icons
-                    int sourceId = appSource.getId();
-                    item.setEnabledIcon(customization.getSourceIcon(sourceId));
-                    item.setDisabledIcon(customization.getSourceDisabledIcon(sourceId));
-
                     // Load settings
                     item.loadSettings(configuration);
 
