@@ -76,8 +76,9 @@ public class AppSyncSourceConfig {
     protected static final String CONF_KEY_SYNC_TIMESTAMP         = "SYNC_SOURCE_TIMESTAMP";
     protected static final String CONF_KEY_MAX_ITEM_SIZE          = "MAX_ITEM_SIZE";
 
-    private static final String VERSION_1 = "1";
-    private static final String VERSION   = "2";
+    protected static final String VERSION_1 = "1";
+    protected static final String VERSION_2 = "2";
+    protected static final String VERSION   = "3";
 
     protected String uri;
     /**
