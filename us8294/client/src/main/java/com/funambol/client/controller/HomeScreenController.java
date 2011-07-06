@@ -307,6 +307,11 @@ public class HomeScreenController extends SynchronizationController {
 
         // this selects the appSource and disable any previously selected one
         setSelected(appSource.getUiSourceIndex(), false);
+
+        // We lock the screen to the current source
+        Vector thisSource = new Vector();
+        thisSource.addElement(appSource);
+        lockHomeScreen(thisSource);
     }
 
     /**
@@ -348,6 +353,7 @@ public class HomeScreenController extends SynchronizationController {
         if (homeScreen == null) {
             return;
         }
+
         if (customization.syncAllOnMainScreenRequired()) {
             // disable the sync all button (if it does not have the cancel sync
             // role during a sync)
@@ -368,8 +374,10 @@ public class HomeScreenController extends SynchronizationController {
                     break;
                 }
             }
+
             UISyncSource uiSource = appSource.getUISyncSource();
             uiSource.setEnabled(enable);
+            uiSource.redraw();
         }
         redraw();
         homeScreen.lock();
