@@ -99,31 +99,37 @@ public class HomeScreenController extends SynchronizationController {
     }
 
     public void initializeHomeScreen() {
-        int[] order = mCustomization.getSourcesOrder();
-        for(int i=0; i<order.length; i++) {
-            AppSyncSource source = mAppSyncSourceManager.getSource(order[i]);
-            if(source.isVisible()) {
-                SourceThumbnailsView sourceView = mHomeScreen.createSourceThumbnailsView(source);
 
-                int count = 25;
-                if(source.getId() == AppSyncSourceManager.CONTACTS_ID) {
-                    count = 3;
-                } else if(source.getId() == AppSyncSourceManager.VIDEOS_ID) {
-                    count = 0;
-                } else if(source.getId() == AppSyncSourceManager.FILES_ID) {
-                    count = 5;
+        new Thread(new Runnable() {
+
+            public void run() {
+                int[] order = mCustomization.getSourcesOrder();
+                for(int i=0; i<order.length; i++) {
+                    AppSyncSource source = mAppSyncSourceManager.getSource(order[i]);
+                    if(source.isVisible()) {
+                        SourceThumbnailsView sourceView = mHomeScreen.createSourceThumbnailsView(source);
+
+                        int count = 25;
+                        if(source.getId() == AppSyncSourceManager.CONTACTS_ID) {
+                            count = 3;
+                        } else if(source.getId() == AppSyncSourceManager.VIDEOS_ID) {
+                            count = 0;
+                        } else if(source.getId() == AppSyncSourceManager.FILES_ID) {
+                            count = 5;
+                        }
+                        for(int t=0; t<count; t++) {
+                            ThumbnailView thumbView = mHomeScreen.createThumbnailView();
+
+                            // TODO: FIXME set correct thumbnail
+                            thumbView.setThumbnail(null);
+
+                            sourceView.addThumbnail(thumbView);
+                        }
+                        mHomeScreen.addSourceThumbnailsView(sourceView);
+                    }
                 }
-                for(int t=0; t<count; t++) {
-                    ThumbnailView thumbView = mHomeScreen.createThumbnailView();
-                    
-                    // TODO: FIXME set correct thumbnail
-                    thumbView.setThumbnail(null);
-                    
-                    sourceView.addThumbnail(thumbView);
-                }
-                mHomeScreen.addSourceThumbnailsView(sourceView);
             }
-        }
+        }).start();
     }
 
     public void updateAvailableSources() {
