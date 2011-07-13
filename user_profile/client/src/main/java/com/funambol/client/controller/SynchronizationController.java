@@ -140,11 +140,6 @@ public class SynchronizationController implements SyncEngineListener {
         initSyncScheduler();
     }
 
-    // TEMP TODO FIXME: This is here until the HomeScreenController is merged
-    // between android and BB
-    SynchronizationController() {
-    }
-
     /**
      * Triggers a synchronization for the given syncSources. The caller can
      * specify its type (manual, scheduled, push) to change the error handling
@@ -631,6 +626,14 @@ public class SynchronizationController implements SyncEngineListener {
             if (configuration.getServerType() == Configuration.SERVER_TYPE_FUNAMBOL_CARED) {
                 askForPayment(nextSources);
             }
+        } else if (code == SyncException.FORBIDDEN_ERROR) {
+            // The source is not allowed, server does not permit its
+            // synchronization because the user has not enough rights to sync
+            DisplayManager dm = controller.getDisplayManager();
+            String msg = localization.getLanguage("dialog_sync_not_allowed");
+            msg = StringUtil.replaceAll(msg, "__SOURCE__", appSource.getName());
+            OpenDataPlanPageAction yesAction = new OpenDataPlanPageAction();
+            dm.askYesNoQuestion(screen, msg, yesAction, null, DisplayManager.NO_LIMIT);
         }
     }
 
@@ -931,6 +934,20 @@ public class SynchronizationController implements SyncEngineListener {
                                           request.getDelay(), request.getFromOutside());
         }
     }
+
+    protected class OpenDataPlanPageAction implements Runnable {
+
+        public void run() {
+            // Open the browser on the data plan page
+            String url = customization.getDataPlanUrl();
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Open browser on data plan url " + url);
+            }
+            DisplayManager dm = controller.getDisplayManager();
+            dm.loadBrowser(screen, url);
+        }
+    }
+
 
     protected class InterruptSyncAction implements Runnable {
 

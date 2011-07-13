@@ -103,10 +103,6 @@ public class HomeScreenController extends SynchronizationController {
         forceUpdateAvailableSources();
     }
 
-    // TODO FIXME This is here until we need the ProxyHomeScreenController only
-    public HomeScreenController() {
-    }
-
     public HomeScreen getHomeScreen() {
         return homeScreen;
     }
@@ -279,17 +275,7 @@ public class HomeScreenController extends SynchronizationController {
         
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
         if (source.isWorking() && source.getConfig().getEnabled()) {
-            if (source.getConfig().getAllowed()) {
-                syncSource(MANUAL, source);
-            } else {
-                // The source is not allowed, server does not permit its
-                // synchronization because the user ha not enough rights to sync
-                DisplayManager dm = controller.getDisplayManager();
-                String msg = localization.getLanguage("dialog_sync_not_allowed");
-                msg = StringUtil.replaceAll(msg, "__SOURCE__", source.getName());
-                OpenDataPlanPageAction yesAction = new OpenDataPlanPageAction();
-                dm.askYesNoQuestion(screen, msg, yesAction, null, DisplayManager.NO_LIMIT);
-            }
+            syncSource(MANUAL, source);
         } else {
             Log.error(TAG_LOG, "The user pressed a source disabled, this is an error in the code");
         }
@@ -853,19 +839,6 @@ public class HomeScreenController extends SynchronizationController {
                 Log.error(TAG_LOG, "Server quota full for source " + appSource.getName());
                 break;
             }
-        }
-    }
-
-    private class OpenDataPlanPageAction implements Runnable {
-
-        public void run() {
-            // Open the browser on the data plan page
-            String url = customization.getDataPlanUrl();
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Open browser on data plan url " + url);
-            }
-            DisplayManager dm = controller.getDisplayManager();
-            dm.loadBrowser(screen, url);
         }
     }
 }
