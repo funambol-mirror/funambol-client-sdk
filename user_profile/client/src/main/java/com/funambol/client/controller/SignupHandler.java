@@ -238,83 +238,85 @@ public class SignupHandler extends Thread {
 
         try {
             // Check for errors
-            JSONObject error = response.getJSONObject(JSON_OBJECT_ERROR);
+            if (response.has(JSON_OBJECT_ERROR)) {
+                JSONObject error = response.getJSONObject(JSON_OBJECT_ERROR);
 
-            if(error != null) {
-                String code    = error.getString(JSON_OBJECT_ERROR_FIELD_CODE);
-                String message = error.getString(JSON_OBJECT_ERROR_FIELD_MESSAGE);
-                String cause   = error.getString(JSON_OBJECT_ERROR_FIELD_CAUSE);
+                if(error != null) {
+                    String code    = error.getString(JSON_OBJECT_ERROR_FIELD_CODE);
+                    String message = error.getString(JSON_OBJECT_ERROR_FIELD_MESSAGE);
+                    String cause   = error.getString(JSON_OBJECT_ERROR_FIELD_CAUSE);
 
-                if (Log.isLoggable(Log.DEBUG)) {
-                    StringBuffer logMsg = new StringBuffer(
-                            "Error in SAPI response").append("\r\n");
-                    logMsg.append("code: ").append(code).append("\r\n");
-                    logMsg.append("cause: ").append(cause).append("\r\n");
-                    logMsg.append("message: ").append(message).append("\r\n");
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        StringBuffer logMsg = new StringBuffer(
+                                "Error in SAPI response").append("\r\n");
+                        logMsg.append("code: ").append(code).append("\r\n");
+                        logMsg.append("cause: ").append(cause).append("\r\n");
+                        logMsg.append("message: ").append(message).append("\r\n");
 
-                    JSONArray parameters = error.getJSONArray(JSON_OBJECT_ERROR_FIELD_PARAMETERS);
-                    for(int i=0; i<parameters.length(); i++) {
-                        JSONObject parameter = parameters.getJSONObject(i);
-                        String param = parameter.getString(JSON_OBJECT_ERROR_FIELD_PARAM);
-                        logMsg.append("param: ").append(param).append("\r\n");
+                        JSONArray parameters = error.getJSONArray(JSON_OBJECT_ERROR_FIELD_PARAMETERS);
+                        for(int i=0; i<parameters.length(); i++) {
+                            JSONObject parameter = parameters.getJSONObject(i);
+                            String param = parameter.getString(JSON_OBJECT_ERROR_FIELD_PARAM);
+                            logMsg.append("param: ").append(param).append("\r\n");
+                        }
+                        Log.debug(TAG_LOG, logMsg.toString());
                     }
-                    Log.debug(TAG_LOG, logMsg.toString());
-                }
 
-                // Handle error codes
-                boolean handled = false;
-                if(JSON_ERROR_CODE_PRO_1000.equals(code)) {
-                    // Unknown exception in profile handling
-                } else if(JSON_ERROR_CODE_PRO_1001.equals(code)) {
-                    // Missing the following mandatory parameter(s).
-                } else if(JSON_ERROR_CODE_PRO_1106.equals(code)) {
-                    // The userid is not valid. Only letters (a-z), numbers (0-9),
-                    // and periods (.) are allowed. Userid must be less than 16
-                    // characters and include at least one letter.
-                } else if(JSON_ERROR_CODE_PRO_1107.equals(code)) {
-                    // You can not specify an existing e-mail address.
-                } else if(JSON_ERROR_CODE_PRO_1113.equals(code)) {
-                    // You can not specify an existing username.
-                    String msg = localization.getLanguage("signup_failed_username_exists");
-                    signupScreenController.signupFailed(msg);
-                    signupScreenController.promptCredentials();
-                    handled = true;
-                } else if(JSON_ERROR_CODE_PRO_1115.equals(code)) {
-                    // The password is not valid. Only letters (a-z) and numbers
-                    // (0-9) are allowed. Minimum 4, maximum 16 characters.
-                    signupScreenController.signupFailed(localization.getLanguage(
-                            "signup_failed_bad_password_message"));
-                    signupScreenController.promptCredentials();
-                    handled = true;
-                } else if(JSON_ERROR_CODE_PRO_1122.equals(code)) {
-                    // The e-mail address is not valid.
-                } else if(JSON_ERROR_CODE_PRO_1126.equals(code) && 
-                        customization.getDefaultMSUValidationMode() == VALIDATION_MODE_CAPTCHA ||
-                        customization.getDefaultMSUValidationMode() == VALIDATION_MODE_SMS_CAPTCHA) {
-                    // Invalid CAPTCHA token
-                    signupScreenController.signupFailed(null, false);
-                    signupScreenController.requestNewCaptcha(true);
-                    handled = true;
-                } else if(JSON_ERROR_CODE_PRO_1127.equals(code)) {
-                    // Phone number already exist
-                    String msg = localization.getLanguage("signup_failed_username_exists");
-                    signupScreenController.signupFailed(msg);
-                    signupScreenController.promptCredentials();
-                    handled = true;
-                } else if(JSON_ERROR_CODE_PRO_1128.equals(code)) {
-                    // The phone number provided is not valid.
-                    signupScreenController.signupFailed(localization.getLanguage(
-                            "signup_failed_bad_phone_message"));
-                    signupScreenController.promptCredentials();
-                    handled = true;
-                } else if(JSON_ERROR_CODE_COM_1006.equals(code)) {
-                    // Invalid timezone.
-                } else if(JSON_ERROR_CODE_COM_1008.equals(code)) {
-                    // Invalid data type or data format is not as expected.
-                }
-                if(!handled) {
-                    Log.error(TAG_LOG, "Unhandled error code: " + code);
-                    throw new Exception("Unhandled error code: " + code);
+                    // Handle error codes
+                    boolean handled = false;
+                    if(JSON_ERROR_CODE_PRO_1000.equals(code)) {
+                        // Unknown exception in profile handling
+                    } else if(JSON_ERROR_CODE_PRO_1001.equals(code)) {
+                        // Missing the following mandatory parameter(s).
+                    } else if(JSON_ERROR_CODE_PRO_1106.equals(code)) {
+                        // The userid is not valid. Only letters (a-z), numbers (0-9),
+                        // and periods (.) are allowed. Userid must be less than 16
+                        // characters and include at least one letter.
+                    } else if(JSON_ERROR_CODE_PRO_1107.equals(code)) {
+                        // You can not specify an existing e-mail address.
+                    } else if(JSON_ERROR_CODE_PRO_1113.equals(code)) {
+                        // You can not specify an existing username.
+                        String msg = localization.getLanguage("signup_failed_username_exists");
+                        signupScreenController.signupFailed(msg);
+                        signupScreenController.promptCredentials();
+                        handled = true;
+                    } else if(JSON_ERROR_CODE_PRO_1115.equals(code)) {
+                        // The password is not valid. Only letters (a-z) and numbers
+                        // (0-9) are allowed. Minimum 4, maximum 16 characters.
+                        signupScreenController.signupFailed(localization.getLanguage(
+                                    "signup_failed_bad_password_message"));
+                        signupScreenController.promptCredentials();
+                        handled = true;
+                    } else if(JSON_ERROR_CODE_PRO_1122.equals(code)) {
+                        // The e-mail address is not valid.
+                    } else if(JSON_ERROR_CODE_PRO_1126.equals(code) && 
+                            customization.getDefaultMSUValidationMode() == VALIDATION_MODE_CAPTCHA ||
+                            customization.getDefaultMSUValidationMode() == VALIDATION_MODE_SMS_CAPTCHA) {
+                        // Invalid CAPTCHA token
+                        signupScreenController.signupFailed(null, false);
+                        signupScreenController.requestNewCaptcha(true);
+                        handled = true;
+                    } else if(JSON_ERROR_CODE_PRO_1127.equals(code)) {
+                        // Phone number already exist
+                        String msg = localization.getLanguage("signup_failed_username_exists");
+                        signupScreenController.signupFailed(msg);
+                        signupScreenController.promptCredentials();
+                        handled = true;
+                    } else if(JSON_ERROR_CODE_PRO_1128.equals(code)) {
+                        // The phone number provided is not valid.
+                        signupScreenController.signupFailed(localization.getLanguage(
+                                    "signup_failed_bad_phone_message"));
+                        signupScreenController.promptCredentials();
+                        handled = true;
+                    } else if(JSON_ERROR_CODE_COM_1006.equals(code)) {
+                        // Invalid timezone.
+                    } else if(JSON_ERROR_CODE_COM_1008.equals(code)) {
+                        // Invalid data type or data format is not as expected.
+                    }
+                    if(!handled) {
+                        Log.error(TAG_LOG, "Unhandled error code: " + code);
+                        throw new Exception("Unhandled error code: " + code);
+                    }
                 }
             } else {
                 // No errors, the user needs a manual action in order to
