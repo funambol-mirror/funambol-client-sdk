@@ -58,6 +58,7 @@ import com.funambol.sync.SyncSource;
 import com.funambol.sync.SourceConfig;
 import com.funambol.sync.SyncException;
 import com.funambol.sapisync.sapi.SapiHandler;
+import com.funambol.sapisync.NotAuthorizedCallException;
 import com.funambol.org.json.me.JSONObject;
 import com.funambol.org.json.me.JSONArray;
 import com.funambol.util.StringUtil;
@@ -733,22 +734,17 @@ public class SynchronizationController implements SyncEngineListener {
         }
 
         public void run() {
+            String dialogOkMsg = null;
             try {
                 String sapiUrl = StringUtil.extractAddressFromUrl(configuration.getSyncUrl());
                 SapiHandler sapiHandler = new SapiHandler(sapiUrl, configuration.getUsername(),
                                                           configuration.getPassword());
 
                 JSONObject req = new JSONObject();
-                JSONArray  sources = new JSONArray();
-                Enumeration workingSources = appSyncSourceManager.getWorkingSources();
-                while(workingSources.hasMoreElements()) {
-                    AppSyncSource appSource = (AppSyncSource)workingSources.nextElement();
-                    JSONObject restoreSource = new JSONObject();
-                    restoreSource.put("service","restore");
-                    restoreSource.put("resource",appSource.getSyncSource().getConfig().getRemoteUri());
-                    sources.put(restoreSource);
-                }
-                req.put("data", sources);
+                JSONObject dataObj = new JSONObject();
+                dataObj.put("service","sync");
+                dataObj.put("resource","pim");
+                req.put("data", dataObj);
 
                 sapiHandler.query("system/payment","buy",null,null,req);
 
@@ -756,13 +752,23 @@ public class SynchronizationController implements SyncEngineListener {
                 continueSyncAfterNetworkUsage(originalRequest.getType(), remainingSources,
                                               originalRequest.getRefresh(), originalRequest.getDirection(),
                                               originalRequest.getDelay(), originalRequest.getFromOutside());
+            } catch (NotAuthorizedCallException nace) {
+                // This is most likely a 403, used to specify the credit is
+                // insufficient
+                Log.error(TAG_LOG, "Cannot perform payment", nace);
+                dialogOkMsg = localization.getLanguage("dialog_insufficient_balance");
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Cannot perform payment", e);
-                // TODO FIXME: show an error to the user
+                dialogOkMsg = localization.getLanguage("dialog_cannot_perform_payment");
             } finally {
                 // Dismiss the progress dialog
                 DisplayManager dm = controller.getDisplayManager();
                 dm.dismissProgressDialog(screen, progressDialogId);
+
+                if (dialogOkMsg != null) {
+                    DialogController dc = controller.getDialogController();
+                    dc.showOkDialog(screen, dialogOkMsg);
+                }
             }
         }
     }
