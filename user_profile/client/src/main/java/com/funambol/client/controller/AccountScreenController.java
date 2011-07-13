@@ -255,7 +255,7 @@ public class AccountScreenController extends SynchronizationController {
             failed = true;
         } else {
             if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "Server does not have a config source, most likely not a Funambol server");
+                Log.info(TAG_LOG, "Server does not support login, most likely not a Funambol server or a comed one");
             }
             // Apply the default server configuration as the server did not
             // provide its capabilities. This has the side effect of hiding the
@@ -494,7 +494,7 @@ public class AccountScreenController extends SynchronizationController {
                 if (SapiException.HTTP_401.equals(se.getCode())) {
                     syncExc = new SyncException(SyncException.AUTH_ERROR, se.toString());
                 } else if (SapiException.CUS_0003.equals(se.getCode())) {
-                    syncExc = new SyncException(SyncException.CONN_NOT_FOUND, se.toString());
+                    syncExc = new SyncException(SyncException.NOT_FOUND_URI_ERROR, se.toString());
                 } else if (SapiException.NO_CONNECTION.equals(se.getCode()) ||
                            SapiException.HTTP_400.equals(se.getCode()))
                 {
