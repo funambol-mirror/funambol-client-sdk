@@ -740,13 +740,16 @@ public class SynchronizationController implements SyncEngineListener {
                 SapiHandler sapiHandler = new SapiHandler(sapiUrl, configuration.getUsername(),
                                                           configuration.getPassword());
 
+                Vector params = new Vector();
+                params.addElement("syncdeviceid=" + configuration.getDeviceConfig().getDevID());
+
                 JSONObject req = new JSONObject();
                 JSONObject dataObj = new JSONObject();
                 dataObj.put("service","sync");
                 dataObj.put("resource","pim");
                 req.put("data", dataObj);
 
-                sapiHandler.query("system/payment","buy",null,null,req);
+                sapiHandler.query("system/payment","buy",params,null,req);
 
                 // Restart the sync for the given sources
                 continueSyncAfterNetworkUsage(originalRequest.getType(), remainingSources,
