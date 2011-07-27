@@ -38,9 +38,6 @@ package com.funambol.storage;
 import java.util.Vector;
 import java.util.Hashtable;
 
-import java.util.Enumeration;
-import java.io.IOException;
-
 /**
  */
 public class QueryFilter {
@@ -58,21 +55,17 @@ public class QueryFilter {
 
     private Vector filterKeys = null;
     private Hashtable filterValues = null;
-    private int size;
 
-    public QueryFilter(int size) {
-        this.size = size;
+    public QueryFilter() {
     }
 
-    public QueryFilter(Object key, int size) {
+    public QueryFilter(Object key) {
         filterKeys = new Vector();
         filterKeys.addElement(key);
-        this.size = size;
     }
 
-    public QueryFilter(Vector keys, int size) {
+    public QueryFilter(Vector keys) {
         filterKeys = keys;
-        this.size = size;
     }
 
     /**

@@ -202,17 +202,17 @@ public abstract class Table {
     }
 
     public QueryFilter createQueryFilter() {
-        QueryFilter filter = new QueryFilter(arity);
+        QueryFilter filter = new QueryFilter();
         return filter;
     }
 
     public QueryFilter createQueryFilter(String key) {
-        QueryFilter filter = new QueryFilter(key, arity);
+        QueryFilter filter = new QueryFilter(key);
         return filter;
     }
 
     public QueryFilter createQueryFilter(Vector keys) {
-        QueryFilter filter = new QueryFilter(keys, arity);
+        QueryFilter filter = new QueryFilter(keys);
         return filter;
     }
 
@@ -362,7 +362,7 @@ public abstract class Table {
      * Returns true iff key is contained in this store.
      */
     public boolean contains(Object key) throws IOException {
-        QueryFilter filter = new QueryFilter(key, arity);
+        QueryFilter filter = new QueryFilter(key);
         QueryResult res = query(filter);
         boolean r = res.hasMoreElements();
         res.close();
