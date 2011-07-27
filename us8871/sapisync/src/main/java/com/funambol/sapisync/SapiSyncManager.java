@@ -73,7 +73,7 @@ import com.funambol.util.StringUtil;
  * <code>SapiSyncManager</code> represents the synchronization engine performed
  * via SAPI.
  */
-public class SapiSyncManager implements SyncManagerI {
+public class SapiSyncManager implements SyncManagerI, SapiDownloadListener {
 
     private static final String TAG_LOG = "SapiSyncManager";
 
@@ -130,6 +130,12 @@ public class SapiSyncManager implements SyncManagerI {
 
     private SapiSyncStrategy strategy = null;
     private SapiSyncUtils utils = null;
+
+    private MappingTable mapping;
+
+    private int numDownloadRequests = 0;
+    private Object numDownloadRequestsLock = new Object();
+    private Exception lastDownloadExc = null;
 
 
     /**
@@ -233,7 +239,7 @@ public class SapiSyncManager implements SyncManagerI {
             }
         }
 
-        MappingTable mapping = new MappingTable(src.getName());
+        mapping = new MappingTable(src.getName());
 
         SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getSyncAnchor();
         if (sapiAnchor.getDownloadAnchor() == 0 && sapiAnchor.getUploadAnchor() == 0) {
@@ -278,7 +284,7 @@ public class SapiSyncManager implements SyncManagerI {
 
             cancelSyncIfNeeded(src);
 
-            performInitializationPhase(src, syncMode, resume, mapping);
+            performInitializationPhase(src, syncMode, resume);
 
             cancelSyncIfNeeded(src);
 
@@ -287,7 +293,7 @@ public class SapiSyncManager implements SyncManagerI {
             if(isDownloadPhaseNeeded(syncMode)) {
                 try {
                     // The download anchor is updated once it is received from the server
-                    performDownloadPhase(src, getActualDownloadSyncMode(src), resume, mapping);
+                    performDownloadPhase(src, getActualDownloadSyncMode(src), resume);
                 } catch (NonBlockingSyncException nbse) {
                     // Carries on
                     if (Log.isLoggable(Log.INFO)) {
@@ -304,7 +310,7 @@ public class SapiSyncManager implements SyncManagerI {
             if(isUploadPhaseNeeded(syncMode)) {
                 try {
                     long newUploadAnchor = (new Date()).getTime();
-                    performUploadPhase(src, getActualUploadSyncMode(src), resume, mapping);
+                    performUploadPhase(src, getActualUploadSyncMode(src), resume);
                     // If we had no error so far, then we update the anchor
                     SapiSyncAnchor anchor = (SapiSyncAnchor)src.getSyncAnchor();
                     anchor.setUploadAnchor(newUploadAnchor);
@@ -388,6 +394,68 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
+    public void onItemDownloadResult(SyncSource src, JSONObject jsonItem, JSONSyncItem syncItem, Exception e) {
+        // Get the lastupdated property used as item crc
+        String crc = null;
+        try {
+            crc = "" + jsonItem.getLong(CRC_FIELD);
+        } catch(JSONException jsonExc) {
+            e = jsonExc;
+        }
+
+        char state = syncItem.getState();
+
+        try {
+            if (e == null) {
+                // Apply the item to the source
+                Vector tmpItems = new Vector();
+                tmpItems.addElement(syncItem);
+                src.applyChanges(tmpItems);
+
+                if (syncItem.getSyncStatus() != -1 && syncItem.getGuid() != null && syncItem.getKey() != null) {
+                    syncStatus.setReceivedItemStatus(syncItem.getGuid(), syncItem.getKey(),
+                            syncItem.getState(), syncItem.getSyncStatus());
+                    // and the mapping table (if luid and guid are different)
+                    if (state == SyncItem.STATE_NEW && !syncItem.getGuid().equals(syncItem.getKey())) {
+                        if (Log.isLoggable(Log.TRACE)) {
+                            Log.trace(TAG_LOG, "Updating mapping info for: " +
+                                    syncItem.getGuid() + "," + syncItem.getKey());
+                        }
+                        mapping.add(syncItem.getGuid(), syncItem.getKey(), crc,
+                                syncItem.getContentName());
+                    } else if (state == SyncItem.STATE_UPDATED && jsonItem.has("oldkey")) {
+                        if (Log.isLoggable(Log.TRACE)) {
+                            Log.trace(TAG_LOG, "Updating mapping info for renamed item: " +
+                                    syncItem.getGuid() + "," + syncItem.getKey());
+                        }
+                        mapping.update(syncItem.getGuid(), syncItem.getKey(), crc, syncItem.getContentName());
+                    }
+                }
+                // Notify the listener
+                if (syncItem.getState() == SyncItem.STATE_NEW) {
+                    getSyncListenerFromSource(src).itemAddReceivingEnded(syncItem.getKey(), syncItem.getParent());
+                } else if (syncItem.getState() == SyncItem.STATE_UPDATED) {
+                    getSyncListenerFromSource(src).itemReplaceReceivingEnded(syncItem.getKey(), syncItem.getParent());
+                }
+            } else {
+                if (e instanceof IOException) {
+                    lastDownloadExc = new SyncException(SyncException.STORAGE_ERROR, 
+                            "Cannot write item content to local disk");
+                } else if (e instanceof IndividualItemSyncException) {
+                    Log.error(TAG_LOG, "Cannot download this item, will skip to the next one", e);
+                    // Do not update lastDownloadExc so that download will continue
+                } else {
+                    lastDownloadExc = e;
+                }
+            }
+        } finally {
+            synchronized(numDownloadRequestsLock) {
+                numDownloadRequests--;
+                numDownloadRequestsLock.notify();
+            }
+        }
+    }
+
     private void cancelSyncIfNeeded(SyncSource src) throws SyncException {
         if(cancel) {
             performFinalizationPhase(null);
@@ -395,8 +463,7 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void performInitializationPhase(SyncSource src, int syncMode, boolean resume,
-                                            MappingTable mapping)
+    private void performInitializationPhase(SyncSource src, int syncMode, boolean resume)
     throws SyncException, JSONException
     {
         // Prepare the source for the sync
@@ -472,7 +539,7 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
 
-    private void performUploadPhase(SyncSource src, int syncMode, boolean resume, MappingTable mapping) {
+    private void performUploadPhase(SyncSource src, int syncMode, boolean resume) {
 
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "Starting upload phase with mode: " + syncMode);
@@ -724,7 +791,7 @@ public class SapiSyncManager implements SyncManagerI {
         }
     }
 
-    private void performDownloadPhase(SyncSource src, int syncMode, boolean resume, MappingTable mapping)
+    private void performDownloadPhase(SyncSource src, int syncMode, boolean resume)
     throws SyncException {
 
         if (Log.isLoggable(Log.INFO)) {
@@ -740,7 +807,7 @@ public class SapiSyncManager implements SyncManagerI {
 
                 try {
                     applyNewUpdToSyncSource(src, addedArray, SyncItem.STATE_NEW, 
-                                            addedServerUrl, mapping, resume);
+                                            addedServerUrl, resume);
                         
                     updateDownloadAnchor((SapiSyncAnchor) src.getConfig().getSyncAnchor(), downloadNextAnchor);
                 } catch (JSONException je) {
@@ -769,16 +836,16 @@ public class SapiSyncManager implements SyncManagerI {
 
                 if (addedArray != null) {
                     applyNewUpdToSyncSource(src, addedArray, SyncItem.STATE_NEW,
-                            addedServerUrl, mapping, resume);
+                            addedServerUrl, resume);
                 }
 
                 if (updatedArray != null) {
                     applyNewUpdToSyncSource(src, updatedArray, SyncItem.STATE_UPDATED,
-                            updatedServerUrl, mapping, resume);
+                            updatedServerUrl, resume);
                 }
 
                 if (deletedArray != null) {
-                    applyDelItems(src, deletedArray, mapping);
+                    applyDelItems(src, deletedArray);
                 }
 
                 // Tries to update the anchor if everything went well
@@ -829,7 +896,6 @@ public class SapiSyncManager implements SyncManagerI {
      * @param src
      * @param items
      * @param state
-     * @param mapping
      * @param deepTwinSearch
      * @return
      * @throws SyncException
@@ -837,7 +903,7 @@ public class SapiSyncManager implements SyncManagerI {
      */
     private boolean applyNewUpdToSyncSource(SyncSource src, JSONArray items,
                                             char state, String serverUrl,
-                                            MappingTable mapping, boolean resume)
+                                            boolean resume)
     throws SyncException, JSONException
     {
 
@@ -846,6 +912,11 @@ public class SapiSyncManager implements SyncManagerI {
         }
 
         boolean done = false;
+
+        SapiDownloadManager downloadManager = new SapiDownloadManager(syncConfig, src);
+        downloadManager.setListener(this);
+        numDownloadRequests = 0;
+        lastDownloadExc = null;
         
         // Apply these changes into the sync source
         for(int k=0; k<items.length() && !done; ++k) {
@@ -861,9 +932,6 @@ public class SapiSyncManager implements SyncManagerI {
 
             String guid = item.getString(ID_FIELD);
             long size = Long.parseLong(item.getString(SIZE_FIELD));
-            // Get the lastupdated property used as item crc
-            String crc = "" + item.getLong(CRC_FIELD);
-
             String luid;
             if (state == SyncItem.STATE_UPDATED) {
                 luid = mapping.getLuid(guid);
@@ -942,131 +1010,46 @@ public class SapiSyncManager implements SyncManagerI {
                     }
                 }
 
-                // Download the item content
-                try {
-                    downloadItemContent(src, syncItem);
-                } catch (IOException ioe) {
-                    Log.error(TAG_LOG, "Cannot write item content to local disk", ioe);
-                    throw new SyncException(SyncException.STORAGE_ERROR, "Cannot write item content to local disk");
-                } catch (IndividualItemSyncException nbiise) {
-                    Log.error(TAG_LOG, "Cannot download this item, will skip to the next one", nbiise);
-                    continue;
+                // Prepare to perform a new download request
+                synchronized(numDownloadRequestsLock) {
+                    numDownloadRequests++;
                 }
-            }
 
-            // Apply the item to the source
-            Vector tmpItems = new Vector();
-            tmpItems.addElement(syncItem);
-            src.applyChanges(tmpItems);
-
-            if (syncItem.getSyncStatus() != -1 && syncItem.getGuid() != null && syncItem.getKey() != null) {
-                syncStatus.setReceivedItemStatus(syncItem.getGuid(), syncItem.getKey(),
-                                                 syncItem.getState(), syncItem.getSyncStatus());
-                // and the mapping table (if luid and guid are different)
-                if (state == SyncItem.STATE_NEW && !syncItem.getGuid().equals(syncItem.getKey())) {
-                    if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "Updating mapping info for: " +
-                                syncItem.getGuid() + "," + syncItem.getKey());
-                    }
-                    mapping.add(syncItem.getGuid(), syncItem.getKey(), crc,
-                                syncItem.getContentName());
-                } else if (state == SyncItem.STATE_UPDATED && item.has("oldkey")) {
-                    if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "Updating mapping info for renamed item: " +
-                                syncItem.getGuid() + "," + syncItem.getKey());
-                    }
-                    mapping.update(syncItem.getGuid(), syncItem.getKey(), crc, syncItem.getContentName());
+                downloadManager.download(item, syncItem);
+                // Check if we have got a download exception so far
+                if (lastDownloadExc != null) {
+                    throwDownloadExc(lastDownloadExc);
                 }
-            }
-            // Notify the listener
-            if (syncItem.getState() == SyncItem.STATE_NEW) {
-                getSyncListenerFromSource(src).itemAddReceivingEnded(syncItem.getKey(), syncItem.getParent());
-            } else if (syncItem.getState() == SyncItem.STATE_UPDATED) {
-                getSyncListenerFromSource(src).itemReplaceReceivingEnded(syncItem.getKey(), syncItem.getParent());
             }
         }
 
+        // Wait for all requests to terminate
+        synchronized(numDownloadRequestsLock) {
+            while(numDownloadRequests > 0) {
+                try {
+                    numDownloadRequestsLock.wait();
+                    if (lastDownloadExc != null) {
+                        throwDownloadExc(lastDownloadExc);
+                    }
+                } catch (Exception e) {}
+            }
+        }
         return done;
     }
 
-    private void downloadItemContent(SyncSource src, JSONSyncItem item) throws SyncException, IOException {
+    private void throwDownloadExc(Exception exc) throws SyncException, JSONException {
 
-        // Check if this item has a link to data that must be downloaded,
-        // otherwise we just take the item content
-        String url = item.getContentUrl(syncConfig.getSyncUrl());
-        if (url != null) {
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "item has remote content, prepare to download it");
-            }
-            downloader = new HttpDownloader();
-            downloader.setDownloadListener(new DownloadSyncListener(item, src.getListener()));
-
-            OutputStream fileos = null;
-
-            try {
-                fileos = item.getOutputStream();
-                long partialLength = item.getPartialLength();
-
-                long actualSize;
-                if (partialLength > 0) {
-                    actualSize = downloader.resume(url, fileos, partialLength, item.getContentName());
-                } else {
-                    actualSize = downloader.download(url, fileos, item.getContentName());
-                }
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "actual size is " + actualSize);
-                }
-            } catch (ResumeException re) {
-                // The item download cannot be resumed properly
-                // Re-create a new output stream without appending
-                fileos.close();
-                fileos = item.getOutputStream();
-                // Download the item from scratch
-                try {
-                    long actualSize = downloader.download(url, fileos, item.getContentName());
-                } catch (DownloadException de) {
-                    throw new ItemDownloadInterruptionException(item, de.getPartialLength());
-                }
-            } catch (DownloadException de) {
-                // We had a network error while download the item. Propagate the
-                // exception as the sync must be interrupted
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Cannot download item, interrupt sync " + de.getPartialLength());
-                }
-                if(de.getCode() == DownloadException.CODE_CANCELLED) {
-                    throw new ItemDownloadInterruptionException(SyncException.CANCELLED, item, de.getPartialLength());
-                } else {
-                    throw new ItemDownloadInterruptionException(item, de.getPartialLength());
-                }
-            } finally {
-                if (fileos != null) {
-                    try {
-                        fileos.close();
-                    } catch (IOException ioe) {
-                        Log.error(TAG_LOG, "Cannot close output stream", ioe);
-                    }
-                }
-            }
+        if (exc instanceof JSONException) {
+            throw ((JSONException)exc);
+        } else if (exc instanceof SyncException) {
+            throw ((SyncException)exc);
         } else {
-            // there is no remote content to download
-            OutputStream os = null;
-            try {
-                os = item.getOutputStream();
-                os.write(item.getContent());
-            } finally {
-                if (os != null) {
-                    try {
-                        os.close();
-                    } catch (IOException ioe) {
-                        Log.error(TAG_LOG, "Cannot close output stream", ioe);
-                    }
-                }
-            }
+            throw new SyncException(SyncException.CLIENT_ERROR, exc.toString());
         }
     }
 
-    private void applyDelItems(SyncSource src, JSONArray removed, 
-                               MappingTable mapping) throws SyncException, JSONException
+
+    private void applyDelItems(SyncSource src, JSONArray removed)  throws SyncException, JSONException
     {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "applyDelItems");

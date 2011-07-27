@@ -107,9 +107,11 @@ public class SQLiteTable extends Table {
 
     @Override
     public void close() {
-        if (dbStore != null) {
-            dbStore.close();
-            dbStore = null;
+        synchronized(lock) {
+            if (dbStore != null) {
+                dbStore.close();
+                dbStore = null;
+            }
         }
     }
 
