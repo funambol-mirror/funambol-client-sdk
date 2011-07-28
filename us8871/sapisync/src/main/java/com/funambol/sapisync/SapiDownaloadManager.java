@@ -66,7 +66,7 @@ class SapiDownloadManager {
     private DownloadDaemon downloadDaemon = null;
 
     // TODO: this must be computed somehow dynamically
-    private int maxThreads = 5;
+    private int maxThreads = 10;
 
     public SapiDownloadManager(SyncConfig config, SyncSource src) {
         this.syncConfig = config;
