@@ -917,123 +917,130 @@ public class SapiSyncManager implements SyncManagerI, SapiDownloadListener {
         downloadManager.setListener(this);
         numDownloadRequests = 0;
         lastDownloadExc = null;
-        
-        // Apply these changes into the sync source
-        for(int k=0; k<items.length() && !done; ++k) {
 
-            cancelSyncIfNeeded(src);
+        try {
 
-            JSONObject item = items.getJSONObject(k);
+            // Apply these changes into the sync source
+            for(int k=0; k<items.length() && !done; ++k) {
 
-            // We must skip items that were removed by the initialization phase
-            if (item == REMOVED_ITEM) {
-                continue;
-            }
+                cancelSyncIfNeeded(src);
 
-            String guid = item.getString(ID_FIELD);
-            long size = Long.parseLong(item.getString(SIZE_FIELD));
-            String luid;
-            if (state == SyncItem.STATE_UPDATED) {
-                luid = mapping.getLuid(guid);
-            } else {
-                // This is an add. If the item is already present in the mapping
-                // then this is an add
-                luid = guid;
-            }
+                JSONObject item = items.getJSONObject(k);
 
-            // If the client doesn't have the luid we change the state to new
-            if(StringUtil.isNullOrEmpty(luid)) {
-                state = SyncItem.STATE_NEW;
-            }
+                // We must skip items that were removed by the initialization phase
+                if (item == REMOVED_ITEM) {
+                    continue;
+                }
 
-            // Create the item
-            JSONSyncItem syncItem = (JSONSyncItem)utils.createSyncItem(src, luid, state, size, item, serverUrl);
-            syncItem.setGuid(guid);
+                String guid = item.getString(ID_FIELD);
+                long size = Long.parseLong(item.getString(SIZE_FIELD));
+                String luid;
+                if (state == SyncItem.STATE_UPDATED) {
+                    luid = mapping.getLuid(guid);
+                } else {
+                    // This is an add. If the item is already present in the mapping
+                    // then this is an add
+                    luid = guid;
+                }
 
-            // Notify the listener
-            if (syncItem.getState() == SyncItem.STATE_NEW) {
-                getSyncListenerFromSource(src).itemAddReceivingStarted(syncItem.getKey(), syncItem.getParent(), size);
-            } else if (syncItem.getState() == SyncItem.STATE_UPDATED) {
-                getSyncListenerFromSource(src).itemReplaceReceivingStarted(syncItem.getKey(), syncItem.getParent(), size);
-            }
+                // If the client doesn't have the luid we change the state to new
+                if(StringUtil.isNullOrEmpty(luid)) {
+                    state = SyncItem.STATE_NEW;
+                }
 
-            // Check if this item just got renamed remotely
-            boolean downloadContent = !item.has("nocontent");
+                // Create the item
+                JSONSyncItem syncItem = (JSONSyncItem)utils.createSyncItem(src, luid, state, size, item, serverUrl);
+                syncItem.setGuid(guid);
 
-            if (downloadContent) {
-                // Shall we resume this item download?
-                if (resume && syncStatus.getReceivedItemStatus(guid) == SyncSource.INTERRUPTED_STATUS) {
-                    if (src instanceof ResumableSource) {
-                        long partialLength = 0;
-                        ResumableSource rss = (ResumableSource)src;
-                        partialLength = rss.getPartiallyReceivedItemSize(rss.getLuid(syncItem));
-                        if (partialLength > 0) {
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Found an item whose download can be resumed at " + partialLength);
+                // Notify the listener
+                if (syncItem.getState() == SyncItem.STATE_NEW) {
+                    getSyncListenerFromSource(src).itemAddReceivingStarted(syncItem.getKey(), syncItem.getParent(), size);
+                } else if (syncItem.getState() == SyncItem.STATE_UPDATED) {
+                    getSyncListenerFromSource(src).itemReplaceReceivingStarted(syncItem.getKey(), syncItem.getParent(), size);
+                }
+
+                // Check if this item just got renamed remotely
+                boolean downloadContent = !item.has("nocontent");
+
+                if (downloadContent) {
+                    // Shall we resume this item download?
+                    if (resume && syncStatus.getReceivedItemStatus(guid) == SyncSource.INTERRUPTED_STATUS) {
+                        if (src instanceof ResumableSource) {
+                            long partialLength = 0;
+                            ResumableSource rss = (ResumableSource)src;
+                            partialLength = rss.getPartiallyReceivedItemSize(rss.getLuid(syncItem));
+                            if (partialLength > 0) {
+                                if (Log.isLoggable(Log.INFO)) {
+                                    Log.info(TAG_LOG, "Found an item whose download can be resumed at " + partialLength);
+                                }
+                                // Notify the sync status that we are trying to resume
+                                syncStatus.addReceivedResumedItem(guid);
+                                syncItem.setPartialLength(partialLength);
                             }
-                            // Notify the sync status that we are trying to resume
-                            syncStatus.addReceivedResumedItem(guid);
-                            syncItem.setPartialLength(partialLength);
                         }
                     }
+                    syncItem.setItemContentUpdated(true);
+                } else {
+                    if (Log.isLoggable(Log.DEBUG)) {
+                        Log.debug(TAG_LOG, "No content will be downloaded");
+                    }
+                    syncItem.setItemContentUpdated(false);
                 }
-                syncItem.setItemContentUpdated(true);
-            } else {
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "No content will be downloaded");
+
+                // Was the item renamed
+                if (item.has("oldkey")) {
+                    syncItem.setOldKey(item.getString("oldkey"));
+                    syncItem.setItemKeyUpdated(true);
+                } else {
+                    syncItem.setItemKeyUpdated(false);
                 }
-                syncItem.setItemContentUpdated(false);
-            }
 
-            // Was the item renamed
-            if (item.has("oldkey")) {
-                syncItem.setOldKey(item.getString("oldkey"));
-                syncItem.setItemKeyUpdated(true);
-            } else {
-                syncItem.setItemKeyUpdated(false);
-            }
-
-            if (downloadContent) {
-                // Download and apply the item 
-                if (src instanceof ResumableSource) {
-                    ResumableSource rss = (ResumableSource)src;
-                    if (syncItem.getState() == SyncItem.STATE_NEW || syncItem.getState() == SyncItem.STATE_UPDATED) {
-                        String tmpLuid = rss.getLuid(syncItem);
-                        if (luid != null) {
-                            syncStatus.addReceivedItem(syncItem.getGuid(), tmpLuid, syncItem.getState(), SyncSource.INTERRUPTED_STATUS);
+                if (downloadContent) {
+                    // Download and apply the item 
+                    if (src instanceof ResumableSource) {
+                        ResumableSource rss = (ResumableSource)src;
+                        if (syncItem.getState() == SyncItem.STATE_NEW || syncItem.getState() == SyncItem.STATE_UPDATED) {
+                            String tmpLuid = rss.getLuid(syncItem);
+                            if (luid != null) {
+                                syncStatus.addReceivedItem(syncItem.getGuid(), tmpLuid, syncItem.getState(), SyncSource.INTERRUPTED_STATUS);
+                            }
+                        }
+                        try {
+                            syncStatus.save();
+                        } catch (IOException ioe) {
+                            Log.error(TAG_LOG, "Cannot save sync status", ioe);
                         }
                     }
-                    try {
-                        syncStatus.save();
-                    } catch (IOException ioe) {
-                        Log.error(TAG_LOG, "Cannot save sync status", ioe);
+
+                    // Prepare to perform a new download request
+                    synchronized(numDownloadRequestsLock) {
+                        numDownloadRequests++;
                     }
-                }
 
-                // Prepare to perform a new download request
-                synchronized(numDownloadRequestsLock) {
-                    numDownloadRequests++;
-                }
-
-                downloadManager.download(item, syncItem);
-                // Check if we have got a download exception so far
-                if (lastDownloadExc != null) {
-                    throwDownloadExc(lastDownloadExc);
-                }
-            }
-        }
-
-        // Wait for all requests to terminate
-        synchronized(numDownloadRequestsLock) {
-            while(numDownloadRequests > 0) {
-                try {
-                    numDownloadRequestsLock.wait();
+                    downloadManager.download(item, syncItem);
+                    // Check if we have got a download exception so far
                     if (lastDownloadExc != null) {
                         throwDownloadExc(lastDownloadExc);
                     }
-                } catch (Exception e) {}
+                }
             }
+
+            // Wait for all requests to terminate
+            synchronized(numDownloadRequestsLock) {
+                while(numDownloadRequests > 0) {
+                    try {
+                        numDownloadRequestsLock.wait();
+                        if (lastDownloadExc != null) {
+                            throwDownloadExc(lastDownloadExc);
+                        }
+                    } catch (Exception e) {}
+                }
+            }
+        } finally {
+            // Release all resources allocated by the download manager
+            downloadManager.dispose();
         }
+
         return done;
     }
 

@@ -57,12 +57,13 @@ class SapiDownloadManager {
 
     private static final String TAG_LOG = "SapiDownloadManager";
 
-    private Vector activeThreads = new Vector();
-    private Vector queue = new Vector();
+    private final Vector activeThreads = new Vector();
+    private final Vector queue = new Vector();
+
     private SyncSource src;
     private SyncConfig syncConfig;
     private SapiDownloadListener listener;
-    private DownloadDaemon downloadDaemon = new DownloadDaemon();
+    private DownloadDaemon downloadDaemon = null;
 
     // TODO: this must be computed somehow dynamically
     private int maxThreads = 5;
@@ -70,25 +71,38 @@ class SapiDownloadManager {
     public SapiDownloadManager(SyncConfig config, SyncSource src) {
         this.syncConfig = config;
         this.src = src;
-
-        // Start the daemon
-        downloadDaemon.setDaemon(true);
-        downloadDaemon.setPriority(Thread.MAX_PRIORITY);
-        downloadDaemon.start();
-
-        // Make sure the daemon has started
-        do {
-            try {
-                Thread.sleep(100);
-            } catch (Exception e) {}
-        } while(!downloadDaemon.isAlive());
     }
 
     public void setListener(SapiDownloadListener listener) {
         this.listener = listener;
     }
 
+    public void dispose() {
+        if (downloadDaemon != null) {
+            downloadDaemon.setDone();
+            // In case the daemon is in its wait state, we notify it
+            synchronized(queue) {
+                queue.notify();
+            }
+        }
+    }
+
     public void download(JSONObject jsonItem, JSONSyncItem item) {
+        if (downloadDaemon == null) {
+            downloadDaemon = new DownloadDaemon();
+            // Start the daemon
+            downloadDaemon.setDaemon(true);
+            downloadDaemon.setPriority(Thread.MAX_PRIORITY);
+            downloadDaemon.start();
+
+            // Make sure the daemon has started
+            do {
+                try {
+                    Thread.sleep(100);
+                } catch (Exception e) {}
+            } while(!downloadDaemon.isAlive());
+        }
+
         // Enqueue the new request
         Request r = new Request(jsonItem, item);
         synchronized(queue) {
@@ -101,6 +115,10 @@ class SapiDownloadManager {
 
         private boolean done = false;
 
+        public void setDone() {
+            done = true;
+        }
+
         public void run() {
             while(!done) {
                 synchronized(queue) {
@@ -108,7 +126,7 @@ class SapiDownloadManager {
                         queue.wait();
                     } catch (Exception e) {}
 
-                    while(queue.size() > 0) {
+                    while(!done && queue.size() > 0) {
                         // Grab the first request
                         Request r = (Request)queue.elementAt(0);
 
