@@ -1010,18 +1010,6 @@ public class BasicScriptRunner extends CommandRunner {
         }
     }
 
-    /**
-     * Set the AuthSyncMonitor object for this CommandRunner container
-     * @param monitor the AuthSyncMonitor to be set
-     */
-    public void setAuthSyncMonitor(SyncMonitor monitor) {
-        super.setAuthSyncMonitor(monitor);
-        for (int i = 0; i < commandRunners.size(); i++) {
-            CommandRunner runner = (CommandRunner) commandRunners.elementAt(i);
-            runner.setAuthSyncMonitor(monitor);
-        }
-    }
-
     private String processArg(String arg) {
         // We must replace any variable occurrence
         // Variables are defined as ${name}

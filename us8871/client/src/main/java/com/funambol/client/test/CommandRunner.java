@@ -49,8 +49,7 @@ public abstract class CommandRunner {
     protected Robot robot;
 
     protected SyncMonitor     syncMonitor     = null;
-    protected SyncMonitor     authSyncMonitor = null;
-    
+
     public CommandRunner(Robot robot) {
         this.robot = robot;
     }
@@ -59,10 +58,6 @@ public abstract class CommandRunner {
 
     public void setSyncMonitor(SyncMonitor monitor) {
         this.syncMonitor = monitor;
-    }
-
-    public void setAuthSyncMonitor(SyncMonitor monitor) {
-        this.authSyncMonitor = monitor;
     }
 
     protected String getParameter(String allPars, int index) {

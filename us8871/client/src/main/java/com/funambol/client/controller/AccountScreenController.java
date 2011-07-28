@@ -35,24 +35,13 @@
 
 package com.funambol.client.controller;
 
-import java.util.Vector;
-import java.util.Enumeration;
-
-import com.funambol.org.json.me.JSONObject;
-import com.funambol.org.json.me.JSONArray;
-import com.funambol.org.json.me.JSONException;
-
-import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.SapiException;
 import com.funambol.client.customization.Customization;
 import com.funambol.client.configuration.Configuration;
-import com.funambol.client.source.AppSyncSource;
-import com.funambol.client.source.AppSyncSourceConfig;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.AccountScreen;
 import com.funambol.client.ui.DisplayManager;
-import com.funambol.client.ui.Screen;
 import com.funambol.sync.SyncException;
 import com.funambol.util.StringUtil;
 import com.funambol.platform.NetworkStatus;
@@ -179,11 +168,11 @@ public class AccountScreenController {
                 return;
             }
 
-            ContinueSyncAction csa = new ContinueSyncAction(serverUri, username, password); 
+            ContinueSyncAction csa = new ContinueSyncAction(); 
             AbortAfterNetwokUsageWarning asa = new AbortAfterNetwokUsageWarning();
             boolean prompt = promptUserForNetworkUsage(csa, asa);
             if (!prompt) {
-                loginViaSapi(serverUri, username, password);
+                loginViaSapi();
             }
         } else {
             // There was no need to authenticate
@@ -221,11 +210,10 @@ public class AccountScreenController {
         return true;
     }
 
-    private void loginViaSapi(String serverUri, String username, String password) {
-        SapiLoginThread th = new SapiLoginThread(serverUri, username, password);
+    private void loginViaSapi() {
+        SapiLoginThread th = new SapiLoginThread();
         th.start();
     }
-
 
     protected boolean isSyncInProgress() {
         HomeScreenController homeScreenController = controller.getHomeScreenController();
@@ -457,19 +445,7 @@ public class AccountScreenController {
         showMessage(localization.getLanguage("message_no_signal"));
     }
 
-
-
     private class SapiLoginThread extends Thread {
-
-        private String serverUri;
-        private String username;
-        private String password;
-
-        public SapiLoginThread(String serverUri, String username, String password) {
-            this.serverUri = serverUri;
-            this.username = username;
-            this.password = password;
-        }
 
         public void run() {
             // In this case we can simply check credentials invoking the
@@ -519,18 +495,8 @@ public class AccountScreenController {
     }
 
     private class ContinueSyncAction implements Runnable {
-        private String serverUri;
-        private String username;
-        private String password;
-        
-        public ContinueSyncAction(String serverUri, String username, String password) {
-            this.serverUri = serverUri;
-            this.username = username;
-            this.password = password;
-        }
-        
         public void run() {
-            loginViaSapi(serverUri, username, password);
+            loginViaSapi();
         }
     }
 

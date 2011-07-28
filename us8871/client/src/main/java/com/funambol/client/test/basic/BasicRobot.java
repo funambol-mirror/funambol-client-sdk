@@ -296,7 +296,6 @@ public abstract class BasicRobot extends Robot {
             }
         }
     }
-    
 
     public void syncAll() {
        Log.debug(TAG_LOG, "simulating Sync All button pressed");
@@ -338,8 +337,6 @@ public abstract class BasicRobot extends Robot {
 
     protected abstract void startMainApp() throws Throwable;
     protected abstract void closeMainApp() throws Throwable;
-
-    public abstract void waitForAuthToComplete(int minStart, int max, SyncMonitor syncMonitor) throws Throwable;
 
     public abstract void keyPress(String keyName, int count) throws Throwable;
     public abstract void writeString(String text) throws Throwable;

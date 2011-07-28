@@ -126,8 +126,6 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             writeString(command, pars);
         } else if (WAIT_FOR_SYNC_TO_COMPLETE_COMMAND.equals(command)) {
             waitForSyncToComplete(command, pars);
-        } else if (WAIT_FOR_AUTH_TO_COMPLETE_COMMAND.equals(command)) {
-            waitForAuthToComplete(command, pars);
         } else if (CHECK_EXCHANGED_DATA_COMMAND.equals(command)) {
             checkExchangedData(command, pars);
         } else if (CHECK_SYNC_ERRORS_COMMAND.equals(command)) {
@@ -249,34 +247,6 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         int n = Integer.parseInt(num);
 
         getBasicRobot().interruptSyncAfterPhase(phase, n, reason, syncMonitor);
-    }
-
-    /**
-     * This command is referred to the authentication action to be performed
-     * from the client's login screen. Wait that the login operation is
-     * correctly performed after a given amount of time. (whatever it means:
-     * config sync or simple authentication)
-     * @param command the command related to the authentication action
-     * @param args the command related and String formatted arguments. In
-     * particular the startup action time and the maximum allowed time to
-     * complete the operation must be given as parameters to this command by
-     * the tester in the input script.
-     * @throws Throwable if an error occurred
-     */
-    private void waitForAuthToComplete(String command, Vector args) throws Throwable {
-
-        String minStart = getParameter(args, 0);
-        String maxWait  = getParameter(args, 1);
-
-        checkArgument(minStart, "Missing min start in " + command);
-        checkArgument(maxWait, "Missing max wait in " + command);
-
-        checkObject(authSyncMonitor, "Run StartMainApp before command: " + command);
-
-        int min = Integer.parseInt(minStart)*1000;
-        int max = Integer.parseInt(maxWait)*1000;
-
-        getBasicRobot().waitForAuthToComplete(min, max, authSyncMonitor);
     }
 
     /**

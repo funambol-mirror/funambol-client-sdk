@@ -155,22 +155,6 @@ public interface BasicUserCommands {
     public static final String WAIT_FOR_SYNC_TO_COMPLETE_COMMAND = "WaitForSyncToComplete";
 
     /**
-     * This command wait for a authentication process to start and finish within
-     * a maximum amount of time. As soon as the authentication terminates, the
-     * script continues its execution.
-     *
-     * @param minStart is the time the script waits for the authentication to
-     *                 start. If the authentication does not start withing this
-     *                 time, the test fails
-     * @param maxTime  is the maximum time the script is willing for the 
-     *                 authentication to terminate. If it does not terminate
-     *                 within this limit, the test fails.
-     *
-     * @example WaitForAuthToComplete(10, 120)
-     */
-    public static final String WAIT_FOR_AUTH_TO_COMPLETE_COMMAND = "WaitForAuthToComplete";
-
-    /**
      * This command simulates a user action via the device keypad.
      * @param command the command to simulate. Possible values are:
      *                <ul>
