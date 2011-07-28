@@ -63,6 +63,8 @@ public class SQLiteTable extends Table {
 
     private Object lock = new Object();
 
+    private int numRefs = 0;
+
     public SQLiteTable(Context context, String dbName, String tableName, int colsType[], int keyIdx) {
         this(context, dbName, tableName, colsType, keyIdx, false);
     }
@@ -91,6 +93,14 @@ public class SQLiteTable extends Table {
     @Override
     public void open() throws IOException {
         synchronized(lock) {
+
+            numRefs++;
+
+            // If the table is already open, we have nothing to do
+            if (dbStore != null) {
+                return;
+            }
+
             mDatabaseHelper = new DatabaseHelper(context, dbName, getName());
 
             // Create the table containing the key value pairs (if it does not exist
@@ -107,10 +117,16 @@ public class SQLiteTable extends Table {
 
     @Override
     public void close() {
+        if (dbStore == null) {
+            return;
+        }
         synchronized(lock) {
-            if (dbStore != null) {
-                dbStore.close();
-                dbStore = null;
+            numRefs--;
+            if (numRefs == 0) {
+                if (dbStore != null) {
+                    dbStore.close();
+                    dbStore = null;
+                }
             }
         }
     }

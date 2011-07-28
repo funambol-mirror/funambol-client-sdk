@@ -44,7 +44,9 @@ import java.io.InputStream;
 
 import com.funambol.platform.FileAdapter;
 
-import com.funambol.util.*;
+import com.funambol.util.StringUtil;
+import com.funambol.util.QuickSort;
+import com.funambol.util.Log;
 
 /**
  * This is an implementation of the key value store that stores items in a file.
@@ -79,6 +81,7 @@ public class FileTable extends Table {
     private String directory;
 
     private long nextKey = 0;
+    private int numRefs = 0;
 
     private Object lock = new Object();
 
@@ -117,6 +120,12 @@ public class FileTable extends Table {
 
     public void open() throws IOException {
         synchronized(lock) {
+
+            numRefs++;
+            if (file != null) {
+                return;
+            }
+
             file = new FileAdapter(getName());
             if (!file.exists()) {
                 file.create();
@@ -127,8 +136,12 @@ public class FileTable extends Table {
     }
 
     public void close() throws IOException {
+        if (file == null) {
+            return;
+        }
         synchronized(lock) {
-            if (file != null) {
+            --numRefs;
+            if (numRefs == 0) {
                 file.close();
                 file = null;
             }
