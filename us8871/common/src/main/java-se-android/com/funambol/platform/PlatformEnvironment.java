@@ -33,43 +33,41 @@
  * the words "Powered by Funambol". 
  */
 
-package com.funambol.storage;
+package com.funambol.platform;
 
 import android.content.Context;
 
-import com.funambol.platform.PlatformEnvironment;
-import com.funambol.util.Log;
+/**
+ * This class provides information specific to each supported platform. There is
+ * not a common interface, it is only guaranteed it exists on all platforms. It
+ * shall be used only in platform specific code.
+ * The only method which is guaranteed to exist is the getInstance one which can
+ * be used to retrieve an instance. Any application using platform specific code
+ * shall initialize this object at the very beginning of the application.
+ */
+public class PlatformEnvironment {
 
-public class StringKeyValueStoreFactory {
+    private static PlatformEnvironment instance = null;
+    private static Context context;
+    private static String dbName;
 
-    private static final String TAG_LOG = "StringKeyValueStoreFactory";
-
-    private Context context;
-    private String  dbName;
-
-    private static StringKeyValueStoreFactory instance = null;
-
-    private StringKeyValueStoreFactory() {
-        PlatformEnvironment env = PlatformEnvironment.getInstance();
-        this.context = env.getContext();
-        this.dbName  = env.getDbName();
+    public void init(Context context, String dbName) {
+        this.context = context;
+        this.dbName  = dbName;
     }
 
-    public static StringKeyValueStoreFactory getInstance() {
+    public static PlatformEnvironment getInstance() {
         if (instance == null) {
-            instance = new StringKeyValueStoreFactory();
+            instance = new PlatformEnvironment();
         }
         return instance;
     }
 
-    public StringKeyValueStore getStringKeyValueStore(String name) {
-        if (context == null || dbName == null) {
-            Log.error(TAG_LOG, "Cannot create key value store until the StringKeyValueStoreFactory is properly initialized");
-            return null;
-        }
-        // On Android the default key value store in a SQL lite store
-        return new StringKeyValueSQLiteStore(context, dbName, name);
+    public Context getContext() {
+        return context;
+    }
+
+    public String getDbName() {
+        return dbName;
     }
 }
-
-

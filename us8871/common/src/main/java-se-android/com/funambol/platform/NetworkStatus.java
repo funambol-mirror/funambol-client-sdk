@@ -41,14 +41,17 @@ import android.telephony.ServiceState;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-public class NetworkStatus {
+public class NetworkStatus implements NetworkStatusI {
 
     private Context context;
     private ConnectivityManager connectivityManager;
+    private TelephonyManager telephonyManager;
 
-    public NetworkStatus(Context context) {
-        this.context = context;
+    public NetworkStatus() {
+        PlatformEnvironment env = PlatformEnvironment.getInstance();
+        this.context = env.getContext();
         connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     public boolean isWiFiConnected() {
@@ -69,6 +72,12 @@ public class NetworkStatus {
         }
     }
 
+    public int getMobileNetworkType() {
+        boolean is3G = (telephonyManager.getNetworkType() == TelephonyManager.NETWORK_TYPE_UMTS);
+        // Everything below UMTS is considered GPRS
+        return is3G ? MOBILE_TYPE_UMTS : MOBILE_TYPE_GPRS;
+    }
+
     public boolean isConnected() {
         NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
         if (netInfo != null) {
@@ -77,6 +86,7 @@ public class NetworkStatus {
             return false;
         }
     }
+
 
     public boolean isRadioOff() {
         ServiceState serviceState = new ServiceState();

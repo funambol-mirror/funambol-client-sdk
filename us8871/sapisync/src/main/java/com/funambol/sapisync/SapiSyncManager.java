@@ -471,16 +471,11 @@ public class SapiSyncManager implements SyncManagerI, SapiDownloadListener {
 
         try {
             // Perform a login to avoid multiple authentications
-            long clientNow = System.currentTimeMillis();
-            long serverNow = sapiSyncHandler.login(deviceId);
-            if (serverNow > 0) {
-                clientServerTimeDifference = serverNow - clientNow;
-                strategy.setClientServerTimeDifference(clientServerTimeDifference);
-                if (Log.isLoggable(Log.DEBUG)) {
-                    Log.debug(TAG_LOG, "Difference in time between server and client is " + clientServerTimeDifference);
-                }
-            } else {
-                clientServerTimeDifference = 0;
+            sapiSyncHandler.login(deviceId);
+            clientServerTimeDifference = sapiSyncHandler.getDeltaTime();
+            strategy.setClientServerTimeDifference(clientServerTimeDifference);
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Difference in time between server and client is " + clientServerTimeDifference);
             }
         } catch (SapiException e) {
             String errorMessage = "Cannot login";

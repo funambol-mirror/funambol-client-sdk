@@ -43,7 +43,7 @@ import net.rim.device.api.system.RadioInfo;
 
 import com.funambol.util.Log;
 
-public class NetworkStatus {
+public class NetworkStatus implements NetworkStatusI {
 
     private static final String TAG_LOG = "NetworkStatus";
 
@@ -114,4 +114,13 @@ public class NetworkStatus {
 
         return active >= wifi;
     }
+
+    public int getMobileNetworkType() {
+        if (RadioInfo.getNetworkType() == RadioInfo.NETWORK_UMTS) {
+            return MOBILE_TYPE_UMTS;
+        } else {
+            return MOBILE_TYPE_GPRS;
+        }
+    }
+
 }

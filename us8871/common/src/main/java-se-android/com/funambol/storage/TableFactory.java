@@ -37,6 +37,7 @@ package com.funambol.storage;
 
 import android.content.Context;
 
+import com.funambol.platform.PlatformEnvironment;
 import com.funambol.util.Log;
 
 public class TableFactory {
@@ -48,9 +49,10 @@ public class TableFactory {
 
     private static TableFactory instance = null;
 
-    public void init(Context context, String dbName) {
-        this.context = context;
-        this.dbName  = dbName;
+    private TableFactory() {
+        PlatformEnvironment env = PlatformEnvironment.getInstance();
+        context = env.getContext();
+        dbName  = env.getDbName();
     }
 
     public static TableFactory getInstance() {

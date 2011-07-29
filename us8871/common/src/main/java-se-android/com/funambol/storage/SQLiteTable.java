@@ -196,7 +196,7 @@ public class SQLiteTable extends Table {
     @Override
     public QueryResult query(QueryFilter filter, int orderBy, boolean ascending) throws IOException {
         if (dbStore == null) {
-            throw new IOException("Table must be opened before inserting");
+            throw new IOException("Table must be opened before querying");
         }
         // In order to be more efficient we translate the QueryFilter into a SQL
         // statement

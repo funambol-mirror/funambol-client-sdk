@@ -32,32 +32,17 @@
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol".
  */
-
 package com.funambol.platform;
 
+public interface NetworkStatusI {
 
-public class NetworkStatus implements NetworkStatusI {
+    public static final int MOBILE_TYPE_UNKNOWN = 0;
+    public static final int MOBILE_TYPE_GPRS    = 1;
+    public static final int MOBILE_TYPE_UMTS    = 2;
 
-    public NetworkStatus() {
-    }
-
-    public boolean isWiFiConnected() {
-        return false;
-    }
-
-    public boolean isMobileConnected() {
-        return false;
-    }
-
-    public boolean isConnected() {
-        return false;
-    }
-
-    public boolean isRadioOff() {
-        return false;
-    }
-
-    public int getMobileNetworkType() {
-        return MOBILE_TYPE_UNKNOWN;
-    }
+    public boolean isWiFiConnected();
+    public boolean isMobileConnected();
+    public int getMobileNetworkType();
+    public boolean isConnected();
+    public boolean isRadioOff();
 }

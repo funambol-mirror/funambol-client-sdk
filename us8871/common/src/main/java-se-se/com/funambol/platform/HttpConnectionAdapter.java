@@ -144,6 +144,10 @@ public class HttpConnectionAdapter {
     public HttpConnectionAdapter() {
     }
 
+    public static boolean getConnectionsReuse() {
+        return false;
+    }
+
     /**
      * Open the connection to the given url, using a proxy.
      */

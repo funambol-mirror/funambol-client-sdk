@@ -165,13 +165,22 @@ public class FunambolFileSyncSource extends FileSyncSource {
         if (res == SyncSource.SUCCESS_STATUS) {
             // Create a new entry in the metadata table
             try {
+                ThumbnailItem ti = (ThumbnailItem)item;
+                JSONFileObject fo = ti.getJSONFileObject();
+
+                Long lastMod;
+                if (fo.getLastModifiedDate() > 0) {
+                    lastMod = new Long(fo.getLastModifiedDate());
+                } else {
+                    lastMod = new Long(fo.getCreationDate());
+                }
+
                 metadata.open();
                 Tuple tuple = metadata.createNewRow(item.getKey());
                 tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), item.getKey());
                 tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), "");
                 tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), "");
-                // TODO: what is the lastmod here?
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), 0);
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), lastMod);
                 tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_SYNCHRONIZED), 1);
                 tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_DELETED), 0);
                 tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_DIRTY), 0);
@@ -236,6 +245,9 @@ public class FunambolFileSyncSource extends FileSyncSource {
 
     protected class ThumbnailItem extends JSONSyncSourceItem {
 
+        //private static final String THUMB_SIZE = "504";
+        private static final String THUMB_SIZE = "176";
+
         public ThumbnailItem(String key, String type, char state, String parent,
                              JSONObject jsonObject, String serverUrl)
         throws JSONException
@@ -263,12 +275,21 @@ public class FunambolFileSyncSource extends FileSyncSource {
             if (fileObject != null) {
                 Vector thumbnails = fileObject.getThumbnails();
                 JSONFileObject.JSONFileThumbnail thumb = null;
+                JSONFileObject.JSONFileThumbnail firstThumb = null;
                 if (thumbnails != null) {
                     for(int i=0;i<thumbnails.size();++i) {
                         thumb = (JSONFileObject.JSONFileThumbnail)thumbnails.elementAt(i);
+                        if (firstThumb == null) {
+                            firstThumb = thumb;
+                        }
                         // TODO FIXME: get the thumbnail with the best match
-                        break;
+                        if (THUMB_SIZE.equals(thumb.getSize())) {
+                            break;
+                        }
                     }
+                }
+                if (thumb == null) {
+                    thumb = firstThumb;
                 }
                 if (thumb != null) {
                     return composeUrl(syncUrl, fileObject.getServerUrl(), thumb.getUrl());

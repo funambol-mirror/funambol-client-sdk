@@ -66,6 +66,9 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.params.ConnPerRoute;
+import org.apache.http.conn.params.ConnManagerParams;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.RequestWrapper;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
@@ -78,6 +81,8 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.SyncBasicHttpContext;
+import org.apache.http.protocol.BasicHttpContext;
 
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -194,7 +199,7 @@ public class HttpConnectionAdapter {
     private String requestMethod = GET;
 
     private HttpRequestBase request;
-    private DefaultHttpClient httpClient;
+    private static DefaultHttpClient httpClient;
     private int responseCode;
     private OutputStream outputStream;
     private String url;
@@ -206,26 +211,36 @@ public class HttpConnectionAdapter {
     // Default connection and socket timeout of 3 * 60 seconds.  Tweak to taste.
     private static final int SOCKET_OPERATION_TIMEOUT = 3 * 60 * 1000;
 
-    public HttpConnectionAdapter() {
+    private static final int MAX_CONNECTIONS_PER_ROUTE = 10;
+    private static final int MAX_TOTAL_CONNECTIONS     = 100;
 
+    public HttpConnectionAdapter() {
         // These default values are mostly grabbed from the AndroidDefaultClient
         // implementation that was introduced in Android 2.2
-        HttpParams params = new BasicHttpParams();
-        params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-        params.setParameter(CoreProtocolPNames.HTTP_CONTENT_CHARSET, HTTP.UTF_8);
-        params.setParameter(CoreProtocolPNames.USER_AGENT, "Apache-HttpClient/Android");
-        HttpConnectionParams.setConnectionTimeout(params, SOCKET_OPERATION_TIMEOUT);
-        HttpConnectionParams.setSoTimeout(params, SOCKET_OPERATION_TIMEOUT);
-        // Turn off stale checking.  Our connections break all the time anyway,
-        // and it's not worth it to pay the penalty of checking every time.
-        params.setParameter(CoreConnectionPNames.STALE_CONNECTION_CHECK, false);
-        //HttpConnectionParams.setSocketBufferSize(params, 8192);
+        if (httpClient == null) {
+            HttpParams params = new BasicHttpParams();
+            params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+            params.setParameter(CoreProtocolPNames.HTTP_CONTENT_CHARSET, HTTP.UTF_8);
+            params.setParameter(CoreProtocolPNames.USER_AGENT, "Apache-HttpClient/Android");
+            HttpConnectionParams.setConnectionTimeout(params, SOCKET_OPERATION_TIMEOUT);
+            HttpConnectionParams.setSoTimeout(params, SOCKET_OPERATION_TIMEOUT);
+            // Turn off stale checking.  Our connections break all the time anyway,
+            // and it's not worth it to pay the penalty of checking every time.
+            params.setParameter(CoreConnectionPNames.STALE_CONNECTION_CHECK, false);
+            //HttpConnectionParams.setSocketBufferSize(params, 8192);
+            ConnManagerParams.setMaxConnectionsPerRoute(params, new FunambolConnPerRoute());
+            ConnManagerParams.setMaxTotalConnections(params, MAX_TOTAL_CONNECTIONS);
 
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-        ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
-        httpClient = new DefaultHttpClient(cm, params);
+            SchemeRegistry schemeRegistry = new SchemeRegistry();
+            schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+            schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+            ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
+            httpClient = new DefaultHttpClient(cm, params);
+        }
+    }
+
+    public static boolean getConnectionsReuse() {
+        return true;
     }
 
     /**
@@ -235,7 +250,6 @@ public class HttpConnectionAdapter {
         this.url = url;
         this.proxyConfig = proxyConfig;
     }
-
 
     /**
      * This method closes this connection. It does not close the corresponding
@@ -267,6 +281,7 @@ public class HttpConnectionAdapter {
         }
         return respInputStream;
     }
+
 
     /**
      * Execute the http post operation with the given input stream to be read to
@@ -521,21 +536,87 @@ public class HttpConnectionAdapter {
 
         try {
             Log.trace(TAG_LOG, "Executing request");
-            httpResponse = httpClient.execute(req);
+
+            HttpContext localContext = new BasicHttpContext();
+            SyncBasicHttpContext context = new SyncBasicHttpContext(localContext);
+            httpResponse = httpClient.execute(req, context);
+
+            // Set the response
+            StatusLine statusLine = httpResponse.getStatusLine();
+            responseCode = statusLine.getStatusCode();
+
+            HttpEntity respEntity = httpResponse.getEntity();
+            if (respEntity != null) {
+                respInputStream = new InputStreamWrapper(respEntity.getContent(), respEntity);
+            }
+            responseHeaders = httpResponse.getAllHeaders();
         } catch (Exception e) {
             Log.error(TAG_LOG, "Exception while executing request", e);
             throw new IOException(e.toString());
         }
-        // Set the response
-        StatusLine statusLine = httpResponse.getStatusLine();
-        responseCode = statusLine.getStatusCode();
 
-        HttpEntity respEntity = httpResponse.getEntity();
-        if (respEntity != null) {
-            respInputStream = respEntity.getContent();
-        }
-        responseHeaders = httpResponse.getAllHeaders();
     }
+
+    private class FunambolConnPerRoute implements ConnPerRoute {
+
+        public FunambolConnPerRoute() {
+        }
+
+        public int getMaxForRoute(HttpRoute route) {
+            return MAX_CONNECTIONS_PER_ROUTE;
+        }
+    }
+
+    private class InputStreamWrapper extends InputStream {
+
+        private InputStream is;
+        private HttpEntity entity;
+
+        public InputStreamWrapper(InputStream is, HttpEntity entity) {
+            this.is = is;
+            this.entity = entity;
+        }
+
+        public int available() throws IOException {
+            return is.available();
+        }
+
+        public void close() throws IOException {
+            is.close();
+            entity.consumeContent();
+        }
+
+        public void mark(int limit) {
+            is.mark(limit);
+        }
+
+        public boolean markSupported() {
+            return is.markSupported();
+        }
+
+        public int read() throws IOException {
+            return is.read();
+        }
+
+        public int read(byte buf[]) throws IOException {
+            return is.read(buf);
+        }
+
+        public int read(byte buf[], int off, int len) throws IOException {
+            return is.read(buf, off, len);
+        }
+
+        public void reset() throws IOException {
+            is.reset();
+        }
+
+        public long skip(long n) throws IOException {
+            return is.skip(n);
+        }
+    }
+
+
+
 
 }
 

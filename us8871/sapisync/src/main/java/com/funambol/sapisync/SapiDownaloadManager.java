@@ -51,11 +51,16 @@ import com.funambol.sapisync.source.JSONSyncItem;
 import com.funambol.sapisync.source.util.ResumeException;
 import com.funambol.sapisync.source.util.HttpDownloader;
 import com.funambol.sapisync.source.util.DownloadException;
+import com.funambol.platform.NetworkStatus;
 import com.funambol.util.Log;
 
 class SapiDownloadManager {
 
     private static final String TAG_LOG = "SapiDownloadManager";
+
+    private static final int MAX_THREADS_ON_GPRS = 1;
+    private static final int MAX_THREADS_ON_UMTS = 3;
+    private static final int MAX_THREADS_ON_WIFI = 5;
 
     private final Vector activeThreads = new Vector();
     private final Vector queue = new Vector();
@@ -65,12 +70,12 @@ class SapiDownloadManager {
     private SapiDownloadListener listener;
     private DownloadDaemon downloadDaemon = null;
 
-    // TODO: this must be computed somehow dynamically
-    private int maxThreads = 10;
+    private int maxThreads = MAX_THREADS_ON_GPRS;
 
     public SapiDownloadManager(SyncConfig config, SyncSource src) {
         this.syncConfig = config;
         this.src = src;
+        computeMaxThreads();
     }
 
     public void setListener(SapiDownloadListener listener) {
@@ -88,26 +93,45 @@ class SapiDownloadManager {
     }
 
     public void download(JSONObject jsonItem, JSONSyncItem item) {
-        if (downloadDaemon == null) {
-            downloadDaemon = new DownloadDaemon();
-            // Start the daemon
-            downloadDaemon.setDaemon(true);
-            downloadDaemon.setPriority(Thread.MAX_PRIORITY);
-            downloadDaemon.start();
+        synchronized(queue) {
+            if (downloadDaemon == null) {
+                downloadDaemon = new DownloadDaemon();
+                // Start the daemon
+                downloadDaemon.setDaemon(true);
+                downloadDaemon.setPriority(Thread.MIN_PRIORITY);
+                downloadDaemon.start();
 
-            // Make sure the daemon has started
-            do {
-                try {
-                    Thread.sleep(100);
-                } catch (Exception e) {}
-            } while(!downloadDaemon.isAlive());
+                // Make sure the daemon has started
+                do {
+                    try {
+                        Thread.sleep(100);
+                    } catch (Exception e) {}
+                } while(!downloadDaemon.isAlive());
+            }
         }
 
         // Enqueue the new request
         Request r = new Request(jsonItem, item);
         synchronized(queue) {
             queue.addElement(r);
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "Notifying queue for new request");
+            }
             queue.notify();
+        }
+    }
+
+    private void computeMaxThreads() {
+        NetworkStatus ns = new NetworkStatus();
+        if (ns.isWiFiConnected()) {
+            maxThreads = MAX_THREADS_ON_WIFI;
+        } else if (ns.getMobileNetworkType() == NetworkStatus.MOBILE_TYPE_UMTS) {
+            maxThreads = MAX_THREADS_ON_UMTS;
+        } else {
+            maxThreads = MAX_THREADS_ON_GPRS;
+        }
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "Computed max number of threads " + maxThreads);
         }
     }
 
@@ -123,7 +147,16 @@ class SapiDownloadManager {
             while(!done) {
                 synchronized(queue) {
                     try {
-                        queue.wait();
+                        // If there are no pending requests, we simply wait
+                        if (queue.size() == 0) {
+                            if (Log.isLoggable(Log.TRACE)) {
+                                Log.trace(TAG_LOG, "Waiting on queue");
+                            }
+                            queue.wait();
+                            if (Log.isLoggable(Log.TRACE)) {
+                                Log.trace(TAG_LOG, "Waken on queue " + queue.size());
+                            }
+                        }
                     } catch (Exception e) {}
 
                     while(!done && queue.size() > 0) {
@@ -134,6 +167,10 @@ class SapiDownloadManager {
                         synchronized(activeThreads) {
                             numRunningThreads = activeThreads.size();
                         }
+
+                        // Refresh the max number of threads, depending on the
+                        // network status
+                        computeMaxThreads();
 
                         if (numRunningThreads < maxThreads) {
                             // There is room to fire a new download thread
@@ -151,6 +188,13 @@ class SapiDownloadManager {
                             if (Log.isLoggable(Log.TRACE)) {
                                 Log.trace(TAG_LOG, "Reached max number of download thread");
                             }
+                            // If there are already pending requests, we give
+                            // them some time to complete before moving to the
+                            // next round of checks, otherwise this thread may
+                            // use too much cpu
+                            try {
+                                Thread.sleep(100);
+                            } catch (Exception e) {}
                             break;
                         }
                     }
@@ -171,23 +215,29 @@ class SapiDownloadManager {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Starting download of item " + request.getItem().getKey());
             }
+            Exception exc = null;
             try {
                 downloadItemContent(request.getItem());
-                if (listener != null) {
-                    listener.onItemDownloadResult(src, request.getJSONItem(), request.getItem(), null);
-                }
             } catch(Exception e) {
                 Log.error(TAG_LOG, "Cannot download item", e);
-                if (listener != null) {
-                    listener.onItemDownloadResult(src, request.getJSONItem(), request.getItem(), e);
-                }
+                exc = e;
             } finally {
+                if (listener != null) {
+                    try {
+                        listener.onItemDownloadResult(src, request.getJSONItem(), request.getItem(), exc);
+                    } catch (Exception e2) {
+                        Log.error(TAG_LOG, "Exception in client callback", e2);
+                    }
+                }
                 // This thread is over
                 synchronized(activeThreads) {
                     activeThreads.removeElement(this);
                 }
                 // Give a change to another thread to fire
                 synchronized(queue) {
+                    if (Log.isLoggable(Log.TRACE)) {
+                        Log.trace(TAG_LOG, "Notifying on queue");
+                    }
                     queue.notify();
                 }
             }

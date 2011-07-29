@@ -78,6 +78,10 @@ public class SapiSyncHandler {
     private static final String JSON_OBJECT_ERROR_FIELD_CODE    = "code";
     private static final String JSON_OBJECT_ERROR_FIELD_MESSAGE = "message";
     private static final String JSON_OBJECT_ERROR_FIELD_CAUSE   = "cause";
+
+    // This field keeps track of the time difference between the server and the
+    // client, based on the responsetime returned
+    private static long deltaTime;
     
     /**
      * SapiSyncHandler constructor
@@ -97,39 +101,34 @@ public class SapiSyncHandler {
      * server. This is required to let the server know that a sync session is
      * about to start.
      *
-     * @return the server response time for this call
-     *
      * @throws SapiException
      */
-    public long login(String deviceId) throws SapiException {
+    public void login(String deviceId) throws SapiException {
+        long now = System.currentTimeMillis();
         JSONObject response = login(deviceId, 0);
         try {
             long responseTime = -1;
             if (response.has("responsetime")) {
+                // Update the time difference
                 String ts = response.getString("responsetime");
                 if (Log.isLoggable(Log.TRACE)) {
                     Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
                 }
                 try {
                     responseTime = Long.parseLong(ts);
+                    deltaTime = responseTime - now;
                 } catch (Exception e) {
                     Log.error(TAG_LOG, "Cannot parse server responsetime");
                 }
-                return responseTime;
-            } else {
-                Log.error(TAG_LOG, "Cannot find server responsetime");
-                throw new NotSupportedCallException();
             }
-        } catch (NotSupportedCallException e) {
-            Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
-            throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
-        } catch(IOException ex) {
-            Log.error(TAG_LOG, "Failed to login", ex);
-            throw SapiException.SAPI_EXCEPTION_NO_CONNECTION;
         } catch(JSONException ex) {
             Log.error(TAG_LOG, "Failed to login", ex);
             throw SapiException.SAPI_EXCEPTION_UNKNOWN;
         }
+    }
+
+    public long getDeltaTime() {
+        return deltaTime;
     }
 
     public JSONObject loginAndGetServerInfo() throws SapiException {
@@ -759,7 +758,17 @@ public class SapiSyncHandler {
                     checkForCommonSapiErrorCodesAndThrowSapiException(response, null, true);
                 } catch (SapiException e) {
                     if (attempt == 0 && SapiException.SEC_1002.equals(e.getCode())) {
-                        // We already logged in. We need to logout first
+                        // We are already logged in.
+                        // Certain HttpConnectionAdapter implementations reuse
+                        // connections. In such a case there is no need to
+                        // supply credentials again.
+                        if (sapiHandler.getConnectionsReuse()) {
+                            sapiHandler.setAuthenticationMethod(SapiHandler.AUTH_NONE);
+                            sapiHandler.enableJSessionAuthentication(false);
+                            return response;
+                        }
+
+                        // We need to logout first.
                         if (Log.isLoggable(Log.INFO)) {
                             Log.info(TAG_LOG, "logging out");
                         }

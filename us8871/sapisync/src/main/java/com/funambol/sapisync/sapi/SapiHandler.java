@@ -558,6 +558,10 @@ public class SapiHandler {
         cancel = true;
     }
 
+    public boolean getConnectionsReuse() {
+        return HttpConnectionAdapter.getConnectionsReuse();
+    }
+
     private boolean isQueryCancelled() {
         return cancel;
     }

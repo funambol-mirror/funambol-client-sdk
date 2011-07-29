@@ -395,6 +395,26 @@ public class HomeScreenController extends SynchronizationController {
         }
     }
 
+    public void refreshPressed() {       
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "refresh pressed");
+        }
+
+        // If a sync is in progress, then this is a cancel sync request
+        if (isSynchronizing() && customization.syncAllActsAsCancelSync()) {
+            if (!doCancel) {
+                cancelSync();
+            } else {
+                if (Log.isLoggable(Log.INFO)) {
+                    Log.info(TAG_LOG, "Cancelling already in progress");
+                }
+            }
+        } else {
+            refreshSources(MANUAL);
+        }
+    }
+
+
     public void aloneSourcePressed() {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Alone Source Button pressed");
@@ -433,6 +453,26 @@ public class HomeScreenController extends SynchronizationController {
         
         synchronize(syncType, sources);
     }
+
+    public void refreshSources(String syncType) {
+        if (Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, "syncAllSources");
+        }
+
+        Vector sources = new Vector();        
+        for(int i=0;i<items.size();++i) {
+            AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
+            if (appSource.getConfig().getEnabled() && appSource.isWorking() &&
+                appSource.getConfig().getAllowed() && 
+                (appSource.getId() == AppSyncSourceManager.PICTURES_ID))
+            {
+                sources.addElement(appSource);
+            }
+        }
+        
+        synchronize(syncType, sources);
+    }
+ 
     
     /**
      * Triggers a synchronization for the given syncSources. The caller can

@@ -57,5 +57,10 @@ public class NetworkStatus {
         return false;
     }
 
+    public int getMobileNetworkType() {
+        return MOBILE_TYPE_UNKNOWN;
+    }
+
+
 
 }
