@@ -218,20 +218,23 @@ public class HttpConnectionAdapter {
         if (conn == null) {
             throw new IOException("Cannot open output stream on non opened connection");
         }
+
         OutputStream os = null;
         try {
             os = conn.getOutputStream();
-            byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
-            int read;
-            do {
-                read = is.read(chunk);
-                if (read > 0) {
-                    if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "Writing chunk size: " + read);
+            if (is != null) {
+                byte chunk[] = new byte[DEFAULT_CHUNK_SIZE];
+                int read;
+                do {
+                    read = is.read(chunk);
+                    if (read > 0) {
+                        if (Log.isLoggable(Log.TRACE)) {
+                            Log.trace(TAG_LOG, "Writing chunk size: " + read);
+                        }
+                        os.write(chunk, 0, read);
                     }
-                    os.write(chunk, 0, read);
-                }
-            } while(read != -1);
+                } while(read != -1);
+            }
             os.flush();
         } catch (UnknownHostException ue) {
             // Translate this exception into a platform independent one
