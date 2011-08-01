@@ -193,7 +193,8 @@ class SapiDownloadManager {
                             // next round of checks, otherwise this thread may
                             // use too much cpu
                             try {
-                                Thread.sleep(100);
+                                Thread.yield();
+                                //Thread.sleep(100);
                             } catch (Exception e) {}
                             break;
                         }
