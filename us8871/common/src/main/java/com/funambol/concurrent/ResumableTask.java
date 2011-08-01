@@ -48,9 +48,8 @@ public interface ResumableTask extends Task {
 
     /**
      * Resume the task execution
-     * @return true if the task has been correctly resumed
      */
-    public boolean resume();
+    public void resume();
 
 }
 

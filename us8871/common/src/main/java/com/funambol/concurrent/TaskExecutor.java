@@ -39,7 +39,7 @@ import java.util.Vector;
 
 public class TaskExecutor {
 
-    private final int MAX_THREADED_TASKS = 3;
+    private final int DEFAULT_MAX_THREADS_COUNT = 3;
 
     public static final int PRIORITY_LOW    = -1;
     public static final int PRIORITY_MEDIUM = 0;
@@ -49,6 +49,8 @@ public class TaskExecutor {
     private final TaskQueue taskQueue = new TaskQueue();
     
     private static TaskExecutor instance = null;
+
+    private int maxThreads = DEFAULT_MAX_THREADS_COUNT;
 
     private TaskExecutor() {
     }
@@ -64,6 +66,13 @@ public class TaskExecutor {
     }
 
     /**
+     * Set the max number of threads used to schedule tasks.
+     * @param count
+     */
+    public void setMaxThreads(int count) {
+        maxThreads = count;
+    }
+    /**
      * Schedule the given task with low priority.
      * @param task
      */
@@ -77,47 +86,55 @@ public class TaskExecutor {
      * @param priority
      */
     public void scheduleTaskWithPriority(Task task, int priority) {
-
-        PriorityTask ptask = new PriorityTask(task, priority);
-
-        boolean started = startNewThreadedTask(ptask);
-        if(!started) {
-            // If there is no room to run the given task, then we start looking
-            // for a lower priority task to suspend.
-            PriorityTask enqueuedTask = ptask;
-            for(int i=0; i<tasksThreadPool.size(); i++) {
-                ThreadedTask threadedTask = (ThreadedTask)tasksThreadPool.elementAt(i);
-                if((threadedTask.getPriorityTask().getPriority() < ptask.getPriority())) {
-                    if(threadedTask.isResumable() && threadedTask.suspend()) {
-                        // Enqueue suspended task
-                        enqueuedTask = threadedTask.getPriorityTask();
-                        tasksThreadPool.remove(threadedTask);
-                        startNewThreadedTask(ptask);
-                        break;
+        synchronized(tasksThreadPool) {
+            PriorityTask ptask = new PriorityTask(task, priority);
+            boolean started = startNewThreadedTask(ptask);
+            if(!started) {
+                enqueueTask(ptask);
+                // If there is no room to run the given task, then we start looking
+                // for a lower priority task to suspend.
+                for(int i=0; i<tasksThreadPool.size(); i++) {
+                    ThreadedTask threadedTask = (ThreadedTask)tasksThreadPool.elementAt(i);
+                    if((threadedTask.getPriorityTask().getPriority() < ptask.getPriority())) {
+                        if(threadedTask.isResumable() && threadedTask.suspend()) {
+                            // Enqueue suspended task
+                            enqueueTask(threadedTask.getPriorityTask());
+                            break;
+                        }
                     }
                 }
             }
-            synchronized(taskQueue) {
-                taskQueue.put(enqueuedTask, priority);
-            }
+        }
+    }
+
+    private void enqueueTask(PriorityTask task) {
+        synchronized(taskQueue) {
+            taskQueue.put(task);
         }
     }
 
     private boolean startNewThreadedTask(PriorityTask task) {
-        if(tasksThreadPool.size() < MAX_THREADED_TASKS) {
-            ThreadedTask threadedTask = new ThreadedTask(task);
-            tasksThreadPool.addElement(threadedTask);
-            threadedTask.start();
-            return true;
-        } else {
-            return false;
+        synchronized(tasksThreadPool) {
+            if(tasksThreadPool.size() < maxThreads) {
+                ThreadedTask threadedTask = new ThreadedTask(task);
+                tasksThreadPool.addElement(threadedTask);
+                threadedTask.start();
+                return true;
+            } else {
+                return false;
+            }
         }
     }
     
     private void taskCompleted(ThreadedTask threadedTask) {
-        // Make room and run a new task
-        tasksThreadPool.remove(threadedTask);
-        startNewThreadedTask(taskQueue.get());
+        synchronized(tasksThreadPool) {
+            // Make room and run a new task
+            tasksThreadPool.remove(threadedTask);
+            PriorityTask next = taskQueue.get();
+            if(next != null) {
+                startNewThreadedTask(next);
+            }
+        }
     }
 
     private class ThreadedTask {
@@ -183,7 +200,7 @@ public class TaskExecutor {
             } else {
                 ptask.getTask().run();
             }
-            taskCompleted(threadedTask);
+            getInstance().taskCompleted(threadedTask);
         }
     }
 
@@ -201,11 +218,11 @@ public class TaskExecutor {
             }
         }
 
-        public void put(PriorityTask task, int priority) {
+        public void put(PriorityTask task) {
             int index = 0;
             for(; index<internalQueue.size(); index++) {
                 PriorityTask pt = (PriorityTask)internalQueue.elementAt(index);
-                if(pt.getPriority() < priority) {
+                if(pt.getPriority() < task.getPriority()) {
                     break;
                 }
             }
