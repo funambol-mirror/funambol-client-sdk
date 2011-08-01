@@ -256,7 +256,7 @@ public class SapiHandler {
 
             // Now check the HTTP response, in case of success we set the item
             // status to OK
-            ByteArrayOutputStream response = new ByteArrayOutputStream();
+            ByteArrayOutputStream response = new ByteArrayOutputStream(4096);
             if (conn.getResponseCode() == HttpConnectionAdapter.HTTP_OK) {
 
                 // Log server headers
@@ -281,11 +281,12 @@ public class SapiHandler {
                     // Read the input stream according to the response
                     // content-length header
                     int b;
+                    byte data[] = new byte[1024];
                     do {
-                        b = is.read();
-                        responseLength--;
+                        b = is.read(data);
+                        responseLength -= b;
                         if (b != -1) {
-                            response.write(b);
+                            response.write(data,0,b);
                         }
                     } while(b != -1 && responseLength > 0);
 
@@ -299,10 +300,11 @@ public class SapiHandler {
                     }
                     try {
                         int b;
+                        byte data[] = new byte[1024];
                         do {
-                            b = is.read();
+                            b = is.read(data);
                             if (b != -1) {
-                                response.write(b);
+                                response.write(data,0,b);
                             }
                         } while(b != -1);
                     } catch(IOException ex) {

@@ -255,7 +255,7 @@ public class SapiSyncManagerTest extends TestCase {
         String offset1 = (String)offsetRequests.elementAt(1);
 
         assertEquals(limit0, "300");
-        assertEquals(limit1, "10");
+        assertEquals(limit1, "300");
         assertEquals(offset0, "0");
         assertEquals(offset1, "300");
     }

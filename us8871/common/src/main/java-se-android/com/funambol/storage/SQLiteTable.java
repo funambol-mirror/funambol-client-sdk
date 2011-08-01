@@ -283,13 +283,13 @@ public class SQLiteTable extends Table {
 
             if (i == getKeyIdx()) {
                 createStmt.append(" PRIMARY KEY");
-            }
 
-            if (autoincrement) {
-                if (getColType(getKeyIdx()) != TYPE_LONG) {
-                    throw new IllegalArgumentException("Autoincrement can only be applied to long keys");
+                if (autoincrement) {
+                    if (getColType(getKeyIdx()) != TYPE_LONG) {
+                        throw new IllegalArgumentException("Autoincrement can only be applied to long keys");
+                    }
+                    createStmt.append(" AUTOINCREMENT");
                 }
-                createStmt.append(" AUTOINCREMENT");
             }
         }
         createStmt.append(");");

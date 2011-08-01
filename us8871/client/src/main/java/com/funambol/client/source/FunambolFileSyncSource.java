@@ -161,43 +161,60 @@ public class FunambolFileSyncSource extends FileSyncSource {
     }
 
     protected int addItem(SyncItem item) throws SyncException {
-        int res = super.addItem(item);
-        if (res == SyncSource.SUCCESS_STATUS) {
-            // Create a new entry in the metadata table
+
+        try {
+            renameAddedItem(item);
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot rename incoming item", e);
+            throw new SyncException(SyncException.STORAGE_ERROR, "Cannot rename incoming item");
+        }
+
+        // Create a new entry in the metadata table
+        try {
+            ThumbnailItem ti = (ThumbnailItem)item;
+            JSONFileObject fo = ti.getJSONFileObject();
+
+            Long lastMod;
+            if (fo.getLastModifiedDate() > 0) {
+                lastMod = new Long(fo.getLastModifiedDate());
+            } else {
+                lastMod = new Long(fo.getCreationDate());
+            }
+
+            metadata.open();
+            // The parent source fills the item key with the file path
+            String thumbPath = item.getKey();
+            // The key is autoincremented
+            Tuple tuple = metadata.createNewRow();
+
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), thumbPath);
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), "");
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), "");
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), lastMod);
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_SYNCHRONIZED), 1);
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_DELETED), 0);
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_DIRTY), 0);
+
+            metadata.insert(tuple);
+            metadata.save();
+
+            // Update the item key with the table id
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Setting item key " + tuple.getKey().toString());
+            }
+            item.setKey(tuple.getKey().toString());
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot update metadata table", e);
+            throw new NonBlockingSyncException(SyncException.STORAGE_ERROR, "Cannot update metadata table");
+        } finally {
             try {
-                ThumbnailItem ti = (ThumbnailItem)item;
-                JSONFileObject fo = ti.getJSONFileObject();
-
-                Long lastMod;
-                if (fo.getLastModifiedDate() > 0) {
-                    lastMod = new Long(fo.getLastModifiedDate());
-                } else {
-                    lastMod = new Long(fo.getCreationDate());
-                }
-
-                metadata.open();
-                Tuple tuple = metadata.createNewRow(item.getKey());
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), item.getKey());
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), "");
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), "");
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), lastMod);
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_SYNCHRONIZED), 1);
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_DELETED), 0);
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_DIRTY), 0);
-
-                metadata.insert(tuple);
-                metadata.save();
+                metadata.close();
             } catch (Exception e) {
-                Log.error(TAG_LOG, "Cannot update metadata table", e);
-                throw new NonBlockingSyncException(SyncException.STORAGE_ERROR, "Cannot update metadata table");
-            } finally {
-                try {
-                    metadata.close();
-                } catch (Exception e) {
-                }
             }
         }
-        return res;
+        // Finally we can update the tracker
+        updateTracker(item);
+        return SyncSource.SUCCESS_STATUS;
     }
 
     public int deleteItem(String key) throws SyncException {

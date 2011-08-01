@@ -387,10 +387,10 @@ public abstract class TrackableSyncSource implements SyncSource {
      */
     protected int addItem(SyncItem item) throws SyncException {
         // a new item was added during the sync. we must notify our tracker
-        boolean done = tracker.removeItem(item);
-        return done ? SUCCESS_STATUS : ERROR_STATUS;
+        return updateTracker(item);
     }
-    
+
+   
     /**
      * The purpose of this implementation is simply to notify the tracker.
      * Classes that extends the TrackableSyncSource should invoke this method at
@@ -404,8 +404,7 @@ public abstract class TrackableSyncSource implements SyncSource {
      */
     protected int updateItem(SyncItem item) throws SyncException {
         // a new item was replaced during the sync. we must notify our tracker
-        boolean done = tracker.removeItem(item);
-        return done ? SUCCESS_STATUS : ERROR_STATUS;
+        return updateTracker(item);
     }
     
     /**
@@ -422,8 +421,7 @@ public abstract class TrackableSyncSource implements SyncSource {
     protected int deleteItem(String key) throws SyncException {
         // a new item was replaced during the sync. we must notify our tracker
         SyncItem item = new SyncItem(key,getType(),SyncItem.STATE_DELETED,null);
-        boolean done = tracker.removeItem(item);
-        return done ? SUCCESS_STATUS : ERROR_STATUS;
+        return updateTracker(item);
     }
 
     /**
@@ -722,5 +720,11 @@ public abstract class TrackableSyncSource implements SyncSource {
     protected boolean isDeleteAllItemsAllowed() {
         return true;
     }
+
+    protected int updateTracker(SyncItem item) throws SyncException {
+        boolean done = tracker.removeItem(item);
+        return done ? SUCCESS_STATUS : ERROR_STATUS;
+    }
+ 
 }
 

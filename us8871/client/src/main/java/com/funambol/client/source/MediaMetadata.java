@@ -71,7 +71,7 @@ public class MediaMetadata {
                                                   };
 
     public static final int META_DATA_COL_TYPES[] = {
-                                                   Table.TYPE_STRING,
+                                                   Table.TYPE_LONG,
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,
@@ -88,10 +88,11 @@ public class MediaMetadata {
         this.appSource = appSource;
         // Construct the metadata table for this source
         // the name is name + _ + metadata (e.g. Pictures_metadata)
+        // This table has the autoincrement on the key which is an id
         metadataTable = TableFactory.getInstance().getStringTable(appSource.getName() + "_metadata",
                                                                   META_DATA_COL_NAMES,
                                                                   META_DATA_COL_TYPES,
-                                                                  0);
+                                                                  0, true);
     }
 
     public Table getMetadataTable() {

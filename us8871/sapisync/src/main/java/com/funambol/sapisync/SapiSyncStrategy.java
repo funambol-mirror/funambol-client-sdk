@@ -457,13 +457,15 @@ public class SapiSyncStrategy {
             }
         }
 
-        // Get the number of items and notify the listener
-        try {
-            totalCount = sapiSyncHandler.getItemsCount(remoteUri, null);
-        } catch (SapiException e) {
-            String errorMessage = "Cannot perform a full sync";
-            utils.processCommonSapiExceptions(e, errorMessage, false);
-            utils.processCustomSapiExceptions(e, errorMessage, true);
+        if (filterMaxCount != -1) {
+            // Get the number of items and notify the listener
+            try {
+                totalCount = sapiSyncHandler.getItemsCount(remoteUri, null);
+            } catch (SapiException e) {
+                String errorMessage = "Cannot perform a full sync";
+                utils.processCommonSapiExceptions(e, errorMessage, false);
+                utils.processCustomSapiExceptions(e, errorMessage, true);
+            }
         }
 
         // Fill the addedArray
@@ -479,7 +481,7 @@ public class SapiSyncStrategy {
         do {
             // Update the download limit given the total amount of items
             // to download
-            if((offset + downloadLimit) > totalCount) {
+            if(totalCount > 0 && (offset + downloadLimit) > totalCount) {
                 downloadLimit = totalCount - offset;
             }
 

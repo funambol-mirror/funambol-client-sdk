@@ -377,34 +377,38 @@ public class FileSyncSource extends JSONSyncSource implements
         }
         JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
         try {
-            String fullName = getFileFullName(jsonSyncItem.getContentName());
-
-            FileAdapter tgtFile = new FileAdapter(fullName);
-            if (tgtFile.exists()) {
-                // This is the case where the client and the server have a file
-                // with the very same name but different content. In this case
-                // we rename the destination file
-                fullName = createUniqueFileName(fullName);
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Changing target file name to avoid clashing " + fullName);
-                }
-            }
-            tgtFile.close();
-
-            item.setKey(fullName);
-            if(Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "key set to:" + fullName);
-            }
-            // This is a new file, rename the temp file
-            String sourceFileName = createTempFileName(jsonSyncItem.getContentName());
-            renameTempFile(sourceFileName, fullName);
-
+            renameAddedItem(item);
             super.addItem(item);
             return SyncSource.SUCCESS_STATUS;
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Cannot rename temporary file", ioe);
             throw new SyncException(SyncException.CLIENT_ERROR, "Cannot rename temporary file");
         }
+    }
+
+    protected void renameAddedItem(SyncItem item) throws IOException {
+        JSONSyncItem jsonSyncItem = (JSONSyncItem)item;
+        String fullName = getFileFullName(jsonSyncItem.getContentName());
+
+        FileAdapter tgtFile = new FileAdapter(fullName);
+        if (tgtFile.exists()) {
+            // This is the case where the client and the server have a file
+            // with the very same name but different content. In this case
+            // we rename the destination file
+            fullName = createUniqueFileName(fullName);
+            if (Log.isLoggable(Log.INFO)) {
+                Log.info(TAG_LOG, "Changing target file name to avoid clashing " + fullName);
+            }
+        }
+        tgtFile.close();
+
+        item.setKey(fullName);
+        if(Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "key set to:" + fullName);
+        }
+        // This is a new file, rename the temp file
+        String sourceFileName = createTempFileName(jsonSyncItem.getContentName());
+        renameTempFile(sourceFileName, fullName);
     }
 
     private String createUniqueFileName(String origFileName) throws IOException {

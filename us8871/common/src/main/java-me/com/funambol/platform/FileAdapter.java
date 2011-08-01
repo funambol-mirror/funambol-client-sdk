@@ -320,6 +320,15 @@ public class FileAdapter {
         return file.isHidden();
     }
 
+    public static char getFileSeparator() {
+        String sep = System.getProperty("file.separator");
+        if (sep != null && sep.length() > 0) {
+            return sep.charAt(0);
+        } else {
+            return '/';
+        }
+    }
+
     /**
      * Escape the file URI as it may contain %. These must be escaped to avoid
      * confusion with URI encoding. See for example:

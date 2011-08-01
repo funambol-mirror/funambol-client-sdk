@@ -302,5 +302,9 @@ public class FileAdapter {
     public void setLastModified(long date) throws IOException {
         file.setLastModified(date);
     }
+
+    public static char getFileSeparator() {
+        return File.separatorChar;
+    }
 }
 
