@@ -37,6 +37,16 @@ package com.funambol.concurrent;
 
 import java.util.Vector;
 
+/**
+ * Allows generic tasks to be scheduled using specific priorities.
+ * Tasks scheduled with higher priorities cause running tasks to be suspended
+ * and then resumed once they completes. This can happens only if the running
+ * task is a ResumableTask, otherwise it will be enqueued and will start once
+ * the running task completes.
+ * Using setMaxThreads you can set the number of threads that can be used to
+ * schedule tasks. Tasks are suspended when there are no more threads available
+ * to run a specific task with higher priority.
+ */
 public class TaskExecutor {
 
     private final int DEFAULT_MAX_THREADS_COUNT = 3;
