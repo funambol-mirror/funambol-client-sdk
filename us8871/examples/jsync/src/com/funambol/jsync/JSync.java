@@ -198,11 +198,17 @@ public class JSync {
         StringKeyValueFileStore ts = new StringKeyValueFileStore(cacheFile);
         CacheTracker ct = new CacheTracker(ts);
         sc.setSyncMode(syncMode);
-        FileSyncSource fss = new FileSyncSource(sc, ct, dir);
 
+        SyncSource ss;
+
+        if (mediaEngine) {
+            ss = new com.funambol.sapisync.source.FileSyncSource(sc, ct, dir, dir, 0, 0);
+        } else {
+            ss = new FileSyncSource(sc, ct, dir);
+        }
 
         try {
-            manager.sync(fss);
+            manager.sync(ss);
             // Save the configuration
             sc.save(sourceConfigFile);
         } catch (Exception e) {
