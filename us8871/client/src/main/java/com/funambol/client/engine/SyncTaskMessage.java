@@ -80,6 +80,7 @@ public class SyncTaskMessage extends BusMessage {
     public SyncTaskMessage(int code, AppSyncSource source, SyncException ex) {
         this(code);
         this.appSource = source;
+        this.exception = ex;
     }
 
     public SyncTaskMessage(int code, Vector sources, boolean hadErrors) {
