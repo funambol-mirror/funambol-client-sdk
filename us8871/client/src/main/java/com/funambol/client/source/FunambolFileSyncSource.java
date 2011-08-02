@@ -213,8 +213,8 @@ public class FunambolFileSyncSource extends FileSyncSource {
             }
         }
         // Finally we can update the tracker
-        updateTracker(item);
-        return SyncSource.SUCCESS_STATUS;
+        int res = updateTracker(item);
+        return res;
     }
 
     public int deleteItem(String key) throws SyncException {
