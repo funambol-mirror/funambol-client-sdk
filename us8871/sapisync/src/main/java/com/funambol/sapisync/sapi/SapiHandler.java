@@ -274,6 +274,8 @@ public class SapiHandler {
                 is = conn.openInputStream();
                 // Read until we have data
                 int responseLength = conn.getLength();
+
+
                 if(responseLength > 0) {
                     if (Log.isLoggable(Log.TRACE)) {
                         Log.trace(TAG_LOG, "response length is known " + responseLength);
@@ -340,32 +342,35 @@ public class SapiHandler {
                 Log.trace(TAG_LOG, "response is:" + r);
             }
 
-            // This code handles JSESSION ID authentication
-            try {
-                String cookies = conn.getHeaderField(SET_COOKIE_HEADER);
-                if (cookies != null) {
-                    if (Log.isLoggable(Log.DEBUG)) {
-                        Log.debug(TAG_LOG, "Set-Cookie from server: " + cookies);
-                    }
-                    int jsidx = cookies.indexOf(JSESSIONID_HEADER);
-                    if (jsidx >= 0) {
-                        String tmpjsessionId = cookies.substring(jsidx);
-                        int equalidx = tmpjsessionId.indexOf("=");
-                        int idx = tmpjsessionId.indexOf(";");
-                        if (equalidx >= 0) {
-                            if(idx > 0) {
-                                jsessionId = tmpjsessionId.substring(equalidx+1, idx);
-                            } else {
-                                jsessionId = tmpjsessionId.substring(equalidx+1);
-                            }
-                            if (Log.isLoggable(Log.DEBUG)) {
-                                Log.debug(TAG_LOG, "Found jsessionid = " + jsessionId);
+            // This code handles JSESSION ID authentication. If we don't have a
+            // valid jsession id, then we check if the server sent one
+            if (jsessionId == null) {
+                try {
+                    String cookies = conn.getHeaderField(SET_COOKIE_HEADER);
+                    if (cookies != null) {
+                        if (Log.isLoggable(Log.DEBUG)) {
+                            Log.debug(TAG_LOG, "Set-Cookie from server: " + cookies);
+                        }
+                        int jsidx = cookies.indexOf(JSESSIONID_HEADER);
+                        if (jsidx >= 0) {
+                            String tmpjsessionId = cookies.substring(jsidx);
+                            int equalidx = tmpjsessionId.indexOf("=");
+                            int idx = tmpjsessionId.indexOf(";");
+                            if (equalidx >= 0) {
+                                if(idx > 0) {
+                                    jsessionId = tmpjsessionId.substring(equalidx+1, idx);
+                                } else {
+                                    jsessionId = tmpjsessionId.substring(equalidx+1);
+                                }
+                                if (Log.isLoggable(Log.DEBUG)) {
+                                    Log.debug(TAG_LOG, "Found jsessionid = " + jsessionId);
+                                }
                             }
                         }
                     }
+                } catch (Exception e) {
+                    Log.error(TAG_LOG, "Cannot get jsessionid", e);
                 }
-            } catch (Exception e) {
-                Log.error(TAG_LOG, "Cannot get jsessionid", e);
             }
 
             if(listener != null) {
@@ -373,7 +378,8 @@ public class SapiHandler {
             }
             // Prepare the response
             if(!StringUtil.isNullOrEmpty(r)) {
-                return new JSONObject(r);
+                JSONObject res = new JSONObject(r);
+                return res;
             } else {
                 return null;
             }
