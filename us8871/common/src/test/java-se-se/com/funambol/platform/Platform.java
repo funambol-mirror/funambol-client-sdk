@@ -35,8 +35,9 @@
 
 package com.funambol.util;
 
-import junit.framework.*;
 import com.funambol.storage.TableFactory;
+import com.funambol.platform.PlatformEnvironment;
+import junit.framework.*;
 
 /**
  * Generalize the Platform dependent os calls for JME platform during tests
@@ -61,6 +62,9 @@ public class Platform {
     public static Platform getInstance() {
         if (instance == null) {
             instance = new Platform();
+            PlatformEnvironment pe = PlatformEnvironment.getInstance();
+            pe.init(".");
+
         }
         return instance;
     }
@@ -80,7 +84,6 @@ public class Platform {
      */
     public TableFactory getTableFactory() {
         TableFactory tableFactory = TableFactory.getInstance();
-        tableFactory.init(".");
         return tableFactory;
     }
 }

@@ -35,6 +35,8 @@
 
 package com.funambol.storage;
 
+import com.funambol.platform.PlatformEnvironment;
+
 import com.funambol.util.Log;
 
 public class TableFactory {
@@ -44,8 +46,8 @@ public class TableFactory {
     private static TableFactory instance = null;
     private String directory;
 
-    public void init(String directory) {
-        this.directory = directory;
+    public TableFactory() {
+        directory = PlatformEnvironment.getInstance().getDirectory();
     }
 
     public static TableFactory getInstance() {

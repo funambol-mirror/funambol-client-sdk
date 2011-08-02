@@ -43,6 +43,7 @@ import java.io.OutputStream;
 import java.io.InputStream;
 
 import com.funambol.platform.FileAdapter;
+import com.funambol.platform.PlatformEnvironment;
 
 import com.funambol.util.StringUtil;
 import com.funambol.util.QuickSort;

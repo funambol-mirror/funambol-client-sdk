@@ -40,6 +40,7 @@ import android.test.*;
 
 import android.os.Environment;
 import android.content.Context;
+import com.funambol.platform.PlatformEnvironment;
 import com.funambol.storage.TableFactory;
 import com.funambol.util.Log;
 
@@ -65,6 +66,7 @@ public class Platform {
     public static Platform getInstance() {
         if (instance == null) {
             instance = new Platform();
+            PlatformEnvironment pe = PlatformEnvironment.getInstance().init(TestApp.getInstance(),"TableBaseTest");
         }
         return instance;
     }
@@ -88,7 +90,6 @@ public class Platform {
      */
     public TableFactory getTableFactory() {
         TableFactory tableFactory = TableFactory.getInstance();
-        tableFactory.init(TestApp.getInstance(), "TableBaseTest");
         return tableFactory;
     }
 }
