@@ -302,6 +302,8 @@ public class HttpConnectionAdapter {
             contentType = "binary/octet-stream";
         }
 
+        responseHeaders = null;
+
         if (POST.equals(requestMethod)) {
             request = new HttpPost(url);
             if (is != null) {
@@ -439,6 +441,11 @@ public class HttpConnectionAdapter {
      * In this case, getHeaderField(0)  returns the status line, but getHeaderFieldKey(0) returns null.
      */
     public String getHeaderFieldKey(int num) throws IOException {
+
+        if (responseHeaders == null) {
+            responseHeaders = httpResponse.getAllHeaders();
+        }
+
         if (num < responseHeaders.length) {
             Header header = responseHeaders[num];
             return header.getName();
@@ -549,7 +556,6 @@ public class HttpConnectionAdapter {
             if (respEntity != null) {
                 respInputStream = new InputStreamWrapper(respEntity.getContent(), respEntity);
             }
-            responseHeaders = httpResponse.getAllHeaders();
         } catch (Exception e) {
             Log.error(TAG_LOG, "Exception while executing request", e);
             throw new IOException(e.toString());
