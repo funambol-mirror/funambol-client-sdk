@@ -41,15 +41,12 @@ import java.util.Enumeration;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.localization.Localization;
 import com.funambol.client.customization.Customization;
-import com.funambol.client.controller.Controller;
-import com.funambol.client.engine.SyncEngine;
 import com.funambol.client.engine.Poller;
-import com.funambol.client.engine.SyncEngineListener;
-import com.funambol.client.engine.AppSyncRequest;
+import com.funambol.client.engine.SyncMessage;
+import com.funambol.client.engine.SyncTaskMessage;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.AppSyncSourceConfig;
-import com.funambol.client.push.SyncScheduler;
 import com.funambol.client.ui.Screen;
 import com.funambol.client.ui.DisplayManager;
 import com.funambol.platform.NetworkStatus;
@@ -60,16 +57,18 @@ import com.funambol.sync.SyncException;
 import com.funambol.sapisync.sapi.SapiHandler;
 import com.funambol.sapisync.NotAuthorizedCallException;
 import com.funambol.org.json.me.JSONObject;
-import com.funambol.org.json.me.JSONArray;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
+import com.funambol.util.bus.BusMessage;
+import com.funambol.util.bus.BusMessageHandler;
+import com.funambol.util.bus.BusService;
 
 /**
  * This interface includes all basic functions of a SynchronizationController
  * implementation that are currently shared between Android and BlackBerry
  * versions of SynchronizationController.
  */
-public class SynchronizationController implements SyncEngineListener {
+public class SynchronizationController implements BusMessageHandler {
 
     private static final String TAG_LOG = "SynchronizationController";
 
@@ -80,18 +79,14 @@ public class SynchronizationController implements SyncEngineListener {
     public static final String SCHEDULED = "scheduled";
     public static final String PUSH      = "push";
 
-    protected Configuration configuration;
-    protected Screen        screen;
-    protected AppSyncSourceManager appSyncSourceManager;
-    protected Controller    controller;
-    protected Customization customization;
-    protected Localization  localization;
-    protected SyncEngine    engine;
-    protected RequestHandler reqHandler;
-    protected final AppSyncRequest appSyncRequestArr[] = new AppSyncRequest[1];
-    protected SyncScheduler  syncScheduler;
+    protected Configuration         configuration;
+    protected Screen                screen;
+    protected AppSyncSourceManager  appSyncSourceManager;
+    protected Controller            controller;
+    protected Customization         customization;
+    protected Localization          localization;
 
-    protected int   RETRY_POLL_TIME = 1;
+    protected int RETRY_POLL_TIME = 1;
 
     protected NetworkStatus networkStatus;
     
@@ -99,18 +94,13 @@ public class SynchronizationController implements SyncEngineListener {
     private Vector serverQuotaFullSources = new Vector();
     private SyncRequest currentRequest;
 
-
-    protected boolean    doCancel        = false;
-
     protected AppSyncSource currentSource = null;
 
     protected boolean    showTCPAlert;
 
     protected boolean    logConnectivityError;
-
-    private int            scheduledAttempt = 0;
-
-    private Poller         retryPoller = null;
+    private int          scheduledAttempt = 0;
+    private Poller       retryPoller = null;
 
 
     public SynchronizationController(Controller controller, Screen screen, NetworkStatus networkStatus) {
@@ -122,8 +112,6 @@ public class SynchronizationController implements SyncEngineListener {
         appSyncSourceManager = controller.getAppSyncSourceManager();
         localization = controller.getLocalization();
         customization = controller.getCustomization();
-
-        initSyncScheduler();
     }
 
     public SynchronizationController(Controller controller, Customization customization,
@@ -137,8 +125,63 @@ public class SynchronizationController implements SyncEngineListener {
         this.appSyncSourceManager = appSyncSourceManager;
         this.screen        = screen;
         this.networkStatus = networkStatus;
+    }
 
-        initSyncScheduler();
+    public boolean isSynchronizing() {
+        // TODO: FIXME
+        return false;
+    }
+
+    /**
+     * @see BusMessageHandler#receiveMessage(com.funambol.util.bus.BusMessage) 
+     */
+    public void receiveMessage(BusMessage message) {
+        if(Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "receiveMessage");
+        }
+        if(message instanceof SyncTaskMessage) {
+            if(Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Received SyncTaskMessage");
+            }
+            SyncTaskMessage syncTaskMessage = (SyncTaskMessage)message;
+            switch(syncTaskMessage.getMessageCode()) {
+                case SyncTaskMessage.MESSAGE_BEGIN_SYNC:
+                    beginSync();
+                    break;
+                case SyncTaskMessage.MESSAGE_END_SYNC:
+                    endSync(syncTaskMessage.getAppSources(),
+                            syncTaskMessage.getHadErrors());
+                    break;
+                case SyncTaskMessage.MESSAGE_SYNC_STARTED:
+                    syncStarted(syncTaskMessage.getAppSources());
+                    break;
+                case SyncTaskMessage.MESSAGE_SYNC_ENDED:
+                    syncEnded();
+                    break;
+                case SyncTaskMessage.MESSAGE_SOURCE_STARTED:
+                    sourceStarted(syncTaskMessage.getAppSource());
+                    break;
+                case SyncTaskMessage.MESSAGE_SOURCE_FAILED:
+                    sourceFailed(syncTaskMessage.getAppSource(),
+                                 syncTaskMessage.getSyncException());
+                    break;
+                case SyncTaskMessage.MESSAGE_SOURCE_ENDED:
+                    sourceEnded(syncTaskMessage.getAppSource());
+                    break;
+                case SyncTaskMessage.MESSAGE_NO_CONNECTION:
+                    noConnection();
+                    break;
+                case SyncTaskMessage.MESSAGE_NO_CREDENTIALS:
+                    noCredentials();
+                    break;
+                case SyncTaskMessage.MESSAGE_NO_SIGNAL:
+                    noSignal();
+                    break;
+                case SyncTaskMessage.MESSAGE_NO_SOURCES:
+                    noSources();
+                    break;
+            }
+        }
     }
 
     /**
@@ -178,11 +221,6 @@ public class SynchronizationController implements SyncEngineListener {
      * @param direction the refresh direction
      */
     public void refresh(int mask, int direction) {
-
-        if (isSynchronizing()) {
-            return;
-        }
- 
         Enumeration sources = appSyncSourceManager.getEnabledAndWorkingSources();
         Vector syncSources = new Vector();
         while(sources.hasMoreElements()) {
@@ -191,7 +229,6 @@ public class SynchronizationController implements SyncEngineListener {
                 syncSources.addElement(appSource);
             }
         }
-
         continueRefresh(syncSources, direction);
     }
 
@@ -222,18 +259,9 @@ public class SynchronizationController implements SyncEngineListener {
      */
     public synchronized void synchronize(String syncType, Vector syncSources,
                                          int delay, boolean fromOutside) {
-
-        if (Log.isLoggable(Log.INFO)) {
-            Log.info(TAG_LOG, "synchronize " + syncType);
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "synchronize " + syncType);
         }
-
-        if (isSynchronizing()) {
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "A sync is already in progress");
-            }
-            return;
-        }
-
         currentRequest = new SyncRequest(syncType, syncSources, false, 0, delay, fromOutside);
         forceSynchronization(currentRequest);
     }
@@ -241,12 +269,8 @@ public class SynchronizationController implements SyncEngineListener {
     protected synchronized void forceSynchronization(SyncRequest syncRequest) {
         // Search if at least one of the selected sources has a warning on the
         // first sync
-        Vector syncSources  = syncRequest.getSources();
-        String syncType     = syncRequest.getType();
-        int delay           = syncRequest.getDelay();
-        boolean fromOutside = syncRequest.getFromOutside();
-        boolean refresh     = syncRequest.getRefresh();
-        int direction       = syncRequest.getDirection();
+        Vector syncSources = syncRequest.getSources();
+        String syncType    = syncRequest.getType();
 
         Vector sourcesWithQuestion = new Vector();
         syncSources = applyBandwidthSaver(syncSources, sourcesWithQuestion, syncType);
@@ -342,11 +366,6 @@ public class SynchronizationController implements SyncEngineListener {
         serverQuotaFullSources.removeAllElements();
     }
 
-    protected SyncEngine createSyncEngine() {
-        return new SyncEngine(customization, configuration, appSyncSourceManager, null);
-    }
-
-    
     /**
      * Applies the Bandwidth Saver by filtering out some sources or by populating
      * the Vector of sources that need to be synchronized only if the user accepts
@@ -420,62 +439,16 @@ public class SynchronizationController implements SyncEngineListener {
         return syncSources;
     }
 
-    protected void initSyncScheduler() {
-        engine = createSyncEngine();
-        syncScheduler = new SyncScheduler(engine);
-        // The request handler is a daemon serving external requests
-        reqHandler = new RequestHandler();
-        reqHandler.start();
-    }
-
-
-    /**
-     * Returns true iff a synchronization is in progress
-     */
-    public boolean isSynchronizing() {
-        return engine.isSynchronizing();
-    }
-
-    /**
-     * Returns the sync source currently being synchronized. If a sync is not
-     * in progress, then null is returned. Please note that this method is not
-     * completely equivalent to isSynchronizing. At the beginning of a sync,
-     * isSynchronizing returns true, but getCurrentSource may return null until
-     * the source is prepared for the synchronization.
-     */
-    public AppSyncSource getCurrentSource() {
-        return engine.getCurrentSource();
-    }
-
-    /**
-     * @return the current <code>SyncEngine</code> instance
-     */
-    public SyncEngine getSyncEngine() {
-        return engine;
-    }
-
-
-
     /**
      * Try to cancel the current sync. This works for cooperative sources that
      * check the synchronizationController status.
      */
     public void cancelSync() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Cancelling sync " + isSynchronizing() + " currentSource=" + currentSource);
-        }
-        setCancel(true);
-
-        if (isSynchronizing() && currentSource != null) {
-            UISyncSourceController uiSourceController = currentSource.getUISyncSourceController();
-            if (uiSourceController != null) {
-                uiSourceController.startCancelling();
-            }
-            engine.cancelSync();
-        }
+        SyncMessage message = new SyncMessage(true /* this is a cancel sync */);
+        BusService.sendMessage(message);
     }
 
-    public void syncEnded() {
+    protected void syncEnded() {
         displayEndOfSyncWarnings();
     }
 
@@ -483,54 +456,37 @@ public class SynchronizationController implements SyncEngineListener {
         controller.getDisplayManager().showMessage(screen, msg);
     }
 
-    public void noCredentials() {
+    protected void noCredentials() {
         showMessage(localization.getLanguage("message_login_required"));
     }
 
-    public void noSources() {
+    protected void noSources() {
         showMessage(localization.getLanguage("message_nothing_to_sync"));
     }
 
-    public void noConnection() {
+    protected void noConnection() {
         showMessage(localization.getLanguage("message_radio_off"));
     }
 
-    public void noSignal() {
+    protected void noSignal() {
         showMessage(localization.getLanguage("message_no_signal"));
     }
 
-    public void setCancel(boolean value) {
-        doCancel = value;
-    }
-
-    /**
-     * Check if the current sync should be cancelled
-     * 
-     * @return
-     */
-    public boolean isCancelled() {
-        return doCancel;
-    }
-
-    public void beginSync() {
+    protected void beginSync() {
         clearErrors();
-        setCancel(false);
     }
 
-
-    public boolean syncStarted(Vector sources) {
+    protected boolean syncStarted(Vector sources) {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "syncStarted");
         }
         return true;
     }
 
-    public void endSync(Vector sources, boolean hadErrors) {
+    protected void endSync(Vector sources, boolean hadErrors) {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "endSync reached");
         }
-        
-        setCancel(false);
 
         // Disable the retry poller if not null
         if(retryPoller != null) {
@@ -558,7 +514,7 @@ public class SynchronizationController implements SyncEngineListener {
         showTCPAlert = false;
     }
 
-    public void sourceStarted(AppSyncSource appSource) {
+    protected void sourceStarted(AppSyncSource appSource) {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "sourceStarted " + appSource.getName());
         }
@@ -567,16 +523,9 @@ public class SynchronizationController implements SyncEngineListener {
         if (sourceController != null) {
             sourceController.setSelected(true, false);
         }
-        
-        if (currentSource.getSyncSource().getConfig().getSyncMode() == SyncSource.FULL_DOWNLOAD) {
-            refreshClientData(appSource, sourceController);
-        }
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "sourceStarted " + currentSource);
-        }
     }
 
-    public void sourceEnded(AppSyncSource appSource) {
+    protected void sourceEnded(AppSyncSource appSource) {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "sourceEnded " + appSource.getName());
         }
@@ -593,7 +542,7 @@ public class SynchronizationController implements SyncEngineListener {
         }
     }
 
-    public void sourceFailed(AppSyncSource appSource, SyncException e) {
+    protected void sourceFailed(AppSyncSource appSource, SyncException e) {
 
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "sourceFailed");
@@ -663,29 +612,6 @@ public class SynchronizationController implements SyncEngineListener {
     private void saveSourceConfig(AppSyncSource appSource) {
         appSource.getConfig().saveSourceSyncConfig();
         appSource.getConfig().commit();
-    }
-
-    private boolean retry(Vector sources) {
-
-        boolean willRetry = false;
-
-        if (retryPoller != null) {
-            retryPoller.disable();
-        }
-
-        if (scheduledAttempt < 3) {
-            scheduledAttempt++;
-            Log.error(TAG_LOG, "Scheduled sync: Connection attempt failed. " + "Try again in "
-                    + RETRY_POLL_TIME + " minutes");
-
-            retryPoller = new Poller(this, RETRY_POLL_TIME, true, false);
-            retryPoller.start();
-            willRetry = true;
-        } else {
-            retryPoller = null;
-            scheduledAttempt = 0;
-        }
-        return willRetry;
     }
 
     protected void askForPayment(Vector nextSources) {
@@ -795,21 +721,19 @@ public class SynchronizationController implements SyncEngineListener {
 
         public void run() {
             DialogController dc = controller.getDialogController();
-            String syncType = com.funambol.client.controller.SynchronizationController.MANUAL;
             PaymentYesAction yesAction = new PaymentYesAction(sources, syncRequest);
             PaymentNoAction  noAction  = new PaymentNoAction();
-            dc.askYesNoQuestion(screen, localization.getLanguage("dialog_payment_required"), false, yesAction, noAction);
+            dc.askYesNoQuestion(screen, 
+                    localization.getLanguage("dialog_payment_required"),
+                    false, yesAction, noAction);
         }
     }
 
-    protected void continueSyncAfterNetworkUsage(String syncType, Vector syncSources, boolean refresh,
-                                                 int direction, int delay, boolean fromOutside)
-    {
-        // We register as listeners for the sync
-        engine.setListener(this);
+    protected void continueSyncAfterNetworkUsage(String syncType, 
+            Vector syncSources, boolean refresh, int direction, int delay,
+            boolean fromOutside) {
 
         int sourceSyncType = 0;
-        AppSyncRequest appSyncRequest = new AppSyncRequest(null, delay);
         Enumeration sources = syncSources.elements();
         while(sources.hasMoreElements()) {
             AppSyncSource appSource = (AppSyncSource) sources.nextElement();
@@ -834,19 +758,14 @@ public class SynchronizationController implements SyncEngineListener {
             AppSyncSourceConfig sourceConfig = appSource.getConfig();
             sourceConfig.setPendingSync("", -1);
             configuration.save();
-            // Add the request for this synchronization
-            appSyncRequest.addRequestContent(appSource);
         }
 
-        if (fromOutside) {
-            synchronized(appSyncRequestArr) {
-                appSyncRequestArr[0] = appSyncRequest;
-                appSyncRequestArr.notify();
-            }
-        } else {
-            syncScheduler.addRequest(appSyncRequest);
+        // Trigger the synchronization
+        if (Log.isLoggable(Log.DEBUG)) {
+            Log.debug(TAG_LOG, "Sending sync message to the bus");
         }
-
+        SyncMessage message = new SyncMessage(syncSources);
+        BusService.sendMessage(message);
     }
 
     protected synchronized void
@@ -867,53 +786,20 @@ public class SynchronizationController implements SyncEngineListener {
 
     protected String getListOfSourceNames(Enumeration sourceNameList) {
         StringBuffer sourceNames = new StringBuffer();
-
         int x = 0;
         AppSyncSource appSource = (AppSyncSource)sourceNameList.nextElement();
-
         while(appSource != null) {
-
             String name = appSource.getName();
             appSource = (AppSyncSource)sourceNameList.nextElement();
-
             if (x > 0) {
                 sourceNames.append(", ");
                 if (appSource == null) {
                     sourceNames.append(localization.getLanguage("dialog_and").toLowerCase());
                 }
             }
-
             sourceNames.append(name);
         }
-
         return sourceNames.toString();
-    }
-
-    private class RequestHandler extends Thread {
-
-        private boolean stop = false;
-
-        public RequestHandler() {
-        }
-
-        public void run() {
-            if (Log.isLoggable(Log.INFO)) {
-                Log.info(TAG_LOG, "Starting request handler");
-            }
-            while (!stop) {
-                try {
-                    synchronized (appSyncRequestArr) {
-                        appSyncRequestArr.wait();
-                        syncScheduler.addRequest(appSyncRequestArr[0]);
-                    }
-                } catch (Exception e) {
-                    // All handled exceptions are trapped below, this is just a
-                    // safety net for runtime exception because we don't want
-                    // this thread to die.
-                    Log.error(TAG_LOG, "Exception while performing a programmed sync " + e.toString());
-                }
-            }
-        }
     }
 
     protected class ContinueRefreshAction implements Runnable {
@@ -931,6 +817,7 @@ public class SynchronizationController implements SyncEngineListener {
     }
 
     protected class ContinueSyncAction implements Runnable {
+
         private SyncRequest request;
 
         public ContinueSyncAction(SyncRequest syncRequest) {
@@ -966,6 +853,7 @@ public class SynchronizationController implements SyncEngineListener {
     }
 
     protected class ContinueAfterBandwidthSaverAction implements Runnable {
+
         private SyncRequest request;
 
         public ContinueAfterBandwidthSaverAction(SyncRequest syncRequest) {
@@ -978,6 +866,7 @@ public class SynchronizationController implements SyncEngineListener {
     }
 
     protected class SyncRequest {
+
         private String syncType;
         private Vector sources;
         private boolean refresh;
@@ -985,8 +874,8 @@ public class SynchronizationController implements SyncEngineListener {
         private int delay;
         private boolean fromOutside;
 
-        public SyncRequest(String syncType, Vector syncSources, boolean refresh, int direction,
-                           int delay, boolean fromOutside)
+        public SyncRequest(String syncType, Vector syncSources, boolean refresh, 
+                int direction, int delay, boolean fromOutside)
         {
             this.syncType = syncType;
             this.sources = syncSources;
@@ -1019,8 +908,5 @@ public class SynchronizationController implements SyncEngineListener {
         public boolean getFromOutside() {
             return fromOutside;
         }
-    }
-
-    private void refreshClientData(AppSyncSource appSource, UISyncSourceController controller) {
     }
 }

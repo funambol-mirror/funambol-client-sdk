@@ -35,6 +35,7 @@
 
 package com.funambol.util.bus;
 
+import com.funambol.util.Log;
 import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -93,22 +94,22 @@ public class Bus {
      * 
      * @param type The message type
      * @param handler The new BusMessageHandler object to register
-     * @throws BusException if the given handler is already registered
+     * @return true if the handler has been registered
      */
-    public void registerMessageHandler(Class type, BusMessageHandler handler)
-            throws BusException {
+    public boolean registerMessageHandler(Class type, BusMessageHandler handler) {
         synchronized(handlersLock) {
             Vector typeHandlers = (Vector)handlers.get(type);
             if(typeHandlers == null) {
                 typeHandlers = new Vector();
             }
             if(findMessageHandler(type, handler) != null) {
-                throw new BusException(BusException.HANDLER_ALREADY_REGISTERED,
-                        "Handler already registered for the given type: " + type);
+                // Already registered
+                return false;
             }
             WeakReference wrHandler = new WeakReference(handler);
             typeHandlers.addElement(wrHandler);
             handlers.put(type, typeHandlers);
+            return true;
         }
     }
 
@@ -117,25 +118,20 @@ public class Bus {
      *
      * @param type The message type
      * @param handler The BusMessageHandler object to unregister
-     * @throws BusException If the given handler is not registered
+     * @return true if the handler has been unregistered
      */
-    public void unregisterMessageHandler(Class type, BusMessageHandler handler)
-            throws BusException {
+    public boolean unregisterMessageHandler(Class type, BusMessageHandler handler) {
         synchronized(handlersLock) {
-            boolean found = false;
             Vector typeHandlers = (Vector)handlers.get(type);
             if(typeHandlers != null) {
                 WeakReference wrHandler = findWRMessageHandler(type, handler);
                 if(wrHandler != null) {
                     typeHandlers.removeElement(wrHandler);
                     handlers.put(type, typeHandlers);
-                    found = true;
+                    return true;
                 }
             }
-            if(!found) {
-                throw new BusException(BusException.HANDLER_NOT_FOUND,
-                        "Handler was not registered for the given type: " + type);
-            }
+            return false;
         }
     }
 

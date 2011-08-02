@@ -1,6 +1,6 @@
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
- * Copyright (C) 2008 Funambol, Inc.
+ * Copyright (C) 2011 Funambol, Inc.
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
@@ -37,16 +37,14 @@ package com.funambol.client.engine;
 
 import java.util.Vector;
 import java.util.Hashtable;
-import java.util.Enumeration;
 
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.customization.Customization;
 import com.funambol.client.controller.ProfileUpdateHelper;
-import com.funambol.client.push.SyncSchedulerListener;
-
-import com.funambol.syncml.protocol.SyncML;
+import com.funambol.concurrent.ResumableTask;
+import com.funambol.concurrent.Task;
 import com.funambol.syncml.spds.CompressedSyncException;
 import com.funambol.syncml.spds.DeviceConfig;
 import com.funambol.syncml.spds.SyncManager;
@@ -62,11 +60,11 @@ import com.funambol.platform.NetworkStatus;
 import com.funambol.util.TransportAgent;
 import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
+import com.funambol.util.bus.BusService;
 
 /**
- * This class represents an engine for synchronizations. It wraps the APIs and
- * in particular it is built on top of the SyncScheduler. This class has the
- * following main goals:
+ * This class represents an engine for synchronizations and has the following
+ * main goals:
  *
  * 1) Perform some basic checks before firing a sync. For example it checks if
  *    radio signal is good. These checks are platform dependent and not
@@ -81,43 +79,41 @@ import com.funambol.util.Log;
  *    that generates events global to the entire synchronization.
  *
  */
-public class SyncEngine implements SyncSchedulerListener {
+public class SyncTask implements ResumableTask {
 
-    private static final String TAG_LOG = "SyncEngine";
+    private static final String TAG_LOG = "SyncTask";
 
-    private SyncEngineListener              listener = null;
-    protected Customization                 customization = null;
-    protected AppSyncSourceManager          appSyncSourceManager = null;
-    protected Configuration                 configuration = null;
-    private boolean                         isSynchronizing = false;
-    private AppSyncSource                   currentSource   = null;
-    private Vector                          appSourcesRequest = new Vector();
-    private SyncThread                      syncThread;
-    private NetworkStatus                   networkStatus;
-    private boolean                         spawnThread = true;
-    private TransportAgent                  customTransportAgent = null;
-    private Hashtable                       customHeaders = null;
+    private Customization          customization = null;
+    private AppSyncSourceManager   appSyncSourceManager = null;
+    private Configuration          configuration = null;
+    
+    private SyncThread             syncThread;
+    private NetworkStatus          networkStatus;
+    private boolean                spawnThread;
+    private TransportAgent         customTransportAgent = null;
+    private Hashtable              customHeaders = null;
 
-    public SyncEngine(Customization customization, Configuration configuration,
-                      AppSyncSourceManager appSyncSourceManager, NetworkStatus networkStatus)
+    private boolean                isSynchronizing = false;
+    private boolean                isCancelled     = false;
+    private AppSyncSource          currentSource   = null;
+    private Vector                 sourcesToSync   = null;
+
+    public SyncTask(Customization customization, Configuration configuration,
+            AppSyncSourceManager appSyncSourceManager, NetworkStatus networkStatus)
     {
         this.customization = customization;
         this.configuration = configuration;
         this.appSyncSourceManager = appSyncSourceManager;
         this.networkStatus = networkStatus;
-    }
 
-    public void setListener(SyncEngineListener listener) {
-        this.listener = listener;
+        // By default the task runs on the caller's thread
+        spawnThread = false;
     }
 
     /**
-     * Gets the current listener.
+     * Set whether the sync shall start in a separate thread
+     * @param value
      */
-    public SyncEngineListener getListener() {
-        return listener;
-    }
-
     public void setSpawnThread(boolean value) {
         spawnThread = value;
     }
@@ -135,6 +131,7 @@ public class SyncEngine implements SyncSchedulerListener {
                 Log.debug(TAG_LOG, "Cancelling sync on sync thread");
             }
             syncThread.cancelSync();
+            isCancelled = true;
         }
     }
 
@@ -147,24 +144,16 @@ public class SyncEngine implements SyncSchedulerListener {
     }
 
     /**
-     * SyncSchedulerListener callback. This method is invoked when a sync
-     * programmed in the SyncScheduler shall be fired.
-     */
-    public void sync(Object[] requestContent){
-        appSourcesRequest.removeAllElements();
-        for (int i =0; i<requestContent.length; i++){
-            appSourcesRequest.addElement(requestContent[i]);
-        }
-        synchronize(appSourcesRequest);
-    }
-
-    /**
      * Returns true iff a sync is in progress
      */
     public boolean isSynchronizing(){
         return isSynchronizing;
     }
 
+    public void setSourcesToSync(Vector sources) {
+        this.sourcesToSync = sources;
+    }
+    
     /**
      * Returns the source which is currently being synchronized. This method
      * returns a non null value only if isSynchronizing returns true. The method
@@ -178,55 +167,69 @@ public class SyncEngine implements SyncSchedulerListener {
         return currentSource;
     }
 
-    public boolean synchronize(Vector sources) {
+    /**
+     * @see Task#run() 
+     */
+    public void run() {
+        if(sourcesToSync == null) {
+            Log.error(TAG_LOG, "You must set the sources to synchronize first");
+            return;
+        }
+        synchronize(sourcesToSync);
+    }
 
+    /**
+     * @see ResumableTask#suspend()
+     */
+    public boolean suspend() {
+        cancelSync();
+        // are we sure the sync will be cancelled?
+        return true;
+    }
+
+    /**
+     * @see ResumableTask#resume()
+     */
+    public void resume() {
+        // TODO: handle resume
+    }
+
+    public boolean synchronize(Vector sources) {
         if (Log.isLoggable(Log.INFO)) {
             Log.info(TAG_LOG, "synchronize");
         }
 
+        isCancelled = false;
         isSynchronizing = true;
 
-        if (listener != null) {
-            listener.beginSync();
-        }
+        sendSyncTaskMessage(SyncTaskMessage.MESSAGE_BEGIN_SYNC);
 
-        if (   configuration.getUsername() == null || configuration.getUsername().length() == 0
-            || configuration.getPassword() == null || configuration.getPassword().length() == 0) {
-
-            if (listener != null) {
-                listener.noCredentials();
-            }
+        if (configuration.getUsername() == null || 
+            configuration.getUsername().length() == 0 ||
+            configuration.getPassword() == null ||
+            configuration.getPassword().length() == 0) {
+            sendSyncTaskMessage(SyncTaskMessage.MESSAGE_NO_CREDENTIALS);
             syncEnded();
             return false;
         }
-
         // Safety check. If there are no ready to use sources the sync is
         // stopped. This case should be captured earlier in the flow, but
         // just in case....
         if (appSyncSourceManager.numberOfEnabledAndWorkingSources() == 0) {
-            if (listener != null) {
-                listener.noSources();
-            }
+            sendSyncTaskMessage(SyncTaskMessage.MESSAGE_NO_SOURCES);
             syncEnded();
             return false;
         }
-
         if (networkStatus != null && !networkStatus.isConnected()) {
             if (networkStatus.isRadioOff()) {
-                if (listener != null) {
-                    listener.noConnection();
-                }
+                sendSyncTaskMessage(SyncTaskMessage.MESSAGE_NO_CONNECTION);
             } else {
-                if (listener != null) {
-                    listener.noSignal();
-                }
+                sendSyncTaskMessage(SyncTaskMessage.MESSAGE_NO_SIGNAL);
             }
             syncEnded();
             return false;
         }
-
         Vector checkSources = new Vector();
-
         for (int x = 0; x < sources.size(); x++) {
             AppSyncSource appSource = (AppSyncSource) sources.elementAt(x);
             SyncSource    source    = appSource.getSyncSource();
@@ -235,15 +238,12 @@ public class SyncEngine implements SyncSchedulerListener {
                 checkSources.addElement(source);
             }
         }
-
-        if (sources.size() == 0) {
-            if (listener != null) {
-                listener.noSources();
-            }
+        if (sources.isEmpty()) {
+            sendSyncTaskMessage(SyncTaskMessage.MESSAGE_NO_SOURCES);
             syncEnded();
             return false;
         } else {
-            if (listener != null && listener.isCancelled()) {
+            if (isCancelled) {
                 syncEnded();
                 return false;
             }
@@ -254,8 +254,7 @@ public class SyncEngine implements SyncSchedulerListener {
             } else {
                 syncThread.sync();
             }
-        }// end if
-
+        }
         return true;
     }
 
@@ -264,8 +263,6 @@ public class SyncEngine implements SyncSchedulerListener {
      * the necessary internal variables and invoke the listener.
      */
     private void syncEnded() {
-        isSynchronizing = false;
-        currentSource = null;
         // Save the latest authentication config.
         if (configuration != null) {
             if (configuration.getSyncConfig() != null) {
@@ -273,24 +270,23 @@ public class SyncEngine implements SyncSchedulerListener {
             }
             configuration.save();
         }
-
+        
+        isSynchronizing = false;
+        isCancelled = false;
+        currentSource = null;
+        sourcesToSync = null;
         syncThread = null;
 
-        if (listener != null) {
-            listener.syncEnded();
-        }
+        sendSyncTaskMessage(SyncTaskMessage.MESSAGE_SYNC_ENDED);
     }
 
-
     protected SyncManagerI createManager(AppSyncSource source, SyncConfig config, DeviceConfig dc) {
-
         // We must create the proper sync manager instance, depending on the
         // source type/properties
         if (source.getIsMedia()) {
             SapiSyncManager sm = new SapiSyncManager(config, dc);
             return sm;
         } else {
-
             // We apply some logic to decide some of the synchronization configuration properties.
             DevInf serverDevInf = configuration.getServerDevInf();
             adaptSyncConfig(config, dc, serverDevInf);
@@ -302,14 +298,13 @@ public class SyncEngine implements SyncSchedulerListener {
             if (customHeaders != null) {
                 sm.addTranportAgentHeaders(customHeaders);
             }
-
             return sm;
         }
     }
 
     private class SyncThread extends Thread {
 
-        private final   Vector appSources;
+        private final Vector appSources;
         private boolean compressionRetry;
         private SyncConfig   syncConfig;
         private DeviceConfig   deviceConfig;
@@ -338,11 +333,9 @@ public class SyncEngine implements SyncSchedulerListener {
         }
 
         public synchronized void sync() {
-
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "SyncThread.run");
             }
-
             syncConfig = configuration.getSyncConfig();
             deviceConfig = configuration.getDeviceConfig();
             if (compressionRetry) {
@@ -350,33 +343,22 @@ public class SyncEngine implements SyncSchedulerListener {
                 // really disabled
                 syncConfig.compress = false;
             }
-            if (listener != null) {
-                listener.syncStarted(appSources);
-            }
-            Vector failedSources = new Vector();
-
+            sendSyncTaskMessage(SyncTaskMessage.MESSAGE_SYNC_STARTED, appSources);
             try {
-                failedSources = synchronize();
+                synchronize();
             } catch (CompressedSyncException e) {
-
                 if (!compressionRetry) {
                     // Only retry because of compression once
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "Sync failed because compression failed - Retrying");
                     }
                     compressionRetry = true;
-
                     // Recurse
                     this.run();
                     return;
                 }
             } catch (Throwable e) {
                 // This is unexpected, but we don't want the app to die
-                // The finally block will take care of updating the status of
-                // the failed sources. Since this case is unexpected we do not
-                // rely on the failedSource returned value but we signal all the
-                // sources as failed
-                failedSources = appSources;
                 Log.error(TAG_LOG, "Exception caught during synchronization", e);
             } finally {
                 syncEnded();
@@ -399,7 +381,7 @@ public class SyncEngine implements SyncSchedulerListener {
 
             for (int x = 0; x < appSources.size(); x++) {
 
-                if (listener != null && listener.isCancelled()) {
+                if (isCancelled) {
                     // If the sync got cancelled then we must exit the loop
                     // Even if the user cancel the sync the SyncSource may be
                     // unable to throw the proper exception if other errors
@@ -415,13 +397,10 @@ public class SyncEngine implements SyncSchedulerListener {
                     Log.info(TAG_LOG, "Firing sync for source " + appSource.getName());
                 }
 
-
                 // We need to create one manager for each source
                 manager = createManager(appSource, syncConfig, deviceConfig);
 
-                if (listener != null) {
-                    listener.sourceStarted(appSource);
-                }
+                sendSyncTaskMessage(SyncTaskMessage.MESSAGE_SOURCE_STARTED, appSource);
 
                 try {
 
@@ -439,20 +418,17 @@ public class SyncEngine implements SyncSchedulerListener {
                         if (Log.isLoggable(Log.INFO)) {
                             Log.info(TAG_LOG, "Skipping not allowed source " + appSource.getName());
                         }
-
-                        if (listener != null) {
-                            SyncException se = new SyncException(SyncException.FORBIDDEN_ERROR, "Source not allowed");
-                            listener.sourceFailed(appSource, se);
-                        }
+                        SyncException se = new SyncException(SyncException.FORBIDDEN_ERROR, "Source not allowed");
+                        sendSyncTaskMessage(SyncTaskMessage.MESSAGE_SOURCE_FAILED, appSource, se);
                         continue;
                     }
 
                     // Set this source as the one currently synchronized
                     currentSource = appSource;
-                    
+
                     //This sync could have been cancelled when the client was
                     //deleting the device items during a refresh from server operation
-                    if (listener == null || (!listener.isCancelled())) {
+                    if (!isCancelled) {
                         //Ask for server dev inf if this is required
                         boolean askServerCaps = configuration.getCredentialsCheckPending() ||
                                                 configuration.getForceServerCapsRequest()  ||
@@ -489,9 +465,7 @@ public class SyncEngine implements SyncSchedulerListener {
                     // place next time in order not to have intem deleted whitin
                     // a reset operation to be sent to the server on the next 
                     // fast sync
-                    if (listener != null) {
-                        listener.sourceEnded(appSource);
-                    }
+                    sendSyncTaskMessage(SyncTaskMessage.MESSAGE_SOURCE_ENDED, appSource);
                 } catch (final Exception e) {
 
                     boolean compressError = (e instanceof CompressedSyncException);
@@ -512,9 +486,7 @@ public class SyncEngine implements SyncSchedulerListener {
                         se = new SyncException(SyncException.CLIENT_ERROR, e.toString());
                     }
 
-                    if (listener != null) {
-                        listener.sourceFailed(appSource, se);
-                    }
+                    sendSyncTaskMessage(SyncTaskMessage.MESSAGE_SOURCE_FAILED, appSource, se);
 
                     // After this point, we know the source really
                     // failed
@@ -538,10 +510,8 @@ public class SyncEngine implements SyncSchedulerListener {
                 }
             }
 
-            // -- END OF A SYNCHRONIZATION
-            if (listener != null) {
-                listener.endSync(appSources, failedSources.size() > 0);
-            }
+            sendSyncTaskMessage(SyncTaskMessage.MESSAGE_END_SYNC, appSources,
+                    failedSources.size() > 0);
 
             return failedSources;
         }
@@ -618,7 +588,28 @@ public class SyncEngine implements SyncSchedulerListener {
         return sources;
     }
 
+    private void sendSyncTaskMessage(int code) {
+        SyncTaskMessage message = new SyncTaskMessage(code);
+        BusService.sendMessage(message);
+    }
 
+    private void sendSyncTaskMessage(int code, AppSyncSource source) {
+        SyncTaskMessage message = new SyncTaskMessage(code, source);
+        BusService.sendMessage(message);
+    }
 
+    private void sendSyncTaskMessage(int code, Vector sources) {
+        SyncTaskMessage message = new SyncTaskMessage(code, sources);
+        BusService.sendMessage(message);
+    }
 
+    private void sendSyncTaskMessage(int code, AppSyncSource source, SyncException ex) {
+        SyncTaskMessage message = new SyncTaskMessage(code, source, ex);
+        BusService.sendMessage(message);
+    }
+
+    private void sendSyncTaskMessage(int code, Vector sources, boolean hadErrors) {
+        SyncTaskMessage message = new SyncTaskMessage(code, sources, hadErrors);
+        BusService.sendMessage(message);
+    }
 }

@@ -35,16 +35,18 @@
 
 package com.funambol.util.bus;
 
-/**
- * Represents an object which is able to handle messages coming from the
- * communication bus.
- */
-public interface BusMessageHandler {
+public class BusService {
 
-    /**
-     * Receives and handles a specific bus message.
-     * @param message
-     */
-    public void receiveMessage(BusMessage message);
+    public static boolean registerMessageHandler(Class type, BusMessageHandler handler) {
+        return Bus.getInstance().registerMessageHandler(type, handler);
+    }
+
+    public static boolean unregisterMessageHandler(Class type, BusMessageHandler handler) {
+        return Bus.getInstance().unregisterMessageHandler(type, handler);
+    }
+
+    public static void sendMessage(BusMessage message) {
+        Bus.getInstance().sendMessage(message);
+    }
 }
 

@@ -39,7 +39,6 @@ import java.util.Enumeration;
 import java.util.Vector;
 import java.util.Hashtable;
 
-import com.funambol.client.configuration.Configuration;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.ExternalAppManager;
@@ -47,7 +46,6 @@ import com.funambol.client.ui.HomeScreen;
 import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.DisplayManager;
 import com.funambol.client.ui.view.SourceThumbnailsView;
-import com.funambol.client.ui.view.ThumbnailView;
 import com.funambol.sync.SyncListener;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
@@ -61,17 +59,15 @@ import com.funambol.platform.NetworkStatus;
  */
 public class HomeScreenController extends SynchronizationController {
 
-    private static final String  TAG_LOG= "HomeScreenController";
+    private static final String  TAG_LOG = "HomeScreenController";
 
-    protected HomeScreen         homeScreen;
+    private HomeScreen homeScreen;
+    private Vector items = null;
+    
+    private int selectedIndex = -1;
+    private boolean updateAvailableSources = false;
 
-    protected Vector             items = null;
-
-    protected Hashtable          pushRequestQueue = new Hashtable();
-
-    private int                  selectedIndex = -1;
-
-    protected boolean            updateAvailableSources = false;
+    private final Hashtable pushRequestQueue = new Hashtable();
 
     /**
      *  This flag is to switch off the storage limit warning after
@@ -81,6 +77,7 @@ public class HomeScreenController extends SynchronizationController {
      *  See US7498.
      */
     protected boolean dontDisplayStorageLimitWarning = false;
+
     /**
      *  This flag is to switch off the server quota warning after
      *  it is displayed once. The warning must be displayed also more
@@ -136,7 +133,7 @@ public class HomeScreenController extends SynchronizationController {
         updateAvailableSources = true;
     }
 
-    public boolean syncStarted(Vector sources) {
+    protected boolean syncStarted(Vector sources) {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "syncStarted");
         }
@@ -165,7 +162,7 @@ public class HomeScreenController extends SynchronizationController {
         attachToSource(appSource);
     }
 
-    public void endSync(Vector sources, boolean hadErrors) {
+    protected void endSync(Vector sources, boolean hadErrors) {
         super.endSync(sources, hadErrors);
     }
     
@@ -208,7 +205,7 @@ public class HomeScreenController extends SynchronizationController {
         }
     }
     
-    public void syncEnded() {
+    protected void syncEnded() {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "sync ended");
         }
@@ -272,7 +269,7 @@ public class HomeScreenController extends SynchronizationController {
         setSelected(getFirstActiveItemIndex(), false);
     }
 
-    public void sourceStarted(AppSyncSource appSource) {
+    protected void sourceStarted(AppSyncSource appSource) {
         super.sourceStarted(appSource);
 
         Vector thisSource = new Vector();
@@ -383,13 +380,7 @@ public class HomeScreenController extends SynchronizationController {
 
         // If a sync is in progress, then this is a cancel sync request
         if (isSynchronizing() && customization.syncAllActsAsCancelSync()) {
-            if (!doCancel) {
-                cancelSync();
-            } else {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Cancelling already in progress");
-                }
-            }
+            cancelSync();
         } else {
             syncAllSources(MANUAL);
         }
@@ -402,13 +393,7 @@ public class HomeScreenController extends SynchronizationController {
 
         // If a sync is in progress, then this is a cancel sync request
         if (isSynchronizing() && customization.syncAllActsAsCancelSync()) {
-            if (!doCancel) {
-                cancelSync();
-            } else {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Cancelling already in progress");
-                }
-            }
+            cancelSync();
         } else {
             refreshSources(MANUAL);
         }
@@ -422,13 +407,7 @@ public class HomeScreenController extends SynchronizationController {
 
         // If a sync is in progress, then this is a cancel sync request
         if (isSynchronizing()) {
-            if (!doCancel) {
-                cancelSync();
-            } else {
-                if (Log.isLoggable(Log.INFO)) {
-                    Log.info(TAG_LOG, "Cancelling already in progress");
-                }
-            }
+            cancelSync();
         } else {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(0);
             if (appSource.isWorking() && appSource.getConfig().getEnabled() && appSource.getConfig().getAllowed()) {

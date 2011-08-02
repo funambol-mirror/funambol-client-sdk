@@ -53,7 +53,7 @@ public class BusTest extends TestCase {
 
     private Bus bus;
 
-    private class TestBusMessageHandler extends BusMessageHandler {
+    private class TestBusMessageHandler implements BusMessageHandler {
 
         Vector receivedMessages = new Vector();
 
