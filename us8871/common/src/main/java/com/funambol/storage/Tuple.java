@@ -38,14 +38,12 @@ package com.funambol.storage;
 import java.util.Vector;
 
 import com.funambol.util.ComparableI;
-import com.funambol.util.Log;
 
 public class Tuple implements ComparableI {
 
     private Vector fields = null;
     private int arity;
 
-    private static final String UNCHANGED = "UNCHANGED";
     private static final String UNDEFINED = "UNDEFINED";
 
     private int colsType[];
@@ -78,7 +76,6 @@ public class Tuple implements ComparableI {
     }
 
     public void setField(int idx, Object value) {
-
         if (value instanceof String) {
             if (Table.TYPE_STRING != colsType[idx]) {
                 throw new IllegalArgumentException("trying to set a string value into a non string column "
@@ -89,14 +86,12 @@ public class Tuple implements ComparableI {
                 throw new IllegalArgumentException("trying to set a long value into a non long column "
                         + colsType[idx]);
             }
+        } else if(value == null) {
+            value = UNDEFINED;
         } else {
             throw new IllegalArgumentException("Trying to set a value of unsupported type " + value);
         }
         fields.setElementAt(value, idx);
-    }
-
-    public void setUnchangedField(int idx) {
-        setField(idx, UNCHANGED);
     }
 
     public void removeField(int idx) {
@@ -125,11 +120,6 @@ public class Tuple implements ComparableI {
         } else {
             return (Long)fields.elementAt(idx);
         }
-    }
-
-    public boolean isUnchanged(int idx) {
-        // We do not want to compare string values, but just their reference
-        return fields.elementAt(idx) == UNCHANGED;
     }
 
     public boolean isUndefined(int idx) {

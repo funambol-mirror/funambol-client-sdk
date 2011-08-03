@@ -38,17 +38,15 @@ package com.funambol.client.source;
 import java.util.Hashtable;
 
 import com.funambol.storage.Table;
-import com.funambol.storage.TableFactory;
-import com.funambol.client.controller.UISyncSourceController;
+import com.funambol.client.controller.SourceThumbnailsViewController;
 import com.funambol.client.controller.SynchronizationController;
+import com.funambol.client.customization.Customization;
 import com.funambol.client.ui.SettingsUISyncSource;
 import com.funambol.client.ui.DevSettingsUISyncSource;
 import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.Screen;
 import com.funambol.client.ui.view.SourceThumbnailsView;
-import com.funambol.sync.SyncListener;
 import com.funambol.sync.SyncSource;
-import com.funambol.syncml.protocol.SyncML;
 
 import com.funambol.util.Log;
 
@@ -96,7 +94,7 @@ public class AppSyncSource {
     private ExternalAppManager     appManager       = null;
     private int                    uiSourceIndex    = -1;
     protected UISyncSource         uiSource         = null;
-    private UISyncSourceController controller       = null;
+    private SourceThumbnailsViewController controller       = null;
     protected SettingsUISyncSource settingsUISource = null;
     protected DevSettingsUISyncSource devSettingsUISource = null;
     protected boolean              refreshFromServerSupported = true;
@@ -110,7 +108,7 @@ public class AppSyncSource {
 
     protected Class                settingsClass = null;
     protected Class                devSettingsClass = null;
-    protected Class                uiSyncSourceControllerClass = null;
+    protected Class                sourceThumbnailsViewControllerClass = null;
     protected Class                thumbnailsViewClass = null;
 
     // Lists all the settings with the possible values assiciated with this source
@@ -233,15 +231,15 @@ public class AppSyncSource {
         this.thumbnailsViewClass = thumbnailsViewClass;
     }
 
-    public void setUISyncSourceControllerClass(Class uiSyncSourceControllerClass) {
-        this.uiSyncSourceControllerClass = uiSyncSourceControllerClass;
+    public void setSourceThumbnailsViewControllerClass(Class sourceThumbnailsViewControllerClass) {
+        this.sourceThumbnailsViewControllerClass = sourceThumbnailsViewControllerClass;
     }
 
-    public UISyncSourceController getUISyncSourceController() {
+    public SourceThumbnailsViewController getSourceThumbnailsViewController() {
         return controller;
     }
 
-    public void setUISyncSourceController(UISyncSourceController controller) {
+    public void setSourceThumbnailsViewController(SourceThumbnailsViewController controller) {
         this.controller = controller;
     }
 
@@ -442,26 +440,24 @@ public class AppSyncSource {
     }
 
     /**
-     * This method creates a proper controller for this AppSyncSource. If the
-     * controller class has not been specified or it cannot be instantiated,
-     * then a default UISyncSourceController is created instead.
-     * The returned controller has not been initialized. The caller needs to
-     * invoke its <i>init</i> method to complete the initialization.
+     * Creates a controller for the main thumbnails view
      */
-    public UISyncSourceController createUISyncSourceController() {
-        UISyncSourceController uiSyncSourceController = null;
-        if (uiSyncSourceControllerClass != null) {
+    public SourceThumbnailsViewController createSourceThumbnailsViewController(
+            Customization customization) {
+        SourceThumbnailsViewController sourceThumbnailsViewController = null;
+        if (sourceThumbnailsViewControllerClass != null) {
             try {
-                uiSyncSourceController = (UISyncSourceController) uiSyncSourceControllerClass.newInstance();
+                sourceThumbnailsViewController = (SourceThumbnailsViewController)
+                        sourceThumbnailsViewControllerClass.newInstance();
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Cannot instantiate button class, revert to default one");
             }
         }
-
-        if (uiSyncSourceController == null) {
-            uiSyncSourceController = new UISyncSourceController();
+        if (sourceThumbnailsViewController == null) {
+            sourceThumbnailsViewController =
+                    new SourceThumbnailsViewController(this, customization);
         }
-        return uiSyncSourceController;
+        return sourceThumbnailsViewController;
     }
 
     /**

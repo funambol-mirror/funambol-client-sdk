@@ -169,6 +169,9 @@ public interface Customization {
     public long getMaxAllowedFileSizeForFiles();
     public long getMaxAllowedFileSizeForVideos();
 
+    // The max number of thumbnails to show in the source thumbnails view
+    public int getMaxThumbnailsCountInMainScreen();
+
     /**
      * First sync behavior on upload for media
      * @param sourceId id of the media sync source

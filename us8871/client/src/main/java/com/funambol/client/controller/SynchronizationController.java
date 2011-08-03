@@ -519,10 +519,8 @@ public class SynchronizationController implements BusMessageHandler {
             Log.trace(TAG_LOG, "sourceStarted " + appSource.getName());
         }
         currentSource = appSource;
-        UISyncSourceController sourceController = appSource.getUISyncSourceController();
-        if (sourceController != null) {
-            sourceController.setSelected(true, false);
-        }
+
+        // TODO FIXME update the source view
     }
 
     protected void sourceEnded(AppSyncSource appSource) {
@@ -536,10 +534,7 @@ public class SynchronizationController implements BusMessageHandler {
         
         saveSourceConfig(appSource);
         
-        UISyncSourceController sourceController = appSource.getUISyncSourceController();
-        if (sourceController != null) {
-            sourceController.setSelected(false, false);
-        }
+        // TODO FIXME update the source view
     }
 
     protected void sourceFailed(AppSyncSource appSource, SyncException e) {

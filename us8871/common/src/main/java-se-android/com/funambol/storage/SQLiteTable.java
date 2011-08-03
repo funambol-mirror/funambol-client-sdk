@@ -35,8 +35,6 @@
 
 package com.funambol.storage;
 
-import java.util.Enumeration;
-import java.util.Vector;
 import java.io.IOException;
 
 import android.content.Context;
@@ -56,12 +54,12 @@ public class SQLiteTable extends Table {
     private static final int KEY_MAX_LENGTH = 128;
     private static final int VALUE_MAX_LENGTH = 128;
 
-    protected Context context;
-    protected String  dbName;
-    protected SQLiteDatabase dbStore;
-    protected DatabaseHelper mDatabaseHelper = null;
+    private Context context;
+    private String  dbName;
+    private SQLiteDatabase dbStore;
+    private DatabaseHelper mDatabaseHelper = null;
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     private int numRefs = 0;
 
@@ -88,7 +86,6 @@ public class SQLiteTable extends Table {
         this.dbName  = dbName;
         this.context = context;
     }
-
 
     @Override
     public void open() throws IOException {
@@ -298,18 +295,13 @@ public class SQLiteTable extends Table {
 
     private ContentValues prepareValue(Tuple tuple) {
         ContentValues cv = new ContentValues();
-
         for(int i=0;i<tuple.getArity();++i) {
-
             String v;
             boolean skipCol = false;
-
             if (i == getKeyIdx() && autoincrement) {
                 skipCol = true;
                 v = null;
             } else if (tuple.isUndefined(i)) {
-                v = null;
-            } else if (tuple.isUnchanged(i)) {
                 skipCol = true;
                 v = null;
             } else if (tuple.getType(i) == TYPE_STRING) {

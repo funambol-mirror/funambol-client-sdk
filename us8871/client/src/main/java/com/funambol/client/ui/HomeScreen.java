@@ -35,16 +35,12 @@
 
 package com.funambol.client.ui;
 
-import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.ui.view.SourceThumbnailsView;
-import com.funambol.client.ui.view.ThumbnailView;
 
 /**
  * HomeScreen is the view for the typical Funambol home screen.
  */
 public interface HomeScreen extends Screen {
-
-    public SourceThumbnailsView createSourceThumbnailsView(AppSyncSource source);
 
     public void addSourceThumbnailsView(SourceThumbnailsView view);
     

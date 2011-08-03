@@ -35,8 +35,6 @@
 
 package com.funambol.client.ui.view;
 
-import com.funambol.storage.Table;
-
 /**
  * Represents a generic source view. The purpose of this view is to display a
  * partial content for a given source. The view is bound to its model via a
@@ -44,10 +42,11 @@ import com.funambol.storage.Table;
  */
 public interface SourceThumbnailsView {
 
-    /**
-     * After this method is invoked the view is bound to the underlying model
-     * provided by the AppSyncSource metadata table. Any change in the metadata
-     * table will be reflected in this view.
-     */
-    public void bindToData();
+    public ThumbnailView createThumbnailView();
+    
+    public void addThumbnail(final ThumbnailView thumb);
+
+    public void addThumbnail(final ThumbnailView thumb, final int index);
+
+    public void setTitle(final String title);
 }

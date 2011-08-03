@@ -59,7 +59,7 @@ public class MediaMetadata {
      *
      * Both the thumb_path and the picture_path can be undefined or empty.
      */
-    public static final String META_DATA_COL_NAMES[] = {
+    private static final String META_DATA_COL_NAMES[] = {
                                                    METADATA_ID,
                                                    METADATA_THUMB1_PATH,
                                                    METADATA_THUMB2_PATH,
@@ -70,7 +70,7 @@ public class MediaMetadata {
                                                    METADATA_DIRTY
                                                   };
 
-    public static final int META_DATA_COL_TYPES[] = {
+    private static final int META_DATA_COL_TYPES[] = {
                                                    Table.TYPE_LONG,
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,

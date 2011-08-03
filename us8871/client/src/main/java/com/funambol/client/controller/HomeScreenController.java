@@ -37,13 +37,11 @@ package com.funambol.client.controller;
 
 import java.util.Enumeration;
 import java.util.Vector;
-import java.util.Hashtable;
 
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.ExternalAppManager;
 import com.funambol.client.ui.HomeScreen;
-import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.DisplayManager;
 import com.funambol.client.ui.view.SourceThumbnailsView;
 import com.funambol.sync.SyncListener;
@@ -66,8 +64,6 @@ public class HomeScreenController extends SynchronizationController {
     
     private int selectedIndex = -1;
     private boolean updateAvailableSources = false;
-
-    private final Hashtable pushRequestQueue = new Hashtable();
 
     /**
      *  This flag is to switch off the storage limit warning after
@@ -95,17 +91,22 @@ public class HomeScreenController extends SynchronizationController {
         forceUpdateAvailableSources();
     }
 
+    /**
+     * Init the home screen with the sources thumbnails views.
+     */
     public void initializeHomeScreen() {
-
         new Thread(new Runnable() {
-
             public void run() {
                 int[] order = customization.getSourcesOrder();
                 for(int i=0; i<order.length; i++) {
                     AppSyncSource source = appSyncSourceManager.getSource(order[i]);
                     if(source.isVisible()) {
-                        SourceThumbnailsView sourceView = source.createSourceThumbnailsView(screen);
-                        sourceView.bindToData();
+                        SourceThumbnailsView sourceView =
+                                source.createSourceThumbnailsView(screen);
+                        SourceThumbnailsViewController sourceController =
+                                source.getSourceThumbnailsViewController();
+                        sourceController.setSourceThumbnailsView(sourceView);
+                        sourceController.bindToData();
                         if (homeScreen != null) {
                             homeScreen.addSourceThumbnailsView(sourceView);
                         } else {
@@ -122,8 +123,8 @@ public class HomeScreenController extends SynchronizationController {
     }
 
     public void setHomeScreen(HomeScreen homeScreen) {
-        this.homeScreen = homeScreen;
         super.setScreen(homeScreen);
+        this.homeScreen = homeScreen;
     }
 
     public void updateAvailableSources() {
@@ -138,34 +139,18 @@ public class HomeScreenController extends SynchronizationController {
             Log.trace(TAG_LOG, "syncStarted");
         }
         boolean res = super.syncStarted(sources);
-        AppSyncSource appSource = (AppSyncSource)sources.elementAt(0);
-        attachToSource(appSource);
+        // TODO FIXME: update the UI
         return res;
     }
 
-    public void attachToRunningSync(AppSyncSource appSource) {
-        if (Log.isLoggable(Log.DEBUG)) {
-            Log.debug(TAG_LOG, "Attaching to running sync for " + appSource.getName());
+    protected void syncEnded() {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "syncEnded");
         }
-        if(homeScreen.isLocked()) {
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Cannot attach to running sync, home screen is locked");
-            }
-            return;
-        }
-        // First of all select the source to attach
-        setSelected(appSource.getUiSourceIndex(), false);
-        
-        Vector sources = new Vector();
-        sources.addElement(appSource);
-        
-        attachToSource(appSource);
+        super.syncEnded();
+        // TODO FIXME: update the UI
     }
 
-    protected void endSync(Vector sources, boolean hadErrors) {
-        super.endSync(sources, hadErrors);
-    }
-    
     protected void displayStorageLimitWarning(Vector localStorageFullSources) {
         logSyncSourceErrors(localStorageFullSources);
         if (isInForeground()) {
@@ -204,28 +189,6 @@ public class HomeScreenController extends SynchronizationController {
             super.displayServerQuotaWarning(serverQuotaFullSources);
         }
     }
-    
-    protected void syncEnded() {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "sync ended");
-        }
-        super.syncEnded();
-        
-        setSelected(getFirstActiveItemIndex(), false);
-
-        // If there are pending syncs, we start serving them
-        synchronized(pushRequestQueue) {
-            if (pushRequestQueue.size() > 0) {
-                Vector sources = new Vector(pushRequestQueue.size());
-                Enumeration keys = pushRequestQueue.keys();
-                while(keys.hasMoreElements()) {
-                    sources.addElement(keys.nextElement());
-                }
-                pushRequestQueue.clear();
-                synchronize(com.funambol.client.controller.SynchronizationController.PUSH, sources);
-            }
-        }
-    }
 
     public void redraw() {
         // We may need to update the list of
@@ -245,7 +208,7 @@ public class HomeScreenController extends SynchronizationController {
         }
         AppSyncSource source = (AppSyncSource) items.elementAt(index);
         if (source.getConfig().getEnabled()) {
-            setSelected(index, true);
+            setSelected(index);
         }
     }
 
@@ -266,7 +229,7 @@ public class HomeScreenController extends SynchronizationController {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Select first source available");
         }
-        setSelected(getFirstActiveItemIndex(), false);
+        setSelected(getFirstActiveItemIndex());
     }
 
     protected void sourceStarted(AppSyncSource appSource) {
@@ -276,72 +239,29 @@ public class HomeScreenController extends SynchronizationController {
         thisSource.addElement(appSource);
         
         // this selects the appSource and disable any previously selected one
-        setSelected(appSource.getUiSourceIndex(), false);
-    }
-
-    /**
-     * This method enques a sync request coming from a push notification. This
-     * method can be used when there is a sync running and a new request comes
-     * in. The request is enqueued and server as soon as the current sync
-     * terminates.
-     *
-     * @param sources the sources to be enqueued
-     */
-    public void enquePushSyncRequest(Vector sources) {
-        synchronized(pushRequestQueue) {
-            for(int i=0;i<sources.size();++i) {
-                AppSyncSource source = (AppSyncSource)sources.elementAt(i);
-                pushRequestQueue.put(source, source);
-            }
-        }
-    }
-
-    /**
-     * This method enques a sync request coming from a push notification. This
-     * method can be used when there is a sync running and a new request comes
-     * in. The request is enqueued and server as soon as the current sync
-     * terminates.
-     */
-    public void enquePushSyncRequest() {
-        synchronized(pushRequestQueue) {
-            for(int i=0;i<items.size();++i) {
-                AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
-                if (appSource.getConfig().getEnabled() && appSource.isWorking()) {
-                    pushRequestQueue.put(appSource, appSource);
-                }
-            }
-        }
+        setSelected(appSource.getUiSourceIndex());
     }
 
     public void updateEnabledSources() {
-
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "updateEnabledSources");
         }
-
         // If a sync is in progress, then we don't change the sources status,
         // otherwise we would corrupt the UI. On sync termination, the home
         // screen will get refreshed
         if (isSynchronizing()  || (homeScreen != null && homeScreen.isLocked())) {
             return;
         }
-
         Enumeration sources = items.elements();
         boolean atLeastOneEnabled = false;
         while (sources.hasMoreElements()) {
             AppSyncSource appSource = (AppSyncSource)sources.nextElement();
-            UISyncSourceController sourceController = appSource.getUISyncSourceController();
-
+            SourceThumbnailsViewController sourceController =
+                    appSource.getSourceThumbnailsViewController();
             if (sourceController != null) {
                 if (appSource.getConfig().getActive()) {
                     if (!appSource.isEnabled() || !appSource.isWorking()) {
                         sourceController.disable();
-                        UISyncSource uiSource = appSource.getUISyncSource();
-                        // If this is the selected source, then we shall move the
-                        // selection to the first available
-                        if (uiSource != null && uiSource.isSelected()) {
-                            setSelected(getFirstActiveItemIndex(), false);
-                        }
                     } else {
                         sourceController.enable();
                         atLeastOneEnabled = true;
@@ -352,10 +272,9 @@ public class HomeScreenController extends SynchronizationController {
         if (!atLeastOneEnabled) {
             // We must "deselect" all items because all are disabled
             for(int i=0;i<items.size();++i) {
-                setSelected(i, false);
+                setSelected(i);
             }
         }
-
         redraw();
     }
 
@@ -655,7 +574,7 @@ public class HomeScreenController extends SynchronizationController {
         }
     }
 
-    private void setSelected(int index, boolean fromUi) {
+    private void setSelected(int index) {
 
         // First of all remove selection from the current selected item
         if ((selectedIndex != index) &&
@@ -663,9 +582,10 @@ public class HomeScreenController extends SynchronizationController {
             (selectedIndex < items.size())) {
             
             AppSyncSource oldAppSource = (AppSyncSource)items.elementAt(selectedIndex);
-            UISyncSourceController sourceController = oldAppSource.getUISyncSourceController();
+            SourceThumbnailsViewController sourceController = 
+                    oldAppSource.getSourceThumbnailsViewController();
             if (sourceController != null) {
-                sourceController.setSelected(false, fromUi);
+                sourceController.setSelected(false);
             }
         }
         
@@ -676,23 +596,12 @@ public class HomeScreenController extends SynchronizationController {
         }
 
         selectedIndex = index;
-        UISyncSourceController sourceController = appSource.getUISyncSourceController();
+        SourceThumbnailsViewController sourceController = 
+                appSource.getSourceThumbnailsViewController();
         if (sourceController != null) {
-            sourceController.setSelected(true, fromUi);
+            sourceController.setSelected(true);
         } else {
             Log.error(TAG_LOG, "Found a source without controller associated " + appSource.getName());
-        }
-    }
-
-    protected void attachToSource(AppSyncSource appSource) {
-        // Force the source to start syncing, even though we have not received
-        // any event from the SyncEngine. This has two nice effects:
-        // 1) the source is marked immediately as syncing
-        // 2) the buttons and the sync status are always aligned, even if the
-        // sync takes time to start
-        UISyncSourceController sourceController = appSource.getUISyncSourceController();
-        if (sourceController != null) {
-            sourceController.attachToSession();
         }
     }
 
@@ -702,7 +611,7 @@ public class HomeScreenController extends SynchronizationController {
         }
         // Compute the set of items to be displayed
         computeVisibleItems();
-        setSelected(getFirstActiveItemIndex(), false);
+        setSelected(getFirstActiveItemIndex());
         updateAvailableSources = false;
     }
     
@@ -723,5 +632,4 @@ public class HomeScreenController extends SynchronizationController {
             }
         }
     }
-
 }
