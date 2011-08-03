@@ -1,0 +1,21 @@
+Source: libfunambol
+Priority: extra
+Maintainer: Funambol cpp client team <cpp-client-team@funambol.com>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+Section: libs
+Homepage: http://www.funambol.com/
+
+Package: libfunambol-dev
+Section: libdevel
+Architecture: any
+Depends: libfunambol (= ${binary:Version})
+Description: Funambol c++ sdk
+ Funambol c++ sdk is an implementation of syncMl stack
+
+Package: libfunambol
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Funambol c++ sdk
+ Funambol c++ sdk is an implementation of syncMl stack

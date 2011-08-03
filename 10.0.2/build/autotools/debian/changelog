@@ -1,0 +1,14 @@
+libfunambol (10.0.0) stable; urgency=low
+
+  * version updated to 10.0.0 (quattro relase)
+  * fixed debian package name
+  * removed debian packaging files automatic generation
+    from autotool 
+
+ -- dave <dave@funambol.com>  Sun, 17 Apr 2011 19:28:24 +0200
+
+libfunambol (9.0.3) stable; urgency=low
+
+  * first debianization of libfunambol
+
+ -- dave <dave@funambol.com>  Tue, 06 Jul 2010 22:30:24 +0200
