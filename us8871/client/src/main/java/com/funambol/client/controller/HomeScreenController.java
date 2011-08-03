@@ -357,12 +357,13 @@ public class HomeScreenController extends SynchronizationController {
             Log.info(TAG_LOG, "syncAllSources");
         }
 
+        //(appSource.getId() == AppSyncSourceManager.PICTURES_ID))
+
         Vector sources = new Vector();        
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
             if (appSource.getConfig().getEnabled() && appSource.isWorking() &&
-                appSource.getConfig().getAllowed() && 
-                (appSource.getId() == AppSyncSourceManager.PICTURES_ID))
+                appSource.getConfig().getAllowed() && appSource.getIsMedia())
             {
                 sources.addElement(appSource);
             }

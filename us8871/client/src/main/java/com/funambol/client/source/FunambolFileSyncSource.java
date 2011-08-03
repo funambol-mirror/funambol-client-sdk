@@ -182,12 +182,10 @@ public class FunambolFileSyncSource extends FileSyncSource {
             }
 
             metadata.open();
-            // The parent source fills the item key with the file path
-            String thumbPath = item.getKey();
             // The key is autoincremented
             Tuple tuple = metadata.createNewRow();
 
-            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), thumbPath);
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), "");
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), "");
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), "");
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), lastMod);

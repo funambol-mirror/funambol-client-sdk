@@ -35,6 +35,7 @@
 
 package com.funambol.client.controller;
 
+import java.util.Vector;
 import com.funambol.client.customization.Customization;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.MediaMetadata;
@@ -48,7 +49,6 @@ import com.funambol.util.Log;
 import com.funambol.util.bus.BusMessage;
 import com.funambol.util.bus.BusMessageHandler;
 import com.funambol.util.bus.BusService;
-import java.util.Vector;
 
 
 public class SourceThumbnailsViewController {
@@ -60,6 +60,10 @@ public class SourceThumbnailsViewController {
 
     private SourceThumbnailsView sourceThumbsView;
     private Vector datedThumbnails = new Vector();
+    private TableEventListener tableEventListener;
+
+    private Object counterLock = new Object();
+    private int totalItemsCount = 0;
 
     public SourceThumbnailsViewController(AppSyncSource appSource, Customization customization) {
         this.appSource = appSource;
@@ -102,7 +106,7 @@ public class SourceThumbnailsViewController {
         }
 
         // We start listening for events on the bus
-        TableEventListener tableEventListener = new TableEventListener(appSource, sourceThumbsView);
+        tableEventListener = new TableEventListener(appSource, sourceThumbsView);
         BusService.registerMessageHandler(MetadataBusMessage.class, tableEventListener);
 
         // Load existing thumbnails
@@ -113,12 +117,15 @@ public class SourceThumbnailsViewController {
             thumbnails = metadata.query(null, metadata.getColIndexOrThrow(
                     MediaMetadata.METADATA_LAST_MOD), false);
 
-            int count = 0;
+            totalItemsCount = 0;
             final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
 
             while(thumbnails.hasMoreElements()) {
                 Tuple row = thumbnails.nextElement();
-                if(count < maxCount) {
+                synchronized(counterLock) {
+                    totalItemsCount++;
+                }
+                if(totalItemsCount < maxCount) {
                     String thumbPath = row.getStringField(metadata.getColIndexOrThrow(
                             MediaMetadata.METADATA_THUMB1_PATH));
                     Long lastMod = row.getLongField(metadata.getColIndexOrThrow(
@@ -132,9 +139,9 @@ public class SourceThumbnailsViewController {
                     DatedThumbnailView datedView = new DatedThumbnailView(
                             thumbView, lastMod.longValue());
                     addDatedThumbnail(datedView, true);
+                } else {
+                    updateSourceTitle(totalItemsCount);
                 }
-                count++;
-                updateSourceTitle(count);
             }
         } catch (Exception ex) {
             // We cannot access the thumbnails, how do we handle
@@ -160,6 +167,7 @@ public class SourceThumbnailsViewController {
 
     private void addDatedThumbnail(DatedThumbnailView datedView, boolean isMostRecent) {
         int index;
+        final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
         if(isMostRecent) {
             // We alreay know this is the most recent thumbnail
             index = 0;
@@ -174,18 +182,36 @@ public class SourceThumbnailsViewController {
                 }
             }
         }
-        datedThumbnails.insertElementAt(datedView, index);
-        sourceThumbsView.addThumbnail(datedView.getView(), index);
+
+        // If the thumb falls into the first maxCount items, then we show it.
+        // Otherwise it is hidden
+        synchronized(counterLock) {
+            totalItemsCount++;
+        }
+
+        // Update also the title
+        if (index < maxCount) {
+            datedThumbnails.insertElementAt(datedView, index);
+            sourceThumbsView.addThumbnail(datedView.getView(), index, createSourceTitle(totalItemsCount));
+        } else {
+            updateSourceTitle(totalItemsCount);
+        }
     }
 
     private void updateSourceTitle(int count) {
+        String title = createSourceTitle(count);
+        sourceThumbsView.setTitle(title);
+    }
+
+    private String createSourceTitle(int count) {
         StringBuffer title = new StringBuffer();
         title.append(appSource.getName().toUpperCase());
         if(count > 0) {
             title.append(" (").append(count).append(")");
         }
-        sourceThumbsView.setTitle(title.toString());
+        return title.toString();
     }
+
 
     private class TableEventListener implements BusMessageHandler {
 

@@ -44,9 +44,9 @@ public interface SourceThumbnailsView {
 
     public ThumbnailView createThumbnailView();
     
-    public void addThumbnail(final ThumbnailView thumb);
+    public void addThumbnail(final ThumbnailView thumb, String newTitle);
 
-    public void addThumbnail(final ThumbnailView thumb, final int index);
+    public void addThumbnail(final ThumbnailView thumb, final int index, String newTitle);
 
     public void setTitle(final String title);
 }
