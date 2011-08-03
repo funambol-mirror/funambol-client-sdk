@@ -56,7 +56,7 @@ public class SapiSyncStrategy {
 
     private static final String TAG_LOG = "SapiSyncStrategy";
 
-    private static final int FULL_SYNC_DOWNLOAD_LIMIT = 300;
+    protected static final int FULL_SYNC_DOWNLOAD_LIMIT = 300;
 
     private JSONArray addedArray   = null;
     private JSONArray updatedArray = null;
@@ -100,15 +100,6 @@ public class SapiSyncStrategy {
         addedArray   = null;
         updatedArray = null;
         deletedArray = null;
-
-        // Get all the info on what is available on the server
-        if (downloadSyncMode != SyncSource.NO_SYNC) {
-            if (incrementalDownload) {
-                prepareSyncIncrementalDownload(src, mapping, twins);
-            } else {
-                prepareSyncFullDownload(src, mapping, twins);
-            }
-        }
 
         // Get all the info on what changes are to be sent
         if (uploadSyncMode != SyncSource.NO_SYNC) {
@@ -167,56 +158,6 @@ public class SapiSyncStrategy {
         return localDeleted;
     }
 
-    private void prepareSyncIncrementalDownload(SyncSource src, MappingTable mapping, Hashtable twins)
-    throws SyncException, JSONException
-    {
-        String remoteUri = src.getConfig().getRemoteUri();
-        SyncFilter syncFilter = src.getFilter();
-        if(syncFilter != null && syncFilter.getIncrementalDownloadFilter() != null) {
-            throw new UnsupportedOperationException("Not implemented yet");
-        }
-        SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Last download anchor is: " + sapiAnchor.getDownloadAnchor());
-        }
-        Date anchor = new Date(sapiAnchor.getDownloadAnchor());
-
-        SapiSyncHandler.ChangesSet changesSet = null;
-        try {
-            changesSet = sapiSyncHandler.getIncrementalChanges(anchor, remoteUri);
-        } catch (SapiException e) {
-            String errorMessage = "Client error while getting incremental changes";
-            utils.processCommonSapiExceptions(e, errorMessage, false);
-            utils.processCustomSapiExceptions(e, errorMessage, true);
-        }
-            
-        if (changesSet != null) {
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "There are changes pending on the server");
-            }
-
-            // Use the above value as timestamp for the next sync
-            downloadNextAnchor = changesSet.timeStamp;
-
-            SapiSyncHandler.FullSet addedInfo   = null;
-            SapiSyncHandler.FullSet updatedInfo = null;
-            SapiSyncHandler.FullSet deletedInfo = null;
-
-            addedInfo   = fetchItemsInfo(src, changesSet.added);
-            updatedInfo = fetchItemsInfo(src, changesSet.updated);
-            deletedArray = changesSet.deleted;
-
-            if (addedInfo != null) {
-                addedArray = addedInfo.items;
-                addedServerUrl = addedInfo.serverUrl;
-            } 
-            if (updatedInfo != null) {
-                updatedArray = updatedInfo.items;
-                updatedServerUrl = updatedInfo.serverUrl;
-            }
-        }
-    }
-
     private void prepareSyncIncrementalUpload(SyncSource src, MappingTable mapping, Hashtable twins)
     throws SyncException, JSONException
     {
@@ -256,7 +197,7 @@ public class SapiSyncStrategy {
             boolean done = false;
             do {
                 SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(
-                        src.getConfig().getRemoteUri(), getDataTag(src), null,
+                        src.getConfig().getRemoteUri(), utils.getDataTag(src), null,
                         Integer.toString(FULL_SYNC_DOWNLOAD_LIMIT),
                         Integer.toString(offset), null);
                 if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
@@ -418,139 +359,6 @@ public class SapiSyncStrategy {
         }
     }
 
-    private void prepareSyncFullDownload(SyncSource src, MappingTable mapping, Hashtable twins)
-    throws SyncException, JSONException
-    {
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "prepareSyncFullDownload");
-        }
-
-        String remoteUri = src.getConfig().getRemoteUri();
-        SyncFilter syncFilter = src.getFilter();
-
-        int totalCount = -1;
-        int filterMaxCount = -1;
-        long filterFrom = -1;
-
-        Filter fullDownloadFilter = null;
-        if(syncFilter != null) {
-            fullDownloadFilter = syncFilter.getFullDownloadFilter();
-
-            if(fullDownloadFilter != null) {
-                if(fullDownloadFilter != null && fullDownloadFilter.isEnabled() &&
-                        fullDownloadFilter.getType() == Filter.ITEMS_COUNT_TYPE) {
-                    filterMaxCount = fullDownloadFilter.getCount();
-                } else if(fullDownloadFilter != null && fullDownloadFilter.getType()
-                        == Filter.DATE_RECENT_TYPE) {
-
-                    // This filter specifies a client based timestamp. We need
-                    // to correct it according to the time difference between
-                    // client and server
-                    filterFrom = fullDownloadFilter.getDate();
-                    if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "Adjusting from filter by " + clientServerTimeDifference);
-                    }
-                    filterFrom += clientServerTimeDifference;
-                } else {
-                    throw new UnsupportedOperationException("Not implemented yet");
-                }
-            }
-        }
-
-        if (filterMaxCount != -1) {
-            // Get the number of items and notify the listener
-            try {
-                totalCount = sapiSyncHandler.getItemsCount(remoteUri, null);
-            } catch (SapiException e) {
-                String errorMessage = "Cannot perform a full sync";
-                utils.processCommonSapiExceptions(e, errorMessage, false);
-                utils.processCustomSapiExceptions(e, errorMessage, true);
-            }
-        }
-
-        // Fill the addedArray
-        addedArray = null;
-        addedServerUrl = null;
-
-        int downloadLimit = FULL_SYNC_DOWNLOAD_LIMIT;
-        String dataTag = getDataTag(src);
-        int offset = 0;
-        boolean done = false;
-
-        downloadNextAnchor = -1;
-        do {
-            // Update the download limit given the total amount of items
-            // to download
-            if(totalCount > 0 && (offset + downloadLimit) > totalCount) {
-                downloadLimit = totalCount - offset;
-            }
-
-            // We need to get all items on the server to be able to do effective
-            // twin detection.
-            SapiSyncHandler.FullSet fullSet = sapiSyncHandler.getItems(remoteUri, dataTag, null,
-                    Integer.toString(downloadLimit),
-                    Integer.toString(offset), null);
-            if (downloadNextAnchor == -1) {
-                downloadNextAnchor = fullSet.timeStamp;
-                addedServerUrl = fullSet.serverUrl;
-            }
-            if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
-                if (Log.isLoggable(Log.TRACE)) {
-                    Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
-                }
-
-                if (addedArray == null) {
-                    addedArray = new JSONArray();
-                }
-
-                // Search and discard twins, as there is no need to download
-                // them again
-                discardTwinAndConflictFromList(src, fullSet.items, null, null,
-                        fullSet.serverUrl, mapping, twins, true);
-
-                for(int i=0;i<fullSet.items.length();++i) {
-                    JSONObject item = fullSet.items.getJSONObject(i);
-                    if (item != removedItemMarker) {
-                        // Apply items count filter
-                        if(filterMaxCount > 0) {
-                            if(addedArray.length() >= filterMaxCount) {
-                                if (Log.isLoggable(Log.DEBUG)) {
-                                    Log.debug(TAG_LOG, "The source doesn't accept more items");
-                                }
-                                done = true;
-                                break;
-                            }
-                        }
-                        // Apply filterfrom filter
-                        boolean skip = false;
-                        if (item.has(SapiSyncManager.UPLOAD_DATE_FIELD)) {
-
-                            long uploadDate = item.getLong(SapiSyncManager.UPLOAD_DATE_FIELD);
-                            if (uploadDate < filterFrom) {
-                                skip = true;
-                            }
-                        }
-
-                        if (skip) {
-                            if (Log.isLoggable(Log.DEBUG)) {
-                                Log.debug(TAG_LOG, "Ignoring item because out of date filter");
-                            }
-                        } else {
-                            addedArray.put(item);
-                        }
-                    }
-                }
-
-                offset += fullSet.items.length();
-                if ((fullSet.items.length() < FULL_SYNC_DOWNLOAD_LIMIT)) {
-                    done = true;
-                }
-            } else {
-                done = true;
-            }
-        } while(!done);
-    }
-
     private void handleServerDeleteConflicts(SyncSource src, JSONArray serverDeletes,
                                              Hashtable localMods, Hashtable localDel,
                                              Hashtable localRenamed, MappingTable mapping)
@@ -581,147 +389,124 @@ public class SapiSyncStrategy {
         }
     }
 
+
+    public boolean resolveTwinAndConflicts(SyncSource src, JSONObject item,
+                                            Hashtable localMods, Hashtable localDel,
+                                            String serverUrl, MappingTable mapping,
+                                            Hashtable twins, boolean deepTwinSearch)
+    throws JSONException
+    {
+        boolean download = true;
+        if (src instanceof TwinDetectionSource) {
+            // If a twin search is needed, then we perform it here
+            String guid = item.getString(SapiSyncManager.ID_FIELD);
+            if (deepTwinSearch) {
+                long   size = Long.parseLong(item.getString(SapiSyncManager.SIZE_FIELD));
+                SyncItem syncItem = utils.createSyncItem(src, guid, SyncItem.STATE_NEW, size, item, serverUrl);
+                syncItem.setGuid(guid);
+                TwinDetectionSource twinSource = (TwinDetectionSource)src;
+                SyncItem twin = twinSource.findTwin(syncItem);
+                if (twin != null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Found a twin for incoming command, ignoring it " + guid);
+                    }
+                    download = false;
+                    // This item exists already on client and server. We
+                    // don't need to upload it again. This shall change once
+                    // we support updates
+                    twins.put(twin.getKey(), twin);
+                }
+            } else {
+                // We simply check if we have this same item in the
+                // mapping already
+            }
+            // Now we check if the client has a pending delete for this
+            // item. If an item is scheduled for deletion, then its id
+            // must be in the mapping, so we can get its luid
+            if (mapping != null) {
+                String luid = mapping.getLuid(guid);
+
+                if (luid != null && localDel != null && localDel.get(luid) != null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Conflict detected, item sent by the server has been deleted "
+                                + "on client. Receiving again " + luid);
+                    }
+                    if (item.has("nocontent")) {
+                        // Since the item was locally removed, we shall
+                        // remove the nocontent property and download
+                        // the content once again (we must also ignore
+                        // renaming as this is just like a new add)
+                        item.remove("nocontent");
+                        item.remove("oldkey");
+                    }
+                } else if (luid != null && localMods != null && localMods.get(luid) != null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Conflict detected, item modified both on client and server side " + luid);
+                        Log.info(TAG_LOG, "The most recent change shall win");
+                    }
+                    JSONSyncItem localItem = (JSONSyncItem)localMods.get(luid);
+                    long localLastMod = localItem.getLastModified();
+                    long remoteLastMod;
+                    if (item.has(SapiSyncManager.UPLOAD_DATE_FIELD)) {
+                        remoteLastMod = item.getLong(SapiSyncManager.UPLOAD_DATE_FIELD);
+                    } else {
+                        remoteLastMod = -1;
+                    }
+
+                    if (localLastMod == -1 || remoteLastMod ==  -1) {
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "No local or remote modification timestamp available. Client wins");
+                        }
+                        download = false;
+                    } else {
+                        // Pick the most recent one
+                        localLastMod += clientServerTimeDifference;
+                        if (Log.isLoggable(Log.INFO)) {
+                            Log.info(TAG_LOG, "Comparing local last mod " + localLastMod +
+                                    " with remote last mod " + remoteLastMod);
+                        }
+                        if (localLastMod > remoteLastMod) {
+                            // Client wins
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "Client wins");
+                            }
+                            download = false;
+                        } else {
+                            // Server wins
+                            if (Log.isLoggable(Log.INFO)) {
+                                Log.info(TAG_LOG, "Server wins");
+                            }
+                            localMods.remove(luid);
+                        }
+                    }
+                } else if (luid != null && localRenamed != null && localRenamed.get(luid) != null) {
+                    if (Log.isLoggable(Log.INFO)) {
+                        Log.info(TAG_LOG, "Conflict detected, item renamed on client and modified on server " + luid);
+                        Log.info(TAG_LOG, "Client wins");
+                    }
+                    download = false;
+                }
+            }
+        }
+        return download;
+    }
+
     private void discardTwinAndConflictFromList(SyncSource src, JSONArray items,
                                                 Hashtable localMods, Hashtable localDel,
                                                 String serverUrl, MappingTable mapping,
                                                 Hashtable twins, boolean deepTwinSearch)
     throws JSONException
     {
-        if (src instanceof TwinDetectionSource) {
-            for(int i=0;i<items.length();++i) {
-                JSONObject item = items.getJSONObject(i);
-                if (item != removedItemMarker) {
-                    // If a twin search is needed, then we perform it here
-                    String guid = item.getString(SapiSyncManager.ID_FIELD);
-                    if (deepTwinSearch) {
-                        long   size = Long.parseLong(item.getString(SapiSyncManager.SIZE_FIELD));
-                        SyncItem syncItem = utils.createSyncItem(src, guid, SyncItem.STATE_NEW, size, item, serverUrl);
-                        syncItem.setGuid(guid);
-                        TwinDetectionSource twinSource = (TwinDetectionSource)src;
-                        SyncItem twin = twinSource.findTwin(syncItem);
-                        if (twin != null) {
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Found a twin for incoming command, ignoring it " + guid);
-                            }
-                            items.put(i, removedItemMarker);
-                            // This item exists already on client and server. We
-                            // don't need to upload it again. This shall change once
-                            // we support updates
-                            twins.put(twin.getKey(), twin);
-                        }
-                    } else {
-                        // We simply check if we have this same item in the
-                        // mapping already
-                    }
-                    // Now we check if the client has a pending delete for this
-                    // item. If an item is scheduled for deletion, then its id
-                    // must be in the mapping, so we can get its luid
-                    if (mapping != null) {
-                        String luid = mapping.getLuid(guid);
-
-                        if (luid != null && localDel != null && localDel.get(luid) != null) {
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Conflict detected, item sent by the server has been deleted "
-                                                  + "on client. Receiving again " + luid);
-                            }
-                            if (item.has("nocontent")) {
-                                // Since the item was locally removed, we shall
-                                // remove the nocontent property and download
-                                // the content once again (we must also ignore
-                                // renaming as this is just like a new add)
-                                item.remove("nocontent");
-                                item.remove("oldkey");
-                            }
-                        } else if (luid != null && localMods != null && localMods.get(luid) != null) {
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Conflict detected, item modified both on client and server side " + luid);
-                                Log.info(TAG_LOG, "The most recent change shall win");
-                            }
-                            JSONSyncItem localItem = (JSONSyncItem)localMods.get(luid);
-                            long localLastMod = localItem.getLastModified();
-                            long remoteLastMod;
-                            if (item.has(SapiSyncManager.UPLOAD_DATE_FIELD)) {
-                               remoteLastMod = item.getLong(SapiSyncManager.UPLOAD_DATE_FIELD);
-                            } else {
-                                remoteLastMod = -1;
-                            }
-
-                            if (localLastMod == -1 || remoteLastMod ==  -1) {
-                                if (Log.isLoggable(Log.INFO)) {
-                                    Log.info(TAG_LOG, "No local or remote modification timestamp available. Client wins");
-                                }
-                                items.put(i, removedItemMarker);
-                            } else {
-                                // Pick the most recent one
-                                localLastMod += clientServerTimeDifference;
-                                if (Log.isLoggable(Log.INFO)) {
-                                    Log.info(TAG_LOG, "Comparing local last mod " + localLastMod +
-                                                      " with remote last mod " + remoteLastMod);
-                                }
-                                if (localLastMod > remoteLastMod) {
-                                    // Client wins
-                                    if (Log.isLoggable(Log.INFO)) {
-                                        Log.info(TAG_LOG, "Client wins");
-                                    }
-                                    items.put(i, removedItemMarker);
-                                } else {
-                                    // Server wins
-                                    if (Log.isLoggable(Log.INFO)) {
-                                        Log.info(TAG_LOG, "Server wins");
-                                    }
-                                    localMods.remove(luid);
-                                }
-                            }
-                        } else if (luid != null && localRenamed != null && localRenamed.get(luid) != null) {
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Conflict detected, item renamed on client and modified on server " + luid);
-                                Log.info(TAG_LOG, "Client wins");
-                            }
-                            items.put(i, removedItemMarker);
-                        }
-                    }
-                }
+        for(int i=0;i<items.length();++i) {
+            JSONObject item = items.getJSONObject(i);
+            if (resolveTwinAndConflicts(src, item, localMods, localDel, serverUrl,
+                                        mapping, twins, deepTwinSearch))
+            {
+                items.put(i, removedItemMarker);
             }
         }
     }
 
-    private SapiSyncHandler.FullSet fetchItemsInfo(SyncSource src, JSONArray items)
-    throws JSONException
-    {
-        SapiSyncHandler.FullSet fullSet = null;
-        if (items != null) {
-            String dataTag = getDataTag(src);
-            JSONArray itemsId = new JSONArray();
-            for(int i=0;i<items.length();++i) {
-                int id = Integer.parseInt(items.getString(i));
-                itemsId.put(id);
-            }
-            if (itemsId.length() > 0) {
-                // Ask for these items
-                fullSet = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), dataTag,
-                        itemsId, null, null, null);
-                if (fullSet != null && fullSet.items != null) {
-                    if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
-                    }
-                }
-            }
-        }
-        return fullSet;
-    }
-
-    private String getDataTag(SyncSource src) {
-        String dataTag = null;
-        if (src instanceof JSONSyncSource) {
-            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
-            dataTag = jsonSyncSource.getDataTag();
-        }
-        if (dataTag == null) {
-            // This is the default value
-            dataTag = src.getConfig().getRemoteUri() + "s";
-        }
-        return dataTag;
-    }
 
     private ItemComparisonResult compareItems(JSONObject item, MappingTable mapping) throws JSONException {
         String guid = item.getString(SapiSyncManager.ID_FIELD);

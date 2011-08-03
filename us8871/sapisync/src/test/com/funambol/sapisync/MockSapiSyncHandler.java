@@ -87,12 +87,12 @@ public class MockSapiSyncHandler extends SapiSyncHandler {
     }
 
     public String prepareItemUpload(JSONSyncItem item, String remoteUri) throws SapiException {
+        uploadedItems.addElement(item);
         return "guid_" + item.getKey();
     }
 
     public String uploadItem(JSONSyncItem item, String remoteUri, SyncListener listener)
             throws SapiException {
-        uploadedItems.addElement(item);
         return "" + System.currentTimeMillis();
     }
 

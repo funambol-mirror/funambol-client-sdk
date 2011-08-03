@@ -525,7 +525,7 @@ public class SapiSyncHandler {
             }
             params.addElement("responsetime=true");
             params.addElement("exif=none");
-    
+   
             response = sapiQueryWithRetries("media/" + remoteUri, "get",
                     params, null, null);
         } catch (NotSupportedCallException e) {

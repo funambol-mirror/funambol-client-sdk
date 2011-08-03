@@ -191,6 +191,20 @@ class SapiSyncUtils {
         return syncItem;
     }
 
+    public String getDataTag(SyncSource src) {
+        String dataTag = null;
+        if (src instanceof JSONSyncSource) {
+            JSONSyncSource jsonSyncSource = (JSONSyncSource)src;
+            dataTag = jsonSyncSource.getDataTag();
+        }
+        if (dataTag == null) {
+            // This is the default value
+            dataTag = src.getConfig().getRemoteUri() + "s";
+        }
+        return dataTag;
+    }
+
+
 }
 
 
