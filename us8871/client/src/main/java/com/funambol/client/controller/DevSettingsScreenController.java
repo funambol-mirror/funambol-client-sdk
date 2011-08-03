@@ -43,7 +43,6 @@ import com.funambol.client.customization.Customization;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.AppSyncSourceConfig;
 import com.funambol.client.source.AppSyncSourceManager;
-import com.funambol.client.ui.SettingsUIItem;
 import com.funambol.client.ui.DevSettingsScreen;
 import com.funambol.client.ui.DevSettingsUISyncSource;
 
@@ -53,7 +52,6 @@ public class DevSettingsScreenController {
 
     private static final String TAG_LOG = "DevSettingsScreenController";
 
-    private Vector miscSettingsUIItems = null;
     private Vector sourceSettingsUIItems = null;
 
     private AppSyncSourceManager appSyncSourceManager = null;
@@ -117,11 +115,7 @@ public class DevSettingsScreenController {
 
         // Check if visible items have already been computed
         if(sourceSettingsUIItems == null) {
-
-            miscSettingsUIItems = new Vector();
-
             sourceSettingsUIItems = new Vector();
-
             Vector tempItems = new Vector();
             
             // Add an item for each registered source that has to fit into the 

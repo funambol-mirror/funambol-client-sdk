@@ -51,6 +51,7 @@ public class Controller extends BasicController {
 
     private static final String TAG_LOG = "Controller";
 
+    public static final int UNDEFINED_SCREEN_ID = -1;
     public static final int HOME_SCREEN_ID = 0;
     public static final int CONFIGURATION_SCREEN_ID = 1;
     public static final int LOGIN_SCREEN_ID = 2;
@@ -60,6 +61,8 @@ public class Controller extends BasicController {
     public static final int ADVANCED_SETTINGS_SCREEN_ID = 6;
     public static final int DEV_SETTINGS_SCREEN_ID = 7;
     public static final int SOURCES_SELECTOR_SCREEN_ID = 8;
+    public static final int SPLASH_SCREEN_ID = 9;
+    
 
     protected DisplayManager displayManager = null;
 
@@ -86,15 +89,19 @@ public class Controller extends BasicController {
 
 
     // Constructor
-    public Controller(ControllerDataFactory fact, Configuration configuration,
-                      Customization customization, Localization localization,
-                      AppSyncSourceManager appSyncSourceManager)
+    public Controller(
+            ControllerDataFactory fact,
+            Configuration configuration,
+            Customization customization,
+            Localization localization,
+            AppSyncSourceManager appSyncSourceManager,
+            SyncModeHandler syncModeHandler)
     {
         this.configuration = configuration;
         this.customization = customization;
         this.localization  = localization;
         this.appSyncSourceManager = appSyncSourceManager;
-        this.syncModeHandler = new SyncModeHandler(configuration);
+        this.syncModeHandler = syncModeHandler;
 
         fact.setController(this);
 
@@ -103,12 +110,27 @@ public class Controller extends BasicController {
         dialogController = new DialogController(displayManager, this);
         notificationController = new NotificationController(displayManager, this);
     }
+    
+    public Controller(
+            ControllerDataFactory fact,
+            Configuration configuration,
+            Customization customization,
+            Localization localization,
+            AppSyncSourceManager appSyncSourceManager)
+    {
+        this(fact, configuration, customization, localization, appSyncSourceManager, new SyncModeHandler(configuration));
+    }
+    
 
     /**
      * This constructor is here ONLY for backward compatibility. Do not use it
      * unless you know what you are doing.
      */
     public Controller() {
+    }
+    
+    public void dispose() {
+        hideAllScreens();
     }
 
     public void setHomeScreenController(HomeScreenController homeScreenController) {
@@ -186,6 +208,29 @@ public class Controller extends BasicController {
     public DisplayManager getDisplayManager() {
         return displayManager;
     }
+    
+    /**
+     * Hides all screens
+     */
+    protected void hideAllScreens() {
+        AboutScreenController aboutController = getAboutScreenController();
+        if(aboutController != null) {
+            hideScreen(aboutController.getAboutScreen());
+        }
+        SyncSettingsScreenController settingsController = getSyncSettingsScreenController();
+        if(settingsController != null) {
+            hideScreen(settingsController.getSyncSettingsScreen());
+        }
+        HomeScreenController homeController = getHomeScreenController();
+        if(homeController != null) {
+            hideScreen(homeController.getHomeScreen());
+        }
+        AccountScreenController loginController = getLoginScreenController();
+        if(loginController != null) {
+            hideScreen(loginController.getAccountScreen());
+        }
+    }
+
 
     public void showScreen(Screen screen, int screenId) {
         try {
@@ -202,7 +247,7 @@ public class Controller extends BasicController {
             Log.error(TAG_LOG, "Cannot hide screen", e);
         }
     }
-
+    
     // Misc interface functions
 
     public void toForeground() {

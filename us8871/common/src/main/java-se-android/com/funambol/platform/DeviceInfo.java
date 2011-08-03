@@ -46,16 +46,14 @@ import com.funambol.util.Log;
 
 
 public class DeviceInfo implements DeviceInfoInterface {
-
     private static final String TAG_LOG = "DeviceInfo";
     
-    private Context context;
-
+    private Context appContext;
     private TelephonyManager tm;
 
-    public DeviceInfo(Context context) {
-        this.context = context;
-        tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+    public DeviceInfo(Context appContext) {
+        this.appContext = appContext;
+        tm = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     /**
@@ -74,10 +72,10 @@ public class DeviceInfo implements DeviceInfoInterface {
     }
 
     /**
-     * Returns the main email adddress or null if not available.
+     * Returns the main email address or null if not available.
      */
     public String getEmailAddress() {
-        AccountManager am = AccountManager.get(context);
+        AccountManager am = AccountManager.get(appContext);
         Account[] gAccounts = am.getAccountsByType("com.google");
         for(int i=0; i<gAccounts.length; i++) {
             String email = gAccounts[i].name;
@@ -154,7 +152,7 @@ public class DeviceInfo implements DeviceInfoInterface {
     public DeviceRole getDeviceRole() {
         try {
             // Compute screen size
-            DisplayMetrics dm = context.getResources().getDisplayMetrics();
+            DisplayMetrics dm = appContext.getResources().getDisplayMetrics();
             float screenWidth  = dm.widthPixels / dm.xdpi;
             float screenHeight = dm.heightPixels / dm.ydpi;
             double size = Math.sqrt(Math.pow(screenWidth, 2) +
