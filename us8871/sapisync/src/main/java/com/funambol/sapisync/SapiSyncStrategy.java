@@ -86,9 +86,9 @@ public class SapiSyncStrategy {
      * changes made locally. After this method the src update/delete items have
      * been consumed and the getNextNewItem and getNextUpdItem will return null.
      */
-    public void prepareSync(SyncSource src, int downloadSyncMode, int uploadSyncMode,
-                            boolean resume, MappingTable mapping, boolean incrementalDownload,
-                            boolean incrementalUpload, Hashtable twins)
+    public void prepareUpload(SyncSource src, int downloadSyncMode, int uploadSyncMode,
+                              boolean resume, MappingTable mapping, boolean incrementalDownload,
+                              boolean incrementalUpload, Hashtable twins)
     throws SyncException, JSONException
     {
         // Check what is available on the server and what changed locally to
@@ -174,7 +174,6 @@ public class SapiSyncStrategy {
 
             localUpdated.put(localUpdatedItem.getKey(), localUpdatedItem);
             localUpdatedItem = (JSONSyncItem)src.getNextUpdatedItem();
-
         }
 
         SyncItem localDeletedItem = src.getNextDeletedItem();

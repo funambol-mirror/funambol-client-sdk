@@ -87,9 +87,6 @@ public class SapiSyncManagerTest extends TestCase {
     }
 
     public void testFullUpload() throws Exception {
-
-        Log.trace("MARCO", "Here's the test");
-
         SapiSyncAnchor anchor = new SapiSyncAnchor();
         anchor.setDownloadAnchor(0);
         anchor.setUploadAnchor(0);
@@ -126,7 +123,7 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(mCount, 100);
     }
 
-    public void xxx_testIncrementalUpload() throws Exception {
+    public void testIncrementalUpload() throws Exception {
 
         SapiSyncAnchor anchor = new SapiSyncAnchor();
         anchor.setDownloadAnchor(0);
@@ -260,7 +257,7 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(offset1, "" + SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT);
     }
 
-    public void xxx_testIncrementalDownload1() throws Exception {
+    public void testIncrementalDownload1() throws Exception {
         Log.info(TAG_LOG, "testIncrementalDownload1 starts");
 
         // Setup the mapping with the items that we pretend are already in the
@@ -273,7 +270,7 @@ public class SapiSyncManagerTest extends TestCase {
 
         SapiSyncAnchor anchor = new SapiSyncAnchor();
         anchor.setDownloadAnchor(100);
-        anchor.setUploadAnchor(0);
+        anchor.setUploadAnchor(10);
 
         syncSource.setSyncAnchor(anchor);
         // In an incremental download we expect the get changes API to be invoked and then the API to retrieve the
@@ -326,10 +323,9 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(10, syncSourceListener.getNumAdd());
         assertEquals(8, syncSourceListener.getNumUpd());
         assertEquals(7, syncSourceListener.getNumDel());
-        assertEquals(25, syncSourceListener.getNumReceiving());
     }
 
-    public void xxx_testIncrementalDownload2() throws Exception {
+    public void testIncrementalDownload2() throws Exception {
         // Setup the mapping with the items that we pretend are already in the
         // local store
         MappingTable mapping = new MappingTable(syncSource.getName());
@@ -340,7 +336,7 @@ public class SapiSyncManagerTest extends TestCase {
 
         SapiSyncAnchor anchor = new SapiSyncAnchor();
         anchor.setDownloadAnchor(100);
-        anchor.setUploadAnchor(0);
+        anchor.setUploadAnchor(10);
 
         syncSource.setSyncAnchor(anchor);
         // In an incremental download we expect the get changes API to be invoked and then the API to retrieve the
@@ -394,7 +390,6 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(syncSourceListener.getNumAdd(), 110);
         assertEquals(syncSourceListener.getNumUpd(), 20);
         assertEquals(syncSourceListener.getNumDel(), 10);
-        assertEquals(syncSourceListener.getNumReceiving(), 140);
         assertEquals(sapiSyncHandler.getIdsRequests().size(), 2);
     }
     
@@ -417,7 +412,7 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(items.size(), 8);
     }
     
-    public void xxx_testIncrementalUploadFilter_ItemsCount() {
+    public void testIncrementalUploadFilter_ItemsCount() {
     
         SapiSyncAnchor anchor = new SapiSyncAnchor();
         anchor.setDownloadAnchor(0);
@@ -443,159 +438,6 @@ public class SapiSyncManagerTest extends TestCase {
         assertEquals(status.size(), 12);
     }
     
-    public void xxx_testFullDownloadFilter_ItemsCount() throws Exception {
-        SapiSyncAnchor anchor = new SapiSyncAnchor();
-        anchor.setDownloadAnchor(0);
-        anchor.setUploadAnchor(0);
-
-        syncSource.setSyncAnchor(anchor);
-        
-        SyncFilter syncFilter = new SyncFilter();
-        syncFilter.setFullDownloadFilter(
-            new Filter(Filter.ITEMS_COUNT_TYPE, -1, 3));
-        
-        syncSource.setFilter(syncFilter);
-
-        // In a full download we expect the count items sapi to be invoked and
-        // then the sapi to retrive the list of all items
-        sapiSyncHandler.setItemsCount(10);
-        JSONArray items = new JSONArray();
-        
-        for(int i=0;i<10;++i) {
-            JSONObject item = new JSONObject();
-            item.put("id", "" + i);
-            item.put("size", "" + i);
-            item.put("date", (long)i);
-            items.put(item);
-        }
-        JSONArray allItems[] = new JSONArray[1];
-        allItems[0] = items;
-        sapiSyncHandler.setItems(allItems);
-
-        syncManager.sync(syncSource);
-        
-        assertEquals(sapiSyncHandler.getLimitRequests().size(), 1);
-        assertEquals(sapiSyncHandler.getOffsetRequests().size(), 1);
-        
-        Vector limitRequests = sapiSyncHandler.getLimitRequests();
-        Vector offsetRequests = sapiSyncHandler.getOffsetRequests();
-        String limit0 = (String)limitRequests.elementAt(0);
-        String offset0 = (String)offsetRequests.elementAt(0);
-
-        assertEquals(limit0, "10");
-        assertEquals(offset0, "0");
-
-        assertEquals(syncSourceListener.getNumReceiving(), 3);
-        assertEquals(syncSourceListener.getNumAdd(), 3);
-    }
-    
-    public void xxx_testFullDownloadFilter_ItemsCount2() throws Exception {
-        SapiSyncAnchor anchor = new SapiSyncAnchor();
-        anchor.setDownloadAnchor(0);
-        anchor.setUploadAnchor(0);
-
-        syncSource.setSyncAnchor(anchor);
-        
-        SyncFilter syncFilter = new SyncFilter();
-        syncFilter.setFullDownloadFilter(
-            new Filter(Filter.ITEMS_COUNT_TYPE, -1, SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT + 9));
-        
-        syncSource.setFilter(syncFilter);
-
-        // In a full download we expect the count items sapi to be invoked and
-        // then the sapi to retrive the list of all items
-        sapiSyncHandler.setItemsCount(SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT + 40);
-        JSONArray items = new JSONArray();
-        
-        for(int i=0;i<SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT;++i) {
-            JSONObject item = new JSONObject();
-            item.put("id", "" + i);
-            item.put("size", "" + i);
-            item.put("name", "" + i);
-            item.put("date", (long)i);
-            items.put(item);
-        }
-        
-        JSONArray items1 = new JSONArray();
-        // The SapiSyncManager asks 300 items per request
-        for(int i=SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT;i<SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT+40;++i) {
-            JSONObject item = new JSONObject();
-            item.put("id", "" + i);
-            item.put("size", "" + i);
-            item.put("name", "" + i);
-            item.put("date", (long)i);
-            items1.put(item);
-        }
-        
-        JSONArray allItems[] = new JSONArray[2];
-        allItems[0] = items;
-        allItems[1] = items1;
-        sapiSyncHandler.setItems(allItems);
-
-        syncManager.sync(syncSource);
-        
-        assertEquals(sapiSyncHandler.getLimitRequests().size(), 2);
-        assertEquals(sapiSyncHandler.getOffsetRequests().size(), 2);
-        
-        Vector limitRequests = sapiSyncHandler.getLimitRequests();
-        Vector offsetRequests = sapiSyncHandler.getOffsetRequests();
-        String limit0 = (String)limitRequests.elementAt(0);
-        String limit1 = (String)limitRequests.elementAt(1);
-        String offset0 = (String)offsetRequests.elementAt(0);
-        String offset1 = (String)offsetRequests.elementAt(1);
-
-        assertEquals(limit0, "" + SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT);
-        assertEquals(offset0, "0");
-        assertEquals(limit1, "40");
-        assertEquals(offset1, "" + SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT);
-
-        assertEquals(syncSourceListener.getNumReceiving(), SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT + 9);
-        assertEquals(syncSourceListener.getNumAdd(), SapiSyncStrategy.FULL_SYNC_DOWNLOAD_LIMIT + 9);
-    }
-
-    public void xxx_testFullDownloadFilter_DateRecent() throws Exception {
-        SapiSyncAnchor anchor = new SapiSyncAnchor();
-        anchor.setDownloadAnchor(0);
-        anchor.setUploadAnchor(0);
-
-        syncSource.setSyncAnchor(anchor);
-
-        SyncFilter syncFilter = new SyncFilter();
-        syncFilter.setFullDownloadFilter(
-            new Filter(Filter.DATE_RECENT_TYPE, 1234567890, 0));
-
-        syncSource.setFilter(syncFilter);
-
-        // In a full download we expect the count items sapi to be invoked and
-        // then the sapi to retrive the list of all items
-        sapiSyncHandler.setItemsCount(10);
-        JSONArray items = new JSONArray();
-
-        for(int i=0;i<10;++i) {
-            JSONObject item = new JSONObject();
-            item.put("id", "" + i);
-            item.put("size", "" + i);
-            item.put("name", "" + i);
-            item.put("date", (long)i);
-            item.put("datecreated", (long)100);
-            items.put(item);
-        }
-        JSONArray allItems[] = new JSONArray[1];
-        allItems[0] = items;
-        sapiSyncHandler.setItems(allItems);
-
-        syncManager.sync(syncSource);
-
-        Vector dateLimitAllRequests = sapiSyncHandler.getDateLimitAllRequests();
-        Vector dateLimitRequests = sapiSyncHandler.getDateLimitRequests();
-       
-        // We never specify the fromdate in our requests because we need to
-        // perform full twin detection, so we need to know everything available
-        // on the server
-        assertEquals(dateLimitAllRequests.size(), 0);
-        assertEquals(dateLimitRequests.size(), 0);
-    }
-
     private class DeviceConfig implements DeviceConfigI {
         public String getDevID() {
             return "test-device-id";

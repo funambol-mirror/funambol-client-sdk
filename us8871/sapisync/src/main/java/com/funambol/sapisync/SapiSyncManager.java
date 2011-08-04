@@ -420,13 +420,13 @@ public class SapiSyncManager implements SyncManagerI {
         boolean incrementalDownload = isIncrementalSync(downloadSyncMode);
         boolean incrementalUpload = isIncrementalSync(uploadSyncMode);
 
-        /*
-        strategy.prepareSync(src, downloadSyncMode, uploadSyncMode, resume, mapping,
-                             incrementalDownload, incrementalUpload, twins);
-        downloadNextAnchor = strategy.getDownloadNextAnchor();
-        addedServerUrl = strategy.getAddedServerUrl();
-        updatedServerUrl = strategy.getUpdatedServerUrl();
-        */
+        // In case of full download we can ignore local changes because during a
+        // full download we only need to detect changes
+        if (incrementalDownload) {
+            strategy.prepareUpload(src, downloadSyncMode, uploadSyncMode,
+                                   resume, mapping, incrementalDownload,
+                                   incrementalUpload, twins);
+        }
 
         localUpdates = strategy.getLocalUpdates();
         if (localUpdates != null) {
@@ -738,6 +738,10 @@ public class SapiSyncManager implements SyncManagerI {
             if (updatedInfo != null) {
                 applyFullSet(src, updatedInfo, updatedInfo.serverUrl, mapping, twins, false);
             }
+
+            if (deletedArray != null) {
+                applyDelItems(src, deletedArray);
+            }
         }
     }
 
@@ -754,6 +758,7 @@ public class SapiSyncManager implements SyncManagerI {
             }
             if (itemsId.length() > 0) {
                 // Ask for these items
+                //
                 fullSet = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), dataTag,
                         itemsId, null, null, null);
                 if (fullSet != null && fullSet.items != null) {
