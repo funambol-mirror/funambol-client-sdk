@@ -104,23 +104,9 @@ public class SapiSyncHandler {
      * @throws SapiException
      */
     public void login(String deviceId) throws SapiException {
-        long now = System.currentTimeMillis();
         JSONObject response = login(deviceId, 0);
         try {
-            long responseTime = -1;
-            if (response.has("responsetime")) {
-                // Update the time difference
-                String ts = response.getString("responsetime");
-                if (Log.isLoggable(Log.TRACE)) {
-                    Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
-                }
-                try {
-                    responseTime = Long.parseLong(ts);
-                    deltaTime = responseTime - now;
-                } catch (Exception e) {
-                    Log.error(TAG_LOG, "Cannot parse server responsetime");
-                }
-            }
+            updateDeltaTime(response);
         } catch(JSONException ex) {
             Log.error(TAG_LOG, "Failed to login", ex);
             throw SapiException.SAPI_EXCEPTION_UNKNOWN;
@@ -504,7 +490,6 @@ public class SapiSyncHandler {
 
     public FullSet getItems(String remoteUri, String dataTag, JSONArray ids, String limit, String offset, Date from)
     throws SapiException {
-
         JSONObject response = null;
         try {
             Vector params = new Vector();
@@ -702,6 +687,7 @@ public class SapiSyncHandler {
             try {
                 attempt++;
                 resp = sapiHandler.query(name, action, params, headers, request);
+                updateDeltaTime(resp);
                 retry = false;
             } catch (NotSupportedCallException e) {
                 throw SapiException.SAPI_EXCEPTION_CALL_NOT_SUPPORTED;
@@ -1032,6 +1018,24 @@ public class SapiSyncHandler {
         } else {
             //non standard error code, so calling method must handles it
             return resultError;
+        }
+    }
+
+    private void updateDeltaTime(JSONObject response) throws JSONException {
+        long responseTime = -1;
+        if (response.has("responsetime")) {
+            // Update the time difference
+            String ts = response.getString("responsetime");
+            if (Log.isLoggable(Log.TRACE)) {
+                Log.trace(TAG_LOG, "SAPI returned response time = " + ts);
+            }
+            long now = System.currentTimeMillis();
+            try {
+                responseTime = Long.parseLong(ts);
+                deltaTime = responseTime - now;
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot parse server responsetime");
+            }
         }
     }
 

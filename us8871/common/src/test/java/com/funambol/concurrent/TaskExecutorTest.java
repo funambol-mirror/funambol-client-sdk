@@ -50,7 +50,7 @@ public class TaskExecutorTest extends TestCase {
     }
     
     public void setUp() {
-        executor = TaskExecutor.getInstance();
+        executor = new TaskExecutor();
         executor.setMaxThreads(1);
         Log.initLog(new ConsoleAppender(), Log.TRACE);
     }

@@ -66,7 +66,6 @@ public class SourceThumbnailsViewController implements SyncListener {
     private Vector datedThumbnails = new Vector();
     private TableEventListener tableEventListener;
 
-    private final Object counterLock = new Object();
     private int totalItemsCount = 0;
 
     public SourceThumbnailsViewController(AppSyncSource appSource, Customization customization) {
@@ -114,56 +113,55 @@ public class SourceThumbnailsViewController implements SyncListener {
         BusService.registerMessageHandler(MetadataBusMessage.class, tableEventListener);
 
         // Load existing thumbnails
-        QueryResult thumbnails = null;
-        try {
-            metadata.open();
-            // Pick the items from the most recent one to the oldest
-            thumbnails = metadata.query(null, metadata.getColIndexOrThrow(
-                    MediaMetadata.METADATA_LAST_MOD), false);
-
-            totalItemsCount = 0;
-            final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
-
-            while(thumbnails.hasMoreElements()) {
-                Tuple row = thumbnails.nextElement();
-                synchronized(counterLock) {
-                    totalItemsCount++;
-                }
-                if(totalItemsCount < maxCount) {
-                    String name = row.getStringField(metadata.getColIndexOrThrow(
-                            MediaMetadata.METADATA_NAME));
-                    String thumbPath = row.getStringField(metadata.getColIndexOrThrow(
-                            MediaMetadata.METADATA_THUMB1_PATH));
-                    Long lastMod = row.getLongField(metadata.getColIndexOrThrow(
-                            MediaMetadata.METADATA_LAST_MOD));
-
-                    if(Log.isLoggable(Log.DEBUG)) {
-                        Log.debug(TAG_LOG, "Adding thumbnail with path: " + thumbPath);
-                    }
-                    ThumbnailView thumbView = sourceThumbsView.createThumbnailView();
-                    thumbView.setThumbnail(thumbPath);
-
-                    DatedThumbnailView datedView = new DatedThumbnailView(
-                            name, thumbView, lastMod.longValue());
-                    addDatedThumbnail(datedView, true);
-                } else {
-                    updateSourceTitle(totalItemsCount);
-                }
-            }
-        } catch (Exception ex) {
-            // We cannot access the thumbnails, how do we handle
-            // this error?
-            Log.error(TAG_LOG, "Cannot load thumbnails", ex);
-        } finally {
-            if (thumbnails != null) {
-                try {
-                    thumbnails.close();
-                } catch(Exception e) {
-                }
-            }
+        synchronized(datedThumbnails) {
+            QueryResult thumbnails = null;
             try {
-                metadata.close();
-            } catch (Exception e) {
+                metadata.open();
+                // Pick the items from the most recent one to the oldest
+                thumbnails = metadata.query(null, metadata.getColIndexOrThrow(
+                            MediaMetadata.METADATA_LAST_MOD), false);
+
+                totalItemsCount = 0;
+                final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
+
+                while(thumbnails.hasMoreElements()) {
+                    Tuple row = thumbnails.nextElement();
+                    totalItemsCount++;
+                    if(totalItemsCount < maxCount) {
+                        String thumbPath = row.getStringField(metadata.getColIndexOrThrow(
+                                    MediaMetadata.METADATA_THUMB1_PATH));
+                        Long lastMod = row.getLongField(metadata.getColIndexOrThrow(
+                                    MediaMetadata.METADATA_LAST_MOD));
+                        Long id = row.getLongField(metadata.getColIndexOrThrow(
+                                    MediaMetadata.METADATA_ID));
+                        String name = row.getStringField(metadata.getColIndexOrThrow(
+                                    MediaMetadata.METADATA_NAME));
+                        if(Log.isLoggable(Log.DEBUG)) {
+                            Log.debug(TAG_LOG, "Adding thumbnail with path: " + thumbPath);
+                        }
+                        ThumbnailView thumbView = sourceThumbsView.createThumbnailView();
+                        thumbView.setThumbnail(thumbPath);
+
+                        DatedThumbnailView datedView = new DatedThumbnailView(
+                                name, thumbView, lastMod.longValue(), id.longValue());
+                        addDatedThumbnail(datedView, true);
+                    } else {
+                        updateSourceTitle(totalItemsCount);
+                    }
+                }
+            } catch (Exception ex) {
+                // We cannot access the thumbnails, how do we handle
+                // this error?
+                Log.error(TAG_LOG, "Cannot load thumbnails", ex);
+            } finally {
+                if (thumbnails != null) {
+                    try {
+                        thumbnails.close();
+                    } catch(Exception e) { }
+                    try {
+                        metadata.close();
+                    } catch (Exception e) { }
+                }
             }
         }
     }
@@ -180,35 +178,56 @@ public class SourceThumbnailsViewController implements SyncListener {
     private void addDatedThumbnail(DatedThumbnailView datedView, boolean isMostRecent) {
         int index;
         final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
-        if(isMostRecent) {
-            // We alreay know this is the most recent thumbnail
-            index = 0;
-        } else {
-            // Find a proper index for the given thumbnail
-            index = datedThumbnails.size();
+        synchronized(datedThumbnails) {
+            if(isMostRecent) {
+                // We alreay know this is the most recent thumbnail
+                index = 0;
+            } else {
+                // Find a proper index for the given thumbnail
+                index = datedThumbnails.size();
+                for(int i = 0; i < datedThumbnails.size(); i++) {
+                    DatedThumbnailView view = (DatedThumbnailView)datedThumbnails.elementAt(i);
+                    if(datedView.getTimestamp() > view.getTimestamp()) {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+
+            // If the thumb falls into the first maxCount items, then we show it.
+            // Otherwise it is hidden
+            totalItemsCount++;
+
+            // Update also the title
+            if (index < maxCount) {
+                datedThumbnails.insertElementAt(datedView, index);
+                sourceThumbsView.addThumbnail(datedView.getView(), index, createSourceTitle(totalItemsCount));
+            } else {
+                updateSourceTitle(totalItemsCount);
+            }
+        }
+    }
+
+    private void replaceDatedThumbnail(DatedThumbnailView datedView, long id) {
+        int index;
+        final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
+        // Find a proper index for the given thumbnail
+        index = -1;
+        synchronized(datedThumbnails) {
             for(int i = 0; i < datedThumbnails.size(); i++) {
                 DatedThumbnailView view = (DatedThumbnailView)datedThumbnails.elementAt(i);
-                if(datedView.getTimestamp() > view.getTimestamp()) {
+                if (view.getId() == id) {
                     index = i;
                     break;
                 }
             }
-        }
 
-        // If the thumb falls into the first maxCount items, then we show it.
-        // Otherwise it is hidden
-        synchronized(counterLock) {
-            totalItemsCount++;
-        }
-
-        // Update also the title
-        if (index < maxCount) {
-            datedThumbnails.insertElementAt(datedView, index);
-            sourceThumbsView.addThumbnail(datedView.getView(), index, createSourceTitle(totalItemsCount));
-        } else {
-            updateSourceTitle(totalItemsCount);
+            if (index != -1) {
+                sourceThumbsView.addThumbnail(datedView.getView(), index, null);
+            }
         }
     }
+
 
     private void updateSourceTitle(int count) {
         String title = createSourceTitle(count);
@@ -241,25 +260,48 @@ public class SourceThumbnailsViewController implements SyncListener {
             }
             MetadataBusMessage metadataMessage = (MetadataBusMessage)message; 
             if(metadataMessage.getSource() == source) {
-                if(metadataMessage.getAction() == MetadataBusMessage.ACTION_INSERTED) {
-                    if(Log.isLoggable(Log.DEBUG)) {
-                        Log.debug(TAG_LOG, "New metadata inserted");
-                    }
+
+                if (metadataMessage.getAction() == MetadataBusMessage.ACTION_INSERTED ||
+                    metadataMessage.getAction() == MetadataBusMessage.ACTION_UPDATED)
+                {
                     Table metadata = source.getMetadataTable();
                     // An item was added
                     Tuple item = (Tuple)message.getMessage();
-                    String name = item.getStringField(metadata
-                            .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
-                    Long lastMod = item.getLongField(metadata.getColIndexOrThrow(
-                            MediaMetadata.METADATA_LAST_MOD));
-                    String thumbPath = item.getStringField(metadata
-                            .getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
-                    ThumbnailView thumbView = sourceView.createThumbnailView();
-                    thumbView.setThumbnail(thumbPath);
+                    Long id = item.getLongField(metadata.getColIndexOrThrow(
+                                MediaMetadata.METADATA_ID));
 
-                    DatedThumbnailView datedView = new DatedThumbnailView(
-                            name, thumbView, lastMod.longValue());
-                    addDatedThumbnail(datedView);
+                    // If the update operation did not change the last mod or
+                    // the thumb1 path, then we do not care
+                    if (!item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD)) &&
+                        !item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH))) {
+
+                        Long lastMod = item.getLongField(metadata.getColIndexOrThrow(
+                                    MediaMetadata.METADATA_LAST_MOD));
+
+                        String thumbPath = item.getStringField(metadata
+                                .getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
+                        ThumbnailView thumbView = sourceView.createThumbnailView();
+                        thumbView.setThumbnail(thumbPath);
+                        DatedThumbnailView datedView = new DatedThumbnailView(null, thumbView, lastMod.longValue(), id.longValue());
+
+                        if(metadataMessage.getAction() == MetadataBusMessage.ACTION_INSERTED) {
+
+                            String name = item.getStringField(metadata
+                                .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
+                            datedView.setName(name);
+                            if(Log.isLoggable(Log.DEBUG)) {
+                                Log.debug(TAG_LOG, "New metadata inserted");
+                            }
+                            addDatedThumbnail(datedView);
+                        } else if (metadataMessage.getAction() == MetadataBusMessage.ACTION_UPDATED) {
+                            if(Log.isLoggable(Log.DEBUG)) {
+                                Log.debug(TAG_LOG, "Metadata updated");
+                            }
+                            replaceDatedThumbnail(datedView, id.longValue());
+                        }
+                    }
+                } else {
+                    Log.error(TAG_LOG, "Deletes are not supported yet");
                 }
             }
         }
@@ -270,15 +312,21 @@ public class SourceThumbnailsViewController implements SyncListener {
         private String name;
         private ThumbnailView view;
         private long timestamp;
+        private long id;
 
-        public DatedThumbnailView(String name, ThumbnailView view, long timestamp) {
+        public DatedThumbnailView(String name, ThumbnailView view, long timestamp, long id) {
             this.name = name;
             this.view = view;
             this.timestamp = timestamp;
+            this.id = id;
         }
 
         public String getName() {
             return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
         
         public ThumbnailView getView() {
@@ -287,6 +335,10 @@ public class SourceThumbnailsViewController implements SyncListener {
 
         public long getTimestamp() {
             return timestamp;
+        }
+
+        public long getId() {
+            return id;
         }
     }
 

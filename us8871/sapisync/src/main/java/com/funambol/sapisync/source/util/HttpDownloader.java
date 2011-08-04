@@ -202,7 +202,9 @@ public class HttpDownloader  {
             }
 
             long size = conn.getLength();
-            listener.downloadStarted(size);
+            if (listener != null) {
+                listener.downloadStarted(size);
+            }
 
             boolean ok;
             if (resume) {

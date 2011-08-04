@@ -62,17 +62,7 @@ public class TaskExecutor {
 
     private int maxThreads = DEFAULT_MAX_THREADS_COUNT;
 
-    private TaskExecutor() {
-    }
-
-    /**
-     * @return the current TaskExecutor instance
-     */
-    public static synchronized TaskExecutor getInstance() {
-        if(instance == null) {
-            instance = new TaskExecutor();
-        }
-        return instance;
+    public TaskExecutor() {
     }
 
     /**
@@ -210,7 +200,7 @@ public class TaskExecutor {
             } else {
                 ptask.getTask().run();
             }
-            getInstance().taskCompleted(threadedTask);
+            taskCompleted(threadedTask);
         }
     }
 

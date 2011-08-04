@@ -33,16 +33,57 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.concurrent;
+package com.funambol.client.engine;
 
-public class TaskExecutorService {
+import java.util.Vector;
 
-    public static void scheduleTask(Task task) {
-        TaskExecutor.getInstance().scheduleTask(task);
+import com.funambol.platform.NetworkStatus;
+import com.funambol.concurrent.TaskExecutor;
+import com.funambol.concurrent.Task;
+
+public class NetworkTaskExecutor extends TaskExecutor {
+
+    private static final String TAG_LOG = "NetworkTaskExecutor";
+
+    private static final int NUMBER_OF_THREADS_WIFI = 5;
+    private static final int NUMBER_OF_THREADS_UMTS = 3;
+    private static final int NUMBER_OF_THREADS_GPRS = 1;
+
+    public NetworkTaskExecutor() {
+        super();
     }
 
-    public static void scheduleTaskWithPriority(Task task, int priority) {
-        TaskExecutor.getInstance().scheduleTaskWithPriority(task, priority);
+    /**
+     * Schedule the given task with the given priority.
+     * @param task
+     * @param priority
+     */
+    public void scheduleTaskWithPriority(Task task, int priority) {
+
+        // Everytime a new task needs to be scheduled, we update the number of
+        // available threads
+        updateMaxThreads();
+        super.scheduleTaskWithPriority(task, priority);
+    }
+
+    private void updateMaxThreads() {
+        // Depending on the network conditions we set different number of
+        // threads
+        NetworkStatus netStatus = new NetworkStatus();
+        if (netStatus.isWiFiConnected()) {
+            setMaxThreads(NUMBER_OF_THREADS_WIFI);
+        } else if (netStatus.isMobileConnected()) {
+            int networkType = netStatus.getMobileNetworkType();
+            if (networkType == NetworkStatus.MOBILE_TYPE_UMTS) {
+                setMaxThreads(NUMBER_OF_THREADS_UMTS);
+            } else {
+                setMaxThreads(NUMBER_OF_THREADS_GPRS);
+            }
+        } else {
+            setMaxThreads(NUMBER_OF_THREADS_GPRS);
+        }
     }
 }
+
+
 

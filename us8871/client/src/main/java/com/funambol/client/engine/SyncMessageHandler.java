@@ -39,7 +39,6 @@ import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.customization.Customization;
 import com.funambol.concurrent.TaskExecutor;
-import com.funambol.concurrent.TaskExecutorService;
 import com.funambol.platform.NetworkStatus;
 import com.funambol.util.Log;
 import com.funambol.util.bus.BusMessage;
@@ -50,12 +49,15 @@ public class SyncMessageHandler implements BusMessageHandler {
     private static final String TAG_LOG = "SyncMessageHandler";
 
     private SyncTask syncTask;
+    private TaskExecutor taskExecutor;
     
     public SyncMessageHandler(Customization customization, Configuration configuration,
-            AppSyncSourceManager appSyncSourceManager, NetworkStatus networkStatus)
+                              AppSyncSourceManager appSyncSourceManager, NetworkStatus networkStatus,
+                              TaskExecutor taskExecutor)
     {
         this.syncTask = new SyncTask(customization, configuration,
                 appSyncSourceManager, networkStatus);
+        this.taskExecutor = taskExecutor;
     }
 
     /**
@@ -78,8 +80,7 @@ public class SyncMessageHandler implements BusMessageHandler {
                 syncTask.cancelSync();
             } else {
                 syncTask.setSourcesToSync(syncMessage.getSourcesToSync());
-                TaskExecutorService.scheduleTaskWithPriority(syncTask,
-                        TaskExecutor.PRIORITY_HIGH);
+                taskExecutor.scheduleTaskWithPriority(syncTask, TaskExecutor.PRIORITY_HIGH);
             }
         }
     }

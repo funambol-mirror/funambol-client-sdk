@@ -128,6 +128,8 @@ public class SapiSyncManager implements SyncManagerI {
     // TODO FIXME: fill this hashtable
     private Hashtable localRenamed = null;
 
+    private boolean loggedIn = false;
+
     /**
      * <code>SapiSyncManager</code> constructor
      * @param config
@@ -254,6 +256,9 @@ public class SapiSyncManager implements SyncManagerI {
             }
         }
 
+        // Reset the loggedIn flag
+        loggedIn = false;
+
         // Init twins vector
         twins = new Hashtable();
         try {
@@ -272,6 +277,8 @@ public class SapiSyncManager implements SyncManagerI {
             getSyncListenerFromSource(src).startConnecting();
 
             cancelSyncIfNeeded(src);
+
+            performLogin();
 
             performInitializationPhase(src, resume);
 
@@ -292,6 +299,7 @@ public class SapiSyncManager implements SyncManagerI {
                 downloadNonBlockingError = nbse;
             }
             cancelSyncIfNeeded(src);
+
             
             try {
                 long newUploadAnchor = (new Date()).getTime();
@@ -391,21 +399,6 @@ public class SapiSyncManager implements SyncManagerI {
         // Prepare the source for the sync
         src.beginSync(getActualUploadSyncMode(src), resume);
 
-        try {
-            // Perform a login to avoid multiple authentications
-            sapiSyncHandler.login(deviceId);
-            clientServerTimeDifference = sapiSyncHandler.getDeltaTime();
-            strategy.setClientServerTimeDifference(clientServerTimeDifference);
-            if (Log.isLoggable(Log.DEBUG)) {
-                Log.debug(TAG_LOG, "Difference in time between server and client is " + clientServerTimeDifference);
-            }
-        } catch (SapiException e) {
-            String errorMessage = "Cannot login";
-            utils.processCommonSapiExceptions(e, errorMessage, false);
-            utils.processCustomSapiExceptions(e, errorMessage, false);
-
-            throw new SyncException(SyncException.AUTH_ERROR, errorMessage);
-        }
 
         int downloadSyncMode = getActualDownloadSyncMode(src);
         int uploadSyncMode   = getActualUploadSyncMode(src);
@@ -692,7 +685,6 @@ public class SapiSyncManager implements SyncManagerI {
     }
 
     private void performIncrementalDownload(SyncSource src, boolean resume) throws JSONException {
-
         String remoteUri = src.getConfig().getRemoteUri();
         SapiSyncAnchor sapiAnchor = (SapiSyncAnchor)src.getConfig().getSyncAnchor();
         if (Log.isLoggable(Log.TRACE)) {
@@ -751,7 +743,6 @@ public class SapiSyncManager implements SyncManagerI {
             }
             if (itemsId.length() > 0) {
                 // Ask for these items
-                //
                 fullSet = sapiSyncHandler.getItems(src.getConfig().getRemoteUri(), dataTag,
                         itemsId, null, null, null);
                 if (fullSet != null && fullSet.items != null) {
@@ -764,6 +755,23 @@ public class SapiSyncManager implements SyncManagerI {
         return fullSet;
     }
 
+    private void performLogin() {
+        if (loggedIn) {
+            return;
+        }
+        try {
+            // Perform a login to avoid multiple authentications
+            sapiSyncHandler.login(deviceId);
+            clientServerTimeDifference = sapiSyncHandler.getDeltaTime();
+            strategy.setClientServerTimeDifference(clientServerTimeDifference);
+            if (Log.isLoggable(Log.DEBUG)) {
+                Log.debug(TAG_LOG, "Difference in time between server and client is " + clientServerTimeDifference);
+            }
+            loggedIn = true;
+        } catch (SapiException e) {
+            Log.error(TAG_LOG, "Cannot perform login call, this is a non blocking error", e);
+        }
+    }
 
     private void performFullDownload(SyncSource src, boolean resume) throws JSONException {
 
@@ -777,6 +785,7 @@ public class SapiSyncManager implements SyncManagerI {
 
         downloadNextAnchor = -1;
         String serverUrl = null;
+        int i = 0;
         do {
             // We need to get all items on the server to be able to do effective
             // twin detection.
@@ -787,6 +796,7 @@ public class SapiSyncManager implements SyncManagerI {
                 downloadNextAnchor = fullSet.timeStamp;
                 serverUrl = fullSet.serverUrl;
             }
+
             if (fullSet != null && fullSet.items != null && fullSet.items.length() > 0) {
                 if (Log.isLoggable(Log.TRACE)) {
                     Log.trace(TAG_LOG, "items = " + fullSet.items.toString());
@@ -799,6 +809,7 @@ public class SapiSyncManager implements SyncManagerI {
             } else {
                 done = true;
             }
+            i++;
         } while(!done);
     }
 

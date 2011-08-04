@@ -206,7 +206,7 @@ public abstract class Table {
         return filter;
     }
 
-    public QueryFilter createQueryFilter(String key) {
+    public QueryFilter createQueryFilter(Object key) {
         QueryFilter filter = new QueryFilter(key);
         return filter;
     }

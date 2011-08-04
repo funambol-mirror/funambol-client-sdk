@@ -281,40 +281,6 @@ public class FunambolFileSyncSource extends FileSyncSource {
         }
 
 
-        /*
-         * This method returns the url content for this item. This url can be
-         * anything and just needs to point to the actual content. If there is
-         * no remote content, but the content is within the item itself, then this
-         * method shall return null.
-         */
-        public String getContentUrl(String syncUrl) {
-
-            JSONFileObject fileObject = getJSONFileObject();
-            if (fileObject != null) {
-                Vector thumbnails = fileObject.getThumbnails();
-                JSONFileObject.JSONFileThumbnail thumb = null;
-                JSONFileObject.JSONFileThumbnail firstThumb = null;
-                if (thumbnails != null) {
-                    for(int i=0;i<thumbnails.size();++i) {
-                        thumb = (JSONFileObject.JSONFileThumbnail)thumbnails.elementAt(i);
-                        if (firstThumb == null) {
-                            firstThumb = thumb;
-                        }
-                        // TODO FIXME: get the thumbnail with the best match
-                        if (THUMB_SIZE.equals(thumb.getSize())) {
-                            break;
-                        }
-                    }
-                }
-                if (thumb == null) {
-                    thumb = firstThumb;
-                }
-                if (thumb != null) {
-                    return composeUrl(syncUrl, fileObject.getServerUrl(), thumb.getUrl());
-                }
-            }
-            return null;
-        }
 
         // The content size is unknown
         public long getContentSize() {
