@@ -62,7 +62,7 @@ public class SourceThumbnailsViewController {
     private Vector datedThumbnails = new Vector();
     private TableEventListener tableEventListener;
 
-    private Object counterLock = new Object();
+    private final Object counterLock = new Object();
     private int totalItemsCount = 0;
 
     public SourceThumbnailsViewController(AppSyncSource appSource, Customization customization) {
@@ -224,20 +224,11 @@ public class SourceThumbnailsViewController {
         }
 
         public void receiveMessage(BusMessage message) {
-
-            Log.debug("CARLO", "receiveMessage: " + message);
-
             if(!(message instanceof MetadataBusMessage)) {
                 // Invalid message type, discard it
                 return;
             }
-            MetadataBusMessage metadataMessage = (MetadataBusMessage)message;
-
-            Log.debug("CARLO", "metadataMessage.getSource(): " + metadataMessage.getSource());
-            Log.debug("CARLO", "source: " + source);
-
-            Log.debug("CARLO", "metadataMessage.getAction(): " + metadataMessage.getAction());
-            
+            MetadataBusMessage metadataMessage = (MetadataBusMessage)message; 
             if(metadataMessage.getSource() == source) {
                 if(metadataMessage.getAction() == MetadataBusMessage.ACTION_INSERTED) {
                     if(Log.isLoggable(Log.DEBUG)) {
