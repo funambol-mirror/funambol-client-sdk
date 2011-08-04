@@ -38,11 +38,10 @@ package com.funambol.client.source;
 import com.funambol.storage.Table;
 import com.funambol.storage.TableFactory;
 
-import com.funambol.util.Log;
-
 public class MediaMetadata {
 
     public static final String METADATA_ID             = "id";
+    public static final String METADATA_NAME           = "name";
     public static final String METADATA_THUMB1_PATH    = "thumb1_path";
     public static final String METADATA_THUMB2_PATH    = "thumb2_path";
     public static final String METADATA_ITEM_PATH      = "item_path";
@@ -52,15 +51,11 @@ public class MediaMetadata {
     public static final String METADATA_DIRTY          = "dirty";
 
     /**
-     * This is the meta data schema for the media table. The table has the
-     * following structure:
-     *
-     * luid (String), thumb_path_1 (String), thumb_path_2 (String), item_path (String), last_mod (long), synchronized (long)
-     *
-     * Both the thumb_path and the picture_path can be undefined or empty.
+     * This is the meta data schema for the media table.
      */
     private static final String META_DATA_COL_NAMES[] = {
                                                    METADATA_ID,
+                                                   METADATA_NAME,
                                                    METADATA_THUMB1_PATH,
                                                    METADATA_THUMB2_PATH,
                                                    METADATA_ITEM_PATH,
@@ -72,6 +67,7 @@ public class MediaMetadata {
 
     private static final int META_DATA_COL_TYPES[] = {
                                                    Table.TYPE_LONG,
+                                                   Table.TYPE_STRING,
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,

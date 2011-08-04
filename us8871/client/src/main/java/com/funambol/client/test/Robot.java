@@ -51,8 +51,6 @@ public class Robot {
         this.scriptRunner = runner;
     }
 
-    public void initialize() { }
-    
     public static void waitDelay(int delay) {
         try {
             Thread.sleep(delay*1000);

@@ -35,59 +35,65 @@
 
 package com.funambol.client.test.util;
 
-import java.util.Vector;
-
+import com.funambol.client.engine.SyncReportMessage;
+import com.funambol.client.engine.SyncTaskMessage;
+import com.funambol.client.source.AppSyncSource;
 import com.funambol.sync.SyncReport;
-import com.funambol.syncml.spds.SyncManager;
+import com.funambol.util.bus.BusMessage;
+import com.funambol.util.bus.BusMessageHandler;
+import com.funambol.util.bus.BusService;
+import java.util.Hashtable;
 
 /**
  * Collects usefull methods to monitor the synchronization state.
  */
 public class SyncMonitor {
 
-    protected SyncManager sManager;
-    protected Vector      listeners = new Vector();
+    private SyncTaskHandler syncTaskHandler;
+    private static SyncMonitor instance;
 
-    public SyncMonitor() {
-    }
+    private boolean syncing = false;
     
-    public SyncMonitor( SyncManager sManager ) {
-        this.sManager = sManager;
+    private AppSyncSource lastAppSource = null;
+    private Hashtable lastSyncReports = new Hashtable();
+    
+    private SyncMonitor() {
+        syncTaskHandler = new SyncTaskHandler();
+        BusService.registerMessageHandler(SyncTaskMessage.class, syncTaskHandler);
+        BusService.registerMessageHandler(SyncReportMessage.class, syncTaskHandler);
+    }
+
+    public synchronized  static SyncMonitor getInstance() {
+        if(instance == null) {
+            instance = new SyncMonitor();
+        }
+        return instance;
     }
 
     public boolean isSyncing() {
-        if(sManager != null) {
-            return sManager.isBusy();
-        } else {
-            return false;
-        }
+        return syncing;
     }
 
-    public SyncReport getSyncStatus(String source) {
-        if(sManager != null) {
-            return sManager.getSyncStatus();
-        } else {
-            return null;
-        }
+    public SyncReport getLastSyncReport(AppSyncSource appSource) {
+        return (SyncReport)lastSyncReports.get(appSource);
     }
 
-    public void addListener(SyncMonitorListener listener) {
-        listeners.addElement(listener);
-    }
+    private class SyncTaskHandler implements BusMessageHandler {
 
-    public void cleanListeners() {
-        listeners.removeAllElements();
-    }
-
-    public void interruptSyncAfterPhase(String phaseName, int num, String reason) {
-        interruptSyncAfterPhase(phaseName, num, -1, reason);
-    }
-
-    public void interruptSyncAfterPhase(String phaseName, int num, int progress,
-            String reason) {
-        for(int i=0;i<listeners.size();++i) {
-            SyncMonitorListener lis = (SyncMonitorListener)listeners.elementAt(i);
-            lis.interruptAfterPhase(phaseName, num, progress, reason);
+        public void receiveMessage(BusMessage message) {
+            if(message instanceof SyncTaskMessage) {
+                SyncTaskMessage syncMessage = (SyncTaskMessage)message;
+                if(syncMessage.getMessageCode() == SyncTaskMessage.MESSAGE_SYNC_STARTED) {
+                    syncing = true;
+                } else if(syncMessage.getMessageCode() == SyncTaskMessage.MESSAGE_SYNC_ENDED) {
+                    syncing = false;
+                } else if(syncMessage.getMessageCode() == SyncTaskMessage.MESSAGE_SOURCE_STARTED) {
+                    lastAppSource = syncMessage.getAppSource();
+                }
+            } else if(message instanceof SyncReportMessage) {
+                SyncReport report = ((SyncReportMessage)message).getReport();
+                lastSyncReports.put(lastAppSource, report);
+            }
         }
     }
 }

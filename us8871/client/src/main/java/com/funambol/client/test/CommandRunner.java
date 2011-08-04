@@ -37,7 +37,6 @@ package com.funambol.client.test;
 
 import java.util.Vector;
 
-import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 
@@ -48,17 +47,11 @@ public abstract class CommandRunner {
 
     protected Robot robot;
 
-    protected SyncMonitor     syncMonitor     = null;
-
     public CommandRunner(Robot robot) {
         this.robot = robot;
     }
     
     public abstract boolean runCommand(String command, Vector args) throws Throwable;
-
-    public void setSyncMonitor(SyncMonitor monitor) {
-        this.syncMonitor = monitor;
-    }
 
     protected String getParameter(String allPars, int index) {
         // Remove the paranthesis if necessary
@@ -99,8 +92,6 @@ public abstract class CommandRunner {
             return null;
         }
     }
-
-
 
     protected int getParametersCount(String allPars) {
         String args[] = StringUtil.split(allPars, ",");

@@ -35,6 +35,7 @@
 
 package com.funambol.client.test.media;
 
+import com.funambol.client.controller.SourceThumbnailsViewController;
 import java.util.Enumeration;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,6 +49,7 @@ import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.client.test.basic.BasicUserCommands;
+import com.funambol.client.ui.view.ThumbnailView;
 
 import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.source.JSONFileObject;
@@ -537,6 +539,15 @@ public abstract class MediaRobot extends Robot {
         }
     }
 
+    public void checkThumbnailName(String type, int position, String fileName)
+            throws Throwable {
+        AppSyncSource appSource = getAppSyncSource(type);
+        SourceThumbnailsViewController thumbsController =
+                appSource.getSourceThumbnailsViewController();
+        String name = thumbsController.getItemNameAt(position);
+        assertTrue(name, fileName, "Item name mismatch");
+    }
+
     private int getFilesCount(String type) throws Exception {
         SyncSource ss = getAppSyncSource(type).getSyncSource();
         if(ss instanceof FileSyncSource) {
@@ -589,8 +600,6 @@ public abstract class MediaRobot extends Robot {
         }
         return false;
     }
-
-
 
     protected JSONObject findMediaJSONObject(String type, String filename) throws Exception {
         JSONObject result = new JSONObject();

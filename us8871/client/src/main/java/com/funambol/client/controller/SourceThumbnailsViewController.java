@@ -37,6 +37,7 @@ package com.funambol.client.controller;
 
 import java.util.Vector;
 import com.funambol.client.customization.Customization;
+import com.funambol.client.engine.SyncReportMessage;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.MediaMetadata;
 import com.funambol.client.source.MetadataBusMessage;
@@ -45,13 +46,16 @@ import com.funambol.client.ui.view.ThumbnailView;
 import com.funambol.storage.QueryResult;
 import com.funambol.storage.Table;
 import com.funambol.storage.Tuple;
+import com.funambol.sync.SyncItem;
+import com.funambol.sync.SyncListener;
+import com.funambol.sync.SyncReport;
 import com.funambol.util.Log;
 import com.funambol.util.bus.BusMessage;
 import com.funambol.util.bus.BusMessageHandler;
 import com.funambol.util.bus.BusService;
 
 
-public class SourceThumbnailsViewController {
+public class SourceThumbnailsViewController implements SyncListener {
 
     private static final String TAG_LOG = "SourceThumbnailsViewController";
 
@@ -126,10 +130,13 @@ public class SourceThumbnailsViewController {
                     totalItemsCount++;
                 }
                 if(totalItemsCount < maxCount) {
+                    String name = row.getStringField(metadata.getColIndexOrThrow(
+                            MediaMetadata.METADATA_NAME));
                     String thumbPath = row.getStringField(metadata.getColIndexOrThrow(
                             MediaMetadata.METADATA_THUMB1_PATH));
                     Long lastMod = row.getLongField(metadata.getColIndexOrThrow(
                             MediaMetadata.METADATA_LAST_MOD));
+
                     if(Log.isLoggable(Log.DEBUG)) {
                         Log.debug(TAG_LOG, "Adding thumbnail with path: " + thumbPath);
                     }
@@ -137,7 +144,7 @@ public class SourceThumbnailsViewController {
                     thumbView.setThumbnail(thumbPath);
 
                     DatedThumbnailView datedView = new DatedThumbnailView(
-                            thumbView, lastMod.longValue());
+                            name, thumbView, lastMod.longValue());
                     addDatedThumbnail(datedView, true);
                 } else {
                     updateSourceTitle(totalItemsCount);
@@ -159,6 +166,11 @@ public class SourceThumbnailsViewController {
             } catch (Exception e) {
             }
         }
+    }
+
+    public String getItemNameAt(int position) {
+        DatedThumbnailView thumb = (DatedThumbnailView)datedThumbnails.elementAt(position);
+        return thumb.getName();
     }
 
     private void addDatedThumbnail(DatedThumbnailView datedView) {
@@ -212,7 +224,6 @@ public class SourceThumbnailsViewController {
         return title.toString();
     }
 
-
     private class TableEventListener implements BusMessageHandler {
 
         private AppSyncSource source;
@@ -237,16 +248,17 @@ public class SourceThumbnailsViewController {
                     Table metadata = source.getMetadataTable();
                     // An item was added
                     Tuple item = (Tuple)message.getMessage();
+                    String name = item.getStringField(metadata
+                            .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
                     Long lastMod = item.getLongField(metadata.getColIndexOrThrow(
                             MediaMetadata.METADATA_LAST_MOD));
-
-                    ThumbnailView thumbView = sourceView.createThumbnailView();
                     String thumbPath = item.getStringField(metadata
                             .getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
+                    ThumbnailView thumbView = sourceView.createThumbnailView();
                     thumbView.setThumbnail(thumbPath);
 
                     DatedThumbnailView datedView = new DatedThumbnailView(
-                            thumbView, lastMod.longValue());
+                            name, thumbView, lastMod.longValue());
                     addDatedThumbnail(datedView);
                 }
             }
@@ -255,14 +267,20 @@ public class SourceThumbnailsViewController {
 
     private class DatedThumbnailView {
 
+        private String name;
         private ThumbnailView view;
         private long timestamp;
 
-        public DatedThumbnailView(ThumbnailView view, long timestamp) {
+        public DatedThumbnailView(String name, ThumbnailView view, long timestamp) {
+            this.name = name;
             this.view = view;
             this.timestamp = timestamp;
         }
 
+        public String getName() {
+            return name;
+        }
+        
         public ThumbnailView getView() {
             return view;
         }
@@ -271,6 +289,48 @@ public class SourceThumbnailsViewController {
             return timestamp;
         }
     }
+
+    /////////////////////// SyncListener implementation ////////////////////////
+
+    // This is just a proxy implementation which translates events in bus messages
+    
+    public void endSession(SyncReport report) {
+        if(Log.isLoggable(Log.INFO)) {
+            Log.info(TAG_LOG, report.toString());
+        }
+        SyncReportMessage message = new SyncReportMessage(report);
+        BusService.sendMessage(message);
+    }
+
+    public boolean startSyncing(int alertCode, Object devInf) {
+        return true;
+    }
+
+    public void startSession() { }
+    public void startConnecting() { }
+    public void endConnecting(int action) { }
+    public void syncStarted(int alertCode) { }
+    public void endSyncing() { }
+    public void startFinalizing() { }
+    public void endFinalizing() { }
+    public void startReceiving(int number) { }
+    public void itemAddReceivingStarted(String key, String parent, long size) { }
+    public void itemAddReceivingEnded(String key, String parent) { }
+    public void itemAddReceivingProgress(String key, String parent, long size) { }
+    public void itemReplaceReceivingStarted(String key, String parent, long size) { }
+    public void itemReplaceReceivingEnded(String key, String parent) { }
+    public void itemReplaceReceivingProgress(String key, String parent, long size) { }
+    public void itemDeleted(SyncItem item) { }
+    public void endReceiving() { }
+    public void startSending(int numNewItems, int numUpdItems, int numDelItems) { }
+    public void itemAddSendingStarted(String key, String parent, long size) { }
+    public void itemAddSendingEnded(String key, String parent) { }
+    public void itemAddSendingProgress(String key, String parent, long size) { }
+    public void itemReplaceSendingStarted(String key, String parent, long size) { }
+    public void itemReplaceSendingEnded(String key, String parent) { }
+    public void itemReplaceSendingProgress(String key, String parent, long size) { }
+    public void itemDeleteSent(SyncItem item) { }
+    public void endSending() { }
 
 }
 

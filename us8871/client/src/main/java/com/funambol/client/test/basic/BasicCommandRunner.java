@@ -218,12 +218,10 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(minStart, "Missing min start in " + command);
         checkArgument(maxWait, "Missing max wait in " + command);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
         int min = Integer.parseInt(minStart)*1000;
         int max = Integer.parseInt(maxWait)*1000;
 
-        getBasicRobot().waitForSyncToComplete(min, max, syncMonitor);
+        getBasicRobot().waitForSyncToComplete(min, max);
     }
 
     /**
@@ -242,11 +240,9 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(num, "Missing num in " + command);
         checkArgument(reason, "Missing reason in " + command);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
         int n = Integer.parseInt(num);
 
-        getBasicRobot().interruptSyncAfterPhase(phase, n, reason, syncMonitor);
+        getBasicRobot().interruptSyncAfterPhase(phase, n, reason);
     }
 
     /**
@@ -376,12 +372,13 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(receivedReplace, "Missing receivedReplace in " + command);
         checkArgument(receivedDelete, "Missing receivedDelete in " + command);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
-        getBasicRobot().checkLastSyncExchangedData(source, Integer.parseInt(sentAdd), Integer.parseInt(sentReplace),
-                                         Integer.parseInt(sentDelete), Integer.parseInt(receivedAdd),
-                                         Integer.parseInt(receivedReplace), Integer.parseInt(receivedDelete),
-                                         syncMonitor);
+        getBasicRobot().checkLastSyncExchangedData(source, 
+                Integer.parseInt(sentAdd),
+                Integer.parseInt(sentReplace),
+                Integer.parseInt(sentDelete),
+                Integer.parseInt(receivedAdd),
+                Integer.parseInt(receivedReplace),
+                Integer.parseInt(receivedDelete));
     }
     
     /**
@@ -401,12 +398,9 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(sendingErrors, "Missing sendingErrors in " + command);
         checkArgument(receivingErrors, "Missing receivingErrors in " + command);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
         getBasicRobot().checkLastSyncErrors(source,
                 Integer.parseInt(sendingErrors),
-                Integer.parseInt(receivingErrors),
-                syncMonitor);
+                Integer.parseInt(receivingErrors));
     }
 
     /**
@@ -424,10 +418,7 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(source, "Missing source name in " + command);
         checkArgument(code, "Missing code in " + command);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
-        getBasicRobot().checkLastSyncStatusCode(source, Integer.parseInt(code),
-                                         syncMonitor);
+        getBasicRobot().checkLastSyncStatusCode(source, Integer.parseInt(code));
     }
     
     /**
@@ -440,29 +431,27 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
      */
     private void checkLastNotification(String command, Vector args) throws Throwable {
 
-        String id          = getParameter(args, 0);
+        String id = getParameter(args, 0);
         if (id == null) {
             id = "-1";
         }
-        String severity    = getParameter(args, 1);
+        String severity = getParameter(args, 1);
         if (severity == null) {
             severity = "-1";
         }
-        String ticker      = getParameter(args, 2);
+        String ticker = getParameter(args, 2);
         if (ticker.length() == 0) {
             ticker = null;
         }
-        String title       = getParameter(args, 3);
+        String title = getParameter(args, 3);
         if (title.length() == 0) {
             title = null;
         }
-        String message     = getParameter(args, 4);
+        String message = getParameter(args, 4);
         if (message.length() == 0) {
             message = null;
         }
         
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
         getBasicRobot().checkLastNotification(
                 Integer.parseInt(id), 
                 Integer.parseInt(severity),
@@ -488,10 +477,9 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(sentResumed, "Missing sentResumed in " + command);
         checkArgument(receivedResumed, "Missing receivedResumed in " + command);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
-        getBasicRobot().checkLastSyncResumedData(source, Integer.parseInt(sentResumed),
-                Integer.parseInt(receivedResumed), syncMonitor);
+        getBasicRobot().checkLastSyncResumedData(source,
+                Integer.parseInt(sentResumed),
+                Integer.parseInt(receivedResumed));
     }
 
     /**
@@ -511,9 +499,7 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(mode, "Missing mode in " + command);
         int modeValue = Integer.parseInt(mode);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
-        getBasicRobot().checkLastSyncRequestedSyncMode(source, modeValue, syncMonitor);
+        getBasicRobot().checkLastSyncRequestedSyncMode(source, modeValue);
     }
 
     /**
@@ -533,9 +519,7 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(mode, "Missing mode in " + command);
         int modeValue = Integer.parseInt(mode);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
-        getBasicRobot().checkLastSyncAlertedSyncMode(source, modeValue, syncMonitor);
+        getBasicRobot().checkLastSyncAlertedSyncMode(source, modeValue);
     }
 
     /**
@@ -554,9 +538,7 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
         checkArgument(source, "Missing source in " + command);
         checkArgument(remoteUri, "Missing remoteUri in " + command);
 
-        checkObject(syncMonitor, "Run StartMainApp before command: " + command);
-
-        getBasicRobot().checkLastSyncRemoteUri(source, remoteUri, syncMonitor);
+        getBasicRobot().checkLastSyncRemoteUri(source, remoteUri);
     }
 
     /**

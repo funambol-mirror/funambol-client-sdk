@@ -38,7 +38,6 @@ package com.funambol.client.test.media;
 import java.util.Vector;
 
 import com.funambol.client.test.CommandRunner;
-import com.funambol.client.test.basic.BasicUserCommands;
 
 
 public class MediaCommandRunner extends CommandRunner implements MediaUserCommands {
@@ -88,6 +87,8 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             renameFileOnServer(command, pars);
         } else if (CHECK_MEDIA_CONTENT_INTEGRITY.equals(command)) {
             checkFileContentIntegrity(command, pars);
+        } else if (CHECK_THUMBNAIL_NAME.equals(command)) {
+            checkThumbnailName(command, pars);
         } else {
             return false;
         }
@@ -253,6 +254,21 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             fileNameServer = fileNameClient;
         }
         getMediaRobot().checkFileContentIntegrity(type, fileNameClient, fileNameServer);
+    }
+
+    private void checkThumbnailName(String command, Vector args) throws Throwable {
+        int i = 0;
+        String type = getParameter(args, i++);
+        String position = getParameter(args, i++);
+        String fileName = getParameter(args, i++);
+
+        checkArgument(type, "Missing type in " + command);
+        checkArgument(position, "Missing position in " + command);
+        checkArgument(fileName, "Missing fileName in " + command);
+
+        int intPosition = Integer.parseInt(position);
+
+        getMediaRobot().checkThumbnailName(type, intPosition, fileName);
     }
     
 }

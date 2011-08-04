@@ -181,10 +181,13 @@ public class FunambolFileSyncSource extends FileSyncSource {
                 lastMod = new Long(fo.getCreationDate());
             }
 
+            String name = fo.getName();
+            
             metadata.open();
             // The key is autoincremented
             Tuple tuple = metadata.createNewRow();
 
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_NAME), name);
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), "");
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), "");
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), "");

@@ -213,6 +213,17 @@ public interface MediaUserCommands {
      * @example RenameMediaOnServer(Pictures,testfile1.jpg,testfile2.jpg);
      */
     public static final String RENAME_MEDIA_ON_SERVER = "RenameMediaOnServer";
+
+    /**
+     * Checks the name of a thumbnail at the given position.
+     * First parameter is the media type
+     * Second parameter is the thumbnail position (0 is the first thumbnail
+     * displayed to the left side of the source thumbnails view)
+     * Third parameter is the item filename
+     *
+     * @example CheckThumbnailName(Pictures,1,pic1.jpg);
+     */
+    public static final String CHECK_THUMBNAIL_NAME = "CheckThumbnailName";
     
 }
     

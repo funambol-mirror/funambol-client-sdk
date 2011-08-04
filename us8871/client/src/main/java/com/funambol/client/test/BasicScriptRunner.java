@@ -37,17 +37,14 @@ package com.funambol.client.test;
 
 import java.util.Vector;
 import java.util.Hashtable;
-import java.util.Enumeration;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParser;
-//import org.xmlpull.v1.XmlPullParserFactory;
 import com.funambol.org.kxml2.io.KXmlParser;
 
 import com.funambol.client.test.basic.BasicCommandRunner;
-import com.funambol.client.test.util.SyncMonitor;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.util.Log;
 import com.funambol.util.HttpTransportAgent;
@@ -995,18 +992,6 @@ public class BasicScriptRunner extends CommandRunner {
         } else {
             boolean res = !onExecuted;
             return res;
-        }
-    }
-
-    /**
-     * Set the SyncMonitor object for this CommandRunner container
-     * @param monitor the SyncMonitor to be set
-     */
-    public void setSyncMonitor(SyncMonitor monitor) {
-        super.setSyncMonitor(monitor);
-        for (int i = 0; i < commandRunners.size(); i++) {
-            CommandRunner runner = (CommandRunner) commandRunners.elementAt(i);
-            runner.setSyncMonitor(monitor);
         }
     }
 

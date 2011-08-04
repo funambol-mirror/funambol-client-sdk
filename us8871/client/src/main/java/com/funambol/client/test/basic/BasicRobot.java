@@ -45,7 +45,7 @@ import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.test.ClientTestException;
 import com.funambol.client.test.Robot;
-import com.funambol.client.test.util.SyncMonitor;
+import com.funambol.client.test.util.SyncMonitorService;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.sapisync.source.FileSyncSource;
 import com.funambol.sync.SyncReport;
@@ -63,7 +63,6 @@ public abstract class BasicRobot extends Robot {
 
     protected Hashtable vars = null;
 
-
     public BasicRobot(TestFileManager fileManager, Hashtable vars) {
         this.fileManager = fileManager;
         this.vars = vars;
@@ -73,15 +72,14 @@ public abstract class BasicRobot extends Robot {
         return fileManager;
     }
 
-    public void waitForSyncToComplete(int minStart, int max,
-            SyncMonitor syncMonitor) throws Throwable {
+    public void waitForSyncToComplete(int minStart, int max) throws Throwable {
         
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "waiting for sync to complete");
         }
 
         // We wait no more than minStart for sync client to start
-        while(!syncMonitor.isSyncing()) {
+        while(!SyncMonitorService.isSyncing()) {
             Thread.sleep(WAIT_DELAY);
             minStart -= WAIT_DELAY;
             if (minStart < 0) {
@@ -93,7 +91,7 @@ public abstract class BasicRobot extends Robot {
 
         do {
             // Now wait until the busy is in progress for a max amount of time
-            while(syncMonitor.isSyncing()) {
+            while(SyncMonitorService.isSyncing()) {
                 Thread.sleep(WAIT_DELAY);
                 max -= WAIT_DELAY;
                 if (max < 0) {
@@ -103,7 +101,7 @@ public abstract class BasicRobot extends Robot {
             // Wait a couple of seconds. If the current sync is a sync all then
             // a new sync will fire right away
             Thread.sleep(3000);
-            done = !syncMonitor.isSyncing();
+            done = !SyncMonitorService.isSyncing();
         } while(!done);
 
         // Wait one extra second to be really sure everything is terminated and
@@ -111,58 +109,60 @@ public abstract class BasicRobot extends Robot {
         Thread.sleep(1000);
     }
 
-    public void interruptSyncAfterPhase(String phase, int num, String reason, SyncMonitor syncMonitor) throws Throwable {
+    public void interruptSyncAfterPhase(String phase, int num, String reason)
+            throws Throwable {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "Preparing to interrupt after phase " + phase + "," + num);
         }
-        syncMonitor.interruptSyncAfterPhase(phase, num, reason);
+        // TODO FIXME
     }
 
-    public void checkLastSyncRequestedSyncMode(String source, int mode,
-            SyncMonitor syncMonitor) throws Throwable {
+    public void checkLastSyncRequestedSyncMode(String sourceName, int mode)
+            throws Throwable {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "check last sync requested sync mode");
         }
 
-        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        AppSyncSource appSource = getAppSyncSource(sourceName);
+        SyncReport sr = (SyncReport)SyncMonitorService.getLastSyncReport(appSource);
         assertTrue(sr != null, "source has no report associated");
         assertTrue(sr.getRequestedSyncMode() == mode, "Requested sync mode mismatch");
     }
 
-    public void checkLastSyncAlertedSyncMode(String source, int mode,
-            SyncMonitor syncMonitor) throws Throwable {
+    public void checkLastSyncAlertedSyncMode(String sourceName, int mode)
+            throws Throwable {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "check last sync alerted sync mode");
         }
-
-        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        AppSyncSource appSource = getAppSyncSource(sourceName);
+        SyncReport sr = (SyncReport)SyncMonitorService.getLastSyncReport(appSource);
         assertTrue(sr != null, "source has no report associated");
 
         assertTrue(sr instanceof SyncStatus, "Invalid sync report format");
         assertTrue(((SyncStatus)sr).getAlertedSyncMode() == mode, "Alerted sync mode mismatch");
     }
 
-    public void checkLastSyncRemoteUri(String source, String uri,
-            SyncMonitor syncMonitor) throws Throwable {
+    public void checkLastSyncRemoteUri(String sourceName, String uri)
+            throws Throwable {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "check last sync remote URI");
         }
-
-        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        AppSyncSource appSource = getAppSyncSource(sourceName);
+        SyncReport sr = (SyncReport)SyncMonitorService.getLastSyncReport(appSource);
         assertTrue(sr != null, "source has no report associated");
         assertTrue(sr.getRemoteUri(), uri, "Requested remote URI mismatch");
     }
 
-    public void checkLastSyncExchangedData(String source,
+    public void checkLastSyncExchangedData(String sourceName,
             int sentAdd, int sentReplace, int sentDelete,
-            int receivedAdd, int receivedReplace, int receivedDelete,
-            SyncMonitor syncMonitor) throws Throwable
+            int receivedAdd, int receivedReplace, int receivedDelete)
+            throws Throwable
     {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "check last sync exchanged data");
         }
-
-        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        AppSyncSource appSource = getAppSyncSource(sourceName);
+        SyncReport sr = (SyncReport)SyncMonitorService.getLastSyncReport(appSource);
         assertTrue(sr != null, "source has no report associated");
 
         assertTrue(receivedAdd, sr.getReceivedAddNumber(),
@@ -179,14 +179,14 @@ public abstract class BasicRobot extends Robot {
                 "Sent delete mismatch");
     }
 
-    public void checkLastSyncErrors(String source, int sendingErrors,
-            int receivingErrors, SyncMonitor syncMonitor) throws Throwable
+    public void checkLastSyncErrors(String sourceName, int sendingErrors,
+            int receivingErrors) throws Throwable
     {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "check last sync exchanged data");
         }
-
-        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        AppSyncSource appSource = getAppSyncSource(sourceName);
+        SyncReport sr = (SyncReport)SyncMonitorService.getLastSyncReport(appSource);
         assertTrue(sr != null, "source has no report associated");
 
         assertTrue(sendingErrors, sr.getNumberOfSentItemsWithError(),
@@ -195,15 +195,13 @@ public abstract class BasicRobot extends Robot {
                 "Receiving errors mismatch");
     }
 
-    public void checkLastSyncStatusCode(String source,
-            int code,
-            SyncMonitor syncMonitor) throws Throwable
+    public void checkLastSyncStatusCode(String sourceName, int code) throws Throwable
     {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "check last sync status code");
         }
-        
-        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        AppSyncSource appSource = getAppSyncSource(sourceName);
+        SyncReport sr = (SyncReport)SyncMonitorService.getLastSyncReport(appSource);
         assertTrue(sr != null, "source has no report associated");
         assertTrue(code, sr.getStatusCode(), "Status code mismatch");
 
@@ -252,14 +250,14 @@ public abstract class BasicRobot extends Robot {
         }
     }
 
-    public void checkLastSyncResumedData(String source, int sentResumed,
-            int receivedResumed, SyncMonitor syncMonitor) throws Throwable
+    public void checkLastSyncResumedData(String sourceName, int sentResumed,
+            int receivedResumed) throws Throwable
     {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "check last sync resumed data");
         }
-
-        SyncReport sr = (SyncReport)syncMonitor.getSyncStatus(source);
+        AppSyncSource appSource = getAppSyncSource(sourceName);
+        SyncReport sr = (SyncReport)SyncMonitorService.getLastSyncReport(appSource);
         assertTrue(sr != null, "source has no report associated");
 
         assertTrue(sentResumed, sr.getSentResumedNumber(),
