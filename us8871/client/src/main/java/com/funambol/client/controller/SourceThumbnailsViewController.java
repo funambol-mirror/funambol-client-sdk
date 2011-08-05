@@ -101,7 +101,11 @@ public class SourceThumbnailsViewController implements SyncListener {
             Log.error(TAG_LOG, "SourceThumbnailsView is null");
             return;
         }
-        updateSourceTitle(0);
+
+        // Reset status
+        totalItemsCount = 0;
+        updateSourceTitle();
+        
         Table metadata = appSource.getMetadataTable();
         if (metadata == null) {
             Log.error(TAG_LOG, "Source does not provide metadata " + appSource.getName());
@@ -121,13 +125,11 @@ public class SourceThumbnailsViewController implements SyncListener {
                 thumbnails = metadata.query(null, metadata.getColIndexOrThrow(
                             MediaMetadata.METADATA_LAST_MOD), false);
 
-                totalItemsCount = 0;
                 final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
 
                 while(thumbnails.hasMoreElements()) {
                     Tuple row = thumbnails.nextElement();
-                    totalItemsCount++;
-                    if(totalItemsCount < maxCount) {
+                    if(getThumbnailsCount() < maxCount) {
                         String thumbPath = row.getStringField(metadata.getColIndexOrThrow(
                                     MediaMetadata.METADATA_THUMB1_PATH));
                         Long lastMod = row.getLongField(metadata.getColIndexOrThrow(
@@ -146,7 +148,7 @@ public class SourceThumbnailsViewController implements SyncListener {
                                 name, thumbView, lastMod.longValue(), id.longValue());
                         addDatedThumbnail(datedView, true);
                     } else {
-                        updateSourceTitle(totalItemsCount);
+                        updateSourceTitle();
                     }
                 }
             } catch (Exception ex) {
@@ -222,13 +224,12 @@ public class SourceThumbnailsViewController implements SyncListener {
                 datedThumbnails.insertElementAt(datedView, index);
                 sourceThumbsView.addThumbnail(datedView.getView(), index, createSourceTitle(totalItemsCount));
             } else {
-                updateSourceTitle(totalItemsCount);
+                updateSourceTitle();
             }
         }
     }
 
     private void replaceDatedThumbnail(DatedThumbnailView datedView, long id) {
-        final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
         // Find a proper index for the given thumbnail
         synchronized(datedThumbnails) {
             int index = findThumbnailIndex(id);
@@ -240,7 +241,6 @@ public class SourceThumbnailsViewController implements SyncListener {
     }
 
     private void removeDatedThumbnail(long id) {
-        final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
         // Find a proper index for the given thumbnail
         synchronized(datedThumbnails) {
             int index = findThumbnailIndex(id);
@@ -274,10 +274,8 @@ public class SourceThumbnailsViewController implements SyncListener {
         return index;
     }
 
-
-
-    private void updateSourceTitle(int count) {
-        String title = createSourceTitle(count);
+    private void updateSourceTitle() {
+        String title = createSourceTitle(totalItemsCount);
         sourceThumbsView.setTitle(title);
     }
 
@@ -316,27 +314,24 @@ public class SourceThumbnailsViewController implements SyncListener {
                     Long id = item.getLongField(metadata.getColIndexOrThrow(
                                 MediaMetadata.METADATA_ID));
 
-
                     // If the update operation did not change the last mod or
                     // the thumb1 path, then we do not care
                     if (!item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD)) ||
                         !item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH))) {
 
+                        String name = item.getStringField(metadata
+                                .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
                         Long lastMod = item.getLongField(metadata.getColIndexOrThrow(
                                     MediaMetadata.METADATA_LAST_MOD));
-
                         String thumbPath = item.getStringField(metadata
                                 .getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
 
                         ThumbnailView thumbView = sourceView.createThumbnailView();
                         thumbView.setThumbnail(thumbPath);
-                        DatedThumbnailView datedView = new DatedThumbnailView(null, thumbView, lastMod.longValue(), id.longValue());
+                        DatedThumbnailView datedView = new DatedThumbnailView(
+                                name, thumbView, lastMod.longValue(), id.longValue());
 
                         if(metadataMessage.getAction() == MetadataBusMessage.ACTION_INSERTED) {
-
-                            String name = item.getStringField(metadata
-                                .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
-                            datedView.setName(name);
                             if(Log.isLoggable(Log.DEBUG)) {
                                 Log.debug(TAG_LOG, "New metadata inserted");
                             }
@@ -349,9 +344,9 @@ public class SourceThumbnailsViewController implements SyncListener {
                         }
                     }
                 } else if (metadataMessage.getAction() == MetadataBusMessage.ACTION_DELETED) {
-                    Long id = (Long)message.getMessage();
+                    String id = (String)message.getMessage();
                     // Remove a single item
-                    removeDatedThumbnail(id.longValue());
+                    removeDatedThumbnail(Long.parseLong(id));
                 } else if (metadataMessage.getAction() == MetadataBusMessage.ACTION_RESET) {
                     // All items have been removed
                     resetDatedThumbnails();
