@@ -344,9 +344,9 @@ public class SourceThumbnailsViewController implements SyncListener {
                         }
                     }
                 } else if (metadataMessage.getAction() == MetadataBusMessage.ACTION_DELETED) {
-                    String id = (String)message.getMessage();
+                    Long id = (Long)message.getMessage();
                     // Remove a single item
-                    removeDatedThumbnail(Long.parseLong(id));
+                    removeDatedThumbnail(id.longValue());
                 } else if (metadataMessage.getAction() == MetadataBusMessage.ACTION_RESET) {
                     // All items have been removed
                     resetDatedThumbnails();
