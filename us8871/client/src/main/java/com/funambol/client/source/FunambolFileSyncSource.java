@@ -222,7 +222,8 @@ public class FunambolFileSyncSource extends FileSyncSource {
         int res = super.deleteItem(key);
         try {
             metadata.open();
-            metadata.delete(key);
+            Long longKey = new Long(Long.parseLong(key));
+            metadata.delete(longKey);
             metadata.save();
         } catch (Exception e) {
             Log.error(TAG_LOG, "Cannot update metadata table", e);
