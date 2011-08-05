@@ -1023,7 +1023,7 @@ public class SapiSyncHandler {
 
     private void updateDeltaTime(JSONObject response) throws JSONException {
         long responseTime = -1;
-        if (response.has("responsetime")) {
+        if (response != null && response.has("responsetime")) {
             // Update the time difference
             String ts = response.getString("responsetime");
             if (Log.isLoggable(Log.TRACE)) {
