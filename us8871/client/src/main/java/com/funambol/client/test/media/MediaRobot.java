@@ -35,7 +35,6 @@
 
 package com.funambol.client.test.media;
 
-import com.funambol.client.controller.SourceThumbnailsViewController;
 import java.util.Enumeration;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -44,11 +43,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.funambol.client.source.AppSyncSource;
+import com.funambol.client.source.FunambolFileSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.client.test.basic.BasicUserCommands;
+import com.funambol.client.controller.SourceThumbnailsViewController;
 
 import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.source.JSONFileObject;
@@ -62,6 +63,7 @@ import com.funambol.platform.FileAdapter;
 import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 import com.funambol.util.ConnectionManager;
+import com.funambol.storage.Table;
 
 import com.funambol.org.json.me.JSONArray;
 import com.funambol.org.json.me.JSONException;
@@ -104,27 +106,32 @@ public abstract class MediaRobot extends Robot {
     }
 
     public void deleteAllMedia(String type) throws Exception {
+        // We need to cleanup both the metadata table and the filesystem
+        FunambolFileSyncSource ss = (FunambolFileSyncSource)getAppSyncSource(type).getSyncSource();
+        Table metadata = ss.getMetadataTable();
+
+        try {
+            metadata.open();
+            metadata.reset();
+            metadata.save();
+        } finally {
+            metadata.close();
+        }
         deleteAllFiles(type);
     }
 
     public void deleteAllFiles(String type) throws Exception {
-        SyncSource ss = getAppSyncSource(type).getSyncSource();
-        if(ss instanceof FileSyncSource) {
-            String dirname = ((FileSyncSource)ss).getDirectory();
+        FunambolFileSyncSource ss = (FunambolFileSyncSource)getAppSyncSource(type).getSyncSource();
+        String dirname = ((FileSyncSource)ss).getDirectory();
 
-            Log.error("CARLO", "deleteall: " + dirname);
-
-            FileAdapter dir = new FileAdapter(dirname, true);
-            Enumeration files = dir.list(false, false /* Filters hidden files */);
-            dir.close();
-            while(files.hasMoreElements()) {
-                String filename = (String)files.nextElement();
-                FileAdapter file = new FileAdapter(getFileFullName(dirname, filename));
-                file.delete();
-                file.close();
-            }
-        } else {
-            throw new IllegalArgumentException("Invalid SyncSource type: " + ss);
+        FileAdapter dir = new FileAdapter(dirname, true);
+        Enumeration files = dir.list(false, false /* Filters hidden files */);
+        dir.close();
+        while(files.hasMoreElements()) {
+            String filename = (String)files.nextElement();
+            FileAdapter file = new FileAdapter(getFileFullName(dirname, filename));
+            file.delete();
+            file.close();
         }
     }
 

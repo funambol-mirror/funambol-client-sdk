@@ -228,24 +228,52 @@ public class SourceThumbnailsViewController implements SyncListener {
     }
 
     private void replaceDatedThumbnail(DatedThumbnailView datedView, long id) {
-        int index;
         final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
         // Find a proper index for the given thumbnail
-        index = -1;
         synchronized(datedThumbnails) {
-            for(int i = 0; i < datedThumbnails.size(); i++) {
-                DatedThumbnailView view = (DatedThumbnailView)datedThumbnails.elementAt(i);
-                if (view.getId() == id) {
-                    index = i;
-                    break;
-                }
-            }
-
+            int index = findThumbnailIndex(id);
             if (index != -1) {
                 sourceThumbsView.replaceThumbnail(datedView.getView(), index);
+                datedThumbnails.setElementAt(datedView, index);
             }
         }
     }
+
+    private void removeDatedThumbnail(long id) {
+        final int maxCount = customization.getMaxThumbnailsCountInMainScreen();
+        // Find a proper index for the given thumbnail
+        synchronized(datedThumbnails) {
+            int index = findThumbnailIndex(id);
+            if (index != -1) {
+                --totalItemsCount;
+                sourceThumbsView.removeThumbnail(index, createSourceTitle(totalItemsCount));
+                datedThumbnails.removeElementAt(index);
+            }
+        }
+    }
+
+    private void resetDatedThumbnails() {
+        synchronized(datedThumbnails) {
+            for(int i=0;i<totalItemsCount;++i) {
+                sourceThumbsView.removeThumbnail(0, createSourceTitle(totalItemsCount - i - 1));
+                datedThumbnails.removeElementAt(0);
+            }
+            totalItemsCount = 0;
+        }
+    }
+
+    private int findThumbnailIndex(long id) {
+        int index = -1;
+        for(int i = 0; i < datedThumbnails.size(); i++) {
+            DatedThumbnailView view = (DatedThumbnailView)datedThumbnails.elementAt(i);
+            if (view.getId() == id) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
 
 
     private void updateSourceTitle(int count) {
@@ -279,11 +307,11 @@ public class SourceThumbnailsViewController implements SyncListener {
             }
             MetadataBusMessage metadataMessage = (MetadataBusMessage)message; 
             if(metadataMessage.getSource() == source) {
+                Table metadata = source.getMetadataTable();
                 if (metadataMessage.getAction() == MetadataBusMessage.ACTION_INSERTED ||
                     metadataMessage.getAction() == MetadataBusMessage.ACTION_UPDATED)
                 {
-                    Table metadata = source.getMetadataTable();
-                    // An item was added
+                    // An item was added or updated
                     Tuple item = (Tuple)message.getMessage();
                     Long id = item.getLongField(metadata.getColIndexOrThrow(
                                 MediaMetadata.METADATA_ID));
@@ -320,8 +348,13 @@ public class SourceThumbnailsViewController implements SyncListener {
                             replaceDatedThumbnail(datedView, id.longValue());
                         }
                     }
-                } else {
-                    Log.error(TAG_LOG, "Deletes are not supported yet");
+                } else if (metadataMessage.getAction() == MetadataBusMessage.ACTION_DELETED) {
+                    Long id = (Long)message.getMessage();
+                    // Remove a single item
+                    removeDatedThumbnail(id.longValue());
+                } else if (metadataMessage.getAction() == MetadataBusMessage.ACTION_RESET) {
+                    // All items have been removed
+                    resetDatedThumbnails();
                 }
             }
         }

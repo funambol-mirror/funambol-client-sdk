@@ -235,6 +235,10 @@ public class FunambolFileSyncSource extends FileSyncSource {
         }
         return res;
     }
+
+    public Table getMetadataTable() {
+        return metadata;
+    }
  
 
     protected OutputStream getDownloadOutputStream(String name, long size, boolean isUpdate,

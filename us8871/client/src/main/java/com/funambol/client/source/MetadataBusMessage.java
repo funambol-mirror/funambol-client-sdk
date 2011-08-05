@@ -46,6 +46,7 @@ public class MetadataBusMessage extends BusMessage {
     public static final int ACTION_INSERTED = 0;
     public static final int ACTION_UPDATED = 1;
     public static final int ACTION_DELETED = 2;
+    public static final int ACTION_RESET   = 3;
 
     private int action;
     private AppSyncSource source;

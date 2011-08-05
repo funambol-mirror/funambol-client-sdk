@@ -84,6 +84,9 @@ public class MetadataBusProxy implements TableObserver {
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "Table reset");
         }
+        BusMessage msg = new MetadataBusMessage(source,
+                MetadataBusMessage.ACTION_RESET, null);
+        bus.sendMessage(msg);
     }
 
     public void tableDropped() {
