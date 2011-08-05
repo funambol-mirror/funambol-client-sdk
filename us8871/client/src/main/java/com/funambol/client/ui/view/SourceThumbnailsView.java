@@ -48,5 +48,7 @@ public interface SourceThumbnailsView {
 
     public void addThumbnail(final ThumbnailView thumb, final int index, String newTitle);
 
+    public void replaceThumbnail(final ThumbnailView thumb, final int index);
+
     public void setTitle(final String title);
 }

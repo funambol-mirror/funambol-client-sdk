@@ -223,7 +223,7 @@ public class SourceThumbnailsViewController implements SyncListener {
             }
 
             if (index != -1) {
-                sourceThumbsView.addThumbnail(datedView.getView(), index, null);
+                sourceThumbsView.replaceThumbnail(datedView.getView(), index);
             }
         }
     }
@@ -260,7 +260,6 @@ public class SourceThumbnailsViewController implements SyncListener {
             }
             MetadataBusMessage metadataMessage = (MetadataBusMessage)message; 
             if(metadataMessage.getSource() == source) {
-
                 if (metadataMessage.getAction() == MetadataBusMessage.ACTION_INSERTED ||
                     metadataMessage.getAction() == MetadataBusMessage.ACTION_UPDATED)
                 {
@@ -270,9 +269,10 @@ public class SourceThumbnailsViewController implements SyncListener {
                     Long id = item.getLongField(metadata.getColIndexOrThrow(
                                 MediaMetadata.METADATA_ID));
 
+
                     // If the update operation did not change the last mod or
                     // the thumb1 path, then we do not care
-                    if (!item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD)) &&
+                    if (!item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD)) ||
                         !item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH))) {
 
                         Long lastMod = item.getLongField(metadata.getColIndexOrThrow(
@@ -280,6 +280,7 @@ public class SourceThumbnailsViewController implements SyncListener {
 
                         String thumbPath = item.getStringField(metadata
                                 .getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
+
                         ThumbnailView thumbView = sourceView.createThumbnailView();
                         thumbView.setThumbnail(thumbPath);
                         DatedThumbnailView datedView = new DatedThumbnailView(null, thumbView, lastMod.longValue(), id.longValue());
