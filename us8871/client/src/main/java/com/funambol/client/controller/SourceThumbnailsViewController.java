@@ -63,8 +63,8 @@ public class SourceThumbnailsViewController implements SyncListener {
     private AppSyncSource appSource;
 
     private SourceThumbnailsView sourceThumbsView;
-    private Vector datedThumbnails = new Vector();
     private TableEventListener tableEventListener;
+    private final Vector datedThumbnails = new Vector();
 
     private int totalItemsCount = 0;
 
@@ -166,9 +166,28 @@ public class SourceThumbnailsViewController implements SyncListener {
         }
     }
 
-    public String getItemNameAt(int position) {
+    /**
+     * Returns the name associated to the thumbnail at the given position
+     * @param position
+     * @return
+     */
+    public String getThumbnailNameAt(int position) {
         DatedThumbnailView thumb = (DatedThumbnailView)datedThumbnails.elementAt(position);
         return thumb.getName();
+    }
+
+    /**
+     * @return the number of displayed thumbnails
+     */
+    public int getDisplayedThumbnailsCount() {
+        return datedThumbnails.size();
+    }
+
+    /**
+     * @return the thumbnails count displayed in the source title
+     */
+    public int getThumbnailsCount() {
+        return totalItemsCount;
     }
 
     private void addDatedThumbnail(DatedThumbnailView datedView) {

@@ -49,7 +49,6 @@ import com.funambol.client.test.BasicScriptRunner;
 import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.client.test.basic.BasicUserCommands;
-import com.funambol.client.ui.view.ThumbnailView;
 
 import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.source.JSONFileObject;
@@ -112,6 +111,9 @@ public abstract class MediaRobot extends Robot {
         SyncSource ss = getAppSyncSource(type).getSyncSource();
         if(ss instanceof FileSyncSource) {
             String dirname = ((FileSyncSource)ss).getDirectory();
+
+            Log.error("CARLO", "deleteall: " + dirname);
+
             FileAdapter dir = new FileAdapter(dirname, true);
             Enumeration files = dir.list(false, false /* Filters hidden files */);
             dir.close();
@@ -544,8 +546,26 @@ public abstract class MediaRobot extends Robot {
         AppSyncSource appSource = getAppSyncSource(type);
         SourceThumbnailsViewController thumbsController =
                 appSource.getSourceThumbnailsViewController();
-        String name = thumbsController.getItemNameAt(position);
+        String name = thumbsController.getThumbnailNameAt(position);
         assertTrue(name, fileName, "Item name mismatch");
+    }
+
+    public void checkDisplayedThumbnailsCount(String type, int count)
+            throws Throwable {
+        AppSyncSource appSource = getAppSyncSource(type);
+        SourceThumbnailsViewController thumbsController =
+                appSource.getSourceThumbnailsViewController();
+        int actualCount = thumbsController.getDisplayedThumbnailsCount();
+        assertTrue(count, actualCount, "Displayed thumbnails count mismatch");
+    }
+
+    public void checkThumbnailsCount(String type, int count)
+            throws Throwable {
+        AppSyncSource appSource = getAppSyncSource(type);
+        SourceThumbnailsViewController thumbsController =
+                appSource.getSourceThumbnailsViewController();
+        int actualCount = thumbsController.getThumbnailsCount();
+        assertTrue(count, actualCount, "Thumbnails count mismatch");
     }
 
     private int getFilesCount(String type) throws Exception {

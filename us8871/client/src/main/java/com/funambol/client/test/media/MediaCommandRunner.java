@@ -89,6 +89,10 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
             checkFileContentIntegrity(command, pars);
         } else if (CHECK_THUMBNAIL_NAME.equals(command)) {
             checkThumbnailName(command, pars);
+        } else if (CHECK_DISPLAYED_THUMBNAILS_COUNT.equals(command)) {
+            checkDisplayedThumbnailsCount(command, pars);
+        } else if (CHECK_THUMBNAILS_COUNT.equals(command)) {
+            checkThumbnailsCount(command, pars);
         } else {
             return false;
         }
@@ -269,6 +273,32 @@ public class MediaCommandRunner extends CommandRunner implements MediaUserComman
         int intPosition = Integer.parseInt(position);
 
         getMediaRobot().checkThumbnailName(type, intPosition, fileName);
+    }
+
+    private void checkDisplayedThumbnailsCount(String command, Vector args) throws Throwable {
+        int i = 0;
+        String type = getParameter(args, i++);
+        String count = getParameter(args, i++);
+
+        checkArgument(type, "Missing type in " + command);
+        checkArgument(count, "Missing count in " + command);
+
+        int intCount = Integer.parseInt(count);
+
+        getMediaRobot().checkDisplayedThumbnailsCount(type, intCount);
+    }
+
+    private void checkThumbnailsCount(String command, Vector args) throws Throwable {
+        int i = 0;
+        String type = getParameter(args, i++);
+        String count = getParameter(args, i++);
+
+        checkArgument(type, "Missing type in " + command);
+        checkArgument(count, "Missing count in " + command);
+
+        int intCount = Integer.parseInt(count);
+
+        getMediaRobot().checkThumbnailsCount(type, intCount);
     }
     
 }

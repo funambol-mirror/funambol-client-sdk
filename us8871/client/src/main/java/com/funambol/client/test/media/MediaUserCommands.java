@@ -224,6 +224,24 @@ public interface MediaUserCommands {
      * @example CheckThumbnailName(Pictures,1,pic1.jpg);
      */
     public static final String CHECK_THUMBNAIL_NAME = "CheckThumbnailName";
+
+    /**
+     * Check the number of thumbnails present in the source thumbnails view.
+     * First parameter is the media type
+     * Second parameter is the thumbnails count
+     *
+     * @example CheckDisplayedThumbnailsCount(Pictures,12);
+     */
+    public static final String CHECK_DISPLAYED_THUMBNAILS_COUNT = "CheckDisplayedThumbnailsCount";
+    
+    /**
+     * Check the number displayed in the source title view.
+     * First parameter is the media type
+     * Second parameter is the thumbnails count
+     *
+     * @example CheckThumbnailsCount(Pictures,450);
+     */
+    public static final String CHECK_THUMBNAILS_COUNT = "CheckThumbnailsCount";
     
 }
     

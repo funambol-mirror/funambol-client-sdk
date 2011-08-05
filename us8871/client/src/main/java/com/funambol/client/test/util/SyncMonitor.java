@@ -39,6 +39,7 @@ import com.funambol.client.engine.SyncReportMessage;
 import com.funambol.client.engine.SyncTaskMessage;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.sync.SyncReport;
+import com.funambol.util.Log;
 import com.funambol.util.bus.BusMessage;
 import com.funambol.util.bus.BusMessageHandler;
 import com.funambol.util.bus.BusService;
@@ -48,6 +49,8 @@ import java.util.Hashtable;
  * Collects usefull methods to monitor the synchronization state.
  */
 public class SyncMonitor {
+
+    private static final String TAG_LOG = "SyncMonitor";
 
     private SyncTaskHandler syncTaskHandler;
     private static SyncMonitor instance;
@@ -84,10 +87,13 @@ public class SyncMonitor {
             if(message instanceof SyncTaskMessage) {
                 SyncTaskMessage syncMessage = (SyncTaskMessage)message;
                 if(syncMessage.getMessageCode() == SyncTaskMessage.MESSAGE_SYNC_STARTED) {
+                    Log.info(TAG_LOG, "Received MESSAGE_SYNC_STARTED");
                     syncing = true;
                 } else if(syncMessage.getMessageCode() == SyncTaskMessage.MESSAGE_SYNC_ENDED) {
+                    Log.info(TAG_LOG, "Received MESSAGE_SYNC_ENDED");
                     syncing = false;
                 } else if(syncMessage.getMessageCode() == SyncTaskMessage.MESSAGE_SOURCE_STARTED) {
+                    Log.info(TAG_LOG, "Received MESSAGE_SOURCE_STARTED");
                     lastAppSource = syncMessage.getAppSource();
                 }
             } else if(message instanceof SyncReportMessage) {
