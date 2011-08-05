@@ -39,7 +39,6 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import com.funambol.client.source.AppSyncSource;
-import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.ExternalAppManager;
 import com.funambol.client.ui.HomeScreen;
 import com.funambol.client.ui.DisplayManager;
@@ -283,33 +282,11 @@ public class HomeScreenController extends SynchronizationController {
         sources.addElement(appSource);        
         synchronize(syncType, sources);
     }
-    
-    public void syncMenuSelected() {
-        if (selectedIndex != -1) {
-            AppSyncSource appSource = (AppSyncSource)items.elementAt(selectedIndex);
-            
-            syncSource(MANUAL, appSource);
-        }
-    }
-
-    public void syncAllPressed() {       
-        if (Log.isLoggable(Log.TRACE)) {
-            Log.trace(TAG_LOG, "Sync All Button pressed");
-        }
-
-        // If a sync is in progress, then this is a cancel sync request
-        if (isSynchronizing() && customization.syncAllActsAsCancelSync()) {
-            cancelSync();
-        } else {
-            syncAllSources(MANUAL);
-        }
-    }
 
     public void refreshPressed() {       
         if (Log.isLoggable(Log.TRACE)) {
             Log.trace(TAG_LOG, "refresh pressed");
         }
-
         // If a sync is in progress, then this is a cancel sync request
         if (isSynchronizing() && customization.syncAllActsAsCancelSync()) {
             cancelSync();
@@ -317,7 +294,6 @@ public class HomeScreenController extends SynchronizationController {
             refreshSources(MANUAL);
         }
     }
-
 
     public void aloneSourcePressed() {
         if (Log.isLoggable(Log.TRACE)) {
@@ -334,7 +310,6 @@ public class HomeScreenController extends SynchronizationController {
             }
         }
     }
-
 
     public void syncAllSources(String syncType) {
         if (Log.isLoggable(Log.INFO)) {
@@ -353,12 +328,9 @@ public class HomeScreenController extends SynchronizationController {
     }
 
     public void refreshSources(String syncType) {
-        if (Log.isLoggable(Log.INFO)) {
-            Log.info(TAG_LOG, "syncAllSources");
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "refreshSources");
         }
-
-        //(appSource.getId() == AppSyncSourceManager.PICTURES_ID))
-
         Vector sources = new Vector();        
         for(int i=0;i<items.size();++i) {
             AppSyncSource appSource = (AppSyncSource)items.elementAt(i);
@@ -368,8 +340,14 @@ public class HomeScreenController extends SynchronizationController {
                 sources.addElement(appSource);
             }
         }
-        
         synchronize(syncType, sources);
+    }
+
+    public void refreshSource(String syncType, AppSyncSource appSource) {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "refreshSource");
+        }
+        syncSource(syncType, appSource);
     }
  
     

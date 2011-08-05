@@ -87,14 +87,14 @@ public interface BasicUserCommands {
      * @param locality is the test locality. local mean the test does not need a
      * remote server. e2e means it does require it.
      *
-     * @example BeginTest("Contact01","sync01","contact","c2s","e2e")
+     * @example BeginTest("Contact01","sync01","contact","c2s","e2e");
      */
     public static final String BEGIN_TEST_COMMAND = "BeginTest";
 
     /**
      * Terminates the commands of a test.
      *
-     * @example EndTest()
+     * @example EndTest();
      */
     public static final String END_TEST_COMMAND = "EndTest";
 
@@ -105,7 +105,7 @@ public interface BasicUserCommands {
      *             fetched from that location, otherwise the base url if the main script is
      *             added as prefix to this name
      *
-     * @example Include("deleteall.txt")
+     * @example Include("deleteall.txt");
      */
     public static final String INCLUDE_COMMAND = "Include";
     
@@ -116,14 +116,14 @@ public interface BasicUserCommands {
      * to run the waitForActivity command in order to verify that it is started
      * correctly.
      *
-     * @example StartMainApp()
+     * @example StartMainApp();
      */
     public static final String START_MAIN_APP_COMMAND = "StartMainApp";
 
     /**
      * This command stops the main application. 
      *
-     * @example CloseMainApp()
+     * @example CloseMainApp();
      */
     public static final String CLOSE_MAIN_APP_COMMAND = "CloseMainApp";
     
@@ -135,7 +135,7 @@ public interface BasicUserCommands {
      *              interrupted. This is useful if the script shall give the
      *              user the possibility to use the application.
      *
-     * @example Wait(5)
+     * @example Wait(5);
      */
     public static final String WAIT_COMMAND = "Wait";
 
@@ -150,7 +150,7 @@ public interface BasicUserCommands {
      *                 terminate. If it does not terminate within this limit,
      *                 the test fails.
      *
-     * @example WaitForSyncToComplete(10, 120)
+     * @example WaitForSyncToComplete(10, 120);
      */
     public static final String WAIT_FOR_SYNC_TO_COMPLETE_COMMAND = "WaitForSyncToComplete";
 
@@ -169,7 +169,7 @@ public interface BasicUserCommands {
      *                </ul>
      * @param count the number of commands to send (not mandatory)
      *
-     * @example KeyPress(KeyDown, 1)
+     * @example KeyPress(KeyDown, 1);
      */
     public static final String KEY_PRESS_COMMAND = "KeyPress";
 
@@ -177,16 +177,24 @@ public interface BasicUserCommands {
      * This command simulates a user writing a text through the device keyboard.
      * @param text the text to write (e.g. into an input field)
      *
-     * @example WriteString("username")
+     * @example WriteString("username");
      */
     public static final String WRITE_STRING_COMMAND = "WriteString";
 
     /**
-     * This command presses the "Sync All" button.
+     * This command starts a refresh of all the sources
      *
-     * @example SyncAll()
+     * @example RefreshAll();
      */
-    public static final String SYNC_ALL_COMMAND = "SyncAll";
+    public static final String REFRESH_ALL_COMMAND = "RefreshAll";
+
+    /**
+     * This command starts a refresh for the given source
+     * @param source the name of the source to refresh
+     *
+     * @example RefreshSource(Pictures);
+     */
+    public static final String REFRESH_SOURCE_COMMAND = "RefreshSource";
     
     /**
      * This command forces the next sync to be a slow sync for the given source
@@ -194,7 +202,7 @@ public interface BasicUserCommands {
      * @param sourceName is the name of the source. The value is what is displayed
      * on the main screen for that source.
      *
-     * @example ForceSlowSync("Calendar")
+     * @example ForceSlowSync("Calendar");
      */
     public static final String FORCE_SLOW_SYNC_COMMAND = "ForceSlowSync";
 
@@ -211,7 +219,7 @@ public interface BasicUserCommands {
      * @param receivedReplace the expected number of replace received items
      * @param receivedDelete the expected number of delete received items
      *
-     * @example CheckExchangedData("Calendar", 1, 0, 0, 0, 0, 1)
+     * @example CheckExchangedData("Calendar", 1, 0, 0, 0, 0, 1);
      */
     public static final String CHECK_EXCHANGED_DATA_COMMAND = "CheckExchangedData";    
     
@@ -223,7 +231,7 @@ public interface BasicUserCommands {
      * on the main screen for that source.
      * @param code one of the status codes in {@link SyncListener}
      *
-     * @example CheckExchangedData("Pictures", 154)
+     * @example CheckExchangedData("Pictures", 154);
      */
     public static final String CHECK_SYNC_STATUS_CODE_COMMAND = "CheckSyncStatusCode";
 
@@ -239,7 +247,7 @@ public interface BasicUserCommands {
      *
      * @example CheckLastNotification(10, 1, "Sync error", 
      *          "Insufficient storage on device", 
-     *          "You're running out of storage space on device and cannot download media and files.")
+     *          "You're running out of storage space on device and cannot download media and files.");
      */
     public static final String CHECK_LAST_NOTIFICATION = "CheckLastNotification";
 
@@ -251,7 +259,7 @@ public interface BasicUserCommands {
      * on the main screen for that source.
      * @param sendingErrors the expected number of sent resumed items
      * @param receivingErrors the expected number of received resumed items
-     * @example CheckSyncErrors("Pictures", 1, 0)
+     * @example CheckSyncErrors("Pictures", 1, 0);
      */
     public static final String CHECK_SYNC_ERRORS_COMMAND = "CheckSyncErrors";
 
@@ -264,7 +272,7 @@ public interface BasicUserCommands {
      * on the main screen for that source.
      * @param sentResumed the expected number of sent resumed items
      * @param receivedResumed the expected number of received resumed items
-     * @example CheckResumedData("Pictures", 1, 0)
+     * @example CheckResumedData("Pictures", 1, 0);
      */
     public static final String CHECK_RESUMED_DATA_COMMAND = "CheckResumedData";
 
@@ -274,7 +282,7 @@ public interface BasicUserCommands {
      * @param source is the source name
      * @param mode an integer representing the expected sync mode
      *
-     * @example CheckRequestedSyncMode("Calendar", 200)
+     * @example CheckRequestedSyncMode("Calendar", 200);
      */
     public static final String CHECK_REQUESTED_SYNC_MODE_COMMAND = "CheckRequestedSyncMode";
 
@@ -284,7 +292,7 @@ public interface BasicUserCommands {
      * @param source is the source name
      * @param mode an integer representing the expected sync mode
      *
-     * @example CheckRequestedSyncMode("Calendar", 201)
+     * @example CheckRequestedSyncMode("Calendar", 201);
      */
     public static final String CHECK_ALERTED_SYNC_MODE_COMMAND = "CheckAlertedSyncMode";
 
@@ -294,7 +302,7 @@ public interface BasicUserCommands {
      * @param source the source name as it appears in the home screen
      * @param uri the remote uri
      *
-     * @example CheckRemoteUri("Calendar", "event")
+     * @example CheckRemoteUri("Calendar", "event");
      */
     public static final String CHECK_REMOTE_URI_COMMAND = "CheckRemoteUri";
 
@@ -314,7 +322,7 @@ public interface BasicUserCommands {
      * @param reason is the description of the exception that will be thrown
      * (for example "Cancelled" or "Network Error")
      *
-     * @example InterruptSyncAfterPhase("Sending", 1, "User cancelled")
+     * @example InterruptSyncAfterPhase("Sending", 1, "User cancelled");
      */
     public static final String INTERRUPT_SYNC_AFTER_PHASE_COMMAND = "InterruptSyncAfterPhase";
 

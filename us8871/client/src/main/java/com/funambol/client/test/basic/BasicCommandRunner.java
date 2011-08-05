@@ -120,8 +120,10 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
             endTest(command, pars);
         } else if (KEY_PRESS_COMMAND.equals(command)) {
             keyPress(command, pars);
-        } else if (SYNC_ALL_COMMAND.equals(command)) {
-            syncAll(command, pars);
+        } else if (REFRESH_ALL_COMMAND.equals(command)) {
+            refreshAll(command, pars);
+        } else if (REFRESH_SOURCE_COMMAND.equals(command)) {
+            refreshSource(command, pars);
         } else if (WRITE_STRING_COMMAND.equals(command)) {
             writeString(command, pars);
         } else if (WAIT_FOR_SYNC_TO_COMPLETE_COMMAND.equals(command)) {
@@ -583,14 +585,30 @@ public abstract class BasicCommandRunner extends CommandRunner implements BasicU
     }
     
     /**
-     * Command to simulate a press on button "Sync All".
+     * Command to start a refresh for all the sources.
      * 
      * @param command the String formatted command
      * @param args the command's related String arguments.
      * @throws Throwable if an error occurred
      */
-    private void syncAll(String command, Vector args) throws Throwable {
-        getBasicRobot().syncAll();
+    private void refreshAll(String command, Vector args) throws Throwable {
+        getBasicRobot().refreshAll();
+    }
+
+    /**
+     * Command to start a refresh for the given source.
+     *
+     * @param command the String formatted command
+     * @param args the command's related String arguments.
+     * @throws Throwable if an error occurred
+     */
+    private void refreshSource(String command, Vector args) throws Throwable {
+
+        String source = getParameter(args, 0);
+
+        checkArgument(source, "Missing source in " + command);
+
+        getBasicRobot().refreshSource(source);
     }
 
     /**

@@ -41,6 +41,7 @@ import java.util.Hashtable;
 import com.funambol.client.configuration.Configuration;
 import com.funambol.client.controller.Controller;
 import com.funambol.client.controller.NotificationData;
+import com.funambol.client.controller.SynchronizationController;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.test.ClientTestException;
@@ -295,9 +296,14 @@ public abstract class BasicRobot extends Robot {
         }
     }
 
-    public void syncAll() {
-       Log.debug(TAG_LOG, "simulating Sync All button pressed");
-       getController().getHomeScreenController().syncAllPressed();        
+    public void refreshAll() throws Exception {
+        getController().getHomeScreenController().refreshPressed();
+    }
+
+    public void refreshSource(String source) throws Exception {
+        AppSyncSource appSource = getAppSyncSource(source);
+        getController().getHomeScreenController().refreshSource(
+               SynchronizationController.MANUAL, appSource);
     }
 
     public void saveSourceConfig(String sourceName) throws Exception {
