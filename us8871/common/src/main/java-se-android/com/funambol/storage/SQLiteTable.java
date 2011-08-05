@@ -226,13 +226,14 @@ public class SQLiteTable extends Table {
 
     @Override
     protected void resetTable() throws IOException {
+        if (dbStore == null) {
+            throw new IOException("Table must be closed before dropping it");
+        }
+
         // See SQLiteDatabase documentation to understand the meaning of the "1"
         // as where clause
         synchronized(lock) {
             int deleted = dbStore.delete(getName(), "1", null);
-            if (deleted == 0) {
-                throw new IOException("Cannot delete all rows from table " + getName());
-            }
         }
     }
 
