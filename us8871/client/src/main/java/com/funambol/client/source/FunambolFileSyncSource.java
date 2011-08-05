@@ -38,6 +38,7 @@ package com.funambol.client.source;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Vector;
+import java.util.Enumeration;
 
 import com.funambol.org.json.me.JSONObject;
 import com.funambol.org.json.me.JSONException;
@@ -240,7 +241,74 @@ public class FunambolFileSyncSource extends FileSyncSource {
     public Table getMetadataTable() {
         return metadata;
     }
- 
+
+    protected SyncItem getItemContent(SyncItem item) throws SyncException {
+        // The file full name is in the table
+        QueryResult res = null;
+        try {
+            long key = Long.parseLong(item.getKey());
+            metadata.open();
+            QueryFilter qf = metadata.createQueryFilter(new Long(key));
+            res = metadata.query(qf);
+            if (res.hasMoreElements()) {
+                Tuple tableRow = res.nextElement();
+                String fileFullName = tableRow.getStringField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH));
+                if (Log.isLoggable(Log.DEBUG)) {
+                    Log.debug(TAG_LOG, "Getting item content from file " + fileFullName);
+                }
+                return getFileContent(item, fileFullName);
+            } else {
+                // The item is no longer available. Since the user cannot delete
+                // items, this is a bug somewhere...
+                throw new SyncException(SyncException.CLIENT_ERROR, "Item " + key + " not found");
+            }
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot get item content for item", e);
+            throw new SyncException(SyncException.CLIENT_ERROR, "Cannot get item content");
+        } finally {
+            if (res != null) {
+                res.close();
+            }
+            try {
+                metadata.close();
+            } catch (Exception e) {}
+        }
+    }
+
+    protected Enumeration getAllItemsKeys() throws SyncException {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "getAllItemsKeys");
+        }
+        totalItemsCount = 0;
+
+        QueryResult result = null;
+        Vector keys = new Vector();
+
+        try {
+            metadata.open();
+            // Grab all items
+            result = metadata.query();
+            while(result.hasMoreElements()) {
+                Tuple item = result.nextElement();
+                Long key = item.getLongField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ID));
+                keys.addElement("" + key.longValue());
+                totalItemsCount++;
+            }
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot get all items from table", e);
+            throw new SyncException(SyncException.STORAGE_ERROR, "Cannot get items from metadata table");
+        } finally {
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (Exception e) {}
+            }
+            try {
+                metadata.close();
+            } catch (Exception e) {}
+        }
+        return keys.elements();
+    }
 
     protected OutputStream getDownloadOutputStream(String name, long size, boolean isUpdate,
             boolean isThumbnail, boolean append) throws IOException {

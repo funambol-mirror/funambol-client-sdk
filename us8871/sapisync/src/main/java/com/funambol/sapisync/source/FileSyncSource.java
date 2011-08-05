@@ -64,7 +64,7 @@ public class FileSyncSource extends JSONSyncSource implements
     protected String tempDirectory;
     protected String extensions[] = {};
 
-    private int totalItemsCount = -1;
+    protected int totalItemsCount = -1;
 
     private ItemsSorter itemsSorter = null;
 
@@ -259,9 +259,13 @@ public class FileSyncSource extends JSONSyncSource implements
     }
 
     protected SyncItem getItemContent(SyncItem item) throws SyncException {
+        String fileFullName = item.getKey();
+        return getFileContent(item, fileFullName);
+    }
+
+    protected SyncItem getFileContent(SyncItem item, String fileFullName) throws SyncException {
         FileAdapter file = null;
         try {
-            String fileFullName = item.getKey();
             String fileName = getFileNameFromKey(fileFullName);
             file = new FileAdapter(fileFullName);
 
