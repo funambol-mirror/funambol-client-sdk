@@ -52,5 +52,4 @@ public class SapiItemStatus extends ItemStatus {
     public SyncItem getSyncItem() {
         return syncItem;
     }
-
 }

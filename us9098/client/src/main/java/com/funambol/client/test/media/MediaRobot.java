@@ -251,7 +251,7 @@ public abstract class MediaRobot extends Robot {
         sapiHandler.login(null);
         String remoteKey = sapiHandler.prepareItemUpload(item, getRemoteUri(type));
         item.setGuid(remoteKey);
-        sapiHandler.uploadItem(item, getRemoteUri(type), null);
+        //sapiHandler.uploadItem(item, getRemoteUri(type), null);
         sapiHandler.logout();
     }
 

@@ -433,7 +433,7 @@ public class SapiSyncManager implements SyncManagerI {
                 mapping.remove(guid);
                 // Also notify the source as this command was propagated with
                 // success so it won't provide it again
-                ItemStatus status = new ItemStatus(item.getKey(), SyncSource.SUCCESS_STATUS);
+                ItemStatus status = new SapiItemStatus(item, SyncSource.SUCCESS_STATUS);
                 itemStatuses.addElement(status);
             }
             src.applyItemsStatus(itemStatuses);
@@ -511,8 +511,7 @@ public class SapiSyncManager implements SyncManagerI {
                             Log.info(TAG_LOG, "Exclude twin item to be uploaded: "
                                     + item.getKey());
                         }
-                        sourceStatus.addElement(new ItemStatus(item.getKey(),
-                            SyncSource.SUCCESS_STATUS));
+                        sourceStatus.addElement(new SapiItemStatus(item, SyncSource.SUCCESS_STATUS));
                         continue;
                     }
 
@@ -523,93 +522,45 @@ public class SapiSyncManager implements SyncManagerI {
                         getSyncListenerFromSource(src).itemReplaceSendingStarted(item.getKey(), null, item.getContentSize());
                     }
 
-                    // If the item was already sent in a previously interrupted
-                    // sync, then we do not send it again
-                    boolean uploadDone = false;
-                    String remoteKey = null;
-                    if (resume) {
-                        int itemStatus = syncStatus.getSentItemStatus(item.getKey());
-                        if (itemStatus == SyncSource.SUCCESS_STATUS) {
-                            // TODO: check if it has changed since then
-                            uploadDone = true;
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Skipping upload for " + item.getKey() + " which has been previously uploaded");
+                    try {
+                        String remoteKey = null;
+                        // Sets the status as interrupted so that if the
+                        // client crashes badly we still remember this fact
+                        if (item.getState() == SyncItem.STATE_UPDATED) {
+                            String luid = item.getKey();
+                            // Check if the item key has been updated
+                            if(item.isItemKeyUpdated()) {
+                                luid = item.getOldKey();
                             }
-                        } else if (itemStatus == SyncSource.INTERRUPTED_STATUS) {
-                            if (Log.isLoggable(Log.INFO)) {
-                                Log.info(TAG_LOG, "Resuming upload for " + item.getKey());
-                            }
-                            remoteKey = syncStatus.getSentItemGuid(item.getKey());
-                            String origGuid = remoteKey;
+                            remoteKey = mapping.getGuid(luid);
                             item.setGuid(remoteKey);
-                            try {
-                                SapiSyncHandler.ResumeResult resumeResult = sapiSyncHandler.resumeItemUpload(item,
-                                                                        remoteUri, getSyncListenerFromSource(src));
-                                remoteKey = resumeResult.getKey();
-                                // Update the mapping table (if the resume took
-                                // place)
-                                if (resumeResult.uploadPerformed()) {
-                                    String crc = resumeResult.getCRC();
-                                    if(item.getState() == SyncItem.STATE_UPDATED) {
-                                        mapping.update(remoteKey, item.getKey(), 
-                                                crc, item.getContentName());
-                                    } else {
-                                        mapping.add(remoteKey, item.getKey(), 
-                                                crc, item.getContentName());
-                                    }
-                                }
-                            } catch (SapiException e) {
-                                verifyErrorInUploadResponse(e, item, remoteKey, sourceStatus);
-                            }
-                            // If the returned key is the same as the item guid,
-                            // the item has been resumed correctly.
-                            if(remoteKey.equals(origGuid)) {
-                                syncStatus.addSentResumedItem(item.getKey());
-                            }
-                            uploadDone = true;
                         }
+                        // Check if this is only a file rename.
+                        // Using save-metadata to update the file name doesn't
+                        // work becouse it requires the file content to be
+                        // re-uploaded
+                        String newCrc;
+                        if(item.isItemKeyUpdated() && !item.isItemContentUpdated()) {
+                            // This is only a item rename
+                            newCrc = sapiSyncHandler.updateItemName(remoteUri, remoteKey,
+                                    item.getJSONFileObject().getName());
+                        } else {
+                            remoteKey = sapiSyncHandler.prepareItemUpload(item, remoteUri);
+                            item.setGuid(remoteKey);
+                            // TODO FIXME
+                            newCrc = "0";
+                        }
+                        // Update the mapping table
+                        if(item.getState() == SyncItem.STATE_UPDATED) {
+                            mapping.update(remoteKey, item.getKey(), 
+                                    newCrc, item.getContentName());
+                        } else {
+                            mapping.add(remoteKey, item.getKey(), 
+                                    newCrc, item.getContentName());
+                        }
+                    } catch (SapiException e) {
+                        verifyErrorInUploadResponse(e, item, item.getGuid(), sourceStatus);
                     }
-                    
-                    if (!uploadDone) {
-                        try {
-                            // Sets the status as interrupted so that if the
-                            // client crashes badly we still remember this fact
-                            if (item.getState() == SyncItem.STATE_UPDATED) {
-                                String luid = item.getKey();
-                                // Check if the item key has been updated
-                                if(item.isItemKeyUpdated()) {
-                                    luid = item.getOldKey();
-                                }
-                                remoteKey = mapping.getGuid(luid);
-                                item.setGuid(remoteKey);
-                            }
-                            // Check if this is only a file rename.
-                            // Using save-metadata to update the file name doesn't
-                            // work becouse it requires the file content to be
-                            // re-uploaded
-                            String newCrc;
-                            if(item.isItemKeyUpdated() && !item.isItemContentUpdated()) {
-                                // This is only a item rename
-                                newCrc = sapiSyncHandler.updateItemName(remoteUri, remoteKey,
-                                                                        item.getJSONFileObject().getName());
-                            } else {
-                                remoteKey = sapiSyncHandler.prepareItemUpload(item, remoteUri);
-                                item.setGuid(remoteKey);
-                                // TODO FIXME
-                                newCrc = "0";
-                            }
-                            // Update the mapping table
-                            if(item.getState() == SyncItem.STATE_UPDATED) {
-                                mapping.update(remoteKey, item.getKey(), 
-                                        newCrc, item.getContentName());
-                            } else {
-                                mapping.add(remoteKey, item.getKey(), 
-                                        newCrc, item.getContentName());
-                            }
-                        } catch (SapiException e) {
-                            verifyErrorInUploadResponse(e, item, item.getGuid(), sourceStatus);
-                        }
-                    } 
                     syncStatus.setSentItemStatus(item.getGuid(), item.getKey(),
                             item.getState(), SyncSource.SUCCESS_STATUS);
                     try {
@@ -619,8 +570,7 @@ public class SapiSyncManager implements SyncManagerI {
                     }
 
                     // Set the item status
-                    sourceStatus.addElement(new ItemStatus(item.getKey(),
-                            SyncSource.SUCCESS_STATUS));
+                    sourceStatus.addElement(new SapiItemStatus(item, SyncSource.SUCCESS_STATUS));
                 } catch(NonBlockingSyncException nbse) {
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "The error uploading item is non blocking, continue to upload");
@@ -639,8 +589,7 @@ public class SapiSyncManager implements SyncManagerI {
                         Log.error(TAG_LOG, "Failed to upload item with key: " +
                                 item.getKey(), ex);
                     }
-                    sourceStatus.addElement(new ItemStatus(item.getKey(),
-                            SyncSource.ERROR_STATUS));
+                    sourceStatus.addElement(new SapiItemStatus(item, SyncSource.ERROR_STATUS));
 
                     // TODO FIXME: what shall we do in this case?
 
@@ -1342,8 +1291,7 @@ public class SapiSyncManager implements SyncManagerI {
             
             syncStatus.addSentItem(item.getGuid(), item.getKey(),
                     item.getState(), SyncSource.INTERRUPTED_STATUS);
-            sourceStatus.addElement(new ItemStatus(item.getKey(),
-                    SyncSource.INTERRUPTED_STATUS));
+            sourceStatus.addElement(new SapiItemStatus(item, SyncSource.INTERRUPTED_STATUS));
             // Interrupt the sync with a network error
             throw new SyncException(SyncException.CONN_NOT_FOUND, sapiException.getMessage());
             
@@ -1353,8 +1301,7 @@ public class SapiSyncManager implements SyncManagerI {
             if (Log.isLoggable(Log.INFO)) {
                 Log.info(TAG_LOG, "Server quota overflow error");
             }
-            sourceStatus.addElement(new ItemStatus(item.getKey(),
-                    SyncSource.SERVER_FULL_ERROR_STATUS));
+            sourceStatus.addElement(new SapiItemStatus(item, SyncSource.SERVER_FULL_ERROR_STATUS));
             throw new SyncException(SyncException.DEVICE_FULL, "Server quota exceeded");
         } else if (SapiException.MED_1000.equals(sapiException.getCode())) {
             if (Log.isLoggable(Log.INFO)) {
@@ -1362,7 +1309,7 @@ public class SapiSyncManager implements SyncManagerI {
             }
             // If we set an error status, the item will be re-sent at the next
             // sync.... TODO FIXME
-            sourceStatus.addElement(new ItemStatus(item.getKey(), SyncSource.ERROR_STATUS));
+            sourceStatus.addElement(new SapiItemStatus(item, SyncSource.ERROR_STATUS));
             // This is a non blocking exception
             throw new NonBlockingSyncException(SyncException.SERVER_ERROR, "Item not supported by server");
 

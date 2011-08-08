@@ -49,6 +49,10 @@ public class MediaMetadata {
     public static final String METADATA_SYNCHRONIZED   = "synchronized";
     public static final String METADATA_DELETED        = "deleted";
     public static final String METADATA_DIRTY          = "dirty";
+    public static final String METADATA_SIZE           = "size";
+    public static final String METADATA_GUID           = "guid";
+    public static final String METADATA_MIME           = "mime";
+    public static final String METADATA_REMOTE_URI     = "remote_uri";
 
     /**
      * This is the meta data schema for the media table.
@@ -62,7 +66,11 @@ public class MediaMetadata {
                                                    METADATA_LAST_MOD,
                                                    METADATA_SYNCHRONIZED,
                                                    METADATA_DELETED,
-                                                   METADATA_DIRTY
+                                                   METADATA_DIRTY,
+                                                   METADATA_SIZE,
+                                                   METADATA_GUID,
+                                                   METADATA_MIME,
+                                                   METADATA_REMOTE_URI
                                                   };
 
     private static final int META_DATA_COL_TYPES[] = {
@@ -74,7 +82,11 @@ public class MediaMetadata {
                                                    Table.TYPE_LONG,
                                                    Table.TYPE_LONG,
                                                    Table.TYPE_LONG,
-                                                   Table.TYPE_LONG
+                                                   Table.TYPE_LONG,
+                                                   Table.TYPE_LONG,
+                                                   Table.TYPE_STRING,
+                                                   Table.TYPE_STRING,
+                                                   Table.TYPE_STRING
                                                   };
 
     private AppSyncSource appSource;
