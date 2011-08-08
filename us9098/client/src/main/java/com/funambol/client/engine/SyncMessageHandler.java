@@ -50,14 +50,16 @@ public class SyncMessageHandler implements BusMessageHandler {
 
     private SyncTask syncTask;
     private TaskExecutor taskExecutor;
+    private int priority;
     
     public SyncMessageHandler(Customization customization, Configuration configuration,
                               AppSyncSourceManager appSyncSourceManager, NetworkStatus networkStatus,
-                              TaskExecutor taskExecutor)
+                              TaskExecutor taskExecutor, int priority)
     {
         this.syncTask = new SyncTask(customization, configuration,
                 appSyncSourceManager, networkStatus);
         this.taskExecutor = taskExecutor;
+        this.priority = priority;
     }
 
     /**
@@ -80,7 +82,7 @@ public class SyncMessageHandler implements BusMessageHandler {
                 syncTask.cancelSync();
             } else {
                 syncTask.setSourcesToSync(syncMessage.getSourcesToSync());
-                taskExecutor.scheduleTaskWithPriority(syncTask, TaskExecutor.PRIORITY_HIGH);
+                taskExecutor.scheduleTaskWithPriority(syncTask, priority);
             }
         }
     }

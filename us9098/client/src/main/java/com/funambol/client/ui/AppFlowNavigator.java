@@ -76,9 +76,14 @@ public class AppFlowNavigator {
      */
     private int checkCredentialAndGetNextScreen() {
         if (configuration.getCredentialsCheckPending()) {
-            return Controller.SIGNUP_SCREEN_ID;
+            return chooseBetweenSignupAndLogin();
         } else {
             return Controller.HOME_SCREEN_ID;
         }
+    }
+    
+    
+    protected int chooseBetweenSignupAndLogin() {
+        return Controller.SIGNUP_SCREEN_ID;
     }
 }

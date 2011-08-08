@@ -51,9 +51,7 @@ public class TaskExecutor {
 
     private final int DEFAULT_MAX_THREADS_COUNT = 3;
 
-    public static final int PRIORITY_LOW    = -1;
-    public static final int PRIORITY_MEDIUM = 0;
-    public static final int PRIORITY_HIGH   = 1;
+    public static final int PRIORITY_LOW = 0;
 
     private final Vector tasksThreadPool = new Vector();
     private final TaskQueue taskQueue = new TaskQueue();

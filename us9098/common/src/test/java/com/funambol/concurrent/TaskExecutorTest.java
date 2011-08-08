@@ -45,6 +45,10 @@ public class TaskExecutorTest extends TestCase {
 
     private TaskExecutor executor;
 
+    private final int PRIORITY_LOW    = TaskExecutor.PRIORITY_LOW;
+    private final int PRIORITY_MEDIUM = TaskExecutor.PRIORITY_LOW + 1;
+    private final int PRIORITY_HIGH   = TaskExecutor.PRIORITY_LOW + 2;
+
     public TaskExecutorTest(String name) {
         super(name);
     }
@@ -76,7 +80,7 @@ public class TaskExecutorTest extends TestCase {
         SimpleResumableTask highPTask = new SimpleResumableTask();
 
         assertTrue(!highPTask.isRunning());
-        executor.scheduleTaskWithPriority(highPTask, TaskExecutor.PRIORITY_HIGH);
+        executor.scheduleTaskWithPriority(highPTask, PRIORITY_HIGH);
 
         // Allow the high priority task to start
         sleep(50);
@@ -84,7 +88,7 @@ public class TaskExecutorTest extends TestCase {
         assertTrue(highPTask.isRunning());
 
         SimpleResumableTask lowPTask = new SimpleResumableTask();
-        executor.scheduleTaskWithPriority(lowPTask, TaskExecutor.PRIORITY_LOW);
+        executor.scheduleTaskWithPriority(lowPTask, PRIORITY_LOW);
 
         // Allow the low priority task to be processed
         sleep(100);
@@ -120,7 +124,7 @@ public class TaskExecutorTest extends TestCase {
         SimpleResumableTask highPTask1 = new SimpleResumableTask();
 
         assertTrue(!highPTask1.isRunning());
-        executor.scheduleTaskWithPriority(highPTask1, TaskExecutor.PRIORITY_HIGH);
+        executor.scheduleTaskWithPriority(highPTask1, PRIORITY_HIGH);
 
         // Allow the task to start
         sleep(50);
@@ -128,7 +132,7 @@ public class TaskExecutorTest extends TestCase {
         assertTrue(highPTask1.isRunning());
 
         SimpleResumableTask highPTask2 = new SimpleResumableTask();
-        executor.scheduleTaskWithPriority(highPTask2, TaskExecutor.PRIORITY_HIGH);
+        executor.scheduleTaskWithPriority(highPTask2, PRIORITY_HIGH);
 
         // Allow the highPTask2 to be processed
         sleep(100);
@@ -164,7 +168,7 @@ public class TaskExecutorTest extends TestCase {
         SimpleResumableTask lowPTask = new SimpleResumableTask();
 
         assertTrue(!lowPTask.isRunning());
-        executor.scheduleTaskWithPriority(lowPTask, TaskExecutor.PRIORITY_LOW);
+        executor.scheduleTaskWithPriority(lowPTask, PRIORITY_LOW);
 
         // Allow the low priority task to start
         sleep(50);
@@ -172,7 +176,7 @@ public class TaskExecutorTest extends TestCase {
         assertTrue(lowPTask.isRunning());
 
         SimpleTask highPTask = new SimpleTask();
-        executor.scheduleTaskWithPriority(highPTask, TaskExecutor.PRIORITY_HIGH);
+        executor.scheduleTaskWithPriority(highPTask, PRIORITY_HIGH);
 
         // Allow the high priority task to complete
         sleep(200);
@@ -200,9 +204,9 @@ public class TaskExecutorTest extends TestCase {
         assertTrue(!task2.isRunning());
         assertTrue(!task3.isRunning());
         
-        executor.scheduleTaskWithPriority(task1, TaskExecutor.PRIORITY_LOW);
-        executor.scheduleTaskWithPriority(task2, TaskExecutor.PRIORITY_MEDIUM);
-        executor.scheduleTaskWithPriority(task3, TaskExecutor.PRIORITY_HIGH);
+        executor.scheduleTaskWithPriority(task1, PRIORITY_LOW);
+        executor.scheduleTaskWithPriority(task2, PRIORITY_MEDIUM);
+        executor.scheduleTaskWithPriority(task3, PRIORITY_HIGH);
 
         // Allow all the tasks to start
         sleep(100);
@@ -243,8 +247,8 @@ public class TaskExecutorTest extends TestCase {
         assertTrue(!task2.isRunning());
         assertTrue(!task3.isRunning());
 
-        executor.scheduleTaskWithPriority(task1, TaskExecutor.PRIORITY_LOW);
-        executor.scheduleTaskWithPriority(task2, TaskExecutor.PRIORITY_MEDIUM);
+        executor.scheduleTaskWithPriority(task1, PRIORITY_LOW);
+        executor.scheduleTaskWithPriority(task2, PRIORITY_MEDIUM);
 
         // Allow all the tasks to start
         sleep(100);
@@ -253,7 +257,7 @@ public class TaskExecutorTest extends TestCase {
         assertTrue(task2.isRunning());
         assertTrue(!task3.isRunning());
         
-        executor.scheduleTaskWithPriority(task3, TaskExecutor.PRIORITY_HIGH);
+        executor.scheduleTaskWithPriority(task3, PRIORITY_HIGH);
 
         // Allow task3 to start
         sleep(100);
