@@ -170,6 +170,7 @@ public class ItemUploadTask implements Task {
             } else {
                 Log.error(TAG_LOG, "Internal error, cannot find item in table " + id);
             }
+            res.close();
         } catch (IOException ioe) {
             Log.error(TAG_LOG, "Cannot update item metadata", ioe);
         } finally {
