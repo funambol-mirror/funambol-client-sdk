@@ -62,15 +62,16 @@ public class ItemUploadTask implements Task {
 
     private static final String TAG_LOG = "ItemUploadTask";
 
-    private String url;
-    private String fileName;
-    private Long id;
-    private String thumbSize;
-    private int initialDelay;
-    private Table metadata;
-    private Configuration configuration;
+    protected String url;
+    protected String fileName;
+    protected Long id;
+    protected String thumbSize;
+    protected int initialDelay;
+    protected Table metadata;
+    protected Configuration configuration;
 
-    public ItemUploadTask(Long id, int initialDelay, Table metadata, Configuration configuration) {
+    public ItemUploadTask(Long id, int initialDelay, Table metadata,
+                          Configuration configuration) {
         this.id = id;
         this.initialDelay = initialDelay;
         this.metadata = metadata;
@@ -86,9 +87,11 @@ public class ItemUploadTask implements Task {
         long size;
         String guid, mimeType, name, fileName, remoteUri;
         QueryResult res = null;
+        QueryFilter qf = null;
+        boolean hasThumbnails = false;
         try {
             metadata.open();
-            QueryFilter qf = metadata.createQueryFilter(id);
+            qf = metadata.createQueryFilter(id);
             res = metadata.query(qf);
             if (res.hasMoreElements()) {
                 Tuple row = res.nextElement();
@@ -99,6 +102,12 @@ public class ItemUploadTask implements Task {
                 name = row.getStringField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_NAME));
                 fileName = row.getStringField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH));
                 remoteUri = row.getStringField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_REMOTE_URI));
+
+                // Check if this item has thumbnails
+                String smallThumb = row.getStringField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
+                if (smallThumb != null && smallThumb.length() > 0) {
+                    hasThumbnails = true;
+                }
             } else {
                 Log.error(TAG_LOG, "Cannot find item to upload " + id);
                 generateFailureEvent(id);
@@ -147,6 +156,29 @@ public class ItemUploadTask implements Task {
                 return;
             }
         } while (!done);
+
+        // Since the upload completed successfully we can mark the item as
+        // completely uploaded
+        try {
+            metadata.open();
+            res = metadata.query(qf);
+            if (res.hasMoreElements()) {
+                Tuple row = res.nextElement();
+                row.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_UPLOAD_CONTENT_STATUS), 2L);
+                metadata.update(row);
+                metadata.save();
+            } else {
+                Log.error(TAG_LOG, "Internal error, cannot find item in table " + id);
+            }
+        } catch (IOException ioe) {
+            Log.error(TAG_LOG, "Cannot update item metadata", ioe);
+        } finally {
+            try {
+                metadata.close();
+            } catch (IOException ioe) {}
+        }
+ 
+
         generateSuccessEvent(id);
     }
 

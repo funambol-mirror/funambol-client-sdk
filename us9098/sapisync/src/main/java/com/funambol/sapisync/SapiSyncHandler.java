@@ -390,6 +390,29 @@ public class SapiSyncHandler {
         }
     }
 
+    public SingleItem getItem(String remoteUri, String dataTag, String id) throws SapiException {
+        JSONArray ids = new JSONArray();
+        ids.put(id);
+        FullSet res = getItems(remoteUri, dataTag, ids, null, null, null);
+        if (res == null) {
+            return null;
+        }
+        JSONArray items = res.items;
+        if (items.length() == 0) {
+            return null;
+        }
+        SingleItem single = new SingleItem();
+        try {
+            single.item = items.getJSONObject(0);
+            single.serverUrl = res.serverUrl;
+            single.timeStamp = res.timeStamp;
+            return single;
+        } catch (Exception e) {
+            Log.error(TAG_LOG, "Cannot get remote item " + id, e);
+            throw SapiException.SAPI_EXCEPTION_UNKNOWN;
+        }
+    }
+
     public FullSet getItems(String remoteUri, String dataTag, JSONArray ids, String limit, String offset, Date from)
     throws SapiException {
         JSONObject response = null;
@@ -620,6 +643,12 @@ public class SapiSyncHandler {
         public JSONArray items     = null;
         public long      timeStamp = -1;
         public String    serverUrl = null;
+    }
+
+    public class SingleItem {
+        public JSONObject item;
+        public long timeStamp;
+        public String serverUrl;
     }
 
     protected JSONObject login(String deviceId, int attempt) throws SapiException {

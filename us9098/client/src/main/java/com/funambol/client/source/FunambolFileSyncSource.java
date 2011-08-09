@@ -200,6 +200,7 @@ public class FunambolFileSyncSource extends FileSyncSource {
             if (item.getGuid() != null) {
                 tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_GUID), item.getGuid());
             }
+            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_UPLOAD_CONTENT_STATUS), 0L);
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_MIME), getConfig().getType());
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_REMOTE_URI), getConfig().getRemoteUri());
             metadata.insert(tuple);

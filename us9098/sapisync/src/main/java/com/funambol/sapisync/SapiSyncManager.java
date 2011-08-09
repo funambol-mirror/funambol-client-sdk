@@ -575,11 +575,13 @@ public class SapiSyncManager implements SyncManagerI {
                     if (Log.isLoggable(Log.INFO)) {
                         Log.info(TAG_LOG, "The error uploading item is non blocking, continue to upload");
                     }
+                    sourceStatus.addElement(new SapiItemStatus(item, SyncSource.ERROR_STATUS));
                 } catch(SyncException ex) {
 
                     // We must distinguish between exceptions that interrupt the
                     // sync and exceptions that do not interrupt it
                     // TODO FIXME
+                    sourceStatus.addElement(new SapiItemStatus(item, SyncSource.ERROR_STATUS));
 
                     //relaunch managed sync exception
                     throw ex;

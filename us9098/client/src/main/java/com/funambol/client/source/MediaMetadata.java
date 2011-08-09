@@ -40,19 +40,20 @@ import com.funambol.storage.TableFactory;
 
 public class MediaMetadata {
 
-    public static final String METADATA_ID             = "id";
-    public static final String METADATA_NAME           = "name";
-    public static final String METADATA_THUMB1_PATH    = "thumb1_path";
-    public static final String METADATA_THUMB2_PATH    = "thumb2_path";
-    public static final String METADATA_ITEM_PATH      = "item_path";
-    public static final String METADATA_LAST_MOD       = "last_mod";
-    public static final String METADATA_SYNCHRONIZED   = "synchronized";
-    public static final String METADATA_DELETED        = "deleted";
-    public static final String METADATA_DIRTY          = "dirty";
-    public static final String METADATA_SIZE           = "size";
-    public static final String METADATA_GUID           = "guid";
-    public static final String METADATA_MIME           = "mime";
-    public static final String METADATA_REMOTE_URI     = "remote_uri";
+    public static final String METADATA_ID                    = "id";
+    public static final String METADATA_NAME                  = "name";
+    public static final String METADATA_THUMB1_PATH           = "thumb1_path";
+    public static final String METADATA_THUMB2_PATH           = "thumb2_path";
+    public static final String METADATA_ITEM_PATH             = "item_path";
+    public static final String METADATA_LAST_MOD              = "last_mod";
+    public static final String METADATA_SYNCHRONIZED          = "synchronized";
+    public static final String METADATA_DELETED               = "deleted";
+    public static final String METADATA_DIRTY                 = "dirty";
+    public static final String METADATA_SIZE                  = "size";
+    public static final String METADATA_GUID                  = "guid";
+    public static final String METADATA_MIME                  = "mime";
+    public static final String METADATA_REMOTE_URI            = "remote_uri";
+    public static final String METADATA_UPLOAD_CONTENT_STATUS = "upload_content_status";
 
     /**
      * This is the meta data schema for the media table.
@@ -70,7 +71,8 @@ public class MediaMetadata {
                                                    METADATA_SIZE,
                                                    METADATA_GUID,
                                                    METADATA_MIME,
-                                                   METADATA_REMOTE_URI
+                                                   METADATA_REMOTE_URI,
+                                                   METADATA_UPLOAD_CONTENT_STATUS
                                                   };
 
     private static final int META_DATA_COL_TYPES[] = {
@@ -86,7 +88,8 @@ public class MediaMetadata {
                                                    Table.TYPE_LONG,
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,
-                                                   Table.TYPE_STRING
+                                                   Table.TYPE_STRING,
+                                                   Table.TYPE_LONG
                                                   };
 
     private AppSyncSource appSource;
