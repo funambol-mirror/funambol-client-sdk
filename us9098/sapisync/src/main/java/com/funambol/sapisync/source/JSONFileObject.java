@@ -78,7 +78,7 @@ public class JSONFileObject {
         
         this.serverUrl = serverUrl;
 
-        this.creationDate = jsonObject.getLong("date");
+        this.creationDate = jsonObject.getLong("creationdate");
         this.lastModifiedDate = jsonObject.getLong("date");
         this.size = jsonObject.getLong("size");
 

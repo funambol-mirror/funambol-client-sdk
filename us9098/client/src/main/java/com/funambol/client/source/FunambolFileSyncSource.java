@@ -62,6 +62,7 @@ import com.funambol.sync.client.StorageLimit;
 import com.funambol.sapisync.source.FileSyncSource;
 import com.funambol.sapisync.source.JSONFileObject;
 
+import com.funambol.util.StringUtil;
 import com.funambol.util.Log;
 
 
@@ -71,6 +72,9 @@ public class FunambolFileSyncSource extends FileSyncSource {
 
     protected Customization customization;
     protected Table metadata;
+
+    protected String smallThumbSize;
+    protected String bigThumbSize;
     
     //------------------------------------------------------------- Constructors
 
@@ -83,6 +87,12 @@ public class FunambolFileSyncSource extends FileSyncSource {
         super(config, tracker, directory, tempDirectory, maxItemSize, NO_LIMIT_ON_ITEM_AGE);
         this.customization = customization;
         this.metadata = metadata;
+
+        // These values should be computed dynamically to optimize the download
+        // bandwidth and the visualization on the local display, but at the
+        // moment this is not supported
+        smallThumbSize = "176";
+        bigThumbSize = "504";
     }
 
     public void beginSync(int syncMode, boolean resume) throws SyncException {
@@ -176,21 +186,37 @@ public class FunambolFileSyncSource extends FileSyncSource {
             JSONFileObject fo = ti.getJSONFileObject();
 
             Long lastMod;
+            lastMod = new Long(fo.getCreationDate());
+
+            /*
             if (fo.getLastModifiedDate() > 0) {
                 lastMod = new Long(fo.getLastModifiedDate());
             } else {
                 lastMod = new Long(fo.getCreationDate());
             }
+            */
 
             String name = fo.getName();
             
             metadata.open();
+
+            String urls[] = new String[2];
+            getThumbUrls(fo.getServerUrl(), fo, urls);
+
             // The key is autoincremented
             Tuple tuple = metadata.createNewRow();
 
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_NAME), name);
-            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), "");
-            tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), "");
+            if (urls[0] != null) {
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), urls[0]);
+            } else {
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), "");
+            }
+            if (urls[1] != null) {
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), urls[1]);
+            } else {
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), "");
+            }
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), "");
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), lastMod);
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_SYNCHRONIZED), 1);
@@ -280,6 +306,41 @@ public class FunambolFileSyncSource extends FileSyncSource {
             } catch (Exception e) {}
         }
     }
+
+    protected String composeUrl(String syncUrl, String serverUrl, String baseUrl) {
+        if(StringUtil.isNullOrEmpty(syncUrl)) {
+            serverUrl = StringUtil.extractAddressFromUrl(syncUrl);
+        }
+        StringBuffer res = new StringBuffer();
+        res.append(serverUrl);
+        res.append(baseUrl);
+        return res.toString();
+    }
+
+    /*
+     * This method returns the url content for this item. This url can be
+     * anything and just needs to point to the actual content. If there is
+     * no remote content, but the content is within the item itself, then this
+     * method shall return null.
+     */
+    protected void getThumbUrls(String syncUrl, JSONFileObject fileObject, String urls[]) {
+
+        if (fileObject != null) {
+            Vector thumbnails = fileObject.getThumbnails();
+            JSONFileObject.JSONFileThumbnail thumb = null;
+            if (thumbnails != null) {
+                for(int i=0;i<thumbnails.size();++i) {
+                    thumb = (JSONFileObject.JSONFileThumbnail)thumbnails.elementAt(i);
+                    if (smallThumbSize.equals(thumb.getSize())) {
+                        urls[0] = composeUrl(syncUrl, fileObject.getServerUrl(), thumb.getUrl());
+                    } else if (bigThumbSize.equals(thumb.getSize())) {
+                        urls[1] = composeUrl(syncUrl, fileObject.getServerUrl(), thumb.getUrl());
+                    }
+                }
+            }
+        }
+    }
+
 
     protected Enumeration getAllItemsKeys() throws SyncException {
         if (Log.isLoggable(Log.TRACE)) {

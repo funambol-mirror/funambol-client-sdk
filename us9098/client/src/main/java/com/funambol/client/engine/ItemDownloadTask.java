@@ -63,15 +63,17 @@ public class ItemDownloadTask implements Task {
     private String thumbSize;
     private int initialDelay;
     private Table metadata;
+    private String tableColumnName;
 
     public ItemDownloadTask(String url, String fileName, String id, String thumbSize,
-                            int initialDelay, Table metadata) {
+                            int initialDelay, Table metadata, String tableColumnName) {
         this.url = url;
         this.fileName = fileName;
         this.id = id;
         this.thumbSize = thumbSize;
         this.initialDelay = initialDelay;
         this.metadata = metadata;
+        this.tableColumnName = tableColumnName;
     }
 
     public void run() {
@@ -125,7 +127,9 @@ public class ItemDownloadTask implements Task {
                 results = metadata.query(qf);
                 if (results.hasMoreElements()) {
                     Tuple tuple = results.nextElement();
-                    tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), fileName);
+
+                    // Save the protocol so that we know this file is local now
+                    tuple.setField(metadata.getColIndexOrThrow(tableColumnName), "file://" + fileName);
                     metadata.update(tuple);
                     metadata.save();
                 } else {
