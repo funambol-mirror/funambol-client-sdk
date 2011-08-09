@@ -43,9 +43,13 @@ import java.util.Vector;
 import junit.framework.*;
 
 import com.funambol.syncml.protocol.SyncML;
+import com.funambol.syncml.spds.SyncStatus;
+import com.funambol.storage.FileTable;
 import com.funambol.storage.StringKeyValueMemoryStore;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueStoreFactory;
+import com.funambol.storage.Table;
+import com.funambol.storage.TableFactory;
 
 public class SyncStatusTest extends TestCase {
 
@@ -61,12 +65,26 @@ public class SyncStatusTest extends TestCase {
     public void setUp() {
 
         syncStatus = new SyncStatus("test");
+
+        try {
+            syncStatus.reset();
+        } catch (Exception e) {
+            fail("Unable to reset syncStatus at the beginning of a test");
+        }
+
     }
 
     /**
      * Tear down all of the tests
      */
     public void tearDown() {
+        if (syncStatus != null) {
+            try {
+                syncStatus.reset();
+            } catch (Exception e) {
+                fail("Unable to reset syncStatus at the end of a test");
+            }
+        }
     }
 
     public void testSentItems1() throws Throwable {
@@ -85,6 +103,7 @@ public class SyncStatusTest extends TestCase {
 
         // Now save everything
         syncStatus.save();
+        
         // Nothing should have changed...
         assertTrue(syncStatus.getSentItemsCount() == 3);
         assertTrue(syncStatus.getSentItemStatus("2") == -1);
@@ -130,7 +149,9 @@ public class SyncStatusTest extends TestCase {
     public void testSaveLoad1() throws Throwable {
         // Initialize a status and save it
         TestStringKeyValueStoreFactory storeBuilder = new TestStringKeyValueStoreFactory();
+        TestTableFactory tableBuilder = new TestTableFactory();
         SyncStatus.setStoreFactory(storeBuilder);
+        SyncStatus.setTableFactory(tableBuilder);
 
         syncStatus = new SyncStatus("test");
         syncStatus.addReceivedItem("guid1", "luid1", SyncML.TAG_ADD, 200);
@@ -151,25 +172,51 @@ public class SyncStatusTest extends TestCase {
         SyncStatus syncStatus2 = new SyncStatus("test");
         syncStatus2.load();
         // Reassert on the same properties
-        assertTrue(syncStatus2.getReceivedItemsCount() == 2);
-        assertTrue(syncStatus2.getSentItemsCount() == 2);
-        assertTrue(syncStatus2.getSentItemStatus("luid3") == 200);
+        assertTrue("#received = " + syncStatus2.getReceivedItemsCount(), syncStatus2.getReceivedItemsCount() == 2);
+        assertTrue("#sent = " + syncStatus2.getSentItemsCount(), syncStatus2.getSentItemsCount() == 2);
+        assertTrue("luid3 " + syncStatus2.getSentItemStatus("luid3"), syncStatus2.getSentItemStatus("luid3") == 200);
         mappings = syncStatus2.getPendingMappings();
-        assertTrue(mappings.size() == 1);
+        assertTrue("#mappings = " + mappings.size(), mappings.size() == 1);
 
         // Reset the store builder
         SyncStatus.setStoreFactory(null);
     }
 
     private class TestStringKeyValueStoreFactory extends StringKeyValueStoreFactory {
-
-        private StringKeyValueMemoryStore store = new StringKeyValueMemoryStore();
+        
+        private StringKeyValueStore store = new StringKeyValueMemoryStore();
 
         public TestStringKeyValueStoreFactory() {
         }
 
         public StringKeyValueStore getStringKeyValueStore(String name) {
             return store;
+        }
+    }
+    
+    private class TestTableFactory extends TableFactory {
+
+        private String[] COLS_NAME = {
+            "key",
+            "guid",
+            "mapped",
+            "cmd",
+            "stat"
+        };
+        private int[] COLS_TYPE = {
+                Table.TYPE_STRING,
+                Table.TYPE_STRING,
+                Table.TYPE_LONG,
+                Table.TYPE_STRING,
+                Table.TYPE_LONG
+        };
+        private Table table = new FileTable(".", "Test_TABLE", COLS_NAME, COLS_TYPE, 0);
+
+        public TestTableFactory() {
+        }
+
+        public Table getStringTable(String name, String[] colsName, int[] colsType, int index) {
+            return table;
         }
     }
 }

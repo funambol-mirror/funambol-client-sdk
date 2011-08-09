@@ -35,28 +35,67 @@
 
 package com.funambol.syncml.spds;
 
-import java.util.Hashtable;
-import java.util.Enumeration;
-import java.util.Vector;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import com.funambol.syncml.protocol.SyncML;
-import com.funambol.syncml.protocol.SyncMLStatus;
+import com.funambol.storage.QueryResult;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueStoreFactory;
+import com.funambol.storage.Table;
+import com.funambol.storage.TableFactory;
+import com.funambol.storage.Tuple;
 import com.funambol.sync.SyncReport;
-import com.funambol.util.StringUtil;
+import com.funambol.syncml.protocol.SyncML;
+import com.funambol.syncml.protocol.SyncMLStatus;
 import com.funambol.util.DateUtil;
 import com.funambol.util.Log;
+import com.funambol.util.StringUtil;
 
 /**
  * A class that saves and retrieves the mapping information from the store
  */
 public class SyncStatus implements SyncReport {
-    
+
     private static final String TAG_LOG = "SyncStatus";
 
-    private static final String SYNC_STATUS_TABLE_PREFIX = "syncstatus_";
+    /**
+     * This is currently used to retrieve from / store on a Table
+     * the values in a sync status that refer to individual items.
+     */
+    public final static boolean USES_TABLE = true;
+    private static final String SYNC_STATUS_TABLE_PREFIX = "itemsyncstatuses_";
+    private static TableFactory tableFactory = TableFactory.getInstance();
+    private static boolean tableFactoryChanged = false;
+    private Table table;
+    private static String[] COLS_NAME = {
+            "key",
+            "guid",
+            "mapped",
+            "cmd",
+            "stat"
+    };
+    private static int[] COLS_TYPE = {
+            Table.TYPE_STRING,
+            Table.TYPE_STRING,
+            Table.TYPE_LONG,
+            Table.TYPE_STRING,
+            Table.TYPE_LONG
+    };
+
+    /**
+     * This is currently used to retrieve from / store on a StringValueKeyStore
+     * the values in a sync status that refer to the whole sync source.
+     * Previously, this was also used for values related to individual items:
+     * such values can be read once again in this obsolete way and then stored
+     * in the new Table. After this sort of migration, such data will be
+     * removed from the StringValueKeyStore.
+     */
+    private static final String SYNC_STATUS_STORE_PREFIX = "syncstatus_";
+    private static StringKeyValueStoreFactory storeFactory = StringKeyValueStoreFactory.getInstance();
+    private static boolean storeFactoryChanged = false;
+    private StringKeyValueStore store;
 
     public static final int INIT_PHASE      = 0;
     public static final int SENDING_PHASE   = 1;
@@ -78,8 +117,10 @@ public class SyncStatus implements SyncReport {
     private static final String TRUE                    = "TRUE";
     private static final String FALSE                   = "FALSE";
 
+    private static final Long MAPPED = new Long(1L);
+    private static final Long NOT_MAPPED = new Long(0L);
+
     private String sourceName;
-    private StringKeyValueStore store;
 
     private int requestedSyncMode = -1;
     private int alertedSyncMode = -1;
@@ -123,12 +164,36 @@ public class SyncStatus implements SyncReport {
     private int initialSentReplaceNumber = 0;
     private int initialSentDeleteNumber = 0;
 
-    private static StringKeyValueStoreFactory storeFactory = StringKeyValueStoreFactory.getInstance();
-
     public SyncStatus(String sourceName) {
         this.sourceName = sourceName;
-        store = storeFactory.getStringKeyValueStore(SYNC_STATUS_TABLE_PREFIX + sourceName);
+
+        grantStore();
+
+        grantTable();
     }
+
+    private void grantStore() {
+        if (storeFactoryChanged) {
+            store = null;
+            storeFactoryChanged = false;
+        }
+        if (store == null) {
+            this.store = storeFactory.getStringKeyValueStore(SYNC_STATUS_STORE_PREFIX + sourceName);            
+        } 
+    }
+
+    private void grantTable() {
+        if (tableFactoryChanged) {
+            table = null;
+            tableFactoryChanged = false;
+        }
+        if (table == null) {
+            String tableName = SYNC_STATUS_TABLE_PREFIX + sourceName;
+            this.table = tableFactory.getStringTable(tableName, COLS_NAME, COLS_TYPE, 0);
+        }
+
+    }
+
 
     public int getRequestedSyncMode() {
         return requestedSyncMode;
@@ -262,7 +327,7 @@ public class SyncStatus implements SyncReport {
         // we may receive a delete for an item and then the successive add will
         // reuse the same key. The status for the delete is not used for the
         // mappings, so we can safely change its key. We still keep track of it
-        // so that the total number of excahnged items is correct.
+        // so that the total number of exchanged items is correct.
         if(pendingReceivedItems.containsKey(luid)) {
             ReceivedItemStatus oldStatus = (ReceivedItemStatus)pendingReceivedItems.get(luid);
             pendingReceivedItems.put(luid, status);
@@ -361,13 +426,34 @@ public class SyncStatus implements SyncReport {
     }
 
     /**
-     * Returns the ItemMap related to the given name
-     * 
-     * @param sourceName the name of the source to be retrieved
-     * @return ItemMap of the given source
+     * Loads the relevant values from the store and table.
      */
     public void load() throws IOException {
 
+        // In any case loads from the store
+        loadFromStore();
+
+        if (USES_TABLE) {
+            // Then loads from the table
+            loadFromTable();
+        }
+        
+        // Keeps track of how many items have been exchanged so far
+        initialReceivedAddNumber = getTotalReceivedAddNumber();
+        initialReceivedReplaceNumber = getTotalReceivedReplaceNumber();
+        initialReceivedDeleteNumber = getTotalReceivedDeleteNumber();
+        initialSentAddNumber = getTotalSentAddNumber();
+        initialSentReplaceNumber = getTotalSentReplaceNumber();
+        initialSentDeleteNumber = getTotalSentDeleteNumber();
+    }
+
+
+    /**
+     * Loads the relevant values from the store.
+     */
+    protected void loadFromStore() throws IOException {
+
+        grantStore();
         store.load();
         Enumeration keys = store.keys();
 
@@ -417,21 +503,128 @@ public class SyncStatus implements SyncReport {
             }
         }
 
-        // Keep track of how many items have been exchanged so far
-        initialReceivedAddNumber = getTotalReceivedAddNumber();
-        initialReceivedReplaceNumber = getTotalReceivedReplaceNumber();
-        initialReceivedDeleteNumber = getTotalReceivedDeleteNumber();
-        initialSentAddNumber = getTotalSentAddNumber();
-        initialSentReplaceNumber = getTotalSentReplaceNumber();
-        initialSentDeleteNumber = getTotalSentDeleteNumber();
+    }
+
+    /**
+     * Loads the relevant values from the table.
+     */
+    protected void loadFromTable() throws IOException {
+
+        grantTable();
+        table.open();
+        
+        final int GUID_COL = table.getColIndexOrThrow("guid");
+        final int MAPPED_COL = table.getColIndexOrThrow("mapped");
+        final int CMD_COL = table.getColIndexOrThrow("cmd");
+        final int STAT_COL = table.getColIndexOrThrow("stat");
+
+        QueryResult res = table.query();
+        while (res.hasMoreElements()) {
+            Tuple tuple = res.nextElement();
+            DirectionAndKey dak =
+                new DirectionAndKey((String) tuple.getKey());
+            String key = dak.getKey();
+            String cmd = tuple.getStringField(CMD_COL);
+            int stat = tuple.getLongField(STAT_COL).intValue();
+            ItemStatus v;
+            if (dak.isSentItem()) {
+                v = new SentItemStatus(cmd);
+                sentItems.put(key, v);
+            } else { // it is received item
+                String guid = tuple.getStringField(GUID_COL);
+                boolean mapped =
+                    (tuple.getLongField(MAPPED_COL) == NOT_MAPPED);
+                ReceivedItemStatus received =
+                    new ReceivedItemStatus(guid, cmd);
+                received.setMapSent(mapped);
+                v = received;
+                receivedItems.put(key, v);
+            }
+            v.setStatus(stat);
+        }
+
+        table.close();
+        
     }
 
     /**
      * Replace the current mappings with the new one and persist the info
      *
-     * @param mappings the mapping hshtable
+     * @param mappings the mapping hashtable
      */
     public void save() throws IOException {
+
+        if (USES_TABLE) {
+            saveOnTable();
+        }
+        
+        saveOnStore();
+    }
+
+    /**
+     * Replace the current mappings with the new one and persist the info
+     *
+     * @param mappings the mapping hashtable
+     */
+    protected void saveOnTable() throws IOException {
+
+        grantTable();
+        table.open();
+
+        final int GUID_COL = table.getColIndexOrThrow("guid");
+        final int MAPPED_COL = table.getColIndexOrThrow("mapped");
+        final int CMD_COL = table.getColIndexOrThrow("cmd");
+        final int STAT_COL = table.getColIndexOrThrow("stat");
+
+        // We save only what changed, nothing more
+        Enumeration keys = pendingSentItems.keys();
+        while(keys.hasMoreElements()) {
+            String key = (String) keys.nextElement();
+            SentItemStatus status = (SentItemStatus) pendingSentItems.get(key);
+            DirectionAndKey dak = new DirectionAndKey(true, key);
+            Tuple tuple = table.createNewRow(dak.getCompactForm());
+            tuple.setField(GUID_COL, "N/A");
+            tuple.setField(MAPPED_COL, -1);
+            tuple.setField(CMD_COL, status.getCmd());
+            tuple.setField(STAT_COL, status.getStatus());
+            table.update(tuple);
+
+            // Now move this item into the in memory values
+            sentItems.put(key, status);
+        }
+
+        // We save only what changed, nothing more
+        keys = pendingReceivedItems.keys();
+        while(keys.hasMoreElements()) {
+            String key = (String) keys.nextElement();
+            ReceivedItemStatus status = (ReceivedItemStatus) pendingReceivedItems.get(key);
+            DirectionAndKey dak = new DirectionAndKey(false, key);
+            Tuple tuple = table.createNewRow(dak.getCompactForm());
+            tuple.setField(GUID_COL, status.getGuid());
+            tuple.setField(MAPPED_COL, (status.getMapSent() ? MAPPED : NOT_MAPPED));
+            tuple.setField(CMD_COL, status.getCmd());
+            tuple.setField(STAT_COL, status.getStatus());
+            table.update(tuple);
+
+            // Now move this item into the in memory values
+            receivedItems.put(key, status);
+        }
+        pendingSentItems.clear();
+        pendingReceivedItems.clear();
+
+        table.save();
+        table.close();
+
+    }
+
+    /**
+     * Replace the current mappings with the new one and persist the info
+     *
+     * @param mappings the mapping hashtable
+     */
+    protected void saveOnStore() throws IOException {
+
+        grantStore();
 
         // We save only what changed, nothing more
         Enumeration keys = pendingSentItems.keys();
@@ -462,7 +655,7 @@ public class SyncStatus implements SyncReport {
             // Now move this item into the in memory values
             receivedItems.put(key, status);
         }
-       
+
         if (oldRequestedSyncMode != requestedSyncMode) {
             if (oldRequestedSyncMode == -1) {
                 store.add(REQUESTED_SYNC_MODE_KEY, "" + requestedSyncMode);
@@ -545,7 +738,14 @@ public class SyncStatus implements SyncReport {
      * Completely reset the sync status.
      */
     public void reset() throws IOException {
-        store.reset();
+        if (store != null) {
+            store.reset();
+        }
+        if (table != null) {
+            table.open();
+            table.reset();
+            table.close();
+        }
         init();
     }
 
@@ -556,7 +756,13 @@ public class SyncStatus implements SyncReport {
      * the server refuses the resume and we shall start exchanging from scratch.
      */
     public void resetExchangedItems() throws IOException {
+
         store.reset();
+
+        table.open();
+        table.reset();
+        table.close();
+        
         // Reset info about the exchanged data
         sentItems.clear();
         receivedItems.clear();
@@ -609,7 +815,7 @@ public class SyncStatus implements SyncReport {
     public int getSentAddNumber() {
         return getTotalSentAddNumber() - initialSentAddNumber;
     }
-    
+
 
     public int getTotalSentReplaceNumber() {
         int v1 = getItemsNumber(sentItems, SyncML.TAG_REPLACE);
@@ -734,8 +940,18 @@ public class SyncStatus implements SyncReport {
      */
     public static void setStoreFactory(StringKeyValueStoreFactory factory) {
         SyncStatus.storeFactory = factory;
+        storeFactoryChanged = true;
     }
 
+    /**
+     * This method is mainly intended for testing. It allows to use a store
+     * factory different from the platform standard one.
+     */
+    public static void setTableFactory(TableFactory factory) {
+        SyncStatus.tableFactory = factory;
+        tableFactoryChanged = true;
+    }
+    
     private void init(){
         requestedSyncMode = -1;
         alertedSyncMode = -1;
@@ -843,6 +1059,49 @@ public class SyncStatus implements SyncReport {
         public SentItemStatus(String cmd) {
             super(cmd);
         }
+    }
+
+    private class DirectionAndKey {
+
+        private boolean isSent;
+        private String key;
+
+        public DirectionAndKey(String directionAndKey) {
+            if (directionAndKey.startsWith(SENT_ITEM_KEY)) {
+                this.isSent = true;
+                this.key = directionAndKey.substring(SENT_ITEM_KEY.length());
+            } else if (directionAndKey.startsWith(RECEIVED_ITEM_KEY)) {
+                this.isSent = false;
+                this.key = directionAndKey.substring(RECEIVED_ITEM_KEY.length());
+            } else {
+                throw new IllegalArgumentException(
+                        "Compact key \"" + directionAndKey + 
+                        "\" not OK: it must start with either " + RECEIVED_ITEM_KEY + 
+                        " or " + SENT_ITEM_KEY);
+            }
+        }
+
+        public DirectionAndKey(boolean direction, String key) {
+            this.isSent = direction;
+            this.key = key;
+        }
+
+        public boolean isSentItem() {
+            return isSent;
+        }
+
+        public boolean isReceivedItem() {
+            return !isSentItem();
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getCompactForm() {
+            return (isSent ? SENT_ITEM_KEY : RECEIVED_ITEM_KEY) + key;
+        }
+
     }
 
 
