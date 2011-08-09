@@ -196,26 +196,15 @@ public class SyncStatusTest extends TestCase {
     
     private class TestTableFactory extends TableFactory {
 
-        private String[] COLS_NAME = {
-            "key",
-            "guid",
-            "mapped",
-            "cmd",
-            "stat"
-        };
-        private int[] COLS_TYPE = {
-                Table.TYPE_STRING,
-                Table.TYPE_STRING,
-                Table.TYPE_LONG,
-                Table.TYPE_STRING,
-                Table.TYPE_LONG
-        };
-        private Table table = new FileTable(".", "Test_TABLE", COLS_NAME, COLS_TYPE, 0);
+        private Table table;
 
         public TestTableFactory() {
         }
 
         public Table getStringTable(String name, String[] colsName, int[] colsType, int index) {
+            if (table == null) {
+                table = new FileTable(".", name, colsName, colsType, index);
+            }
             return table;
         }
     }

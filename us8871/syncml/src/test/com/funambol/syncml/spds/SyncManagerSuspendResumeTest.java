@@ -41,9 +41,12 @@ import java.util.Hashtable;
 
 import com.funambol.sync.SyncException;
 
+import com.funambol.storage.FileTable;
 import com.funambol.storage.StringKeyValueMemoryStore;
 import com.funambol.storage.StringKeyValueStore;
 import com.funambol.storage.StringKeyValueStoreFactory;
+import com.funambol.storage.Table;
+import com.funambol.storage.TableFactory;
 import com.funambol.sync.SyncException;
 import com.funambol.sync.SyncItem;
 import com.funambol.sync.SyncConfig;
@@ -92,6 +95,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
     private StringKeyValueStore store = null;
 
     private TestStringKeyValueStoreFactory storeFactory = new TestStringKeyValueStoreFactory();
+    private TestTableFactory tableFactory = new TestTableFactory();
 
     
     public SyncManagerSuspendResumeTest(String name) {
@@ -120,6 +124,7 @@ public class SyncManagerSuspendResumeTest extends TestCase {
         sentMessagesCount = 0;
 
         SyncStatus.setStoreFactory(storeFactory);
+        SyncStatus.setTableFactory(tableFactory);
 
         Log.initLog(new ConsoleAppender(), Log.TRACE);
     }
@@ -620,6 +625,21 @@ public class SyncManagerSuspendResumeTest extends TestCase {
 
         public StringKeyValueStore getStringKeyValueStore(String name) {
             return store;
+        }
+    }
+    
+    private class TestTableFactory extends TableFactory {
+
+        private Table table;
+
+        public TestTableFactory() {
+        }
+
+        public Table getStringTable(String name, String[] colsName, int[] colsType, int index) {
+            if (table == null) {
+                table = new FileTable(".", name, colsName, colsType, index);
+            }
+            return table;
         }
     }
 
