@@ -533,7 +533,7 @@ public class SyncStatus implements SyncReport {
             } else { // it is received item
                 String guid = tuple.getStringField(GUID_COL);
                 boolean mapped =
-                    (tuple.getLongField(MAPPED_COL) == NOT_MAPPED);
+                    (tuple.getLongField(MAPPED_COL).equals(MAPPED));
                 ReceivedItemStatus received =
                     new ReceivedItemStatus(guid, cmd);
                 received.setMapSent(mapped);
