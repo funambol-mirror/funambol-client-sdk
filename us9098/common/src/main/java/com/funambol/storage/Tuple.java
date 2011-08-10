@@ -49,11 +49,13 @@ public class Tuple implements ComparableI {
     private int colsType[];
     private int keyIdx;
     private int orderingField = -1;
+    private Table table;
 
-    public Tuple(int colsType[], int keyIdx) {
+    protected Tuple(int colsType[], int keyIdx, Table table) {
         this.colsType = colsType;
         this.arity = colsType.length;
         this.keyIdx = keyIdx;
+        this.table = table;
         fields = new Vector(arity);
         for(int i=0;i<arity;++i) {
             fields.addElement(UNDEFINED);
@@ -149,6 +151,10 @@ public class Tuple implements ComparableI {
         } else {
             throw new IllegalStateException("Unknown field type in tuple comparison");
         }
+    }
+
+    public int getColIndexOrThrow(String colName) {
+        return table.getColIndexOrThrow(colName);
     }
 
     protected Object getField(int idx) {

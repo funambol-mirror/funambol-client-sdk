@@ -179,25 +179,25 @@ public abstract class Table {
     }
 
     public Tuple createNewRow(String key) {
-        Tuple tuple = new Tuple(colsType, getKeyIdx());
+        Tuple tuple = new Tuple(colsType, getKeyIdx(), this);
         tuple.setField(getKeyIdx(), key);
         return tuple;
     }
 
     public Tuple createNewRow(Long key) {
-        Tuple tuple = new Tuple(colsType, getKeyIdx());
+        Tuple tuple = new Tuple(colsType, getKeyIdx(), this);
         tuple.setField(getKeyIdx(), key);
         return tuple;
     }
 
     public Tuple createNewRow(long key) {
-        Tuple tuple = new Tuple(colsType, getKeyIdx());
+        Tuple tuple = new Tuple(colsType, getKeyIdx(), this);
         tuple.setField(getKeyIdx(), new Long(key));
         return tuple;
     }
 
     public Tuple createNewRow() {
-        Tuple tuple = new Tuple(colsType, getKeyIdx());
+        Tuple tuple = new Tuple(colsType, getKeyIdx(), this);
         return tuple;
     }
 

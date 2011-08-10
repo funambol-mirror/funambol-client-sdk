@@ -41,11 +41,15 @@ import com.funambol.org.json.me.JSONArray;
 import com.funambol.org.json.me.JSONException;
 import com.funambol.org.json.me.JSONObject;
 
+import com.funambol.util.Log;
+
 /**
  * Represents a JSON object containing a file meta data. It can also contain a
  * Vector of JSONFileThumbnail objects.
  */
 public class JSONFileObject {
+
+    private static final String TAG_LOG = "JSONFileObject";
 
     private JSONObject jsonObject;
     
@@ -58,6 +62,7 @@ public class JSONFileObject {
     private long creationDate;
     private long lastModifiedDate;
     private long size;
+    private long duration = -1;
 
     private Vector thumbnails;
 
@@ -90,6 +95,16 @@ public class JSONFileObject {
                     JSONObject thumb = thumbs.getJSONObject(i);
                     this.thumbnails.addElement(new JSONFileThumbnail(thumb));
                 }
+            }
+        }
+
+        // duration is only present for videos
+        if (jsonObject.has("duration")) {
+            String d = jsonObject.getString("duration");
+            try {
+                duration = Long.parseLong(d);
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Invalid duration " + d, e);
             }
         }
     }
@@ -160,6 +175,10 @@ public class JSONFileObject {
 
     public Vector getThumbnails() {
         return thumbnails;
+    }
+
+    public long getDuration() {
+        return duration;
     }
 
     public class JSONFileThumbnail {

@@ -341,7 +341,7 @@ public class SQLiteTable extends Table {
                 return null;
             }
             // Create a Tuple
-            Tuple res = new Tuple(getColsType(), getKeyIdx());
+            Tuple res = new Tuple(getColsType(), getKeyIdx(), SQLiteTable.this);
             if (cursor.getColumnCount() != getArity()) {
                 throw new IllegalStateException("Table and cursor number of columns mismatch");
             }

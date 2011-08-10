@@ -367,7 +367,7 @@ public class FileTable extends Table {
     }
 
     private Tuple decodeTuple(String row) {
-        Tuple tuple = new Tuple(getColsType(), getKeyIdx());
+        Tuple tuple = new Tuple(getColsType(), getKeyIdx(), this);
         String fields[] = StringUtil.split(row, "" + SEPARATOR);
         if (fields.length != getArity()) {
             throw new IllegalStateException("FileTable is not properly formatted");

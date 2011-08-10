@@ -54,6 +54,7 @@ public class MediaMetadata {
     public static final String METADATA_MIME                  = "mime";
     public static final String METADATA_REMOTE_URI            = "remote_uri";
     public static final String METADATA_UPLOAD_CONTENT_STATUS = "upload_content_status";
+    public static final String METADATA_DURATION              = "duration";
 
     /**
      * This is the meta data schema for the media table.
@@ -72,7 +73,8 @@ public class MediaMetadata {
                                                    METADATA_GUID,
                                                    METADATA_MIME,
                                                    METADATA_REMOTE_URI,
-                                                   METADATA_UPLOAD_CONTENT_STATUS
+                                                   METADATA_UPLOAD_CONTENT_STATUS,
+                                                   METADATA_DURATION
                                                   };
 
     private static final int META_DATA_COL_TYPES[] = {
@@ -89,6 +91,7 @@ public class MediaMetadata {
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,
+                                                   Table.TYPE_LONG,
                                                    Table.TYPE_LONG
                                                   };
 

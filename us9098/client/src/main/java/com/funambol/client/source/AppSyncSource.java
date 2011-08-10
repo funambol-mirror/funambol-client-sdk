@@ -46,6 +46,7 @@ import com.funambol.client.ui.DevSettingsUISyncSource;
 import com.funambol.client.ui.UISyncSource;
 import com.funambol.client.ui.Screen;
 import com.funambol.client.ui.view.SourceThumbnailsView;
+import com.funambol.client.ui.view.ThumbnailView;
 import com.funambol.sync.SyncSource;
 
 import com.funambol.util.Log;
@@ -109,7 +110,8 @@ public class AppSyncSource {
     protected Class                settingsClass = null;
     protected Class                devSettingsClass = null;
     protected Class                sourceThumbnailsViewControllerClass = null;
-    protected Class                thumbnailsViewClass = null;
+    protected Class                sourceThumbnailsViewClass = null;
+    protected Class                thumbnailViewClass = null;
 
     // Lists all the settings with the possible values assiciated with this source
     private Hashtable settings = new Hashtable();
@@ -227,8 +229,12 @@ public class AppSyncSource {
         return uiSource;
     }
 
-    public void setSourceThumbnailsViewClass(Class thumbnailsViewClass) {
-        this.thumbnailsViewClass = thumbnailsViewClass;
+    public void setSourceThumbnailsViewClass(Class sourceThumbnailsViewClass) {
+        this.sourceThumbnailsViewClass = sourceThumbnailsViewClass;
+    }
+
+    public void setThumbnailViewClass(Class thumbnailViewClass) {
+        this.thumbnailViewClass = thumbnailViewClass;
     }
 
     public void setSourceThumbnailsViewControllerClass(Class sourceThumbnailsViewControllerClass) {
@@ -426,11 +432,27 @@ public class AppSyncSource {
     public SourceThumbnailsView createSourceThumbnailsView(Screen screen) {
         SourceThumbnailsView tv = null;
 
-        if (thumbnailsViewClass != null) {
+        if (sourceThumbnailsViewClass != null) {
             try {
-                tv = (SourceThumbnailsView)thumbnailsViewClass.newInstance();
+                tv = (SourceThumbnailsView)sourceThumbnailsViewClass.newInstance();
             } catch (Exception e) {
                 Log.error(TAG_LOG, "Cannot instantiate thumbnails class");
+            }
+        }
+        if (tv == null) {
+            throw new IllegalStateException("Cannot create representation for source");
+        }
+        return tv;
+    }
+
+    public ThumbnailView createThumbnailView(Screen screen) {
+        ThumbnailView tv = null;
+
+        if (thumbnailViewClass != null) {
+            try {
+                tv = (ThumbnailView)thumbnailViewClass.newInstance();
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Cannot instantiate thumbnail view class");
             }
         }
         if (tv == null) {

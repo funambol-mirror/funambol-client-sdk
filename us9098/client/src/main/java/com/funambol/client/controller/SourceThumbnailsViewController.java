@@ -142,7 +142,7 @@ public class SourceThumbnailsViewController implements SyncListener {
                             Log.debug(TAG_LOG, "Adding thumbnail with path: " + thumbPath);
                         }
                         ThumbnailView thumbView = sourceThumbsView.createThumbnailView();
-                        thumbView.setThumbnail(thumbPath);
+                        thumbView.setThumbnail(row);
 
                         DatedThumbnailView datedView = new DatedThumbnailView(
                                 name, thumbView, lastMod.longValue(), id.longValue());
@@ -326,15 +326,9 @@ public class SourceThumbnailsViewController implements SyncListener {
                         String thumbPath = item.getStringField(metadata
                                 .getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
 
-                        // If the path is still remote, we just ignore its value
-                        if (thumbPath.startsWith("file://") && thumbPath.length() > 7) {
-                            thumbPath = thumbPath.substring(7);
-                        } else if (!thumbPath.startsWith("/")) {
-                            thumbPath = "";
-                        }
 
                         ThumbnailView thumbView = sourceView.createThumbnailView();
-                        thumbView.setThumbnail(thumbPath);
+                        thumbView.setThumbnail(item);
                         DatedThumbnailView datedView = new DatedThumbnailView(
                                 name, thumbView, lastMod.longValue(), id.longValue());
 

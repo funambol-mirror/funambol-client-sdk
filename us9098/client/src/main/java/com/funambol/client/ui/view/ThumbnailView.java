@@ -35,6 +35,8 @@
 
 package com.funambol.client.ui.view;
 
+import com.funambol.storage.Tuple;
+
 /**
  * Represents a generic thumbnail view
  */
@@ -42,9 +44,9 @@ public interface ThumbnailView {
 
     /**
      * Set the thumbnail file path
-     * @param thumbPath
+     * @param item
      */
-    public void setThumbnail(String thumbPath);
+    public void setThumbnail(Tuple item);
 
     /**
      * @return the thumbnail view object related to the implementation
