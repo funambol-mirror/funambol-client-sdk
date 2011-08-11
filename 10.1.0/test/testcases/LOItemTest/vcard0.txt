@@ -1,0 +1,101 @@
+BEGIN:VCARD
+VERSION:2.1
+N:Magistrali;Marco;Jhon;Mr.;II
+BDAY:20090415
+NOTE;ENCODING=QUOTED-PRINTABLE;CHARSET=UTF-8:Text was once commonly encoded in ASCII, using 8 bits for one letter or other character, encoding 7 bits, allowing 128 values, and using the 8th as a checksum bit when transferring a file. This just allowed the ordinary Latin alphabet, transfer control codes, parentheses and interpunction, which annoyed especially Portuguese and Swedish[citation needed] computer users. Therefore, when data transfer became more stable, the remaining 128 values were encoded, everywhere differently, and in a way that made multilingual texts impossible to encode. At last Unicode was defined, which currently allows for 1,114,112 code values used for any modern text writing system, and a lot of extinct ones. For example Unicode codes Chinese, Hebrew, Cyrillic as well as Latin. Some of these text formats may be quite complicated to process correctly, but they still contain no structural data, such as bold start and end markers, and are therefore plain text.=0D=0A=0D=0AThe ASCII codes before SPACE (=3D 32 =3D 20H) are not intended as displayable characters, but instead as control characters. They are used for a diversity of interpreted meanings, for example the code NULL (=3D 0, sometimes denoted Ctrl-@) is used as string end markers in the programming language C and successors. Most troublesome of these are the codes LF (=3D LINE FEED =3D 10 =3D 0AH) and CR (=3D CARRIAGE RETURN =3D 13 =3D 0DH). Windows and OS/2 require the sequence CR,LF to represent a newline, while Unix and relatives use just the LF, and Classic Mac OS (but not Mac OS X) uses just the code CR. This was once a slight problem when transferring files between Windows and Unices, but today most computer programs treat this seamlessly.
+TEL;WORK;FAX:4444444444444444
+TEL;VOICE;WORK:22222222222222
+TEL;VOICE;WORK:333333333333333333
+TEL;CAR;VOICE:66666666666666
+CATEGORIES:
+TEL;WORK;PREF:777777777777777777
+FN:Magistrali, Marco Jhon
+EMAIL;INTERNET:magi1@funambol.com
+EMAIL;INTERNET;HOME:magi2@funambol.com
+EMAIL;INTERNET;WORK:magi3@funambol.com
+TITLE:Ingegnere
+TEL;VOICE;HOME:888888888888888888
+TEL;VOICE;HOME:99999999999999999
+TEL;HOME;FAX:00000000000000000
+URL;HOME:
+PRIORITY:1
+TEL;CELL:200000000000
+NICKNAME:nickname
+TEL;FAX:
+TEL;VOICE:
+TEL;PAGER:500000000000
+TEL;PREF;VOICE:
+ROLE:
+CLASS:PUBLIC
+URL:www.funambol.com
+ORG:Funambol;department;
+ADR;HOME:2;;Via casa 9;Castel san giovanni;pc;29015;Italy
+ADR:3;;via other 33;castel san giovanni;pc;29015;Italy
+ADR;WORK:1;;via business 12;Castel san giovanni;pc;29015;Italy
+PHOTO;ENCODING=b;TYPE=JPEG:
+    /9j/4AAQSkZJRgABAQEAeAB4AAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQY
+    GBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYa
+    KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAAR
+    CABEAFoDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAA
+    AgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkK
+    FhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWG
+    h4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl
+    5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREA
+    AgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYk
+    NOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOE
+    hYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk
+    5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5YeR3VFdiQg2qD2Gc/wBabXaWXw81vUb2
+    QRW6WtuWO152x8vbgZP6V3Gl/CbS7NUk1m/kuWP8Cfu1z6ep/SsJYinHqFjqPgLCYfA6SAf6
+    +eR/rjC/+y16ydNA0uXUNSka2sY13GTbnj1rkPDVrb6RaR2FlCsNtGPkQdsnJ/U1Z8VanqFl
+    4Y1H+zrmWF2j/gbH1P5VjHEwbu1oTHDupNRva7M648TeEobgDfqN2pPLxhUXHtnmtDS9Q0LW
+    bgR6LPNbXPAjWdhiQ4Jx6g8dema8FVp5jPulk8w/M3ysxY+vFZAuZ95Mc0mfUMap4hP7J7ku
+    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
+    
+X-ANNIVERSARY:20090430
+X-FUNAMBOL-BILLINGINFO:
+TEL;X-FUNAMBOL-CALLBACK:
+X-FUNAMBOL-CHILDREN:children
+X-FUNAMBOL-COMPANIES:
+X-FUNAMBOL-FOLDER:DEFAULT_FOLDER
+X-FUNAMBOL-GENDER:0
+X-FUNAMBOL-HOBBIES:
+EMAIL;INTERNET;HOME;X-FUNAMBOL-INSTANTMESSENGER:
+X-FUNAMBOL-INITIALS:M.J.M.
+X-FUNAMBOL-LANGUAGES:
+X-MANAGER:Nome Manager
+X-FUNAMBOL-MILEAGE:
+X-FUNAMBOL-ORGANIZATIONALID:
+TEL;X-FUNAMBOL-RADIO:7000000000
+X-SPOUSE:spouse
+X-FUNAMBOL-SUBJECT:Marco Jhon Magistrali II
+TEL;X-FUNAMBOL-TELEX:
+X-FUNAMBOL-YOMICOMPANYNAME:
+X-FUNAMBOL-YOMIFIRSTNAME:
+X-FUNAMBOL-YOMILASTNAME:
+END:VCARD

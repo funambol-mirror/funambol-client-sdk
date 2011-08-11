@@ -1,0 +1,15 @@
+The port of the Funambol C++ Client API to Unix/Linux
+was done by Patrick Ohly <patrick.ohly@gmx.de>.
+It uses libcurl for HTTP transfer of SyncML messages.
+
+The Sync4j configuration tree is mapped to files
+under $HOME/.sync4j/<node>/config.txt where
+<node> specifies the path in the tree and "config.txt"
+is a simple text file with one
+ <property> = <value>
+pair per line. Lines starting with (optional) spaces
+and a hash (#) are comments and skipped. <property>
+is case insensitive. <value> is everything following
+the equal sign and the (optional) spaces after it
+until the end of the line. Values starting with spaces
+or containing newlines are not supported.
