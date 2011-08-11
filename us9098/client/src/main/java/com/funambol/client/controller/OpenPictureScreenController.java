@@ -1,7 +1,12 @@
+package com.funambol.client.controller;
+
+import com.funambol.client.ui.OpenItemScreen;
+import com.funambol.util.StringUtil;
+
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
  * Copyright (C) 2011 Funambol, Inc.
- *
+ * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
  * the Free Software Foundation with the addition of the following permission
@@ -18,7 +23,7 @@
  * along with this program; if not, see http://www.gnu.org/licenses or write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301 USA.
- *
+ * 
  * You can contact Funambol, Inc. headquarters at 643 Bair Island Road, Suite
  * 305, Redwood City, CA 94063, USA, or at email address info@funambol.com.
  *
@@ -33,29 +38,24 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.ui.view;
-
-import com.funambol.storage.Tuple;
-
-/**
- * Represents a generic thumbnail view
+/** 
+ * This is a generic interface for screens where individual items are 
+ * displayed in more details. There will be subinterfaces for different
+ * item types.
  */
-public interface ThumbnailView {
 
-    /**
-     * Set the thumbnail file path
-     * @param item
-     */
-    public void setThumbnail(Tuple item);
+public class OpenPictureScreenController extends OpenItemScreenController {
 
-    /**
-     * @return the thumbnail view object related to the implementation
-     */
-    public Object getThumbnailView();
-    
-    public void setOnOpenListener(OnOpenListener listener);
-    
-    public interface OnOpenListener {
-        public void onOpen();      
+    public void initScreen(OpenItemScreen screen) {
+        super.initScreen(screen);
+        
+        String title = localization.getLanguage("open_i_of_n_pictures");
+        title = StringUtil.replaceAll(title, "__I__", String.valueOf(getPosition()));
+        title = StringUtil.replaceAll(title, "__N__", String.valueOf(getTotal()));
+        
+        screen.setTitle(title);
+        screen.setHalluxnailPath(getHalluxnailPath());
     }
+
+    
 }

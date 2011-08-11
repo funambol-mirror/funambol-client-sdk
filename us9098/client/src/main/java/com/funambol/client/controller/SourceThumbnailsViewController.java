@@ -35,14 +35,19 @@
 
 package com.funambol.client.controller;
 
+import java.io.IOException;
 import java.util.Vector;
 import com.funambol.client.customization.Customization;
 import com.funambol.client.engine.SyncReportMessage;
 import com.funambol.client.source.AppSyncSource;
 import com.funambol.client.source.MediaMetadata;
 import com.funambol.client.source.MetadataBusMessage;
+import com.funambol.client.ui.DisplayManager;
+import com.funambol.client.ui.OpenItemScreen;
+import com.funambol.client.ui.Screen;
 import com.funambol.client.ui.view.SourceThumbnailsView;
 import com.funambol.client.ui.view.ThumbnailView;
+import com.funambol.storage.QueryFilter;
 import com.funambol.storage.QueryResult;
 import com.funambol.storage.Table;
 import com.funambol.storage.Tuple;
@@ -61,6 +66,7 @@ public class SourceThumbnailsViewController implements SyncListener {
 
     private Customization customization;
     private AppSyncSource appSource;
+    private Controller globalController;
 
     private SourceThumbnailsView sourceThumbsView;
     private TableEventListener tableEventListener;
@@ -68,9 +74,10 @@ public class SourceThumbnailsViewController implements SyncListener {
 
     private int totalItemsCount = 0;
 
-    public SourceThumbnailsViewController(AppSyncSource appSource, Customization customization) {
+    public SourceThumbnailsViewController(AppSyncSource appSource, Customization customization, Controller globalController) {
         this.appSource = appSource;
         this.customization = customization;
+        this.globalController = globalController;
     }
 
     public void setSourceThumbnailsView(SourceThumbnailsView thumbsView) {
@@ -355,8 +362,95 @@ public class SourceThumbnailsViewController implements SyncListener {
             }
         }
     }
+    
+    private class ThumbnailOpener implements ThumbnailView.OnOpenListener {
 
-    private class DatedThumbnailView {
+        private Long id;
+        
+        public ThumbnailOpener(long id) {
+            this.id = new Long(id);
+        }
+        
+        public void onOpen() {
+            
+            Table metadata = appSource.getMetadataTable();
+            if (metadata == null) {
+                if (Log.isLoggable(Log.ERROR)) {
+                    Log.error(TAG_LOG, "Source does not provide metadata " + appSource.getName());
+                }
+                return;
+            }
+            
+            
+            try {
+                metadata.open();
+            
+                QueryFilter filter = metadata.createQueryFilter(id);
+                QueryResult thumbnails = metadata.query(filter);
+                if (thumbnails.hasMoreElements()) {
+                    Tuple row = thumbnails.nextElement();
+                    String name = row.getStringField(metadata
+                            .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
+                    String halluxPath = row.getStringField(metadata
+                            .getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH));
+                    // @TODO Collect other data needed for the "open item" view
+                    
+                    OpenItemScreenController openItemScreenController;                    
+                    try {
+                        openItemScreenController = (OpenItemScreenController) appSource.getOpenItemScreenControllerClass().newInstance();                    
+                    
+                    } catch (IllegalAccessException e) {
+                        if (Log.isLoggable(Log.ERROR)) {
+                            Log.error(TAG_LOG, "Could not instantiate new screen controller " + e);
+                        }
+                        return;
+                    } catch (InstantiationException e) {
+                        if (Log.isLoggable(Log.ERROR)) {
+                            Log.error(TAG_LOG, "Could not instantiate new screen " + e);
+                        }
+                        return;
+                    }
+                    globalController.setOpenItemScreenController(openItemScreenController);
+                    
+                    int position = 0;
+                    synchronized(datedThumbnails) {
+                        
+                        for(; position < datedThumbnails.size(); position++) {
+                            DatedThumbnailView view = (DatedThumbnailView) 
+                                    datedThumbnails.elementAt(position);
+                            if (view.getId() == id.longValue()) {
+                                break;
+                            }
+                        }
+                    }
+                    
+                    openItemScreenController.setLocalization(globalController.getLocalization());
+                    openItemScreenController.setId(id.longValue());
+                    openItemScreenController.setName(name);
+                    openItemScreenController.setHalluxnailPath(halluxPath);
+                    openItemScreenController.setPosition(position);
+                    openItemScreenController.setTotal(totalItemsCount);
+                    openItemScreenController.setParentController(SourceThumbnailsViewController.this);
+
+                    Screen screenFrom = globalController.getHomeScreenController().getHomeScreen();
+                    globalController.getDisplayManager().showScreen(screenFrom, Controller.OPEN_ITEM_SCREEN_ID);
+                    
+                } else {
+                    if (Log.isLoggable(Log.ERROR)) {
+                        Log.error(TAG_LOG, "Metadata not found for item " + id);
+                    }
+                    return;
+                }
+            }   catch (IOException e) {
+                Log.error(TAG_LOG, "Unable to access metadata", e);
+                
+            } catch (Exception e) {
+                Log.error(TAG_LOG, "Unable to set up new screen", e);
+            }
+        }
+    }
+
+    protected class DatedThumbnailView {
 
         private String name;
         private ThumbnailView view;
@@ -368,6 +462,7 @@ public class SourceThumbnailsViewController implements SyncListener {
             this.view = view;
             this.timestamp = timestamp;
             this.id = id;
+            view.setOnOpenListener(new ThumbnailOpener(id));
         }
 
         public String getName() {

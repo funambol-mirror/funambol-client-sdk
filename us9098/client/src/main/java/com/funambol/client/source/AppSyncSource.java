@@ -38,6 +38,7 @@ package com.funambol.client.source;
 import java.util.Hashtable;
 
 import com.funambol.storage.Table;
+import com.funambol.client.controller.Controller;
 import com.funambol.client.controller.SourceThumbnailsViewController;
 import com.funambol.client.controller.SynchronizationController;
 import com.funambol.client.customization.Customization;
@@ -112,6 +113,7 @@ public class AppSyncSource {
     protected Class                sourceThumbnailsViewControllerClass = null;
     protected Class                sourceThumbnailsViewClass = null;
     protected Class                thumbnailViewClass = null;
+    protected Class                openItemScreenControllerClass = null;
 
     // Lists all the settings with the possible values assiciated with this source
     private Hashtable settings = new Hashtable();
@@ -263,6 +265,14 @@ public class AppSyncSource {
 
     public void setDevSettingsUIClass(Class devSettingsClass) {
         this.devSettingsClass = devSettingsClass;
+    }
+
+    public Class getOpenItemScreenControllerClass() {
+        return openItemScreenControllerClass;
+    }
+
+    public void setOpenItemScreenControllerClass(Class openItemScreenControllerClass) {
+        this.openItemScreenControllerClass = openItemScreenControllerClass;
     }
 
     public SettingsUISyncSource getSettingsUISyncSource() {
@@ -465,7 +475,7 @@ public class AppSyncSource {
      * Creates a controller for the main thumbnails view
      */
     public SourceThumbnailsViewController createSourceThumbnailsViewController(
-            Customization customization) {
+            Customization customization, Controller globalController) {
         SourceThumbnailsViewController sourceThumbnailsViewController = null;
         if (sourceThumbnailsViewControllerClass != null) {
             try {
@@ -477,8 +487,9 @@ public class AppSyncSource {
         }
         if (sourceThumbnailsViewController == null) {
             sourceThumbnailsViewController =
-                    new SourceThumbnailsViewController(this, customization);
+                    new SourceThumbnailsViewController(this, customization, globalController);
         }
+        
         return sourceThumbnailsViewController;
     }
 

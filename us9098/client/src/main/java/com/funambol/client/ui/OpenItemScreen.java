@@ -1,7 +1,9 @@
+package com.funambol.client.ui;
+
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
  * Copyright (C) 2011 Funambol, Inc.
- *
+ * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by
  * the Free Software Foundation with the addition of the following permission
@@ -18,7 +20,7 @@
  * along with this program; if not, see http://www.gnu.org/licenses or write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301 USA.
- *
+ * 
  * You can contact Funambol, Inc. headquarters at 643 Bair Island Road, Suite
  * 305, Redwood City, CA 94063, USA, or at email address info@funambol.com.
  *
@@ -33,29 +35,16 @@
  * the words "Powered by Funambol".
  */
 
-package com.funambol.client.ui.view;
-
-import com.funambol.storage.Tuple;
-
-/**
- * Represents a generic thumbnail view
+/** 
+ * This is a generic interface for screens where individual items are 
+ * displayed in more details. There will be subinterfaces for different
+ * item types.
  */
-public interface ThumbnailView {
 
-    /**
-     * Set the thumbnail file path
-     * @param item
-     */
-    public void setThumbnail(Tuple item);
-
-    /**
-     * @return the thumbnail view object related to the implementation
-     */
-    public Object getThumbnailView();
+public interface OpenItemScreen extends Screen {
     
-    public void setOnOpenListener(OnOpenListener listener);
+    public void setTitle(String title);
+    public void setHalluxnailPath(String path);
     
-    public interface OnOpenListener {
-        public void onOpen();      
-    }
+    
 }

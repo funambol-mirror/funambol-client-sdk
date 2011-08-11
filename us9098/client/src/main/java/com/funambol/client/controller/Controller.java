@@ -62,6 +62,7 @@ public class Controller extends BasicController {
     public static final int DEV_SETTINGS_SCREEN_ID = 7;
     public static final int SOURCES_SELECTOR_SCREEN_ID = 8;
     public static final int SPLASH_SCREEN_ID = 9;
+    public static final int OPEN_ITEM_SCREEN_ID = 10;
     
 
     protected DisplayManager displayManager = null;
@@ -75,6 +76,7 @@ public class Controller extends BasicController {
     protected AboutScreenController            aboutScreenController;
     protected DialogController                 dialogController;
     private SourcesSelectorScreenController    sourcesSelectorScreenController;
+    private OpenItemScreenController           openItemScreenController;
     
     protected Customization customization = null;
 
@@ -497,5 +499,14 @@ public class Controller extends BasicController {
             SourcesSelectorScreenController sourcesSelectorScreenController) {
         this.sourcesSelectorScreenController = sourcesSelectorScreenController;
         
+    }
+
+    public void setOpenItemScreenController(
+            OpenItemScreenController openItemScreenController) {
+        this.openItemScreenController = openItemScreenController;
+    }
+    
+    public OpenItemScreenController getOpenItemScreenController() {
+        return openItemScreenController;
     }
 }
