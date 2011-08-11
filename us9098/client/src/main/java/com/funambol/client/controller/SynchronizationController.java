@@ -759,8 +759,16 @@ public class SynchronizationController implements BusMessageHandler {
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG, "Sending sync message to the bus");
         }
-        SyncMessage message = new SyncMessage(syncSources);
-        BusService.sendMessage(message);
+        // We fire all sources in parallel ang give little precedence top-down
+        for(int i=0;i<syncSources.size();++i) {
+            Vector singleSource = new Vector();
+            singleSource.addElement(syncSources.elementAt(i));
+            SyncMessage message = new SyncMessage(singleSource);
+            BusService.sendMessage(message);
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {}
+        }
     }
 
     protected synchronized void
