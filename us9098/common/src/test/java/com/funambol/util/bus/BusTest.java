@@ -75,6 +75,7 @@ public class BusTest extends TestCase {
     
     public BusTest(String name) {
         super(name);
+        Log.setLogLevel(Log.TRACE);
     }
     
     public void setUp() {
@@ -100,9 +101,15 @@ public class BusTest extends TestCase {
 
         // These calls are asynchronous, wait some time before checking the
         // receiver
-        sleep(500);
-
-        Vector receivedMessages = handler.getReceivedMessages();
+        Vector receivedMessages;
+        int waitedTime = 0;
+        do {
+            receivedMessages = handler.getReceivedMessages();
+            if (receivedMessages.size() != 2) {
+                sleep(500);
+                waitedTime += 500;
+            }
+        } while(receivedMessages.size() !=2 && waitedTime < 2000);
         assertEquals(2, receivedMessages.size());
 
         BusMessage m0 = (BusMessage)receivedMessages.elementAt(0);
@@ -142,9 +149,15 @@ public class BusTest extends TestCase {
 
         // These calls are asynchronous, wait some time before checking the
         // receiver
-        sleep(500);
-
-        Vector receivedMessages = handler.getReceivedMessages();
+        Vector receivedMessages;
+        int waitedTime = 0;
+        do {
+            receivedMessages = handler.getReceivedMessages();
+            if (receivedMessages.size() != 1) {
+                sleep(500);
+                waitedTime += 500;
+            }
+        } while(receivedMessages.size() != 1 && waitedTime < 2000);
         assertEquals(receivedMessages.size(), 1);
 
         BusMessage m0 = (BusMessage)receivedMessages.elementAt(0);
@@ -172,9 +185,15 @@ public class BusTest extends TestCase {
 
         // These calls are asynchronous, wait some time before checking the
         // receiver
-        sleep(500);
-
-        Vector receivedMessages = handler.getReceivedMessages();
+        Vector receivedMessages;
+        int waitedTime = 0;
+        do {
+            receivedMessages = handler.getReceivedMessages();
+            if (receivedMessages.size() != 3) {
+                sleep(500);
+                waitedTime += 500;
+            }
+        } while(receivedMessages.size() != 3 && waitedTime < 2000);
         assertEquals(receivedMessages.size(), 3);
 
         BusMessage m0 = (BusMessage)receivedMessages.elementAt(0);
