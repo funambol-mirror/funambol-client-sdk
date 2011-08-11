@@ -385,22 +385,22 @@ public class SourceThumbnailsViewController implements SyncListener {
             try {
                 metadata.open();
             
-                Log.trace("Querying metadata");
+                Log.trace(TAG_LOG, "Querying metadata");
                 QueryFilter filter = metadata.createQueryFilter(id);
                 QueryResult thumbnails = metadata.query(filter);
                 if (thumbnails.hasMoreElements()) {
-                    Log.trace("Found metadata for current item");
+                    Log.trace(TAG_LOG, "Found metadata for current item");
                     Tuple row = thumbnails.nextElement();
                     String name = row.getStringField(metadata
                             .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
                     String halluxPath = row.getStringField(metadata
                             .getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH));
                     // @TODO Collect other data needed for the "open item" view
-                    Log.trace("Collected relevant information");
+                    Log.trace(TAG_LOG, "Collected relevant information");
                     
                     OpenItemScreenController openItemScreenController;                    
                     try {
-                        Log.trace("Creating controller to open item from source");
+                        Log.trace(TAG_LOG, "Creating controller to open item from source");
                         openItemScreenController = (OpenItemScreenController) appSource.getOpenItemScreenControllerClass().newInstance();                    
                     
                     } catch (IllegalAccessException e) {
@@ -419,10 +419,10 @@ public class SourceThumbnailsViewController implements SyncListener {
                     
                     int position = findThumbnailIndex(id.longValue());
                     if (Log.isLoggable(Log.TRACE)) {
-                        Log.trace("Position = " + position);
+                        Log.trace(TAG_LOG, "Position = " + position);
                     }
                     
-                    Log.trace("Setting up controller");
+                    Log.trace(TAG_LOG, "Setting up controller");
                     openItemScreenController.setLocalization(globalController.getLocalization());
                     openItemScreenController.setId(id.longValue());
                     openItemScreenController.setName(name);
@@ -431,7 +431,7 @@ public class SourceThumbnailsViewController implements SyncListener {
                     openItemScreenController.setTotal(totalItemsCount);
                     openItemScreenController.setParentController(SourceThumbnailsViewController.this);
 
-                    Log.trace("Switching to new screen to open item");
+                    Log.trace(TAG_LOG, "Switching to new screen to open item");
                     Screen screenFrom = globalController.getHomeScreenController().getHomeScreen();
                     globalController.getDisplayManager().showScreen(screenFrom, Controller.OPEN_ITEM_SCREEN_ID);
                     return;
