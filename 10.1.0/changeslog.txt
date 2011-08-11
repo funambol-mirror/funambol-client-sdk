@@ -1,3 +1,6 @@
+2011-08-11
+  - toccy: version 10.1.0
+
 2011-07-27
   - toccy: merged from branch v10 at rev.4420
       - toccy: Symbian HTTP: fixed handling of http status FORBIDDEN (403)
