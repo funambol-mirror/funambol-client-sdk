@@ -50,7 +50,7 @@ public class OpenPictureScreenController extends OpenItemScreenController {
         super.initScreen(screen);
         
         String title = localization.getLanguage("open_i_of_n_pictures");
-        title = StringUtil.replaceAll(title, "__I__", String.valueOf(getPosition()));
+        title = StringUtil.replaceAll(title, "__I__", String.valueOf(getPosition() + 1));
         title = StringUtil.replaceAll(title, "__N__", String.valueOf(getTotal()));
         
         screen.setTitle(title);
