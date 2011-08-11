@@ -1,5 +1,3 @@
-package com.funambol.client.ui;
-
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
  * Copyright (C) 2011 Funambol, Inc.
@@ -34,6 +32,7 @@ package com.funambol.client.ui;
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol".
  */
+package com.funambol.client.ui;
 
 /** 
  * This is a generic interface for screens where individual items are 

@@ -1,9 +1,3 @@
-package com.funambol.client.controller;
-
-import com.funambol.client.controller.SourceThumbnailsViewController;
-import com.funambol.client.localization.Localization;
-import com.funambol.client.ui.OpenItemScreen;
-
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
  * Copyright (C) 2011 Funambol, Inc.
@@ -38,6 +32,11 @@ import com.funambol.client.ui.OpenItemScreen;
  * feasible for technical reasons, the Appropriate Legal Notices must display
  * the words "Powered by Funambol".
  */
+package com.funambol.client.controller;
+
+import com.funambol.client.controller.SourceThumbnailsViewController;
+import com.funambol.client.localization.Localization;
+import com.funambol.client.ui.OpenItemScreen;
 
 /** 
  * This is a generic interface for screens where individual items are 

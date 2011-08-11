@@ -1,8 +1,3 @@
-package com.funambol.client.controller;
-
-import com.funambol.client.ui.OpenItemScreen;
-import com.funambol.util.StringUtil;
-
 /*
  * Funambol is a mobile platform developed by Funambol, Inc.
  * Copyright (C) 2011 Funambol, Inc.
@@ -38,6 +33,11 @@ import com.funambol.util.StringUtil;
  * the words "Powered by Funambol".
  */
 
+package com.funambol.client.controller;
+
+import com.funambol.client.ui.OpenItemScreen;
+import com.funambol.util.StringUtil;
+
 /** 
  * This is a generic interface for screens where individual items are 
  * displayed in more details. There will be subinterfaces for different
@@ -63,6 +63,4 @@ public class OpenPictureScreenController extends OpenItemScreenController {
         }
         screen.setHalluxnailPath(halluxPath);
     }
-
-    
 }
