@@ -79,6 +79,9 @@ public class BusTest extends TestCase {
     }
     
     public void setUp() {
+        // Make sure we start from a clean situation
+        Bus.dispose();
+        // Create a real new bus instance
         bus = Bus.getInstance();
         Log.initLog(new ConsoleAppender(), Log.TRACE);
     }

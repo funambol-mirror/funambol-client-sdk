@@ -58,6 +58,8 @@ public class Bus {
     
     private static Bus instance = null;
 
+    private static final String TAG_LOG = "Bus";
+
     private Hashtable handlers = new Hashtable();
     private MessageQueue messageQueue = new MessageQueue();
 
@@ -71,11 +73,13 @@ public class Bus {
         messageQueueThread.start();
         // Allow the daemon to start. This is especially important for unit test
         // and has no real impact on client's implementations
-        try {
-            Thread.yield();
-            Thread.sleep(100);
-        } catch (Exception e) {
-        }
+        do {
+            try {
+                Thread.yield();
+                Thread.sleep(100);
+            } catch (Exception e) {
+            }
+        } while(!messageQueueThread.isAlive());
     }
 
     /**
@@ -97,6 +101,9 @@ public class Bus {
      * @return true if the handler has been registered
      */
     public boolean registerMessageHandler(Class type, BusMessageHandler handler) {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "register message handler for type " + type);
+        }
         synchronized(handlersLock) {
             Vector typeHandlers = (Vector)handlers.get(type);
             if(typeHandlers == null) {
@@ -121,6 +128,9 @@ public class Bus {
      * @return true if the handler has been unregistered
      */
     public boolean unregisterMessageHandler(Class type, BusMessageHandler handler) {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "unregister message handler for type " + type);
+        }
         synchronized(handlersLock) {
             Vector typeHandlers = (Vector)handlers.get(type);
             if(typeHandlers != null) {
@@ -135,6 +145,10 @@ public class Bus {
         }
     }
 
+    public static void dispose() {
+        instance = null;
+    }
+
     /**
      * Send the given message to the registered handlers. A call to this method
      * is asynchronous and will return immediately.
@@ -142,6 +156,9 @@ public class Bus {
      * @param message The message to send
      */
     public void sendMessage(BusMessage message) {
+        if (Log.isLoggable(Log.TRACE)) {
+            Log.trace(TAG_LOG, "sending message " + message);
+        }
         synchronized(messageQueueLock) {
             messageQueue.add(message);
             messageQueueLock.notifyAll();
@@ -169,6 +186,9 @@ public class Bus {
             BusMessageHandler handler = (BusMessageHandler)wrHandler.get();
             // Check if the handler reference is still there
             if(handler != null) {
+                if (Log.isLoggable(Log.TRACE)) {
+                    Log.trace(TAG_LOG, "dispatching message to handler " + handler + "," + message);
+                }
                 handler.receiveMessage(message);
             }
         }
