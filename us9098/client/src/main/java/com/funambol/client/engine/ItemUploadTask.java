@@ -68,15 +68,26 @@ public class ItemUploadTask implements Task {
     protected String thumbSize;
     protected int initialDelay;
     protected Table metadata;
-    protected Configuration configuration;
+    protected String syncUrl;
+    protected String username;
+    protected String password;
 
     public ItemUploadTask(Long id, int initialDelay, Table metadata,
                           Configuration configuration) {
+        this(id, initialDelay, metadata, configuration.getSyncUrl(), configuration.getUsername(),
+             configuration.getPassword());
+    }
+
+    public ItemUploadTask(Long id, int initialDelay, Table metadata,
+                          String syncUrl, String username, String password) {
         this.id = id;
         this.initialDelay = initialDelay;
         this.metadata = metadata;
-        this.configuration = configuration;
+        this.syncUrl = syncUrl;
+        this.username = username;
+        this.password = password;
     }
+
 
     public void run() {
         boolean done = false;
@@ -132,8 +143,7 @@ public class ItemUploadTask implements Task {
         do {
             // We refresh at every attempt so that if the user changes the
             // configuration we pick the updated one
-            SapiHandler sapiHandler = new SapiHandler(configuration.getSyncUrl(), configuration.getUsername(),
-                    configuration.getPassword());
+            SapiHandler sapiHandler = new SapiHandler(syncUrl, username, password);
 
             try {
                 // First of all we check if the item is partially available on
@@ -222,8 +232,8 @@ public class ItemUploadTask implements Task {
         }
     }
 
-    public String uploadItem(String fileName, String guid, long size, String name, String mimeType,
-                             String remoteUri, SapiHandler sapiHandler)
+    private String uploadItem(String fileName, String guid, long size, String name, String mimeType,
+                              String remoteUri, SapiHandler sapiHandler)
     throws UploadException, IOException {
         return uploadItem(fileName, guid, size, name, mimeType, remoteUri, 0, sapiHandler);
     }
@@ -280,7 +290,6 @@ public class ItemUploadTask implements Task {
                 Log.error(TAG_LOG, "Server doesn't support the SAPI call", e);
                 throw new UploadException("Unsupported SAPI call");
             }
-
 
             // Send the upload request
             JSONObject uploadResponse = null;
