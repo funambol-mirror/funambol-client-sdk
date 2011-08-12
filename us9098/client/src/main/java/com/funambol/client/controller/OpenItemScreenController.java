@@ -50,7 +50,7 @@ public abstract class OpenItemScreenController {
     protected String name;
     protected int position;
     protected int total;
-    protected String halluxnailPath;
+    protected String previewPath;
     protected SourceThumbnailsViewController sourceThumbnailsViewController;    
     protected OpenItemScreen screen;
     protected Localization localization;
@@ -112,16 +112,16 @@ public abstract class OpenItemScreenController {
         this.total = total;
     }
     /**
-     * @return the halluxnailPath
+     * @return the previewPath
      */
-    public String getHalluxnailPath() {
-        return halluxnailPath;
+    public String getPreviewPath() {
+        return previewPath;
     }
     /**
-     * @param halluxnailPath the halluxnailPath to set
+     * @param previewPath the previewPath to set
      */
-    public void setHalluxnailPath(String halluxnailPath) {
-        this.halluxnailPath = halluxnailPath;
+    public void setPreviewPath(String previewPath) {
+        this.previewPath = previewPath;
     }
     /**
      * @return the sourceThumbnailsViewController

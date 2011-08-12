@@ -73,8 +73,8 @@ public class FunambolFileSyncSource extends FileSyncSource {
     protected Customization customization;
     protected Table metadata;
 
-    protected String smallThumbSize;
-    protected String bigThumbSize;
+    protected String thumbSize;
+    protected String previewSize;
     
     //------------------------------------------------------------- Constructors
 
@@ -91,8 +91,8 @@ public class FunambolFileSyncSource extends FileSyncSource {
         // These values should be computed dynamically to optimize the download
         // bandwidth and the visualization on the local display, but at the
         // moment this is not supported
-        smallThumbSize = "176";
-        bigThumbSize = "504";
+        thumbSize = "176";
+        previewSize = "504";
     }
 
     public void beginSync(int syncMode, boolean resume) throws SyncException {
@@ -208,14 +208,14 @@ public class FunambolFileSyncSource extends FileSyncSource {
 
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_NAME), name);
             if (urls[0] != null) {
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), urls[0]);
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMBNAIL_PATH), urls[0]);
             } else {
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH), "");
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMBNAIL_PATH), "");
             }
             if (urls[1] != null) {
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), urls[1]);
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_PREVIEW_PATH), urls[1]);
             } else {
-                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH), "");
+                tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_PREVIEW_PATH), "");
             }
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), "");
             tuple.setField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), lastMod);
@@ -333,9 +333,9 @@ public class FunambolFileSyncSource extends FileSyncSource {
             if (thumbnails != null) {
                 for(int i=0;i<thumbnails.size();++i) {
                     thumb = (JSONFileObject.JSONFileThumbnail)thumbnails.elementAt(i);
-                    if (smallThumbSize.equals(thumb.getSize())) {
+                    if (thumbSize.equals(thumb.getSize())) {
                         urls[0] = composeUrl(syncUrl, fileObject.getServerUrl(), thumb.getUrl());
-                    } else if (bigThumbSize.equals(thumb.getSize())) {
+                    } else if (previewSize.equals(thumb.getSize())) {
                         urls[1] = composeUrl(syncUrl, fileObject.getServerUrl(), thumb.getUrl());
                     }
                 }

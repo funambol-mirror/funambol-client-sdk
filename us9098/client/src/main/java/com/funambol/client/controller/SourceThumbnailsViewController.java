@@ -138,7 +138,7 @@ public class SourceThumbnailsViewController implements SyncListener {
                     Tuple row = thumbnails.nextElement();
                     if(getThumbnailsCount() < maxCount) {
                         String thumbPath = row.getStringField(metadata.getColIndexOrThrow(
-                                    MediaMetadata.METADATA_THUMB1_PATH));
+                                    MediaMetadata.METADATA_THUMBNAIL_PATH));
                         Long lastMod = row.getLongField(metadata.getColIndexOrThrow(
                                     MediaMetadata.METADATA_LAST_MOD));
                         Long id = row.getLongField(metadata.getColIndexOrThrow(
@@ -324,14 +324,14 @@ public class SourceThumbnailsViewController implements SyncListener {
                     // If the update operation did not change the last mod or
                     // the thumb1 path, then we do not care
                     if (!item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD)) ||
-                        !item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH))) {
+                        !item.isUndefined(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMBNAIL_PATH))) {
 
                         String name = item.getStringField(metadata
                                 .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
                         Long lastMod = item.getLongField(metadata.getColIndexOrThrow(
                                     MediaMetadata.METADATA_LAST_MOD));
                         String thumbPath = item.getStringField(metadata
-                                .getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
+                                .getColIndexOrThrow(MediaMetadata.METADATA_THUMBNAIL_PATH));
 
 
                         ThumbnailView thumbView = sourceView.createThumbnailView();
@@ -393,8 +393,8 @@ public class SourceThumbnailsViewController implements SyncListener {
                     Tuple row = thumbnails.nextElement();
                     String name = row.getStringField(metadata
                             .getColIndexOrThrow(MediaMetadata.METADATA_NAME));
-                    String halluxPath = row.getStringField(metadata
-                            .getColIndexOrThrow(MediaMetadata.METADATA_THUMB2_PATH));
+                    String previewPath = row.getStringField(metadata
+                            .getColIndexOrThrow(MediaMetadata.METADATA_PREVIEW_PATH));
                     // @TODO Collect other data needed for the "open item" view
                     Log.trace(TAG_LOG, "Collected relevant information");
                     
@@ -426,7 +426,7 @@ public class SourceThumbnailsViewController implements SyncListener {
                     openItemScreenController.setLocalization(globalController.getLocalization());
                     openItemScreenController.setId(id.longValue());
                     openItemScreenController.setName(name);
-                    openItemScreenController.setHalluxnailPath(halluxPath);
+                    openItemScreenController.setPreviewPath(previewPath);
                     openItemScreenController.setPosition(position);
                     openItemScreenController.setTotal(totalItemsCount);
                     openItemScreenController.setParentController(SourceThumbnailsViewController.this);

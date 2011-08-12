@@ -42,8 +42,8 @@ public class MediaMetadata {
 
     public static final String METADATA_ID                    = "id";
     public static final String METADATA_NAME                  = "name";
-    public static final String METADATA_THUMB1_PATH           = "thumb1_path";
-    public static final String METADATA_THUMB2_PATH           = "thumb2_path";
+    public static final String METADATA_THUMBNAIL_PATH        = "thumbnail_path";
+    public static final String METADATA_PREVIEW_PATH          = "preview_path";
     public static final String METADATA_ITEM_PATH             = "item_path";
     public static final String METADATA_LAST_MOD              = "last_mod";
     public static final String METADATA_SYNCHRONIZED          = "synchronized";
@@ -62,8 +62,8 @@ public class MediaMetadata {
     private static final String META_DATA_COL_NAMES[] = {
                                                    METADATA_ID,
                                                    METADATA_NAME,
-                                                   METADATA_THUMB1_PATH,
-                                                   METADATA_THUMB2_PATH,
+                                                   METADATA_THUMBNAIL_PATH,
+                                                   METADATA_PREVIEW_PATH,
                                                    METADATA_ITEM_PATH,
                                                    METADATA_LAST_MOD,
                                                    METADATA_SYNCHRONIZED,

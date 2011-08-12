@@ -54,7 +54,7 @@ public class OpenPictureScreenController extends OpenItemScreenController {
         title = StringUtil.replaceAll(title, "__N__", String.valueOf(getTotal()));
         
         screen.setTitle(title);
-        String halluxPath = getHalluxnailPath();
+        String halluxPath = getPreviewPath();
         // If the path is still remote, we just ignore its value
         if (halluxPath.startsWith("file://") && halluxPath.length() > 7) {
             halluxPath = halluxPath.substring(7);

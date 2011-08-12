@@ -104,7 +104,7 @@ public class ItemUploadTask implements Task {
                 remoteUri = row.getStringField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_REMOTE_URI));
 
                 // Check if this item has thumbnails
-                String smallThumb = row.getStringField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMB1_PATH));
+                String smallThumb = row.getStringField(metadata.getColIndexOrThrow(MediaMetadata.METADATA_THUMBNAIL_PATH));
                 if (smallThumb != null && smallThumb.length() > 0) {
                     hasThumbnails = true;
                 }
