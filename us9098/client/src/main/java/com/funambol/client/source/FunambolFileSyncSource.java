@@ -187,17 +187,7 @@ public class FunambolFileSyncSource extends FileSyncSource {
 
             Long lastMod;
             lastMod = new Long(fo.getCreationDate());
-
-            /*
-            if (fo.getLastModifiedDate() > 0) {
-                lastMod = new Long(fo.getLastModifiedDate());
-            } else {
-                lastMod = new Long(fo.getCreationDate());
-            }
-            */
-
             String name = fo.getName();
-            
             metadata.open();
 
             String urls[] = new String[2];
@@ -258,6 +248,22 @@ public class FunambolFileSyncSource extends FileSyncSource {
         try {
             metadata.open();
             Long longKey = new Long(Long.parseLong(key));
+
+            // We must delete all thumbnails and real content (if available)
+            QueryFilter qf = metadata.createQueryFilter(longKey);
+            QueryResult qr = metadata.query(qf);
+            if (qr.hasMoreElements()) {
+                Tuple row = qr.nextElement();
+                String thumbPath = row.getStringField(row.getColIndexOrThrow(MediaMetadata.METADATA_THUMBNAIL_PATH));
+                String previewPath = row.getStringField(row.getColIndexOrThrow(MediaMetadata.METADATA_PREVIEW_PATH));
+                String itemPath = row.getStringField(row.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH));
+
+                deleteFile(thumbPath);
+                deleteFile(previewPath);
+                deleteFile(itemPath);
+            }
+            qr.close();
+
             metadata.delete(longKey);
             metadata.save();
         } catch (Exception e) {
@@ -274,6 +280,26 @@ public class FunambolFileSyncSource extends FileSyncSource {
 
     public Table getMetadataTable() {
         return metadata;
+    }
+
+    private void deleteFile(String fileName) {
+        fileName = extractFileNameFromUrl(fileName);
+        if (fileName != null) {
+            try {
+                FileAdapter fa = new FileAdapter(fileName);
+                fa.delete();
+            } catch (IOException ioe) {
+                Log.error(TAG_LOG, "Cannot remove file " + fileName, ioe);
+            }
+        }
+    }
+
+    private String extractFileNameFromUrl(String url) {
+        if (url != null && url.startsWith("file://")) {
+            return url.substring(7);
+        } else {
+            return url;
+        }
     }
 
     protected SyncItem getItemContent(SyncItem item) throws SyncException {
