@@ -363,11 +363,11 @@ public class SourceThumbnailsViewController implements SyncListener {
         }
     }
     
-    private class ThumbnailOpener implements ThumbnailView.OnOpenListener {
+    public class Previewer implements ThumbnailView.OnOpenListener {
 
         private Long id;
         
-        public ThumbnailOpener(long id) {
+        public Previewer(long id) {
             this.id = new Long(id);
         }
         
@@ -449,6 +449,32 @@ public class SourceThumbnailsViewController implements SyncListener {
                 Log.error(TAG_LOG, "Unable to set up new screen", e);
             }
         }
+        
+        public Previewer next() {
+            return get(+1);
+        }
+                
+        public Previewer previous() {
+            return get(-1);
+        }
+        
+        private Previewer get(int positionShift) {
+            
+            if (datedThumbnails.isEmpty()) {
+                Log.error(TAG_LOG, "Trying to a get previewer when no thumbnail exists");
+                return null;
+            }
+            
+            int position = findThumbnailIndex(id.longValue()) + positionShift;
+            if (position < 0) {
+                position = datedThumbnails.size() - 1;
+            } else if (position >= datedThumbnails.size()) {
+                position = 0;
+            }            
+            DatedThumbnailView view = 
+                (DatedThumbnailView) datedThumbnails.elementAt(position);
+            return new Previewer(view.getId());
+        }
     }
 
     protected class DatedThumbnailView {
@@ -463,7 +489,7 @@ public class SourceThumbnailsViewController implements SyncListener {
             this.view = view;
             this.timestamp = timestamp;
             this.id = id;
-            view.setOnOpenListener(new ThumbnailOpener(id));
+            view.setOnOpenListener(getPreviewer(id));
         }
 
         public String getName() {
@@ -485,6 +511,11 @@ public class SourceThumbnailsViewController implements SyncListener {
         public long getId() {
             return id;
         }
+        
+    }
+    
+    public Previewer getPreviewer(long id) {
+        return new Previewer(id);
     }
 
     /////////////////////// SyncListener implementation ////////////////////////

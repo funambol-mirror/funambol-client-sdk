@@ -34,7 +34,6 @@
  */
 package com.funambol.client.controller;
 
-import com.funambol.client.controller.SourceThumbnailsViewController;
 import com.funambol.client.localization.Localization;
 import com.funambol.client.ui.OpenItemScreen;
 
@@ -57,6 +56,15 @@ public abstract class OpenItemScreenController {
     
     public void initScreen(OpenItemScreen screen) {
         this.screen = screen;
+
+        String previewPath = getPreviewPath();
+        // If the path is still remote, we just ignore its value
+        if (previewPath.startsWith("file://") && previewPath.length() > 7) {
+            previewPath = previewPath.substring(7);
+        } else if (!previewPath.startsWith("/")) {
+            previewPath = null;
+        }
+        screen.setPreviewPath(previewPath);
     }
     
     public OpenItemScreen getOpenItemScreen() {
@@ -139,5 +147,14 @@ public abstract class OpenItemScreenController {
 
     public void setLocalization(Localization localization) {
         this.localization = localization;        
+    }
+    
+    public void next() {
+        
+        sourceThumbnailsViewController.getPreviewer(id).next().onOpen();
+    }
+    
+    public void previous() {
+        sourceThumbnailsViewController.getPreviewer(id).previous().onOpen();
     }
 }

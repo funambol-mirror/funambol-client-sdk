@@ -51,16 +51,7 @@ public class OpenPictureScreenController extends OpenItemScreenController {
         
         String title = localization.getLanguage("open_i_of_n_pictures");
         title = StringUtil.replaceAll(title, "__I__", String.valueOf(getPosition() + 1));
-        title = StringUtil.replaceAll(title, "__N__", String.valueOf(getTotal()));
-        
+        title = StringUtil.replaceAll(title, "__N__", String.valueOf(getTotal()));        
         screen.setTitle(title);
-        String halluxPath = getPreviewPath();
-        // If the path is still remote, we just ignore its value
-        if (halluxPath.startsWith("file://") && halluxPath.length() > 7) {
-            halluxPath = halluxPath.substring(7);
-        } else if (!halluxPath.startsWith("/")) {
-            halluxPath = null;
-        }
-        screen.setHalluxnailPath(halluxPath);
     }
 }

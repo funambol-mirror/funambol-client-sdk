@@ -34,6 +34,7 @@
  */
 package com.funambol.client.ui;
 
+
 /** 
  * This is a generic interface for screens where individual items are 
  * displayed in more details. There will be subinterfaces for different
@@ -43,7 +44,7 @@ package com.funambol.client.ui;
 public interface OpenItemScreen extends Screen {
     
     public void setTitle(String title);
-    public void setHalluxnailPath(String path);
+    public void setPreviewPath(String path);
     
     
 }
