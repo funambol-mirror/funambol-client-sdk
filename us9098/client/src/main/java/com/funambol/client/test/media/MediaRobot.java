@@ -265,9 +265,10 @@ public abstract class MediaRobot extends Robot {
 
         // We need to create a temporary table for the ItemUploadTask to be able
         // to perform the upload
-        Table tempTable = TableFactory.getInstance().getStringTable("", MediaMetadata.META_DATA_COL_NAMES,
+        Table tempTable = TableFactory.getInstance().getStringTable("media_robot_table", MediaMetadata.META_DATA_COL_NAMES,
                                                                         MediaMetadata.META_DATA_COL_TYPES,
                                                                         0, true);
+        tempTable.open();
         Tuple newRow = tempTable.createNewRow();
         newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), fullName);
         newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_NAME), itemName);
@@ -275,6 +276,7 @@ public abstract class MediaRobot extends Robot {
         newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), System.currentTimeMillis());
         newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_MIME), contentType);
         newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_GUID), remoteKey);
+        newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_REMOTE_URI), getRemoteUri(type));
         tempTable.insert(newRow);
 
         // Now use the ItemUploadTask to perform the actual upload
