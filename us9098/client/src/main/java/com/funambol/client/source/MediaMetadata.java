@@ -59,7 +59,7 @@ public class MediaMetadata {
     /**
      * This is the meta data schema for the media table.
      */
-    private static final String META_DATA_COL_NAMES[] = {
+    public static final String META_DATA_COL_NAMES[] = {
                                                    METADATA_ID,
                                                    METADATA_NAME,
                                                    METADATA_THUMBNAIL_PATH,
@@ -77,7 +77,7 @@ public class MediaMetadata {
                                                    METADATA_DURATION
                                                   };
 
-    private static final int META_DATA_COL_TYPES[] = {
+    public static final int META_DATA_COL_TYPES[] = {
                                                    Table.TYPE_LONG,
                                                    Table.TYPE_STRING,
                                                    Table.TYPE_STRING,

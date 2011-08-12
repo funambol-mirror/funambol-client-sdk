@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.funambol.client.source.AppSyncSource;
+import com.funambol.client.source.MediaMetadata;
 import com.funambol.client.source.FunambolFileSyncSource;
 import com.funambol.client.source.AppSyncSourceManager;
 import com.funambol.client.test.BasicScriptRunner;
@@ -50,6 +51,8 @@ import com.funambol.client.test.Robot;
 import com.funambol.client.test.util.TestFileManager;
 import com.funambol.client.test.basic.BasicUserCommands;
 import com.funambol.client.controller.SourceThumbnailsViewController;
+import com.funambol.client.configuration.Configuration;
+import com.funambol.client.engine.ItemUploadTask;
 
 import com.funambol.sapisync.SapiSyncHandler;
 import com.funambol.sapisync.source.JSONFileObject;
@@ -64,6 +67,8 @@ import com.funambol.util.Log;
 import com.funambol.util.StringUtil;
 import com.funambol.util.ConnectionManager;
 import com.funambol.storage.Table;
+import com.funambol.storage.TableFactory;
+import com.funambol.storage.Tuple;
 
 import com.funambol.org.json.me.JSONArray;
 import com.funambol.org.json.me.JSONException;
@@ -75,12 +80,16 @@ public abstract class MediaRobot extends Robot {
 
     protected AppSyncSourceManager appSourceManager;
     protected TestFileManager fileManager;
+    protected Configuration configuration;
 
     protected SapiSyncHandler sapiSyncHandler = null;
 
     public MediaRobot(AppSyncSourceManager appSourceManager,
-            TestFileManager fileManager) {
+                      Configuration configuration,
+                      TestFileManager fileManager) {
+
         this.appSourceManager = appSourceManager;
+        this.configuration = configuration;
         this.fileManager = fileManager;
     }
 
@@ -220,8 +229,9 @@ public abstract class MediaRobot extends Robot {
      */
     protected void addMediaOnServerFromStream(String type, String itemName, InputStream contentStream,
                                               long contentSize, String contentType, String guid)
-    throws JSONException {
+    throws IOException, JSONException {
 
+        String fullName = itemName;
         itemName = getFileNameFromFullName(itemName);
         if (Log.isLoggable(Log.DEBUG)) {
             Log.debug(TAG_LOG,
@@ -250,9 +260,35 @@ public abstract class MediaRobot extends Robot {
         SapiSyncHandler sapiHandler = getSapiSyncHandler();
         sapiHandler.login(null);
         String remoteKey = sapiHandler.prepareItemUpload(item, getRemoteUri(type));
-        item.setGuid(remoteKey);
-        //sapiHandler.uploadItem(item, getRemoteUri(type), null);
         sapiHandler.logout();
+        item.setGuid(remoteKey);
+
+        // We need to create a temporary table for the ItemUploadTask to be able
+        // to perform the upload
+        Table tempTable = TableFactory.getInstance().getStringTable("", MediaMetadata.META_DATA_COL_NAMES,
+                                                                        MediaMetadata.META_DATA_COL_TYPES,
+                                                                        0, true);
+        Tuple newRow = tempTable.createNewRow();
+        newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_ITEM_PATH), fullName);
+        newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_NAME), itemName);
+        newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_SIZE), contentSize);
+        newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_LAST_MOD), System.currentTimeMillis());
+        newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_MIME), contentType);
+        newRow.setField(newRow.getColIndexOrThrow(MediaMetadata.METADATA_GUID), remoteKey);
+        tempTable.insert(newRow);
+
+        // Now use the ItemUploadTask to perform the actual upload
+        try {
+            int colIdx = newRow.getColIndexOrThrow(MediaMetadata.METADATA_ID);
+            ItemUploadTask uploadTask = new ItemUploadTask(newRow.getLongField(colIdx),
+                    0, tempTable, configuration);
+            uploadTask.run();
+        } finally {
+            // We can now drop the table
+            tempTable.close();
+            tempTable.drop();
+        }
+
     }
 
     public void deleteMediaOnServer(String type, String filename)
