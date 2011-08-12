@@ -1,0 +1,1300 @@
+2011-08-12
+  - dave: tag 10.0.3 created @rev 4499
+
+2011-08-08
+  - toccy: merged from trunk at rev.4475
+
+2011-08-04
+   - dave: added Symbian FConnection::getIAPId() method
+
+2011-07-31 
+   - dave: added FConnection::GetWifiAPNames() method (bandwidth saver)
+
+2011-07-26
+  - toccy: Symbian HTTP: fixed handling of http status FORBIDDEN (403)
+
+2011-07-25
+  - toccy: fixed bug #11281: Sync of video failure
+           SAPI: manage http status code 404 (not found) during downloads, skipping the item
+           and moving to the next one (instead of stopping all downloads)
+
+2011-07-20
+  - toccy: fixed bug #11292: Windows sync client doesn't sync files with special characters
+           on Windows platform _wstat should be used (see statFile() in utils.h)
+
+2011-07-15
+  - toccy: merged from trunk at rev.4362: fixed SapiSyncSource filtering
+  - toccy: reintegrated branch US8294:
+           * SAPI: added service profiling for freemium/premium handling (login with "details" param)
+           * SAPI: added data restore charge (should be called on code 402 = payment required)
+           * SyncML: added handling for code 402 (payment required) to SyncManager
+           * Symbian FConnection: added methods to check connection type (Wifi/GPRS)
+           * configuration params: added root config properties
+             - autoSync (bool)
+             - networkWarning (bool)
+             - dataplanExpirationDate (long)
+             added source config property: allowed (bool)
+             added SAPI config property: isCaredServer (bool)
+           
+
+2011-07-13
+  - toccy: merged from trunk at rev.4343:
+  
+           SAPI sync: set a default content-type for files with no extension (application/octet-stream)
+           
+           fixed bug #11236: wrong counters during resume of first pict/video sync
+           (if filter-by-number is set AND an item to resume is found, the resumed item
+           was not counted correctly)
+           
+           Symbian FConnection: added safe check to avoid crash if setting up connection
+           is very slow (via async call)
+
+           reintegrated branch US8549 (symbian media sync)
+           * baseutils: fixed fgetsize() function (it was resetting the iterator)
+           * FileOutputStream: fixed the write at the end of the stream in append mode,
+             added set/getPosition methods
+           * FileSapiSyncSource: added recursive capability for local files
+           * SapiMediaRequestManager: minor fix for Symbian platform compatibility
+           * SapiSyncSource: reset of filterByNumber params on close
+           * symbianadapter: implemented removeFilesInDir() function for Symbian
+           * Http for Symbian: added http retry mechanism, reset of http headers, fixed
+             content-range and cookie headers, fixed HttpDataSupplier::OverallDataSize() for content-length 
+             header handling, fixed bad pointer in request(), fixed printHeaders, manage status 
+             code 308 (resume incomplete), added progress events.
+           * DeviceManagementNode for Symbian: fixed bug on read/save properties starting with
+             the same chars (like "last" and "lastError"), fixed deletePropertyNode         
+
+          merged auto sync feature branch US8125 ("iPhone Sync client - Auto Sync (Apple style) - Server-side changes" @rev 4284
+          added support for contacts and file sapi changes requests
+          added SapiSyncManager::areThereModifications() and CacheSyncSource::isThereLocalModification() methods
+
+2011-05-16
+  - dave: created tag 10.0.1
+
+2011-05-13
+  - toccy: fixed bug 10991 - Media sync fails on the next sync, if uploading a very large number of items
+           The request for Server metadata is split in many separate requests (max 200 items) to
+           avoid HTTP status 414 (Request URI too long).
+  - magi:  fixed bug 10997 - Client error when re-sync files after a loss of network
+           Fixed the HttpQueryInfo in Windows HttpConnection to manage error 122 (response headers too long)
+
+2011-05-11
+  - toccy: fixed bug 10969 - Last sync on the Portal is not updated for media syncs
+           Removed the http header "x-funambol-syncdeviceid" from SAPI login, and added
+           the "syncdeviceid" parameter in the http request. Updated C++ APIs design doc accordingly.
+
+2011-04-22
+  - magi:  reintegrated branch US7947-new-cache:
+           * modified the cache map: use the lastModificationDate instead of size for item's signature
+           * added validateLocal/RemoteList in SapiSyncSource, to check and eventually clear the
+             lists of changes (NEW/MOD/DEL) not supported by the syncsource. Called before upload/download.
+
+2011-04-19
+  - toccy: * merged from trunk @rev 3939 (blacklist map added)
+           * added serverDateMapping map in SapiSyncSource: used to handle fake updates from the server 
+            (keep last-mod time of each item synchronized)
+  - dave: refactoring of SapiSyncSource and SapiSyncManager to add blacklisted item cache.
+
+2011-04-06
+  - magi: Updated FileSapiSyncSource with update handling. Added MediaSapiSyncSource. Updated UT
+2011-03-31
+  - teo:  Added to SapiSyncSource incomingFilterDate and outgoingFilterDate. Added also into constructor.
+
+2011-03-22
+  - dave: HttpConnectionHandler refactoring (StreamDataHandle refactored to class)
+
+2011-03-21
+  - toccy: added retry mechanism in SapiSyncManager, used in case of network error
+           Using 2 config params: maxRetriesOnError and sleepTimeOnRetry (SapiConfig)
+
+2011-03-01
+  - dave: merged branch US7492 ("2way Media/Files Sync")
+
+2011-02-17
+  - dave: fixed bug #10643 - "iPhone: Upload of picture is interrupted by client if takes more than 90 seconds"
+          refactored timeout management in Apple HttpConnectionHandler class
+
+2011-01-26
+  - dave: added timeout handling for mac HttpConnectionHandler
+          added progress notification callback for Apple HttpConnectionHandler write (upload)
+
+2011-01-20
+  - toccy: fixed bug 10589 - Software update does not work on C++ clients v9 (OL/WM)
+           fixed Updater useragent that was not set
+
+2011-01-11
+  - toccy: * fixed code 418 as a non-error code in MediaSyncSource (418 = item already exists)
+           * Windows HttpConnection: client's timeout is set for outgoing requests as well
+             as for incoming responses (default is 5 min)
+           * added FileSyncSource::filterIncomingItem() virtual method
+  - toccy: added SYNC_SOURCE_RESETTING event, to optionally notify when a syncsource
+           is resetting local items (usually for refresh-from-server sync).
+
+2011-01-07
+  - toccy: merged US7263: no validation and brandizable elements
+
+2011-01-04
+  - magi: merged US7230: added validation check on username/password before activate the MSU process
+          added method in jason parser to validate the username/password fields. 
+          added method in MSUManager to handle the validation request to the sapi.
+          added new http error code to handle the 501 code (server feature not supported) in httpConnection
+2010-12-20
+  - maria: created tag: SDK C ++ v.9.0.1
+
+2010-11-23
+  - magi: updated SendLogHandler class: added config information
+          Added SendLogHandler class into the iphone project
+2010-11-19
+  - magi: added SendLogHandler classes. Not yet used
+2010-11-17
+  - dave: Apple HttpConnection class refactorings: CFHTTPMessage is now created in HttpConnection::open() 
+          HttpConnection::request(const char *, OutputStream& response) uses CFHTTPMessageSetBody to set 
+          HTTP request payload 
+  - magi: updated httpUploader to support picture resume
+
+2010-11-09
+  - dave: added MSUManager class
+
+2010-11-08
+  - dave:  added JsonMSUMessage class 
+  - toccy: added BufferOutputStream class (and BufferOutputStreamTest)
+
+2010-11-04
+  - dave: added tool/cjson external (Json support for C++ clients)
+  - magi: added msu dir in common with MSUDeviceInfo.h and .cpp
+
+2010-11-02
+  - magi: Applied patch for safe check in Authentication.cpp
+          Unified the quoted-printable functions. They are all in quoted-printable.cpp
+          file. Added UT
+          Fixed issue for posix platform
+2010-10-29
+  - magi: removed unused iCalendar and vCard from vocl. Updated VObjectFactory.cpp
+2010-10-11
+  - dave: HttpConnectionHandler class added. 
+          MacTransportAgent and HttpConnection classes refactored with the HttpConnectionHandler  
+          to have threaded behaviour.
+
+2010-09-29
+  - magi: fixed issue in DMTClientCofig in saving extraParams of a sync source config
+          added "hidden" flag for the iphone project
+2010-09-28
+  - magi: fixed issue in SyncManager in firing event of deleted item from server (before never called)
+          removed info log for STC_CHUNKED_ITEM_ACCEPTED in CacheSyncSource
+2010-09-22
+  - magi:  merged from branch v87 @revision 2677
+           * added handling of noFieldLevelReplace server capability. It is stored on the server ext node
+             and it contains the list, comma separated, of the source uri that must be consider with the capability.
+             i.e. noFieldLevelReplace  card,cal 
+             The property means that the item sent by the server is completed and the client must delete the fields
+             that are not present it the item
+             Modified WinContact to handle the different way of work
+  - dave:  set GCC symbol visibility hidden in MacOSX build project - fixed strip flags for debug and
+           release builds
+ 
+2010-09-16
+   - magi:  added new method in ManagementNode to return allProperties. Currently the default implementation
+            returns only a dummy field. It is really implemented in posix DeviceManagementNode.
+            Added a StringMap in the SyncSourceConfig class to handle extra properties.
+            Modified the DMTClientConfig to read/save the extraProperties of a SyncSourceConfig in/from DMNode
+2010-09-08
+   - toccy: updated windows projects: the default environment is now Visual Studio 2008.
+2010-08-03
+  - maria: created tag: SDK C ++ v.8.7.3
+2010-07-27
+  - toccy: fixed bug #9852 - Creation of a monthly event that occures the first day of the month is not sent
+
+2010-09-06
+  - toccy: fixes for iPhone
+           * AppleMediaManager: fixed the media ID/asset url/file name
+           * HttpConnection: fixed use of Http Authentication
+           * AppleInputStream: totalSize value calculated inside constructor
+
+2010-09-02
+  - magi: added first version of AppleMediaSyncSource.
+
+2010-08-27
+  - dave: merged branch US5671 @revision 2576
+          * added HttpConnection class for MacOSX/iPhone platform
+          * added AppleInputStream class hierarchy (AppleBufferInputStream, AppleFileInputStream)
+
+2010-07-29
+  - toccy: merged from branch v87 @revision 2487:
+           * fixed bug #9852 - Creation of a monthly event that occures the first day of the month is not sent
+           * windows/vocl: added patternEndDate info to vCalendar, for outgoing items (WM and OL clients)
+             Now patternEndDate and Occurrences are both included in vCalendar, for compatibility.
+             Some refactoring on the WinRecurrence::toString() method.
+
+  - magi: modified the DeviceManagementNode for posix platform. The method lookupDir performed in different way
+          depending on what environement variable are set.
+
+2010-07-22
+  - toccy: improved Symbian logging: added resolveErrorCode() util method to translate OS error codes
+           into human readable error messages, in the log. To be linked against commonengine.lib.
+  - toccy: fixed windows' DeviceManagementNode (patch from thunderbird users community) to be consistent
+           with the return value in case the registry key is not found
+
+  - magi:  fixed issues in memory management into apple/vocl/TimeUtils, apple/vocl/Timezone, apple/vocl/AppleEvent 
+
+2010-07-16
+ - teo: fixed bug #9659 - iPhone Sync Client - Contacts with picture taken with iPhone\'s camera are re-sent (very slowly) at each sync
+        fixed bug #9764 - iPhone Sync Client - iPhone: internal config version not upgraded
+
+2010-07-15
+  - maria: created tag: SDK C ++ v.8.7.2
+  - teo: fixed bug #9659 - iPhone Sync Client - Contacts with picture taken with iPhone\'s camera are re-sent (very slowly) at each sync
+
+2010-07-09
+  - maria: created tag: SDK C ++ v.8.7.1
+  - toccy: improved Symbian FConnection: manage errors of user canceled and wrong APN (no retry connecting)
+
+2010-07-06
+  - marco: enable namespace by default. Namespaces can still be disabled by supplying
+           a DISABLE_FUNAMBOL_NAMESPACE macro at build time.
+  - marco: fixed posix device management node that now uses the PlatformAdapter
+           to retrieve config and home folders.
+  - dave:  fixed bug 8864 - WM client: Slow sync duplicates contacts which have only email address
+           WM FN default values (such as "<Unnamed>") are filtered out when first name, last name 
+           and company name are all empty in WinContact.cpp
+  - magi : Moved initialization of the default Content-type from the TransportAgent in the SyncManager::initTransportAgent.
+           Substituted last getenv in posix device management 
+           Fixed isItemTooBig function in SyncManager            
+           Added SyncItemKeys.cpp class to handle single server status on client command (<Add>, <Replace>, <Delete>)
+
+2010-06-29
+  - toccy: fixed vocl/WinRecurrence: fixed recurence formatter for yearly rec (rectype 5) with interval > 1
+
+2010-06-23
+  - magi:  fixed bug into StringBuffer copy constructor. It didn't work with a StringBuffer to copy with "" value.
+           Updated tests.
+           some leaks fixed in Formatter.cpp and UpdaterConfig.cpp
+
+2010-06-04
+  - toccy: fixed bug 9470 - WM Pictures sync: only the first picture is uploaded
+           Fixed the HttpUploader::parseJSessionId() method, to handle multiple attributes inside 
+           the http header "Set-Cookie". Updated unit-test.
+
+2010-06-01
+  - toccy: fixed bug #9324 - Only the first exception in a recurring event is syncronized correctly from server to Outlook
+           The EXDATE and RDATE properties were not parsed correctly in WinEvent (only the first element was read)
+
+2010-05-26
+  - toccy: fixed bug #9384 - Outlook Client crashes if the server defined a datastore like "./contacts"
+           fixed windows' DeviceManagementNode to correctly manage special chars
+           and eventually escape the slash char ("/").
+
+2010-05-25
+  - toccy: added 'keepalive' flag in HttpConnection: used to avoid dropping the connection at the end.
+           It's used by HttpUploader - so far implemented only on WinMobile (on some platforms it does not even apply)
+
+2010-05-17
+  - toccy: fixed bug #9323 -  Outlook client doesn't update/receive reminders
+
+2010-05-13
+  - toccy: reintegrated branch "US4744" (pictures http upload):
+           * implemented Symbian/Windows HTTPConnection
+           * implemented HTTPUploader (common)
+           * improved sync report, to write the tot number of items uploaded/downloaded
+             via HTTP at the end of the sync.
+           * added ITEM_UPLOADED_BY_CLIENT SyncItemEvent type.
+             It is used in the new implementation of the media http upload.
+           * parse and store the new Server capability "X-funambol-media-http-upload".
+             It can retrieved from SyncManagerConfig method: getServerMediaHttpUpload().
+           * added HTTPDataSupplier for Symbian: adapter to read the inputStream data
+             chunk by chunk and send in the request HTTP body.
+           * added BasicHTTPAuthentication class (common, all platforms)
+
+2010-05-05
+  - toccy: WinTransportAgent - fixed crash if http header value is bigger than 128
+  - toccy: WinEvent - fixed crash if an empty RRULE is received from Server
+
+2010-04-27
+  - magi: fixed solution for test cases for win32 platform
+
+2010-04-26
+  - magi: added headers for zlib compression
+ 
+2010-04-21:
+  - gazza: various fixes and code review after DM merge:
+
+    * TransportAgent now sets content type by default (syncml+xml)
+    * requestProperties and responseProperties are now StringMap
+    * property names definition in TransportAgent header
+    * StringMap has now iterator methods (front, next)
+    * toString method in KeyValuePair for debug
+    * SyncManager::initTransportAgent() method added to group TA initialization
+    * TransportAgent::getUserAgent() does not stringdup anymore
+    * const added here and there
+    * core reformatting here and there
+
+2010-04-16
+  - toccy: created branch US4744: "Symbian HTTP Uploader module"
+           * Added AbstractHttpConnection: common interface to manage HTTP connections
+             HttpConnection uses OutputStream and InputStream to read/return data
+             HttpUploader and TransportAgent will be common classes for all platforms, and will
+             use HttpConnection to manage platform dependent HTTP APIs.
+           * Added HttpConnection implementation for Symbian (incomplete, missing request method)
+           * Added OutputStream (abstract) and StringOutputStream classes
+
+  - toccy: reintegrated branch US4674: "pictures improvements - mew HTTP based syncsource"
+           now clients (WM, Sym) use MediaSyncSourceSyncMLData as backward compatibility
+           * MediaSyncSource: modified fillSyncItem() to send only file's metadata (no body content)
+           * added HttpUploader class (fake http upload now)
+           * added endSync() to upload files via http.
+  - toccy: reintegrated branch US4674: "pictures improvements - new HTTP based
+           syncsource" now clients (WM, Sym) use MediaSyncSourceSyncMLData as
+           backward compatibility.
+           * MediaSyncSource: modified fillSyncItem() to send only file's
+             metadata (no body content) added HttpUploader class (fake http
+             upload now) added endSync() to upload files via http.
+
+  - magi:
+        * Fixed bug #9072: vCalendar (BusyStatus / X-MICROSOFT-CDO-BUSYSTATUS)
+                           mapping is wrong Fix in WinEvent.cpp class
+        * Fixed bug #9030: [BLUETIE] Outlook: WinRecurrence::parse error Fix
+                           in WinRecurrence.cpp class   
+        * Refactory of the vobject creation in WinEvent, WinRecurrence,
+          WinTask and WinNote
+
+
+2010-04-12:
+  - mb+igorgl: changes for the DM Client
+
+        * FThread for POSIX fixes
+
+        SyncML
+        * Correlator support
+        * Atomic and Sequence commands fixes (nested Get command parsing)
+
+        TransportAgent
+        * custom protocol properties support (e.g. HTTP header properties)
+        * WBXML sending
+        * query (HTTP GET method)
+
+        Android
+        * makefiles
+
+        "common/http/TransportAgentFactory.h" installed to system paths
+
+        removed ...
+                #include "spds/DataTransformer.h" from SyncMLBuilder.h
+                #include "syncml/parser/Parser.h" from SyncMLProcessor.h
+        headers are not installed to system include paths
+
+2010-04-13
+  - toccy: reintegrated branch "MT02" to trunk:
+           Improvements:
+           * Reworked the Windows classes to manage vCard / vCalendar
+             (minor fixes: allday recurrences, RRULE parsing, vNote body, memory leaks removed)
+           * Added unit tests (WinEvent, WinNote classes) and integration tests
+        
+           New features currently disabled (not used by our clients):
+           * Windows/MAC transportAgent: added HTTP authentication
+           * win32 log rotation. Added FileLogAccessor, to get last N lines of log.
+           * winCE GPRS dropConnection(). Added keepAlive flag, can be set by WinTransportAgent::setKeepAlive()
+           * Windows vCard/vEvent classes: manage extra properties "X-foo"
+           * Windows vEvent: added DALARM parse/format (default is still AALARM)
+           * Windows vEvent: added ATTENDEES parse/format (not yet used by Outlook Client)
+           * Added a new "Software updater" module (XMLUpdater)
+           * Added a new "send log" module (PostDataLogSender, may be used by OL/MAC/iPhone clients in future)
+
+           Reverted to trunk implementation:
+           * BusyStatus, Sensitivity properties in WinEvent
+           * MeetingStatus in WinEvent (not complete, ATTENDEES are not yet supported by clients)           
+           * fixed windows' Log.cpp (some changes were done on trunk)
+           * fixed winmobile's libfunambol project, to include new files
+
+  - toccy: Symbian: improved user experience when the client tries to setup the connection (UI no more freezed)
+           Symbian FConnection class: use an asynchronous API call to connect, and an active object.
+           Note: this is done only if the calling thread is the main thread, otherwise it will crash.
+
+2010-03-26
+  - toccy: created tag: SDK C ++ v.8.5.2 (v.8.5 RC1)
+
+2010-03-15
+  - teo:   removed all warnings from Mac Os Build
+
+2010-03-12
+  - dave:  "US4346" fixed bug #8858 ("Sync crashes when sending a lot of deletes")
+            check for syncML message size moved at first step of item insertion loop in SyncManager.cpp
+            added unit tests using fsync (for posix builds)            
+
+2010-03-04
+  - toccy: added safe checks in DMTree::readManagementNode (fixes a crash at startup of SYM client)
+
+2010-03-01
+  - toccy: created tag: SDK C ++ v.8.5.1
+  - magi:  created branch Funambol C++ API v85 
+           changed the version on trunk to 8.7.0
+
+2010-02-26
+  - toccy: reintegrated branch "US4131":
+           added SyncManagerConfig::lastGlobalError and SyncSourceConfig::lastSourceError params.
+           They are set by SyncClient at the end of sync, and may be used by clients to 
+           know the last sync errors from config.
+           Removed branch US4131 at rev. 1831
+
+2010-02-18
+  - toccy: reintegrated branch "US3988":
+           added adapter function fileOpen(): just mapped to stdio fopen for symbian/posix platforms.
+           On Windows platform, using the _wfopen() in order to correctly manage file names 
+           with special chars (bugs #8200, #8674).
+2010-02-16
+  - magi: updated the Updater, UpdaterUI and UpdateConfig classes adding the mandatory update feature.
+
+2010-02-12
+  - toccy: added DeviceManagementNode::autoFlushRegistry (only for windows, only WinCE)
+           It is used to optimize the flushing of windows registry, since calling it many times can degrade performance
+
+2010-02-11
+  - toccy: reintegrated branch "US4062" (added date filtering to MediaSyncSource (param filterByDate))
+           Reworked dynamic filters on MediaSyncSource (actually by size and by date),
+           they can be specified via MediaSyncSourceParams.
+
+2010-02-04
+  - magi: modified SyncMLBuilder addChunk and prepareItemChunk to change the itemDataType control from the 
+          creation of the command to the syncItem itself. Basically every item will put its data type inside the
+          item. If the client doesn't specify it, the item will use the default of the sync source. Otherwise it
+          uses the one set by the client. 
+
+2010-01-25:
+  - dave: added sanity checks on server reponse body length (SymbianTransportAgent.cpp)
+          added check for Updater::requestUpdate() return value (Updater.cpp)
+
+2010-01-15
+  - toccy: MediaSyncSource handles the status code 420 from Server (device full = quota exceeded).
+           The syncsource will stop sending new items and the global error is set, in order to immediately
+           stop sending the current item (in case of LO, see ItemReader.cpp).
+           The error code 420 is then returned to the Client as the error code in endSync().
+
+2010-01-11
+  - toccy: merged from US3705 (Symbian Network error 2050):
+           added retry mechanism to Symbian TransportAgent (max 3 attempts in case of network errors)
+           This will make the HTTP connection more robust.
+           Improved Symbian FConnection class, added a method to close and restore the HTTP session (restartSession).
+
+2010-01-07
+  - toccy: fixed bug #8396: RegFlushKey() function is necessary in WinCE but not in Win32 (there's an OS lazy flusher), 
+           and significantly affects performance. So it's removed from Win32 build.
+
+2009-12-24
+  - toccy: merged from branch "US1987" (manage Server dataStores from Server caps). branch closed at rev.1552
+           * Added dataStores array in ServerConfig (DeviceConfig class)
+           * Server dataStores are read and saved by DMTClientConfig into the ServerConfig object
+           * updated unit-tests to parse Server dataStores (syncml/ServerDevInfTest)
+           * added a dirty flag for Server dataStores, to avoid rewriting the whole dataStores tree on every config.save()
+           * added ManagementNode::deletePropertyNode(), for all platforms (fixed implementation on Windows)
+
+2009-12-16
+  - toccy: Created branch US1987 (manage Server dataStores from Server caps)
+
+2009-12-14
+  - toccy: added unit tests of FileSyncSource (FileSyncSourceTest.cpp)
+  - toccy: moved sample input files from testcases/FileInputStreamTest to testcases/samples, as they are shared.
+
+2009-12-11
+  - toccy: reworked FileSyncSource.cpp: if the new file received already exists, the incoming file
+           will be renamed with a suffix until a valid name is found (append _01, _02, ...)
+           If the file already exists and the content is the same (CRC), the new item is not added and
+           the status returned is 418 (already-exists). 
+  - toccy: Fixed the mapping for items with status code 418 in SyncManager: it should be sent, since Server 
+           considers it a successful status.
+
+2009-11-27
+  - magi: added transport event in MacTransportAgent
+          modified posixLog to avoid to write wrong new [DEBUG] line
+2009-11-24
+  - toccy: fixed spds FileData.format method, to produce a valid XML (escape special chars)
+
+2009-11-19
+  - toccy: fixed "Status" <-> vCal STATUS property mappings, for tasks (windows branch, under vocl/winObjects)
+
+2009-11-17
+  - toccy: fixed toMultibyte() function for Symbian: it MUST check for NULL input pointers to avoid unexpected results
+  - toccy: added vCal 1.0 STATUS property support, for tasks (windows branch, under vocl/winObjects)
+
+2009-11-12
+  - magi: added "isToAbort" check into the SyncManagerConfig to communicate to the SyncManager there is a request to cancel the sync.
+          This flag could be set by the client to signal to the SyncManager it has to exit the sync process as soon as it can.
+          There are some check on this flag during the process of the items both sending or receiving. The check is performed also
+          just before and after the sendMessage function.
+          If the flag is true, the an conventional error code 701 is returned to the caller and the sync can end smoothly 
+2009-11-04
+  - toccy: fixed bug #7973 for Windows Clients (vCal property PRIORITY for events/tasks has a wrong mapping)
+
+2009-10-30
+  - toccy: added 'modification' attribute to FileSyncSource items (FileData Objcts), in UTC format like "20091030T103000Z"
+           added unixTimeToString and getFileModTime functions for each platform (base/*adapter.cpp)
+
+2009-10-23
+  - toccy: Merged branch US3125 (Large Object for outgoing items) to trunk, at r1286. Branch closed.
+           Outgoing items are not split in chunks reading directly from the input streams, to save memory allocation.
+
+  - toccy: [US3125] Added MultipleInputStream abstract class
+  - magi:  [US3125] cumulative message: 
+                   Added ItemReader, Chunk, EncodingHelper classes.
+                   Added unit test and integration test
+                   Fixed issues on above classes. 
+                   Modified SyncManager, SyncMLBuilder to use the new classes
+                   
+2009-10-21
+  - toccy: [US3125] Added FileSyncItem class (and unit tests: FileSyncItemTest, SyncItemTest)
+                    Modified FileSyncSource in order to use FileSyncItem and new input stream classes
+                    Added FileDataInputStream (and unit tests: FileDataInputStreamTest)
+
+2009-10-16
+  - toccy: merged from trunk at r1227
+  - dave:  merged with branches US2448 and US1332 (MEA feature branches) at revision 1218
+            * fixed addSyncSourceConfig() in SyncManagerConfig.cpp
+  - toccy: [US3125] SyncItem now uses an InputStream (BufferInputStream by default)
+                    added FileInputStream class, added unit test (FileInputStreamTest)
+                    added InputStream classes, implemented BufferInputStream, added unit test (BufferInputStreamTest)
+                    updated design doc for Large-object support
+
+2009-09-29 
+  - toccy: fixed auto-update feature
+            * new url is: "/sapi/profile/client?action=get-update-info"
+            * "mandatory" type is replaced by "recommended"
+            * added format parameter = properties
+
+2009-09-14
+   - toccy: merged from trunk to US1332 - rev.1109
+
+2009-09-10
+   - toccy: [unit test] added "testUtils" to collect utils fuctions shared by different tests.
+            All tests should always call "initAdapter" fuction to initialize the PlatformAdapter instead of 
+            PlatformAdapter::init(). This way, to avoid spam, the config will be stored under the 
+            "Funambol/client-test/<test name>" context.
+            Added getNewSyncManagerConfig() and getNewDMTClientConfig() functions to easily retrieve a default config.
+   - toccy: [unit test] added 'testLargeObject2': tests Large object issue (bug #7794) with a Replace command split in 2 msg, 
+            and also a Delete command in the second msg. If fails, the Server commands
+            are not parsed in the correct order by Client APIs (fixed in v8SP1).
+
+2009-09-03
+   - toccy: fixed bug #7794: sync fails when server sends multipart item + another item in one message
+            Fixed the SyncML parser (Parser::getCommonCommandList) in order to process commands from the Server 
+            in the same order the Server sent them.
+
+2009-08-31
+   - toccy: updated trunk version to "8.2.0"
+
+2009-08-27
+   - toccy: added 'updater' module (moved from Symbian Client), so it can be shared by all C++ clients
+            The module can be used by Clients to check if a new version of a certain component is available on the Server.
+
+2009-06-11
+   - magi: * in SyncMLProcessor in the server capabilities the ServerSmartSlowSync is set to 0 and 
+             the value is 1 if smart slow sync is true, 0 otherwise
+           * in SyncMLBuilder fixed the bug [ sync4j-Bugs-313113 ] Funambol C++ client library replies incorrectly to the server                                   
+           * in SyncManager fixed setServerSmartSlowSync(0); instead of setServerSmartSlowSync(false);
+           
+2009-06-05
+   - toccy: merged from v8 branch - fixed possible loop in SyncManager::sync(), because of a missing <Final> tag in case of Server error
+   - toccy: Clients can set a defined TransportAgent to be used during sync, instead of the default for the platform,
+            using SyncClient::setTransportAgent() (will call SyncManager::setTransportAgent).
+   - toccy: Unit test: * added test "testServerError506" (SyncManagerTest.cpp) to check for a loop in SyncManager::sync(), 
+                         because of a missing <Final> tag in case of Server error
+                       * added "http/TransportAgentReplacement" under test, to be used as a replacement of TransportAgent, 
+                         can be used to check and modify syncML messages (beffer between SyncManager and real TrnasportAgent)
+                       * added "integration/ManyItemsTestSyncSource", can be used as a simple SyncSource
+                         to generate N new items (vCard or vCal), for integration tests
+   - toccy: added syncmodes: smart-one-way-from-client/server and incremental-smart-one-way-from-client/server (codes 250,251,252,253)
+            used for Media items (pictures).
+   - toccy: MediaSyncSource does not override the Slow-sync anymore: we now use a specific syncmode 
+            (smart-one-way-from-client) so the slow-sync should be never triggered.
+
+2009-05-20
+    - toccy: merged from branch US2275 to trunk (C++ Sync Clients - Support for Server capabilities)
+             The Server capabilities are autonomously processed by APIs and params are stored under Server config node
+             Clients can force to request Server caps via the flag: 'forceServerDevInfo'
+
+2009-05-19
+    - toccy: [US2275] Some small refactoring of SyncManager::prepareSync() to process Get/Put commands, 
+                      moved in specialized methods under SyncMLProcessor
+    - toccy: [US2275] Added tests on Server capabilities (ServerDevInfTest suite)
+    - toccy: [US2275] Fixed parsed of devInf
+    - toccy: [US2275] Server capabilities are parsed and values are stored under Server config node
+    - toccy: [US2275] Added serverLastSync property under Server config node: to ask Server devInf if URL changed
+    - toccy: fixed bug #311685: avoid segfault after failed authentication with Memotoo server
+
+2009-05-18
+    - teo: extended FolderData to handle ext tag
+           added FolderExt to handle ext in FolderData
+           added MailAccount to wrap the Account information sent by Folder from the server
+
+2009-05-14
+    - toccy: [US2275] Added Get command to obtain Server Capabilies (added SyncMLBuilder::prepareServerDevInf())
+    - toccy: [US2275] Added 'forceServerDevInfo' param in ClientConfig, to let a Client to force the Get of Server devInf
+    - toccy: created branch US2275 (C++ Sync Clients - Support for Server capabilities) - rev. 702
+
+2009-04-29
+    - magi: merged from branch US1746 (Picture Sync - avoid to send pictures twice)
+            fixed memory leak in vocl component for WinContact, WinCalendar, WinNote, WinTask
+
+2009-04-29
+   - toccy: updated trunk version to "8.5.0"
+
+2009-04-28
+    - toccy: FileSyncSource: the tag 'name' is just the file name(was the absolute path + name)
+                             added the 'Modified' tag information for files, when last modification time is available
+
+2009-04-23
+    - toccy: merged from branch US2194 (Picture Sync - handle pictures with the same name on different memory cards)
+
+2009-04-17
+    - toccy: [US2194] Added a LUID-Map in MediaSyncSource to generate unique item's keys (incremental numbers).
+             The LUID-Map is owned by MediaSyncSource and it's a PropertyFile containing <full path;LUID> pairs for each item in cache.
+
+2009-04-16
+    - toccy: created branch US2194 (Picture Sync - handle pictures with the same name on different memory cards) from r605
+
+2009-04-15
+    - toccy: merged from branch US1744 (Picture Sync - avoid to send a picture twice)
+             Added MediaSyncSource class under client.
+
+2009-04-09
+    - toccy: [US1744] MediaSyncSource: implemented smart slow-sync (treat slow syncs as it was a normal fast sync).
+    - toccy: [US1744] MediaSyncSource handles the cache stored inside the 'dir' folder (the folder under sync).
+             This cache file also contains special params (server url, username, swv) used by MediaSyncSource
+             to check if the cache is valid. Some CacheSyncSource methods have been overrided for this.
+    - toccy: [US1744] getItemSignature method has been reimplemented in MediaSyncSource: the signature is the file last_mod_time
+
+2009-04-08
+    - toccy: [US1744] FileSyncSource can now recurse into subfolders (added bool recurse, default value = false)
+    - magi:  Added usage of getSSLVerifyServer in the WinTransportAgent. By default
+             it is true as usual.
+             Added support to use also GET instead only POST method. Useful for Windows clients
+             that want to use the WinTransportAgent class with different verb.
+
+2009-04-06
+    - toccy: [US1744] added MediaSyncSource class, to define a special behavior for generic "media files" 
+             to be synchronized between the Server and a mobile Client
+    - toccy: created branch US1744 (Picture Sync - avoid to send a picture twice) from r579
+
+2009-04-01
+   - toccy: Added SyncSource boolean 'enabled' to enable/disable a source
+            without losing the sync direction information
+
+2009-03-30
+   - davide: added methods (setSendDevInfo, getSendDevInfo) to disable send of devinfo 
+             to DeviceConfig, SyncManagerConfig and AbstractSyncConfig classes. Added
+             check of sendDevInfo property (default value set to true) in SyncManger 
+             at sync start.
+             Design Document updated.
+             
+2009-03-23
+   - toccy: fixed FileSyncSource::insertItem(). Don't set the global error when inserting an item already existing.
+   - toccy: anticipated the fire of Items Added/Replaced/Deleted by Server in SyncManager, to inform the Client as
+            soon as possible because big items can be splitted in many chunks.
+
+2009-03-11
+   - toccy: SyncManager: moved the fireSyncItemEvent for items added by Client, so that we get notified 
+            by the APIs at the beginning of the sending of a big item.
+            Some small code refactoring of SyncManager
+            Added a default implementation for SyncItemListener (which logs at debug level the events)
+            Added syncItemListener for Client::Sync::vcard21 unit tests, to check the use of SyncItemListener during sync
+
+2009-02-17
+   - carlo: Added FThread and FSocket implementation for Windows
+            Added CTPService unit test
+            Enabled FThread unit test
+
+2009-02-12
+   - teo: Added ConfigSyncSource to sync some properties from the config.
+          Added unit test and integration test
+          Updated Design Document
+
+Funambol SDK C++ 7.1.6
+-----------------------
+2009-01-14
+   - magi: fixed issue in endSync() method: added check to prevent to update the anchors
+           if there are http or synml errors.
+           updated Design Document
+
+Funambol SDK C++ 7.1.5
+-----------------------
+
+2009-01-13
+   - toccy: fixed issue in CTPThreadPool.cpp, caused CTP threads to die (used just by Symbian Client).
+
+
+Funambol SDK C++ 7.1.4
+-----------------------
+
+2008-12-22:
+   - magi: fixed PropertyFile issue handling one-char key and with '\'
+           applied patch for issue "Sync broken against server that doesn't send code 222 (like Synthesis)"
+
+
+2008-12-22:
+   - davide: minor fixes for Symbian APIT unit test build
+             PlatformAdapter integration for CTPConfig.cpp  
+
+
+Funambol SDK C++ 7.1.3
+-----------------------
+
+2008-12-18:
+   - magi: modified WinEvent to support BusyStatus property both as number or as string (FREE, BUSY...)
+           Updated tests
+
+
+Funambol SDK C++ 7.1.2
+-----------------------
+
+2008-12-15:
+   - davide: PlatformAdapter integration for unit tests - client-test.cpp removed 
+             and refactorized in TestFileSource.cpp and TestFileSource.h (avoid
+             PlatformAdapter class static variables initialization issues).
+
+Funambol SDK C++ 7.1.1
+-----------------------
+
+2008-11-24
+   - magi: fixed build files
+
+2008-11-24
+   - magi: added trim() method to StringBuffer - updated tests
+           changed ":" separator with "=" in PropertyFile - updated tests
+
+2008-11-13
+   - gazza: multiple listeners implemented.
+
+2008-11-11
+   - gazza: new macros for the Funambol namespace
+
+2008-11-10
+   - toccy: fixed parser/formatter of contacts for Windows Clients (WinContact.cpp), to support all vCard properties.
+            Now using X-ANNIVERSARY, X-MANAGER, X-SPOUSE.
+
+Funambol SDK C++ 7.1.0
+-----------------------
+
+2008-10-31
+   - teo: added serverConfig feature. It is possible to store in a DeviceConfig object
+          the server capabilities. Currently it's up to the clients to fill this 
+	  object with the right data
+          as soon as the server capabilities will be implemented will be in charge
+          to the api
+
+2008-10-29
+   - magi: added feature to cache mapping amongst different sync. 
+   - magi: added integration test for mappings handling feature
+
+2008-10-14
+   - gazza: OptionParser and StringMap classes added.
+            
+2008-09-10
+   - gazza: 
+        * moved to subversion, root changed from /3x to /funambol
+        * src/c++ renamed to src/cpp
+        * md5.c renamed to md5.cpp
+
+2008-07-15
+   - gazza: renamed autotools generated library to libfunambol.a
+
+2008-04-07
+   - magi: * added 
+                CacheSyncSource.h, CacheSyncSource.cpp
+                KeyValueStore.h
+                ArrayListKeyValueStore.h, ArrayListKeyValueStore.cpp
+                Enumeration.h
+                ArrayListEnumeration.h
+                PropertyFile.h, PropertyFile.cpp
+                BriefcaseCacheSyncSource.h, BriefcaseCacheSyncSource.cpp
+                BriefcaseClient.cpp
+                These are to try the cache sync source that keeps track about the changes on the
+                items based on the crc of the content of the items
+            
+            * updated the Makefile.am to compile all new stuff
+            * updated windadapter and posixadapter 
+            * applied Patrick's patch on SyncItem (the const get methods)
+            * updated SyncSource interface
+                                    
+
+2008-04-02
+   - toccy: first add of base classes and adapters for new Symbian client.
+
+2008-02-13
+    - toccy: * 'lastErrorMsg' is now a StringBuffer
+             * 'lastErrorMsg' and 'lastErrorCode' are no more global, 
+                they must be accessed only by provided get/set methods.
+             * removed char[] in log.cpp, using StringBuffer,
+               'logmsg' is now deprecated
+
+2008-01-29
+    - toccy: windows/http/GPRSConnection.cpp:
+             revised the function to estabilish GPRS connection, used by WM clients.
+
+2008-01-04
+    - teo: added CtCap.
+           Now we pass to the formatter an ArrayList of CtCap to handle different capabilities.
+           In SyncSourceConfig there's a new method called addCtCap to add an element to the 
+           ArrayList of CtCap.
+           This method has 4 parameters CtType VerCt an arraylist of properties and an int with 
+           3 status to handle the FieldLevel param (FLEVEL_DISABLED, FLEVEL_ENABLED, 
+           FLEVEL_UNDEFINED)
+           CtCype VerCt and FieldLevel are optional. 
+           If one of this parameters is not set the method use the default one setted 
+           in the configuration. 
+
+getCtCaps returns a reference to the ArrayList of CtCaps 
+
+2008-01-03
+    - teo: removed a bug related to the creation and the destruction of the operands arraylist
+           in ClauseUtils.cpp.
+           
+           removed all the embedded tests in client.cpp.
+           all the tests in the old client.cpp are moved in the corrisponding class and corrected to 
+           work properly with the cppunit framework
+
+    - toccy: Added support for timezones, for SIF events, under Windows branch (windows/vocl).
+             SIF version upgraded to "1.1"
+
+2008-01-02
+    - toccy: Added support for timezones, for vCalendar 1.0, under Windows branch (windows/vocl).
+             From Client to Server, recurring events are sent out with timezone informations 
+             if the Client fills the tzInfo structure.
+             From Server to Client, events without timezones are still accepted (like before).
+
+2007-12-21
+    - toccy: merged differences from "b_v65"
+
+2007-12-06
+    - toccy: windows/vocl/WinNote: added parser and formatter for vNote 1.1
+
+2007-11-28
+  - Changed headers of source files (AGPL)
+
+2007-11-15
+    - gazza: unit test refactoring
+
+2007-11-15
+    - teo:   syncml parser unit tests
+    - gazza: code refactoring - indirection of SyncManager members 'commands' 
+             and 'mappings' reduced of one level.
+
+2007-11-08
+    - gazza: Unit tests updated - the testcases are under test, under the same
+             folder structure of the sources. The windows solution and the
+             unix makefile have been updated accordingly.
+
+2007-11-07
+    - toccy: WinTransportAgent - added support for http status codes 402 & 403
+
+2007-10-23
+    - pohly: POSIX configuration files now strip trailing spaces
+             at the line end; previously this was preserved, but
+             this turned out to confuse many user (unintentional
+             space after password, additional carriage-return...)
+
+
+Funambol SDK C++ 6.5.1
+-----------------------
+
+2007-10-10
+    - magi:  fixed minor bug in parsing mail encoding and date field.              
+
+2007-10-09
+    - gazza: fixes applied for 64 bit compatibility. Test client updated.
+2007-10-01
+    - toccy: WinTransportAgent: removed 'compression' check when reading 
+             response, to accept compressed data even if 'compression' 
+             flag is disabled.
+
+Funambol SDK C++ 6.5.0
+-----------------------
+
+2007-08-08
+    - toccy: Improved vCalendar parser/formatter (WinEvent.cpp) to handle all
+             supported properties
+    - gazza: Removed old Palm defines from the header files.
+             Minor fixes for Posix build.
+             Uncompress in WinTransportAgent more robust when some headers
+             are cut by proxies.
+
+2007-08-03
+    - magi:  Added WinContactSif class. It is used to handle the SIF properties
+             in a different way. So it is possible to handle also other likes
+             Photo.
+             Commented code in the Converter class for the b64 binary handling
+             Added in Property class the way to set a property without any conversion
+             WinContact: added photo handling in vacard. Modified the returned
+                         value in toString method        
+             WinItem: added the crc encode function
+             
+2007-07-24
+    - teo:   ArrayList modified to improve the performance.
+             The method size() return a value that is incremented 
+             and decremented everytime there's an add or a remove.
+             The method add is also improved when there is an add in the last 
+             element (a sort of pushback)
+             Removed the remove method now there's only the method
+             removeElementAt(index) in SyncSourceReport in the
+             SyncSourceReport::addItem method was removed a for cycle that
+             check if there is a element clone of the one to add. 
+             This for cycle is very negative for the performance and useless.
+             
+2007-07-19
+    - toccy: improved parser/formatter of vCard for windows clients (WinContact)
+
+2007-07-11
+    - toccy: first add: WinObject classes used by Windows clients to manage
+             vCard and vCal
+    - toccy: added 'stringUtils.cpp' and 'timeUtils' utils functions for
+             Windows system
+
+2007-06-22
+    - toccy: win32 and winmobile source files has been unified under 'windows' dir.
+             WinTransportAgent reworked to be used both by Win32 and Winmobile
+             plugins.
+    - toccy: devinfo is sent with informations for all sources, not only the
+             ones currently synchronized.
+             So it will not be sent again if we add/remove a source from
+             synchronization.
+
+
+Funambol SDK C++ 6.0.9
+-----------------------
+
+2007-06-13
+    - gazza: old platforms removed.
+    - magi: copyright header updated.
+    - magi: fixed suport for obsolete RFC2822 date syntax
+    - magi: fixed enpty line at the beginning of the message
+    - magi: updated ant build 
+    - teo: demo client updated
+    - teo: compression of the tcp stream made configurable (for the adapter
+           with compression support)
+    - pohly: tests updated
+
+Funambol SDK C++ 6.0.8
+-----------------------
+
+2007-04-26
+    - toccy: Fixed vObject parser, to manage empty fields sent by server (now a property with empty value is generated)
+
+
+Funambol SDK C++ 6.0.7
+-----------------------
+
+2007-04-16
+    - toccy: Win32TransportAgent, added check for windows offline mode (IExplorer).
+             If is offline, call 'InternetGoOnline' to ask the user to connect (retry 5 times)
+
+
+Funambol SDK C++ 6.0.6
+-----------------------
+
+2007-04-13
+    - magi: fixed return codes in WMTransportAgent
+
+2007-04-11
+    - toccy: fixed bug inside SyncMLBuider::prepareAlertStatus(), caused crash if (authStatusCode < 400)
+
+2007-04-06
+    - toccy: changed 'maxMsgSize' default value to 512k
+             'responseTimout' from configuration is now passed to transportAgent constructor
+
+2007-03-26
+    - toccy: fixed some memory leaks
+
+
+Funambol SDK C++ 6.0.4
+-----------------------
+
+2007-03-14
+    - gazza: potential null pointer access fixed in ArrayList
+    - gazza: WMTransportAgent reworked
+
+2007-03-13
+    - toccy: Win32TransportAgent - added support for gzip compression on SyncML
+             messages
+    - toccy: use maxMsgSize to send items instead of maxModPerMsg
+    - gazza: use maxMsgSize to send mappings.
+
+2007-02-23
+     - toccy: Win32TransportAgent - fixed bug #306633: Content-length not
+              available cause client to crash
+
+
+Funambol SDK C++ 6.0.2
+------------------------
+
+2007-02-09
+     alpha release
+
+
+Funambol SDK C++ 6.0.1
+------------------------
+2007-01-30
+     - toccy: Win32TransportAgent - added a timeout of 10min to receive a response from server during sync.
+
+2007-01-22
+     - magi:  fixed emailMessage issues in decoding mail fields with tab char inside
+
+2007-01-08
+     - magi:  modified windows mobile DeviceManagementNode. It uses the RegFlushKey instruction to store
+              the settings permanently also after a soft release. 
+              Modification in EmailData to resume the Ext tag
+    
+2007-01-03
+     - magi:  fixed objectweb bug #306397. Modification in SyncManager.cpp to handle the refresh-from-client
+              and update-from-client.
+              Added modification in EmailData parsing to handle properly the subject decoding.
+              Commented the Ext feature for V6
+
+2006-11-28
+     - magi:  merge modifications from branch b_funambol31.               
+              Fixed SyncManager and SyncmlProcessor issues to handle 
+                begin and end sync source events
+              Improved EmailData and MailMessage classes
+              Fixed Parser.cpp issue to avoid bug if the Data contains syncml log
+              Improved ppcTransportAgent to handle Server error code 500
+              Log.cpp modified for GMT +00:00 instead of GMT -00:00
+              
+2006-10-31
+     - magi:  merge modifications from branch b_funambol31. 
+              modified LOG timestamp for posix, winmobile and win32 platform. 
+              Now it get the gmt info. 
+              Fixed SyncManager for update_remote_data syncmode
+2006-10-31
+     - magi:  merge modifications from branch b_funambol31. 
+              Applied Patrick's patch to handle the key with non permitted xml chars.
+              see bug http://forge.objectweb.org/tracker/index.php?func=detail&aid=306335&group_id=96&atid=100096
+              for details
+
+
+2006-10-31
+     - magi:  merge modifications from branch b_funambol31. 
+              fixed in SyncManager credentialInfo property to handle username/password greater then 256 chars
+              fixed MaxObjSize position. It has to be put in every source Alert and not only in the Header
+                The header is fine for the DM but not for DS. Without the fix the MaxObjSize was not consider by
+                the server.
+              improved FileData. fixed memory leak
+              added new constructor in StringBuffer
+              
+
+2006-10-11
+     - toccy: added tolerance of 6% on size of incoming items in case of large object
+              improved Win32TransportAgent: added http error message explanations associated to error codes
+              added an array of syncsource names in SyncManager: "sortedSourcesFromServer" ....
+
+2006-10-06
+     - toccy: fixed Win32TransportAgent with a sanity check on rensponse read (proxy related issue)
+              moved 'encryption' property from AccessConfig to SyncSourceConfig (it's a source property)
+              encryption changed from boolean to string ("des" is the only accepted value now)
+              SyncManagerConfig::getSyncSourceConfig() now returns a pointer to internal object
+
+2006-10-03
+     - pholy: added Large Object support (items splitted if bigger than maxMsgSize)
+              moved encoding/decoding of item data into SyncItem::changeDataEncoding
+              added SyncManager::getItem(), a wrapper around the various SyncItem methods for outgoing items
+
+2006-09-29
+     - toccy: first add of fileSync project: sync of generic files from a directory (only slow sync now)
+              added SyncReport: owned by SyncClient, collect all synchronization results
+                - lastErrorCode/Msg is copied into SyncReport
+                - sources error/state is stored in each SyncSourceReport
+                - each item status is stored in arraylists inside each SyncSourceReport
+              
+2006-09-27
+     - magi:  added SyncSource events for: NOC by server - NOC by client - SyncMode requested
+              added SyncClient methods to alert user if slow sync requested (empty default implementation)
+
+2006-09-19
+     - toccy: replace all: [BCHAR -> char]  [wchar_t -> WCHAR]
+              removed unused functions (bsprintf, bstrcpy,...)
+ 
+2006-09-11
+     - toccy: config object passed to SyncClient as parameter of sync() methods
+              added properties 'version' and 'supportedTypes' in SyncSourceConfig
+              adapted win32 example to new API logic (SyncClient-config)
+
+2006-09-07
+     - pholy: restructured DMTClientConfig with smaller functions
+
+2006-09-06
+     - toccy: EVENT HANDLING: added firing events in SyncManager/TransportAgents for event handling
+              removed utf8len/utf82wc/wc2utf8 functions
+              modified SyncManagerConfig to set a SyncSourceConfig not already present in config
+              added syncUrl property to generate devInfHash (if syncUrl changes, devInfHash changes)
+
+2006-08-31
+     - toccy: applied devinfo.patch (pohly) and changed SyncClient/config logic:
+              * added Client capabilities handling (DevInf tag): 'createDefInf()' inside SyncManager.prepareSync()
+              * changed DMTree structure: now settings under 5 nodes (Auth-Conn-DevInfo-DevDetail-Ext)
+              * Sync4jClient class renamed as SyncClient
+              * config object managed by client (not by SyncClient)
+              * the config object passed to SyncClient and then to SyncManager is a SyncManagerConfig (was DMTClientConfig)
+              * added method SyncClient::sync(BCHAR** sourceNames = NULL)
+              * added DeviceConfig class for all device config settings
+              * added methods in SyncManagerConfig: 'getDeviceConfig()' and 'setDeviceConfig(&c)'.
+              * added DefaultConfigFactory class to generate default Config objects in case that the configuration can't be read correctly.
+              * added SyncSourceConfig object inside SyncSource (settings copied from config in the constructor)
+              * userAgent string generated from 'mod + swV' properties if the 'userAgent' property is empty
+              * added methods 'readDeviceConfig()' 'saveDeviceConfig()' in DMTClientConfig class.
+
+2006-08-30:
+     - magi: modified PPC2003TransportAgent. The FunctionHttpSendRequest doesn't set lastErrorCode anymore
+
+2006-08-09:
+     - magi: applied patches sync-mode-names,item-type,64bit-errors,synthesis,single-tag.
+             modified Credential LocName issue instead of passing parameter to some methods
+             removed <![CDATA[ ... ]]> FileData and FolderData formatter because the CDATA is in the Formatter.cpp          
+
+2006-08-08:
+     - toccy: improved Win32TransportAgent. Fixed proxy authentication process.
+
+
+Funambol SDK C++ 3.0.20
+------------------------- 
+2006-07-21:
+
+     - magi: improved PocketPC Transport Agent. It avoids the blocks if server respons fails. 
+             improved PocketPC Transport Agent and Win32: no cookies sent to server.
+             After a time out (5 minutes by default) it break the connection. It improves network reliability
+             Fixed Formatter.cpp bug. Error in deleting an object.     
+
+
+Funambol SDK C++ 3.0.19
+------------------------- 
+2006-07-06:
+
+     - magi: fixed memory leaks in all code
+             improved PocketPC Transport Agent. It tries to sent request to the server if it doesn't respond          
+      
+
+Funambol SDK C++ 3.0.18
+------------------------- 
+2006-06-16:
+      305364    endless loop if second of two sync sources fails in SyncSource::beginSync()
+      305474    patch for memory leaks in VOCL
+      
+    - toccy: vocl fix about folding feature, escape special char and b64 encoding
+      improved StringBuffer stability
+      fixed some memory leaks
+      added proxy authentication parameters used in Win32 Transport Agent
+      
+
+Funambol SDK C++ 3.0.17
+------------------------- 
+2006-05-24:
+    Enanchement: Adding the version number to the user agent
+
+Funambol SDK C++ 3.0.16
+------------------------- 
+2006-05-16:
+  - fixed bugs:
+      305019	Ordering of elements in File object incorrect
+      305020	Writeable attribute not generated
+      305155	WString::replace - write-after-free due to dangling pointer
+      304786	ampersand as part of vcard -&gt; XML encoding problems
+
+Funambol SDK C++ 3.0.15
+------------------------- 
+2006-04-14:
+  - setHeaders() and getHeaders() methods in MailMessage.cpp
+  - fix error on StringBuffer() on empty string assignment.
+
+2006-03-29:
+  - pohly: fixed Linux build
+  - pohly: #304771: parsing vcards with quotation marks
+    in the header fails
+  - pohly: #304829: mixing quoted-printable encoding of
+    linebreaks with non-ASCII characters
+
+Funambol SDK C++ 3.0.12
+------------------------- 
+  - SDK is now based on char, and data is transferred transparently
+  - Handle charset different from UTF-8 in the data
+  - minor bugs fixed
+
+Funambol SDK C++ 3.0.11
+------------------------- 
+2006-03-16
+  - Fixed email date parsing
+  - Fixed refresh from client/one-way from client
+  - Added FileData object (OMA 1.2)
+  - Fixed encryption 
+  - Fixed mail filter
+  - Fixed bug 304701 (Refresh or slow sync on Briefcase loose file names)
+
+2006-03-11
+  - pohly: a =0A=0D must be translated into a \n on Linux (VObject::toNativeEncoding())
+
+
+Funambol SDK C++ 3.0.6
+-------------------------   
+2006-02-02
+  - minor fixes
+      
+
+Funambol SDK C++ 3.0.0
+    
+    new major release
+-------------------------   
+
+
+2005-12-13
+  - magi: added sourceParent and targetParent into SyncItem, SyncManager, Parser and Formatter
+
+2005-12-07:
+  - gazza: Class EmailData for SyncML E-Mail transport
+           Fix crash in Sync4jClient on multiple calls
+           New methods on StringBuffer and ArrayList
+           Completed MailMessage format (multipart)
+
+2005-12-05:
+  - gazza: implemented class MailMchangeslog.txtessage, with basic MIME parsing, for e-mail
+           sync. Classes StringBuffer and ArrayList enhanced with new
+           operators and methods for use in the parser.
+           SyncManager now checks beginSync() retcode.
+
+2005-11-28
+  - magi: implemented ONE_WAY_FROM_SERVER, REFRESH_FROM_SERVER in SyncManager
+
+2005-11-25
+  - gazza: new DM and DS config structure 
+  
+2005-11-18
+  - gazza: class reordered with platform/module order.
+  
+2005-11-16
+  - magi: modification in SyncManager.cpp, SyncMLBuilder and SyncMLProcessor for authentication stuffs  
+    
+2005-11-15
+  - magi: modification to ObjectDel.cpp and .h to substitute the NotZeroStringBufferLenght function
+  - gazza: added NotifyProcessor and SyncAlert classes for server alerted notification
+
+2005-11-12
+  - magi: added beginSync() and endSync() pure virtual method to the SyncSource 
+          modified SyncManager to call there method
+          modified TestSyncSource to implement this method
+          updated DeviceManagementNode for ppc whit new properties
+
+2005-11-11
+  - magi: added the authentication basic and md5 process 
+          added multimessage process          
+          added new package "client"
+          added sync4jclient class
+          added ErrorHandler and LogErrorHandler classes (to be implemented)
+          modification of syncsources and config interface
+          added new TestSyncSource
+          modification of test client
+          modification of packages: 
+            accessConfig, SyncSourceConfig -> spds/common
+            AccessManagementNode, SourceManagementNode -> client/common
+          modification of transportAgent: added properties
+             maxMsgSize 
+             maxModPerMsg
+          added conf.reg (under "doc") containing the properties for the configuration (to be moved into the DM tree)
+          
+          Note: currently the api syncs only the first element of the SyncSource array. to be improved
+          
+            
+2005-10-31
+  - patrick stuffs...
+ 
+2005-08-26
+  - magi: first add

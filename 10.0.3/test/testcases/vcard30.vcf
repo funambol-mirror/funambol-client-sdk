@@ -1,0 +1,429 @@
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user17
+NOTE:triggers parser bug in Funambol 3.0: trailing = is mistaken for soft line break=
+FN:parserbug=
+N:parserbug=
+X-EVOLUTION-FILE-AS:parserbug=
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user16
+NOTE:test case with empty email
+FN:incomplete
+N:incomplete
+EMAIL:
+X-EVOLUTION-FILE-AS:incomplete
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user11
+NOTE:This is a long line without any special characters. This is a simpler 
+ example that should require folding in vcards. Does folding insert a crlf
+  before a space or does it insert crlf _plus_ a space? vCard 2.1 inserts 
+ before a space\, 3.0 inserts line break plus space.
+FN:long line
+N:line;long;;;
+X-EVOLUTION-FILE-AS:line\, long
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user12
+NOTE:ampersand entity &amp\; less-than entity &lt\;
+FN:xml entities
+N:xml;entities;;;
+X-EVOLUTION-FILE-AS:xml\, entities
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user13
+NOTE:a colon is not a special character so here it comes : and not quoting necessary
+FN:colon
+N:colon;unquoted;;;
+X-EVOLUTION-FILE-AS:colon\, unquoted
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user14
+NOTE:here are some quotation marks: single ' double " back ` - none of them is special
+FN:quotation marks
+N:marks;quotation;;;
+X-EVOLUTION-FILE-AS:marks\, quotation
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user15
+NOTE:Spouse's Name: foobar
+FN:spouse name
+N:name;spouse;;;
+X-EVOLUTION-FILE-AS:spouse\, name
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user9
+NOTE;CHARSET="UTF-8":Tests charset specification with quotation marks.
+FN:charset
+N:set;char;;;
+X-EVOLUTION-FILE-AS:set\, char
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+URL:
+TITLE:
+ROLE:
+X-EVOLUTION-MANAGER:
+X-EVOLUTION-ASSISTANT:
+NICKNAME:user2
+X-EVOLUTION-SPOUSE:
+NOTE:This user tests some of the advanced aspects of vcards:\n- non-ASCII c
+ haracters (with umlauts in the name)\n- line break (in this note and the
+  mailing address)\n- long lines (in this note)\n- special characters (in
+  this note)\n- tabs (in this note)\n\nVery long line\, very very long th
+ is time... still not finished... blah blah blah blah blah 1 2 3 4 5 6 7 
+ 8 9 10 11 12 13 14 15 16\n\ncomma \,\ncolon :\nsemicolon \;\nbackslash 
+ \\\n\nThe same\, in the middle of a line:\ncomma \, comma\ncolon : col
+ on\nsemicolon \; semicolon\nbackslash \\ backslash\n\nA tab 	tab done\n	
+ line starts with tab
+FN:Umlaut Ä Ö Ü ß
+N:Ü;Ä;Ö;Umlaut;ß
+X-EVOLUTION-FILE-AS:Ü\, Ä
+CATEGORIES:Business
+X-EVOLUTION-BLOG-URL:
+CALURI:
+FBURL:
+X-EVOLUTION-VIDEO-URL:
+X-MOZILLA-HTML:FALSE
+ADR;TYPE=HOME:test 5;Line 2;Umlaut Ä in Line 1;test 1;test 3;test 2;test 4
+LABEL;TYPE=HOME:Umlaut Ä in Line 1\nLine 2\n\ntest 1\, test 3\ntest 2\ntest 5\ntest 4
+UID:pas-id-43C0EF0A00000002
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+URL:
+TITLE:
+ROLE:
+X-EVOLUTION-MANAGER:
+X-EVOLUTION-ASSISTANT:
+NICKNAME:user8
+X-EVOLUTION-SPOUSE:
+NOTE:Here are some special characters: comma \, colon : semicolon \;
+FN:special characters
+N:characters;special;;;
+X-EVOLUTION-FILE-AS:characters\, special
+X-EVOLUTION-BLOG-URL:
+CALURI:
+FBURL:
+X-EVOLUTION-VIDEO-URL:
+X-MOZILLA-HTML:FALSE
+UID:pas-id-43C15E84000001AC
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+URL:
+TITLE:
+ROLE:
+X-EVOLUTION-MANAGER:
+X-EVOLUTION-ASSISTANT:
+NICKNAME:user7
+X-EVOLUTION-SPOUSE:
+NOTE:This test case uses line breaks. This is line 1.\nLine 2.\n\nLine brea
+ ks in vcard 2.1 are encoded as =0D=0A.\nThat means the = has to be encod
+ ed itself...
+FN:line breaks
+N:breaks;line;;;
+X-EVOLUTION-FILE-AS:breaks\, line
+X-EVOLUTION-BLOG-URL:
+CALURI:
+FBURL:
+X-EVOLUTION-VIDEO-URL:
+X-MOZILLA-HTML:FALSE
+ADR;TYPE=HOME:;Address Line 2\nAddress Line 3;Address Line 1;;;;
+LABEL;TYPE=HOME:Address Line 1\nAddress Line 2\nAddress Line 3
+UID:pas-id-43C15DFB000001AB
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+URL:http://john.doe.com
+TITLE:Senior Tester
+ORG:Test Inc.;Testing;test#1
+ROLE:professional test case
+X-EVOLUTION-MANAGER:John Doe Senior
+X-EVOLUTION-ASSISTANT:John Doe Junior
+NICKNAME:user1
+BDAY:2006-01-08
+X-EVOLUTION-ANNIVERSARY:2006-01-09
+X-EVOLUTION-SPOUSE:Joan Doe
+NOTE:This is a test case which uses almost all Evolution fields.
+FN:John Doe
+N:Doe;John;;;
+X-EVOLUTION-FILE-AS:Doe\, John
+CATEGORIES:TEST
+X-EVOLUTION-BLOG-URL:web log
+CALURI:calender
+FBURL:free/busy
+X-EVOLUTION-VIDEO-URL:chat
+X-MOZILLA-HTML:FALSE
+ADR;TYPE=WORK:Test Box #2;;Test Drive 2;Test Town;Upper Test County;12346;O
+ ld Testovia
+LABEL;TYPE=WORK:Test Drive 2\nTest Town\, Upper Test County\n12346\nTest Bo
+ x #2\nOld Testovia
+ADR;TYPE=HOME:Test Box #1;;Test Drive 1;Test Village;Lower Test County;1234
+ 5;Testovia
+LABEL;TYPE=HOME:Test Drive 1\nTest Village\, Lower Test County\n12345\nTest
+  Box #1\nTestovia
+ADR;TYPE=OTHER:Test Box #3;;Test Drive 3;Test Megacity;Test County;12347;Ne
+ w Testonia
+LABEL;TYPE=OTHER:Test Drive 3\nTest Megacity\, Test County\n12347\nTest Box
+  #3\nNew Testonia
+UID:pas-id-43C0ED3900000001
+EMAIL;TYPE=WORK;X-EVOLUTION-UI-SLOT=1:john.doe@work.com
+EMAIL;TYPE=HOME;X-EVOLUTION-UI-SLOT=2:john.doe@home.priv
+EMAIL;TYPE=OTHER;X-EVOLUTION-UI-SLOT=3:john.doe@other.world
+EMAIL;TYPE=OTHER;X-EVOLUTION-UI-SLOT=4:john.doe@yet.another.world
+TEL;TYPE=WORK;TYPE=VOICE;X-EVOLUTION-UI-SLOT=1:business 1
+TEL;TYPE=HOME;TYPE=VOICE;X-EVOLUTION-UI-SLOT=2:home 2
+TEL;TYPE=CELL;X-EVOLUTION-UI-SLOT=3:mobile 3
+TEL;TYPE=WORK;TYPE=FAX;X-EVOLUTION-UI-SLOT=4:businessfax 4
+TEL;TYPE=HOME;TYPE=FAX;X-EVOLUTION-UI-SLOT=5:homefax 5
+TEL;TYPE=PAGER;X-EVOLUTION-UI-SLOT=6:pager 6
+TEL;TYPE=CAR;X-EVOLUTION-UI-SLOT=7:car 7
+TEL;TYPE=PREF;X-EVOLUTION-UI-SLOT=8:primary 8
+X-AIM;TYPE=HOME;X-EVOLUTION-UI-SLOT=1:AIM JOHN
+X-YAHOO;TYPE=HOME;X-EVOLUTION-UI-SLOT=2:YAHOO JDOE
+X-ICQ;TYPE=HOME;X-EVOLUTION-UI-SLOT=3:ICQ JD
+X-GROUPWISE;TYPE=HOME;X-EVOLUTION-UI-SLOT=4:GROUPWISE DOE
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+URL:
+TITLE:
+ROLE:
+X-EVOLUTION-MANAGER:
+X-EVOLUTION-ASSISTANT:
+NICKNAME:user5
+X-EVOLUTION-SPOUSE:
+NOTE:image in JPG format
+FN:Ms. JPG
+N:;JPG;;Ms.;
+X-EVOLUTION-FILE-AS:JPG
+X-EVOLUTION-BLOG-URL:
+CALURI:
+FBURL:
+X-EVOLUTION-VIDEO-URL:
+X-MOZILLA-HTML:FALSE
+PHOTO;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRgABAQEASABIAAD/4QAWRXhpZgAATU0AKgAA
+ AAgAAAAAAAD//gAXQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q/9sAQwAFAwQEBAMFBAQEBQUFBgcM
+ CAcHBwcPCwsJDBEPEhIRDxERExYcFxMUGhURERghGBodHR8fHxMXIiQiHiQcHh8e/9sAQwEF
+ BQUHBgcOCAgOHhQRFB4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4e
+ Hh4eHh4eHh4e/8AAEQgAFwAkAwEiAAIRAQMRAf/EABkAAQADAQEAAAAAAAAAAAAAAAAGBwgE
+ Bf/EADIQAAECBQMCAwQLAAAAAAAAAAECBAADBQYRBxIhEzEUFSIIFjNBGCRHUVZ3lqXD0+P/
+ xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMR
+ AD8AuX6UehP45/aXv9MTPTLVKxNSvMPcqu+a+XdLxf1SfJ6fU37PioTnOxfbOMc/KIZ7U/2V
+ fmTR/wCaKlu6+blu/Ui72zxWtUmmUOrTaWwkWDT09FPR4K587OVrUfVsIwElPPPAbAjxr2um
+ hWXbDu5rmfeApLPZ4hx0lzNm9aUJ9KAVHKlJHAPf7ozPLqWt9y6Z0EPGmoLNjTq48a1iaybJ
+ YV52yEtCms5KJmAT61JXtJyUdyQTEc1WlMql7N1/oZ6jagVZVFfUyZPpFy5lvWcxU7Z03BUk
+ GZLWJqVhPYLkIIPBEBtSEUyNAsjI1q1m/VP+UICwL/sqlXp7v+aOHsnyGttq218MtKd8+Ru2
+ JXuScoO45Awe2CIi96aKW1cVyubkYVy6rTqz0J8a5t2qqZl0UjAMwYKScfPAJ+cIQHHP0Dth
+ VFaMWt0XwxetnM50Ks2rsxL6ZMnJlJmb5hBBBEiVxjA28dznqo+hdksbQuS3Hs6tVtNzdM1Z
+ /VH5nO3Bl/CJmYHKDynjv3zCEB5rLQNo0bIbydWNWxKljbLQLoWkISOAkBKAABCEID//2Q==
+UID:pas-id-43C0F0B500000005
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+URL:
+TITLE:
+ROLE:
+X-EVOLUTION-MANAGER:
+X-EVOLUTION-ASSISTANT:
+NICKNAME:user4
+X-EVOLUTION-SPOUSE:
+NOTE:image in PNG format
+FN:Mrs. PNG
+N:;PNG;;Mrs.;
+X-EVOLUTION-FILE-AS:PNG
+X-EVOLUTION-BLOG-URL:
+CALURI:
+FBURL:
+X-EVOLUTION-VIDEO-URL:
+X-MOZILLA-HTML:FALSE
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAACQAAAAXCAYAAABj7u2bAAAAB
+ mJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH1gEICjgdiWkBO
+ QAAAB10RVh0Q29tbWVudABDcmVhdGVkIHdpdGggVGhlIEdJTVDvZCVuAAABaElEQVRIx+3Wu
+ 0tcURAG8F98gRKTYGORRqwksJV/QOqFFIFgKgsRYbHV1larDQQCKQxpUscyhUmXJuCSNpYWP
+ sAU6wPxHW6aWbgsu+ve3RUs7geHc+fON3O+M4c5HHLkyHG/eISkg5heIGmUr++hVWigyY6TH
+ lejbWSt0Bv8QBXX2MF7jKU4IyjjJ45xg31sYKZuw7Xv9Gh6vvXO9QbBtbGNJ8Ert+AlTURkF
+ jQX9g5e4ykGUcBm+FaDexx2MUQOYhIL2Lpj09oV9CvsQgPuePj+hP037BL6M6yRSdDZHWVOc
+ BHcEv7FvyN8xxqmeynovA1Baf4UVvANhyn/Uq8E/Q57ssNufhvx1QZrDHfS9p9i3sQsnscdN
+ owXWEQlOBXMYyI4j3EavqFUzpOYl4OTqUJ9+NzmkbXyb6Ryfumm7Wso4it2cYXL6K6PeBmcV
+ 8E5iEvxPDjv8CyVaxQfsIfbqGIlf17k6Bb/Ae0cnahfg6KuAAAAAElFTkSuQmCC
+UID:pas-id-43C0F07900000004
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+URL:
+TITLE:
+ROLE:
+X-EVOLUTION-MANAGER:
+X-EVOLUTION-ASSISTANT:
+NICKNAME:user6
+X-EVOLUTION-SPOUSE:
+NOTE:The first name is "First \; special \;".
+FN:Mr. First \; special \; middle Last
+N:Last;First \; special \;;middle;Mr.;
+X-EVOLUTION-FILE-AS:Last\, First \; special \;
+X-EVOLUTION-BLOG-URL:
+CALURI:
+FBURL:
+X-EVOLUTION-VIDEO-URL:
+X-MOZILLA-HTML:FALSE
+UID:pas-id-43C15D55000001AA
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+URL:
+TITLE:
+ROLE:
+X-EVOLUTION-MANAGER:
+X-EVOLUTION-ASSISTANT:
+NICKNAME:user3
+X-EVOLUTION-SPOUSE:
+NOTE:image in GIF format
+FN:Mr. GIF
+N:;GIF;;Mr.;
+X-EVOLUTION-FILE-AS:GIF
+X-EVOLUTION-BLOG-URL:
+CALURI:
+FBURL:
+X-EVOLUTION-VIDEO-URL:
+X-MOZILLA-HTML:FALSE
+PHOTO;ENCODING=b;TYPE=GIF:R0lGODlhJAAXAIABAAAAAP///yH+FUNyZWF0ZWQgd2l0aCBUa
+ GUgR0lNUAAh+QQBCgABACwAAAAAJAAXAAACVYyPqcvtD6OctNqLFdi8b/sd3giAJRNmqXaKH
+ TIaZJKSpx3McLtyeSuTAWm34e+4WBGFuJ/P1QjZek9ksjiRGqFCTW5pZblmzdiO+GJWncqM+
+ w2PwwsAOw==
+UID:pas-id-43C0F04B00000003
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+NICKNAME:user10
+X-EVOLUTION-SPOUSE:
+NOTE:large vcard with plenty of special chars < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+  & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & < & <
+FN:large vcard
+N:;vcard;;large;
+X-EVOLUTION-FILE-AS:large
+END:VCARD
